@@ -100,7 +100,7 @@ checks.
 
 ### Run the tests
 
-For code tests, `abTEM` uses `pytest`, the test suite also relies on [`hypothesis`]() for property based testing. You
+For code tests, `abTEM` uses `pytest`, the test suite also relies on [`hypothesis`](https://hypothesis.readthedocs.io/en/latest/) for property based testing. You
 may run all the tests: , or only ones that do not have a specific mark, with the following command:
 
 ```{code-block}
