@@ -11,7 +11,7 @@ bottom-right of each page.
 ```
 
 This documentation is built using [Jupyter book](https://jupyterbook.org/en/stable/intro.html), which means that
-the [source code]() for many of the documentation pages,
+the [source code](https://github.com/abTEM/abTEM) for many of the documentation pages,
 including all the pages in the walkthrough, are themselves [Jupyter](https://jupyter.orgi) notebooks. You can download
 these notebooks by clicking on the icon at the top right of the page, and run them yourself if you wish, but note that
 some elements may not be rendered as nicely as in the online version.
