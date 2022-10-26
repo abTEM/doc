@@ -1,15 +1,117 @@
+(getting_started:basic_examples)=
 # Basic examples
 
-This is a short overview of abTEM geared towards new users. Hence, for details 
+:::{admonition} {material-regular}`engineering;1.5rem;sd-mr-1` Currently Under Construction
+:class: no-icon
+The examples are currently a work in progress. 
+:::
 
-There is much more information contained in the rest of the documentation.
+This is a selection of basic code examples for the most common types of simulations of electron microscopy experiments.
 
-For users with previous experience in . This 
+If you have previous experience with multislice simulations, we think that should be able to jump right in and modify 
+the most relevant for your simulation task. If you are completely new to multislice simulations we highly recommend that
+you go through [our walkthrough](user_guide:walkthrough), which also explains the basics multislice simulations. 
+
+For more advanced examples, see our [tutorials section](tutorials:tutorials) or check one of the specialized examples in 
+the [gallery](user_guide:example_gallery).
+
+::::{grid} 3
+:gutter: 2
+
+:::{grid-item-card}
+:link: examples:cbed_quickstart
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+**CBED**
+^^^
+
+```{image} ../user_guide/examples/thumbnails/cbed_quickstart.png
+:align: center
+```
+
+:::
 
 
-This is a selection of basic code examples 
+:::{grid-item-card}
+:link: examples:hrtem_quickstart
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
 
-If you are new to image simulation, we re
-overview of abTEM geared towards new users. Hence, for details 
+**HRTEM**
+^^^
+
+```{image} ../user_guide/examples/thumbnails/hrtem_quickstart.png
+:align: center
+```
+
+:::
 
 
+:::{grid-item-card}
+:link: examples:stem_quickstart
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+
+**STEM-ADF**
+^^^
+
+```{image} ../user_guide/examples/thumbnails/stem_quickstart.png
+:align: center
+```
+
+:::
+
+
+:::{grid-item-card}
+:link: examples:prism_quickstart
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+
+**PRISM**
+^^^
+
+```{image} ../user_guide/examples/thumbnails/prism_quickstart.png
+:align: center
+```
+
+:::
+
+
+:::{grid-item-card}
+:link:
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+
+**SAED**
+^^^
+
+:::
+
+
+:::{grid-item-card}
+:link:
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+
+**4D-STEM**
+^^^
+
+:::
+
+
+:::{grid-item-card}
+:link:
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+
+**PED**
+^^^
+
+:::
