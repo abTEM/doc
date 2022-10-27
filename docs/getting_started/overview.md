@@ -8,9 +8,9 @@ dynamical scattering simulations based on the multislice algorithm has for sever
 transmission electron microscopy (TEM). As a result, there are many excellent simulation codes and *ab*TEM is another 
 one; however, our approach differs in many key aspects.
 
-## How *ab*TEM differs
+## How *ab*TEM differs?
 
-### No GUI, Jupyter notebooks
+### No GUI; Jupyter notebooks
 
 *ab*TEM does not implement a graphical user interface, instead focusing on making scripts and especially computational 
 notebooks. A Jupyter Notebook is mix of code, explanatory text and visualizations, which immediately provides 
