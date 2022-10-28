@@ -167,4 +167,7 @@ measurement = probe.scan(potential, detectors=detector, scan=scan)
 
 These examples demonstrate simplified *ab*TEM code for simulating several common electron microscopy experiments. 
 For clarity of expression we have omitted import statements, and the atomic models is assumed to be given as `atoms`.
-For complete, executable code examples please look [further in the documentation](getting_started:basic_examples).
+Complete executable code examples can be found [further in the documentation](getting_started:basic_examples).
+
+We recommend that new users work through our [walkthrough](user_guide:walkthrough) to familiarize them with *ab*TEM
+and its features.
