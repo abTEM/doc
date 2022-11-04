@@ -1,6 +1,6 @@
 (library:contributing)=
 
-# Contributing
+# Contribute
 
 Welcome to the *ab*TEM repository! We’re excited you’re here and wish to contribute.
 

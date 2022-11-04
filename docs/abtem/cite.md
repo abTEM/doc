@@ -1,4 +1,4 @@
-# Citing 
+# Cite 
 
 If you use *ab*TEM in your research, we kindly ask that you cite our main paper:
 
