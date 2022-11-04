@@ -40,6 +40,8 @@ demonstrating a unique topic, or for reproducing result in published research ar
 :::
 
 :::{grid-item-card}
+:link: reference:api
+:link-type: ref
 **API reference**
 
 Our reference contains a detailed description of the *ab*TEM API based on code documentation. It describes the methods 
