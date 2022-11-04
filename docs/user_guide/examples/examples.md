@@ -92,7 +92,7 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 
 **PRISM**
 ^^^
-```{image} ../user_guide/examples/thumbnails/prism_quickstart.png
+```{image} thumbnails/prism_quickstart.png
 :align: center
 ```
 ```{glue:} prism_quickstart
