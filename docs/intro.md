@@ -2,9 +2,9 @@
 
 __*ab*TEM: transmission electron microscopy from first principles__
 
-*ab*TEM is a flexible open-source package for simulating transmission electron microscopy experiments. The Python API
-allows for easy integration with other simulation codes and analysis tools accessible from Python, while utilization of
-other open-source projects makes *ab*TEM fast and scalable.
+*ab*TEM is a flexible open-source package for simulating transmission electron microscopy experiments. As a Python API,
+it allows for easy integration with other simulation codes and analysis tools accessible from Python, while utilization 
+of other open-source projects makes *ab*TEM fast and scalable from a laptop to a high-performance computing environment.
 
 Here are a few links to help you get started; please also note the navigation menu on the left side of the page.
 
@@ -42,8 +42,8 @@ or reproducing publication results.
 :::{grid-item-card}
 **API reference**
 
-The reference guide contains a detailed description of the *ab*TEM API. The reference describes how the methods work and
-which parameters can be used. It assumes that you have an understanding of the key concepts.
+Our reference contains a detailed description of the *ab*TEM API based on code documentation. It describes the methods 
+and their parameters, and assumes that you have an understanding of the key concepts.
 :::
 
 ::::
