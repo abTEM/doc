@@ -1,3 +1,5 @@
+(reference:api)=
+
 # API 
 
 The *ab*TEM API generally follows an object-oriented design with objects representing elements of the underlying 
