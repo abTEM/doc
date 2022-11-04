@@ -1,4 +1,4 @@
-# Welcome to *ab*TEM!
+# Welcome!
 
 __*ab*TEM: transmission electron microscopy from first principles__
 
@@ -34,8 +34,8 @@ simulations of transmission electron microscopy experiments.
 :link-type: ref
 **Example gallery**
 
-Check the gallery for templates to assist with your common simulation tasks or for examples demonstrating a unique topic
-or reproducing publication results.
+Our example gallery provides fully functional code templates to assist with your common simulation tasks, for 
+demonstrating a unique topic, or for reproducing result in published research articles.
 
 :::
 
