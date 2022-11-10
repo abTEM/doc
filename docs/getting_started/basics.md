@@ -8,9 +8,9 @@ The examples are currently a work in progress.
 
 This is a selection of basic code examples for the most common types of simulations of electron microscopy experiments.
 
-If you have previous experience with multislice simulations, we think that should be able to jump right in and modify 
-the most relevant for your simulation task. If you are completely new to multislice simulations we highly recommend that
-you go through [our walkthrough](user_guide:walkthrough), which also explains the basics multislice simulations. 
+If you have previous experience with multislice simulations, we think that you should be able to jump right in and modify 
+the most relevant for your simulation task. If you are completely new to multislice simulations, we highly recommend that
+you go through [our walkthrough](user_guide:walkthrough), which also explains the basics of multislice simulations. 
 
 For more advanced examples, see our [tutorials section](tutorials:tutorials) or check one of the specialized examples in 
 the [gallery](user_guide:example_gallery).
