@@ -9,6 +9,9 @@
    notebooks/hrtem_quickstart
    notebooks/prism_quickstart
    notebooks/stem_quickstart
+   notebooks/4d-stem_quickstart
+   notebooks/saed_quickstart
+   notebooks/ped_quickstart
    notebooks/hbn_dft_iam
 ```
 
@@ -89,7 +92,9 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 
 **PRISM**
 ^^^
-
+```{image} thumbnails/prism_quickstart.png
+:align: center
+```
 ```{glue:} prism_quickstart
 ```
 
