@@ -64,7 +64,7 @@ The online documentation is automatically updated when the source is updated.
 
 To get started with the *ab*TEM codebase, take the following steps:
 
-(constributing:clone_and_install)
+(contributing:clone_and_install)=
 ### Clone and install
 
 Clone the repository:
