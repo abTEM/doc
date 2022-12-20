@@ -79,7 +79,6 @@
       ~TransmissionFunction.exit_planes_axes_metadata
       ~TransmissionFunction.exit_thicknesses
       ~TransmissionFunction.extent
-      ~TransmissionFunction.fourier_space_sampling
       ~TransmissionFunction.gpts
       ~TransmissionFunction.grid
       ~TransmissionFunction.is_complex
@@ -91,6 +90,7 @@
       ~TransmissionFunction.num_exit_planes
       ~TransmissionFunction.num_frozen_phonons
       ~TransmissionFunction.num_slices
+      ~TransmissionFunction.reciprocal_space_sampling
       ~TransmissionFunction.sampling
       ~TransmissionFunction.shape
       ~TransmissionFunction.slice_limits

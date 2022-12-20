@@ -1,4 +1,4 @@
-SpatialEnvelope
+﻿SpatialEnvelope
 ===============
 
 .. currentmodule:: abtem.transfer
@@ -22,6 +22,7 @@ SpatialEnvelope
       ~SpatialEnvelope.ensemble_blocks
       ~SpatialEnvelope.evaluate
       ~SpatialEnvelope.generate_blocks
+      ~SpatialEnvelope.match_grid
       ~SpatialEnvelope.select_block
       ~SpatialEnvelope.set_aberrations
    
@@ -51,15 +52,20 @@ SpatialEnvelope
       ~SpatialEnvelope.Cs
       ~SpatialEnvelope.aberration_coefficients
       ~SpatialEnvelope.accelerator
+      ~SpatialEnvelope.angular_sampling
       ~SpatialEnvelope.angular_spread
       ~SpatialEnvelope.astigmatism
       ~SpatialEnvelope.astigmatism_angle
       ~SpatialEnvelope.coma
       ~SpatialEnvelope.coma_angle
       ~SpatialEnvelope.defocus
+      ~SpatialEnvelope.device
       ~SpatialEnvelope.energy
       ~SpatialEnvelope.ensemble_axes_metadata
       ~SpatialEnvelope.ensemble_shape
+      ~SpatialEnvelope.extent
+      ~SpatialEnvelope.gpts
+      ~SpatialEnvelope.grid
       ~SpatialEnvelope.metadata
       ~SpatialEnvelope.phi12
       ~SpatialEnvelope.phi21
@@ -72,6 +78,8 @@ SpatialEnvelope
       ~SpatialEnvelope.phi52
       ~SpatialEnvelope.phi54
       ~SpatialEnvelope.phi56
+      ~SpatialEnvelope.reciprocal_space_sampling
+      ~SpatialEnvelope.sampling
       ~SpatialEnvelope.wavelength
    
    

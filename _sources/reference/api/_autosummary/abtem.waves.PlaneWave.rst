@@ -1,4 +1,4 @@
-PlaneWave
+﻿PlaneWave
 =========
 
 .. currentmodule:: abtem.waves
@@ -47,7 +47,6 @@ PlaneWave
       ~PlaneWave.ensemble_shape
       ~PlaneWave.extent
       ~PlaneWave.fourier_space_axes_metadata
-      ~PlaneWave.fourier_space_sampling
       ~PlaneWave.full_cutoff_angles
       ~PlaneWave.gpts
       ~PlaneWave.grid
@@ -56,6 +55,7 @@ PlaneWave
       ~PlaneWave.num_axes
       ~PlaneWave.num_base_axes
       ~PlaneWave.num_ensemble_axes
+      ~PlaneWave.reciprocal_space_sampling
       ~PlaneWave.rectangle_cutoff_angles
       ~PlaneWave.sampling
       ~PlaneWave.shape

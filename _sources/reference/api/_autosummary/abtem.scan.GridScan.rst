@@ -1,4 +1,4 @@
-GridScan
+﻿GridScan
 ========
 
 .. currentmodule:: abtem.scan
@@ -46,12 +46,12 @@ GridScan
       ~GridScan.ensemble_axes_metadata
       ~GridScan.ensemble_shape
       ~GridScan.extent
-      ~GridScan.fourier_space_sampling
       ~GridScan.gpts
       ~GridScan.grid
       ~GridScan.limits
       ~GridScan.metadata
       ~GridScan.num_positions
+      ~GridScan.reciprocal_space_sampling
       ~GridScan.sampling
       ~GridScan.shape
       ~GridScan.start

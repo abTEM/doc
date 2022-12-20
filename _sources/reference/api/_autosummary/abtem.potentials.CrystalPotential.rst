@@ -50,7 +50,6 @@
       ~CrystalPotential.exit_planes_axes_metadata
       ~CrystalPotential.exit_thicknesses
       ~CrystalPotential.extent
-      ~CrystalPotential.fourier_space_sampling
       ~CrystalPotential.gpts
       ~CrystalPotential.grid
       ~CrystalPotential.num_axes
@@ -63,6 +62,7 @@
       ~CrystalPotential.periodic
       ~CrystalPotential.plane
       ~CrystalPotential.potential_unit
+      ~CrystalPotential.reciprocal_space_sampling
       ~CrystalPotential.repetitions
       ~CrystalPotential.sampling
       ~CrystalPotential.seeds

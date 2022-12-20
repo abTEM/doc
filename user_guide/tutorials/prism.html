@@ -51,7 +51,7 @@ const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -1297,7 +1297,7 @@ title="Print to PDF"
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">atoms</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s2">&quot;../walkthrough/data/STO_LTO.cif&quot;</span><span class="p">)</span>
 
-<span class="n">potential</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">gpts</span><span class="o">=</span><span class="p">(</span><span class="mi">304</span><span class="p">,</span> <span class="mi">608</span><span class="p">))</span>
+<span class="n">potential</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">gpts</span><span class="o">=</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <span class="n">abtem</span><span class="o">.</span><span class="n">show_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">True</span><span class="p">);</span>
 </pre></div>
@@ -1307,34 +1307,95 @@ title="Print to PDF"
 <img alt="../../_images/prism_2_0.png" src="../../_images/prism_2_0.png" />
 </div>
 </div>
-<p>In <em>abTEM</em>, the PRISM scattering matrix (i.e. the set of waves <span class="math notranslate nohighlight">\(\mathcal{M} S_{nm}\)</span>) is represented by the <code class="docutils literal notranslate"><span class="pre">SMatrix</span></code>. The expansion cutoff angle, <span class="math notranslate nohighlight">\(\alpha_{max}\)</span>, is given as <code class="docutils literal notranslate"><span class="pre">planewave_cutoff</span></code>. In addition to <span class="math notranslate nohighlight">\(\alpha_{max}\)</span>, the number of plane wave in the expansion increases with the energy and the extent of the potential, because they, respectively, decrease <span class="math notranslate nohighlight">\(\lambda\)</span> and <span class="math notranslate nohighlight">\(\Delta_q\)</span> in Eq. <a class="reference internal" href="#equation-eq-prism-cutoff">(8)</a>.</p>
+<p>In <em>abTEM</em>, the PRISM scattering matrix (i.e. the set of waves <span class="math notranslate nohighlight">\(\mathcal{M} S_{nm}\)</span>) is represented by the <code class="docutils literal notranslate"><span class="pre">SMatrix</span></code>. The expansion cutoff angle, <span class="math notranslate nohighlight">\(\alpha_{max}\)</span>, is given as <code class="docutils literal notranslate"><span class="pre">semiangle_cutoff</span></code>. In addition to <span class="math notranslate nohighlight">\(\alpha_{max}\)</span>, the number of plane wave in the expansion increases with the energy and the extent of the potential, because they, respectively, decrease <span class="math notranslate nohighlight">\(\lambda\)</span> and <span class="math notranslate nohighlight">\(\Delta_q\)</span> in Eq. <a class="reference internal" href="#equation-eq-prism-cutoff">(8)</a>.</p>
 <p>We create an <code class="docutils literal notranslate"><span class="pre">SMatrix</span></code> representing the SrTiO<sub>3</sub>/LaTiO<sub>3</sub> model for an energy of <span class="math notranslate nohighlight">\(150 \ \mathrm{keV}\)</span> and an expansion cutoff angle of <span class="math notranslate nohighlight">\(20 \ \mathrm{mrad}\)</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">s_matrix</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">SMatrix</span><span class="p">(</span>
     <span class="n">potential</span><span class="o">=</span><span class="n">potential</span><span class="p">,</span>
     <span class="n">energy</span><span class="o">=</span><span class="mf">150e3</span><span class="p">,</span>
-    <span class="n">planewave_cutoff</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <p>We can <code class="docutils literal notranslate"><span class="pre">build</span></code> the <code class="docutils literal notranslate"><span class="pre">SMatrix</span></code> to produce an <code class="docutils literal notranslate"><span class="pre">SMatrixArray</span></code>. The <code class="docutils literal notranslate"><span class="pre">SMatrixArray</span></code> wraps a 3d <code class="docutils literal notranslate"><span class="pre">numpy</span></code> array where the first dimension indexes <span class="math notranslate nohighlight">\(S_{nm}\)</span> (running over both indices <span class="math notranslate nohighlight">\(n\)</span> and <span class="math notranslate nohighlight">\(m\)</span>), the last two dimensions represents the <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span> axis of the waves.</p>
-<p>We see that the expansion of our probe requires 375 plane waves.</p>
+<p>We see that the expansion of our probe requires 425 plane waves.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">s_matrix_array</span> <span class="o">=</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
 
-<span class="n">s_matrix_array</span><span class="o">.</span><span class="n">waves</span>
+<span class="n">s_matrix_array</span><span class="o">.</span><span class="n">array</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;abtem.waves.Waves object at 0x7ff330231640&gt;
-</pre></div>
-</div>
-</div>
+<div class="output text_html"><table>
+<tr>
+<td>
+<table>
+  <thead>
+    <tr><td> </td><th> Array </th><th> Chunk </th></tr>
+  </thead>
+  <tbody>
+    <tr><th> Bytes </th><td> 177.43 MiB </td> <td> 50.93 MiB </td></tr>
+    <tr><th> Shape </th><td> (425, 160, 342) </td> <td> (122, 160, 342) </td></tr>
+    <tr><th> Count </th><td> 10 Tasks </td><td> 4 Chunks </td></tr>
+    <tr><th> Type </th><td> complex64 </td><td> numpy.ndarray </td></tr>
+  </tbody>
+</table>
+</td>
+<td>
+<svg width="227" height="165" style="stroke:rgb(0,0,0);stroke-width:1" >
+
+  <!-- Horizontal lines -->
+  <line x1="10" y1="0" x2="80" y2="70" style="stroke-width:2" />
+  <line x1="10" y1="45" x2="80" y2="115" style="stroke-width:2" />
+
+  <!-- Vertical lines -->
+  <line x1="10" y1="0" x2="10" y2="45" style="stroke-width:2" />
+  <line x1="30" y1="20" x2="30" y2="65" />
+  <line x1="50" y1="40" x2="50" y2="85" />
+  <line x1="70" y1="60" x2="70" y2="105" />
+  <line x1="80" y1="70" x2="80" y2="115" style="stroke-width:2" />
+
+  <!-- Colored Rectangle -->
+  <polygon points="10.0,0.0 80.58823529411765,70.58823529411765 80.58823529411765,115.76470588235296 10.0,45.1764705882353" style="fill:#ECB172A0;stroke-width:0"/>
+
+  <!-- Horizontal lines -->
+  <line x1="10" y1="0" x2="106" y2="0" style="stroke-width:2" />
+  <line x1="30" y1="20" x2="126" y2="20" />
+  <line x1="50" y1="40" x2="147" y2="40" />
+  <line x1="70" y1="60" x2="167" y2="60" />
+  <line x1="80" y1="70" x2="177" y2="70" style="stroke-width:2" />
+
+  <!-- Vertical lines -->
+  <line x1="10" y1="0" x2="80" y2="70" style="stroke-width:2" />
+  <line x1="106" y1="0" x2="177" y2="70" style="stroke-width:2" />
+
+  <!-- Colored Rectangle -->
+  <polygon points="10.0,0.0 106.56470588235294,0.0 177.1529411764706,70.58823529411765 80.58823529411765,70.58823529411765" style="fill:#ECB172A0;stroke-width:0"/>
+
+  <!-- Horizontal lines -->
+  <line x1="80" y1="70" x2="177" y2="70" style="stroke-width:2" />
+  <line x1="80" y1="115" x2="177" y2="115" style="stroke-width:2" />
+
+  <!-- Vertical lines -->
+  <line x1="80" y1="70" x2="80" y2="115" style="stroke-width:2" />
+  <line x1="177" y1="70" x2="177" y2="115" style="stroke-width:2" />
+
+  <!-- Colored Rectangle -->
+  <polygon points="80.58823529411765,70.58823529411765 177.1529411764706,70.58823529411765 177.1529411764706,115.76470588235296 80.58823529411765,115.76470588235296" style="fill:#ECB172A0;stroke-width:0"/>
+
+  <!-- Text -->
+  <text x="128.870588" y="135.764706" font-size="1.0rem" font-weight="100" text-anchor="middle" >342</text>
+  <text x="197.152941" y="93.176471" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(-90,197.152941,93.176471)">160</text>
+  <text x="35.294118" y="100.470588" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(45,35.294118,100.470588)">425</text>
+</svg>
+</td>
+</tr>
+</table></div></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1343,7 +1404,7 @@ title="Print to PDF"
 <p>We show a small selection of the expansion wave functions (<span class="math notranslate nohighlight">\(\mathcal{M} S_{nm}\)</span>) below.</p>
 <div class="cell tag_full-width docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">s_matrix</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">max_batch</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">waves</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">62</span><span class="p">]</span><span class="o">.</span><span class="n">images</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">s_matrix</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">max_batch</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">waves</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">75</span><span class="p">]</span><span class="o">.</span><span class="n">images</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">(</span>
     <span class="n">explode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">panel_titles</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
@@ -1352,7 +1413,7 @@ title="Print to PDF"
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed |  1.8s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed |  1.5s
 </pre></div>
 </div>
 <img alt="../../_images/prism_8_1.png" src="../../_images/prism_8_1.png" />
@@ -1361,76 +1422,27 @@ title="Print to PDF"
 <p>The number of plane waves should be compared to the number of probe positions required to scan over the extent of the potential at Nyquist sampling.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#sampling = abtem.transfer.nyquist_sampling(</span>
-<span class="c1">#    s_matrix.planewave_cutoff, s_matrix.energy</span>
-<span class="c1">#)</span>
-
-<span class="c1">#scan = abtem.GridScan.from_fractional_coordinates(potential, sampling=sampling)</span>
-
-<span class="n">scan</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">GridScan</span><span class="p">()</span>
-
-
-<span class="n">potential</span><span class="o">.</span><span class="n">build</span><span class="p">()</span><span class="o">.</span><span class="n">to_zarr</span><span class="p">(</span><span class="s2">&quot;p.zarr&quot;</span><span class="p">)</span>
-
-<span class="n">p</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">from_zarr</span><span class="p">(</span><span class="s2">&quot;p.zarr&quot;</span><span class="p">)</span>
-
-<span class="n">s_matrix_very_interpolated</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">SMatrix</span><span class="p">(</span>
-    <span class="n">potential</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
-    <span class="n">energy</span><span class="o">=</span><span class="mf">150e3</span><span class="p">,</span>
-    <span class="n">planewave_cutoff</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
-    <span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sampling</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">transfer</span><span class="o">.</span><span class="n">nyquist_sampling</span><span class="p">(</span>
+    <span class="n">s_matrix</span><span class="o">.</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">energy</span>
 <span class="p">)</span>
 
+<span class="n">scan</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">GridScan</span><span class="o">.</span><span class="n">from_fractional_coordinates</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">)</span>
 
-<span class="c1">#measurement_very_interpolated = s_matrix_very_interpolated.scan(</span>
-<span class="c1">#    scan=scan, detectors=detector</span>
-<span class="c1">#).compute()</span>
-
-<span class="c1">#measurement_very_interpolated = s_matrix_very_interpolated.scan(</span>
-<span class="c1">#    scan=scan, detectors=detector</span>
-<span class="c1">#).compute()</span>
-
-
-<span class="c1">#print(f&quot;Number of probe positions: {len(scan)}&quot;)</span>
-<span class="c1">#print(f&quot;Number of plane waves: {len(s_matrix)}&quot;)</span>
-<span class="c1">#print(f&quot;Ratio: {len(scan) / len(s_matrix):.1f}&quot;)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of probe positions: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">scan</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of plane waves: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">s_matrix</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ratio: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">scan</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">s_matrix</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed |  0.6s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Number of probe positions: 2015
+Number of plane waves: 425
+Ratio: 4.7
 </pre></div>
 </div>
 </div>
 </div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">s_matrix_very_interpolated</span><span class="o">.</span><span class="n">build</span><span class="p">()</span><span class="o">.</span><span class="n">to_zarr</span><span class="p">(</span><span class="s2">&quot;test.zarr&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed | 25.3s
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[None, None, None]
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">scan</span><span class="o">.</span><span class="n">extent</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(11.1585, 23.6708)
-</pre></div>
-</div>
-</div>
-</div>
-<p>Thus, PRISM (without approximations) requires 5.4 times fewer multislice steps than the conventional multislice algorithm.</p>
+<p>Thus, PRISM (without approximations) requires 4.7 times fewer multislice steps than the conventional multislice algorithm.</p>
 <p>This factor is an upper bound on possible speedup as PRISM also requires the reduction stage. To perform the reduction we call <code class="docutils literal notranslate"><span class="pre">scan</span></code> with the <code class="docutils literal notranslate"><span class="pre">GridScan</span></code> defined above and an <code class="docutils literal notranslate"><span class="pre">AnnularDetector</span></code> to detect the exit waves as the expansion is reduced with varying <code class="docutils literal notranslate"><span class="pre">C_{nm}</span></code>.</p>
 <p>We also call <code class="docutils literal notranslate"><span class="pre">compute</span></code> which in this case will compute the full task graph of both the multislice and reduction stage.</p>
 <div class="cell docutils container">
@@ -1442,7 +1454,7 @@ title="Print to PDF"
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed | 45.5s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed | 33.3s
 </pre></div>
 </div>
 </div>
@@ -1455,7 +1467,7 @@ title="Print to PDF"
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/prism_16_0.png" src="../../_images/prism_16_0.png" />
+<img alt="../../_images/prism_14_0.png" src="../../_images/prism_14_0.png" />
 </div>
 </div>
 <p>The reduction stage is typically significantly faster than the multislice stage, however, this depends completely on the number of slices in the potential. Using PRISM the present example took about 1 min 30s on a mid-range laptop, while the equivalent conventional multislice algorithm took 6 min, hence the actual speedup from using PRISM was about a factor of 4.</p>
@@ -1474,21 +1486,21 @@ title="Print to PDF"
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">s_matrix_interpolated</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">SMatrix</span><span class="p">(</span>
     <span class="n">potential</span><span class="o">=</span><span class="n">potential</span><span class="p">,</span>
     <span class="n">energy</span><span class="o">=</span><span class="mf">150e3</span><span class="p">,</span>
-    <span class="n">planewave_cutoff</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
     <span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">s_matrix_more_interpolated</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">SMatrix</span><span class="p">(</span>
     <span class="n">potential</span><span class="o">=</span><span class="n">potential</span><span class="p">,</span>
     <span class="n">energy</span><span class="o">=</span><span class="mf">150e3</span><span class="p">,</span>
-    <span class="n">planewave_cutoff</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
     <span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">s_matrix_very_interpolated</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">SMatrix</span><span class="p">(</span>
     <span class="n">potential</span><span class="o">=</span><span class="n">potential</span><span class="p">,</span>
     <span class="n">energy</span><span class="o">=</span><span class="mf">150e3</span><span class="p">,</span>
-    <span class="n">planewave_cutoff</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
     <span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
@@ -1496,7 +1508,7 @@ title="Print to PDF"
 </div>
 </div>
 <p>We run the PRISM algorithm with each of the interpolated scattering matrices.</p>
-<div class="cell docutils container">
+<div class="cell tag_skip-test docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">measurement_interpolated</span> <span class="o">=</span> <span class="n">s_matrix_interpolated</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span>
     <span class="n">scan</span><span class="o">=</span><span class="n">scan</span><span class="p">,</span> <span class="n">detectors</span><span class="o">=</span><span class="n">detector</span>
@@ -1511,9 +1523,9 @@ title="Print to PDF"
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed | 30.9s
-[########################################] | 100% Completed | 13.7s
-[########################################] | 100% Completed |  4.0s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed | 22.9s
+[########################################] | 100% Completed | 10.0s
+[########################################] | 100% Completed |  4.1s
 </pre></div>
 </div>
 </div>
@@ -1545,10 +1557,10 @@ title="Print to PDF"
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/prism_23_0.png" src="../../_images/prism_23_0.png" />
+<img alt="../../_images/prism_20_0.png" src="../../_images/prism_20_0.png" />
 </div>
 </div>
-<p>A quantitative comparison is shown below as the difference between the exact and interpolated as a percent of the maximum value. We see that the error is a couple of percent for the interpolation factors <span class="math notranslate nohighlight">\((1,2)\)</span> and <span class="math notranslate nohighlight">\((2,4)\)</span>, which is probably well within the range of error source due to unknowns and implicit approximantions. The error of up to <span class="math notranslate nohighlight">\(15\ \%\)</span> for the interpolation factor of <span class="math notranslate nohighlight">\((4,8)\)</span> is clearly too large for creating production quality simulations, but it  might be tolerated while dialing in other parameters.</p>
+<p>A quantitative comparison is shown below as the difference between the exact and interpolated as a percent of the maximum value. We see that the error is a couple of percent for the interpolation factors <span class="math notranslate nohighlight">\((1,2)\)</span> and <span class="math notranslate nohighlight">\((2,4)\)</span>, which is probably well within the range of error source due to unknowns and implicit approximantions. The error of up to <span class="math notranslate nohighlight">\(10\ \%\)</span> for the interpolation factor of <span class="math notranslate nohighlight">\((4,8)\)</span> is clearly too large for creating production quality simulations, but it  might be tolerated while dialing in other parameters.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">abtem</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
@@ -1572,14 +1584,14 @@ title="Print to PDF"
     <span class="n">image_grid_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;axes_pad&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span>
     <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;bwr&quot;</span><span class="p">,</span>
     <span class="n">cbar_labels</span><span class="o">=</span><span class="s2">&quot;Error [%]&quot;</span><span class="p">,</span>
-    <span class="n">vmin</span><span class="o">=-</span><span class="mi">15</span><span class="p">,</span>
-    <span class="n">vmax</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
 <span class="p">);</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/prism_25_0.png" src="../../_images/prism_25_0.png" />
+<img alt="../../_images/prism_22_0.png" src="../../_images/prism_22_0.png" />
 </div>
 </div>
 <p>In the above we interpolated by twice the factor in <span class="math notranslate nohighlight">\(y\)</span> compared to <span class="math notranslate nohighlight">\(x\)</span>. Interpolation effectively repeats the probe, hence the “window” that the repeated probes shrinks as interpolation increases. Hence when the potential extent is larger, we can interpolate by a larger factor before the probes starts to get squeezed.</p>
@@ -1598,13 +1610,13 @@ title="Print to PDF"
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed | 117.89 ms
-[########################################] | 100% Completed | 107.06 ms
-[########################################] | 100% Completed | 106.58 ms
-[########################################] | 100% Completed | 109.37 ms
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed |  0.1s
+[########################################] | 100% Completed |  0.1s
+[########################################] | 100% Completed |  0.1s
+[########################################] | 100% Completed |  0.1s
 </pre></div>
 </div>
-<img alt="../../_images/prism_27_1.png" src="../../_images/prism_27_1.png" />
+<img alt="../../_images/prism_24_1.png" src="../../_images/prism_24_1.png" />
 </div>
 </div>
 </section>
@@ -1624,7 +1636,7 @@ title="Print to PDF"
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed | 49.48 s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed | 44.9s
 </pre></div>
 </div>
 </div>
@@ -1640,7 +1652,7 @@ title="Print to PDF"
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/prism_30_0.png" src="../../_images/prism_30_0.png" />
+<img alt="../../_images/prism_27_0.png" src="../../_images/prism_27_0.png" />
 </div>
 </div>
 </section>

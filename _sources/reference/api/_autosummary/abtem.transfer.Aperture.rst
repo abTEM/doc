@@ -1,4 +1,4 @@
-Aperture
+﻿Aperture
 ========
 
 .. currentmodule:: abtem.transfer
@@ -22,6 +22,7 @@ Aperture
       ~Aperture.ensemble_blocks
       ~Aperture.evaluate
       ~Aperture.generate_blocks
+      ~Aperture.match_grid
       ~Aperture.select_block
    
    
@@ -33,13 +34,20 @@ Aperture
    .. autosummary::
    
       ~Aperture.accelerator
+      ~Aperture.angular_sampling
+      ~Aperture.device
       ~Aperture.energy
       ~Aperture.ensemble_axes_metadata
       ~Aperture.ensemble_shape
+      ~Aperture.extent
+      ~Aperture.gpts
+      ~Aperture.grid
       ~Aperture.metadata
       ~Aperture.nyquist_sampling
+      ~Aperture.reciprocal_space_sampling
+      ~Aperture.sampling
       ~Aperture.semiangle_cutoff
-      ~Aperture.taper
+      ~Aperture.soft
       ~Aperture.wavelength
    
    

@@ -49,8 +49,6 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -1044,7 +1042,7 @@ title="Open an issue"
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -1055,6 +1053,7 @@ title="Open an issue"
 <span class="kn">from</span> <span class="nn">abtem.core.backend</span> <span class="kn">import</span> <span class="n">get_array_module</span>
 <span class="kn">from</span> <span class="nn">abtem.core.complex</span> <span class="kn">import</span> <span class="n">complex_exponential</span>
 <span class="kn">from</span> <span class="nn">abtem.core.energy</span> <span class="kn">import</span> <span class="n">Accelerator</span><span class="p">,</span> <span class="n">energy2wavelength</span>
+<span class="kn">from</span> <span class="nn">abtem.core.grid</span> <span class="kn">import</span> <span class="n">HasGridMixin</span><span class="p">,</span> <span class="n">GridUndefinedError</span>
 <span class="kn">from</span> <span class="nn">abtem.core.transform</span> <span class="kn">import</span> <span class="n">FourierSpaceConvolution</span>
 <span class="kn">from</span> <span class="nn">abtem.core.utils</span> <span class="kn">import</span> <span class="n">expand_dims_to_match</span>
 <span class="kn">from</span> <span class="nn">abtem.distributions</span> <span class="kn">import</span> <span class="p">(</span>
@@ -1066,12 +1065,23 @@ title="Open an issue"
 <span class="kn">from</span> <span class="nn">abtem.measurements</span> <span class="kn">import</span> <span class="n">ReciprocalSpaceLineProfiles</span>
 
 
-<div class="viewcode-block" id="BaseAperture"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.BaseAperture.html#abtem.transfer.BaseAperture">[docs]</a><span class="k">class</span> <span class="nc">BaseAperture</span><span class="p">(</span><span class="n">FourierSpaceConvolution</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseAperture"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.BaseAperture.html#abtem.transfer.BaseAperture">[docs]</a><span class="k">class</span> <span class="nc">BaseAperture</span><span class="p">(</span><span class="n">FourierSpaceConvolution</span><span class="p">,</span> <span class="n">HasGridMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Base class for apertures. Documented in the subclasses.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="BaseAperture.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.BaseAperture.html#abtem.transfer.BaseAperture.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseAperture.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.BaseAperture.html#abtem.transfer.BaseAperture.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span> <span class="o">=</span> <span class="n">semiangle_cutoff</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span> <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1103,26 +1113,37 @@ title="Open an issue"
 <span class="sd">    ----------</span>
 <span class="sd">    semiangle_cutoff : float or BaseDistribution</span>
 <span class="sd">        The cutoff semiangle of the aperture [mrad]. Alternatively, a distribution of angles may be provided.</span>
-<span class="sd">    taper : float, optional</span>
-<span class="sd">        Smoothen the edge of the aperture over a range of angles to eliminate aliasing [mrad] (default is 1 mrad).</span>
+<span class="sd">    soft : bool, optional</span>
+<span class="sd">        If True, the edge of the aperture is softened (default is True).</span>
 <span class="sd">    energy : float, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">    extent : float or two float, optional</span>
+<span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single float is given, both are set equal.</span>
+<span class="sd">    gpts : two ints, optional</span>
+<span class="sd">        Number of grid points describing the wave functions.</span>
+<span class="sd">    sampling : two float, optional</span>
+<span class="sd">        Lateral sampling of wave functions [1 / Å]. If &#39;gpts&#39; is also given, will be ignored.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Aperture.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.Aperture.html#abtem.transfer.Aperture.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">],</span>
-        <span class="n">taper</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">],</span>
+            <span class="n">soft</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-
         <span class="n">semiangle_cutoff</span> <span class="o">=</span> <span class="n">_validate_distribution</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_soft</span> <span class="o">=</span> <span class="n">soft</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_taper</span> <span class="o">=</span> <span class="n">taper</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">distributions</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;semiangle_cutoff&quot;</span><span class="p">,),</span>
             <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
             <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="n">semiangle_cutoff</span><span class="p">,</span>
+            <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
         <span class="p">)</span></div>
 
     <span class="nd">@property</span>
@@ -1148,11 +1169,11 @@ title="Open an issue"
             <span class="k">return</span> <span class="p">[]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">taper</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_taper</span>
+    <span class="k">def</span> <span class="nf">soft</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_soft</span>
 
     <span class="k">def</span> <span class="nf">_evaluate_with_alpha_and_phi</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">phi</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">phi</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
 
@@ -1161,27 +1182,37 @@ title="Open an issue"
         <span class="p">)</span>
 
         <span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">,)</span> <span class="o">=</span> <span class="n">unpacked</span>
-        <span class="n">semiangle_cutoff</span> <span class="o">=</span> <span class="n">semiangle_cutoff</span> <span class="o">/</span> <span class="mi">1000</span>
+        <span class="n">semiangle_cutoff</span> <span class="o">=</span> <span class="n">semiangle_cutoff</span> <span class="o">*</span> <span class="mf">1e-3</span>
 
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_ensemble_axes</span><span class="p">)))</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_ensemble_axes</span><span class="p">)))</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">semiangle_cutoff</span> <span class="o">==</span> <span class="n">xp</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">taper</span> <span class="o">&gt;</span> <span class="mf">1.e-2</span><span class="p">:</span>
-            <span class="n">taper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">taper</span> <span class="o">/</span> <span class="mf">1000.0</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span>
-                <span class="mi">1</span> <span class="o">+</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">-</span> <span class="n">semiangle_cutoff</span> <span class="o">+</span> <span class="n">taper</span><span class="p">)</span> <span class="o">/</span> <span class="n">taper</span><span class="p">)</span>
-            <span class="p">)</span>
-            <span class="n">array</span><span class="p">[</span><span class="n">alpha</span> <span class="o">&gt;</span> <span class="n">semiangle_cutoff</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
-                <span class="n">alpha</span> <span class="o">&gt;</span> <span class="n">semiangle_cutoff</span> <span class="o">-</span> <span class="n">taper</span><span class="p">,</span>
-                <span class="n">array</span><span class="p">,</span>
-                <span class="n">xp</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alpha</span> <span class="o">&lt;</span> <span class="n">semiangle_cutoff</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">soft</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alpha</span> <span class="o">&lt;</span> <span class="n">semiangle_cutoff</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="n">numerator</span> <span class="o">=</span> <span class="n">semiangle_cutoff</span> <span class="o">*</span> <span class="n">alpha</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="n">alpha_vector</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">),</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">angular_sampling</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-3</span>
+        <span class="k">except</span> <span class="n">GridUndefinedError</span><span class="p">:</span>
+            <span class="n">angular_sampling</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">denominator</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
+            <span class="n">alpha_vector</span> <span class="o">*</span> <span class="n">angular_sampling</span><span class="p">[(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">alpha_vector</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)],</span>
+            <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">zeros</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">0</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">numerator</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">))</span>
+        <span class="n">denominator</span><span class="p">[</span><span class="n">zeros</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+        <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span>
+        <span class="n">array</span><span class="p">[</span><span class="n">zeros</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
 
         <span class="k">return</span> <span class="n">array</span></div>
 
@@ -1204,23 +1235,37 @@ title="Open an issue"
 <span class="sd">        The cutoff semiangle of the aperture [mrad].</span>
 <span class="sd">    energy : float, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">    extent : float or two float, optional</span>
+<span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single float is given, both are set equal.</span>
+<span class="sd">    gpts : two ints, optional</span>
+<span class="sd">        Number of grid points describing the wave functions.</span>
+<span class="sd">    sampling : two float, optional</span>
+<span class="sd">        Lateral sampling of wave functions [1 / Å]. If &#39;gpts&#39; is also given, will be ignored.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Bullseye.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.Bullseye.html#abtem.transfer.Bullseye.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">num_spokes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">spoke_width</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">num_rings</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">ring_width</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">num_spokes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+            <span class="n">spoke_width</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+            <span class="n">num_rings</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+            <span class="n">ring_width</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+            <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+            <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_spoke_num</span> <span class="o">=</span> <span class="n">num_spokes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_spoke_width</span> <span class="o">=</span> <span class="n">spoke_width</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_num_rings</span> <span class="o">=</span> <span class="n">num_rings</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ring_width</span> <span class="o">=</span> <span class="n">ring_width</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span> <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="n">semiangle_cutoff</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+            <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="n">semiangle_cutoff</span><span class="p">,</span>
+            <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">num_spokes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -1243,7 +1288,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span>
 
     <span class="k">def</span> <span class="nf">_evaluate_with_alpha_and_phi</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">phi</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">phi</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
@@ -1254,9 +1299,9 @@ title="Open an issue"
 
         <span class="c1"># add crossbars</span>
         <span class="n">array</span> <span class="o">=</span> <span class="n">array</span> <span class="o">*</span> <span class="p">(</span>
-            <span class="p">((</span><span class="n">phi</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">spoke_width</span> <span class="o">/</span> <span class="p">(</span><span class="mi">180</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_spokes</span><span class="p">)</span>
-            <span class="o">%</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
-            <span class="o">&gt;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">spoke_width</span> <span class="o">/</span> <span class="mi">180</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_spokes</span><span class="p">)</span>
+                <span class="p">((</span><span class="n">phi</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">spoke_width</span> <span class="o">/</span> <span class="p">(</span><span class="mi">180</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_spokes</span><span class="p">)</span>
+                <span class="o">%</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+                <span class="o">&gt;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">spoke_width</span> <span class="o">/</span> <span class="mi">180</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_spokes</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="c1"># add ring bars</span>
@@ -1283,14 +1328,31 @@ title="Open an issue"
 <span class="sd">        The cutoff semiangle of the aperture [mrad].</span>
 <span class="sd">    energy : float, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">    extent : float or two float, optional</span>
+<span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single float is given, both are set equal.</span>
+<span class="sd">    gpts : two ints, optional</span>
+<span class="sd">        Number of grid points describing the wave functions.</span>
+<span class="sd">    sampling : two float, optional</span>
+<span class="sd">        Lateral sampling of wave functions [1 / Å]. If &#39;gpts&#39; is also given, will be ignored.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Vortex.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.Vortex.html#abtem.transfer.Vortex.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">quantum_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">quantum_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+            <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+            <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_quantum_number</span> <span class="o">=</span> <span class="n">quantum_number</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span> <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="n">semiangle_cutoff</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+            <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="n">semiangle_cutoff</span><span class="p">,</span>
+            <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">quantum_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1301,7 +1363,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span>
 
     <span class="k">def</span> <span class="nf">_evaluate_with_alpha_and_phi</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">phi</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">phi</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
@@ -1325,17 +1387,32 @@ title="Open an issue"
 <span class="sd">        Alternatively, a distribution of values may be provided.</span>
 <span class="sd">    energy : float, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">    extent : float or two float, optional</span>
+<span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single float is given, both are set equal.</span>
+<span class="sd">    gpts : two ints, optional</span>
+<span class="sd">        Number of grid points describing the wave functions.</span>
+<span class="sd">    sampling : two float, optional</span>
+<span class="sd">        Lateral sampling of wave functions [1 / Å]. If &#39;gpts&#39; is also given, will be ignored.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="TemporalEnvelope.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.TemporalEnvelope.html#abtem.transfer.TemporalEnvelope.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">focal_spread</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">],</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">focal_spread</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">],</span>
+            <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_accelerator</span> <span class="o">=</span> <span class="n">Accelerator</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_focal_spread</span> <span class="o">=</span> <span class="n">_validate_distribution</span><span class="p">(</span><span class="n">focal_spread</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">distributions</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;focal_spread&quot;</span><span class="p">,),</span> <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">distributions</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;focal_spread&quot;</span><span class="p">,),</span>
+            <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+            <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">focal_spread</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1360,7 +1437,7 @@ title="Open an issue"
             <span class="k">return</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="nf">_evaluate_with_alpha_and_phi</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">phi</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">phi</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
 
@@ -1371,7 +1448,7 @@ title="Open an issue"
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_ensemble_axes</span><span class="p">)))</span>
 
         <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
-            <span class="o">-</span><span class="p">((</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">*</span> <span class="n">focal_spread</span> <span class="o">*</span> <span class="n">alpha</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="o">-</span><span class="p">((</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">*</span> <span class="n">focal_spread</span> <span class="o">*</span> <span class="n">alpha</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
         <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">array</span></div>
@@ -1596,23 +1673,34 @@ title="Open an issue"
 <span class="sd">        [Å] and angles should be given in [radian].</span>
 <span class="sd">    energy : float, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">    extent : float or two float, optional</span>
+<span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single float is given, both are set equal.</span>
+<span class="sd">    gpts : two ints, optional</span>
+<span class="sd">        Number of grid points describing the wave functions.</span>
+<span class="sd">    sampling : two float, optional</span>
+<span class="sd">        Lateral sampling of wave functions [1 / Å]. If &#39;gpts&#39; is also given, will be ignored.</span>
 <span class="sd">    kwargs : dict, optional</span>
 <span class="sd">        Optionally provide the aberration coefficients as keyword arguments.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SpatialEnvelope.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.SpatialEnvelope.html#abtem.transfer.SpatialEnvelope.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">angular_spread</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">],</span>
-        <span class="n">aberration_coefficients</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">angular_spread</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">],</span>
+            <span class="n">aberration_coefficients</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
-
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">distributions</span><span class="o">=</span><span class="n">polar_symbols</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;angular_spread&quot;</span><span class="p">,),</span> <span class="n">energy</span><span class="o">=</span><span class="n">energy</span>
+            <span class="n">distributions</span><span class="o">=</span><span class="n">polar_symbols</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;angular_spread&quot;</span><span class="p">,),</span> <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+            <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_angular_spread</span> <span class="o">=</span> <span class="n">angular_spread</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_angular_spread</span> <span class="o">=</span> <span class="n">_validate_distribution</span><span class="p">(</span><span class="n">angular_spread</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_aberration_coefficients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_aberration_coefficients</span><span class="p">()</span>
 
         <span class="n">aberration_coefficients</span> <span class="o">=</span> <span class="p">(</span>
@@ -1644,7 +1732,7 @@ title="Open an issue"
         <span class="bp">self</span><span class="o">.</span><span class="n">_angular_spread</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="k">def</span> <span class="nf">_evaluate_with_alpha_and_phi</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">phi</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">phi</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
 
@@ -1660,106 +1748,106 @@ title="Open an issue"
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
 
         <span class="n">dchi_dk</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="mi">2</span>
-            <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">pi</span>
-            <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span>
-            <span class="o">*</span> <span class="p">(</span>
-                <span class="p">(</span>
-                    <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C12&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi12&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C10&quot;</span><span class="p">]</span>
+                <span class="mi">2</span>
+                <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">pi</span>
+                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span>
+                <span class="o">*</span> <span class="p">(</span>
+                        <span class="p">(</span>
+                                <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C12&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi12&quot;</span><span class="p">]))</span>
+                                <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C10&quot;</span><span class="p">]</span>
+                        <span class="p">)</span>
+                        <span class="o">*</span> <span class="n">alpha</span>
+                        <span class="o">+</span> <span class="p">(</span>
+                                <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C23&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi23&quot;</span><span class="p">]))</span>
+                                <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C21&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi21&quot;</span><span class="p">]))</span>
+                        <span class="p">)</span>
+                        <span class="o">*</span> <span class="n">alpha</span> <span class="o">**</span> <span class="mi">2</span>
+                        <span class="o">+</span> <span class="p">(</span>
+                                <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C34&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi34&quot;</span><span class="p">]))</span>
+                                <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C32&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi32&quot;</span><span class="p">]))</span>
+                                <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C30&quot;</span><span class="p">]</span>
+                        <span class="p">)</span>
+                        <span class="o">*</span> <span class="n">alpha</span> <span class="o">**</span> <span class="mi">3</span>
+                        <span class="o">+</span> <span class="p">(</span>
+                                <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C45&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">5.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi45&quot;</span><span class="p">]))</span>
+                                <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C43&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi43&quot;</span><span class="p">]))</span>
+                                <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C41&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi41&quot;</span><span class="p">]))</span>
+                        <span class="p">)</span>
+                        <span class="o">*</span> <span class="n">alpha</span> <span class="o">**</span> <span class="mi">4</span>
+                        <span class="o">+</span> <span class="p">(</span>
+                                <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C56&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">6.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi56&quot;</span><span class="p">]))</span>
+                                <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C54&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi54&quot;</span><span class="p">]))</span>
+                                <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C52&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi52&quot;</span><span class="p">]))</span>
+                                <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C50&quot;</span><span class="p">]</span>
+                        <span class="p">)</span>
+                        <span class="o">*</span> <span class="n">alpha</span> <span class="o">**</span> <span class="mi">5</span>
                 <span class="p">)</span>
-                <span class="o">*</span> <span class="n">alpha</span>
-                <span class="o">+</span> <span class="p">(</span>
-                    <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C23&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi23&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C21&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi21&quot;</span><span class="p">]))</span>
-                <span class="p">)</span>
-                <span class="o">*</span> <span class="n">alpha</span><span class="o">**</span><span class="mi">2</span>
-                <span class="o">+</span> <span class="p">(</span>
-                    <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C34&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi34&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C32&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi32&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C30&quot;</span><span class="p">]</span>
-                <span class="p">)</span>
-                <span class="o">*</span> <span class="n">alpha</span><span class="o">**</span><span class="mi">3</span>
-                <span class="o">+</span> <span class="p">(</span>
-                    <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C45&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">5.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi45&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C43&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi43&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C41&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi41&quot;</span><span class="p">]))</span>
-                <span class="p">)</span>
-                <span class="o">*</span> <span class="n">alpha</span><span class="o">**</span><span class="mi">4</span>
-                <span class="o">+</span> <span class="p">(</span>
-                    <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C56&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">6.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi56&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C54&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi54&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C52&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi52&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C50&quot;</span><span class="p">]</span>
-                <span class="p">)</span>
-                <span class="o">*</span> <span class="n">alpha</span><span class="o">**</span><span class="mi">5</span>
-            <span class="p">)</span>
         <span class="p">)</span>
 
         <span class="n">dchi_dphi</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="o">-</span><span class="mi">2</span>
-            <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">pi</span>
-            <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span>
-            <span class="o">*</span> <span class="p">(</span>
-                <span class="mi">1</span>
-                <span class="o">/</span> <span class="mf">2.0</span>
-                <span class="o">*</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C12&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi12&quot;</span><span class="p">])))</span>
-                <span class="o">*</span> <span class="n">alpha</span>
-                <span class="o">+</span> <span class="mi">1</span>
-                <span class="o">/</span> <span class="mf">3.0</span>
+                <span class="o">-</span><span class="mi">2</span>
+                <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">pi</span>
+                <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span>
                 <span class="o">*</span> <span class="p">(</span>
-                    <span class="mf">3.0</span> <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C23&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi23&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="mf">1.0</span>
-                    <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C21&quot;</span><span class="p">]</span>
-                    <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi21&quot;</span><span class="p">]))</span>
+                        <span class="mi">1</span>
+                        <span class="o">/</span> <span class="mf">2.0</span>
+                        <span class="o">*</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C12&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi12&quot;</span><span class="p">])))</span>
+                        <span class="o">*</span> <span class="n">alpha</span>
+                        <span class="o">+</span> <span class="mi">1</span>
+                        <span class="o">/</span> <span class="mf">3.0</span>
+                        <span class="o">*</span> <span class="p">(</span>
+                                <span class="mf">3.0</span> <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C23&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi23&quot;</span><span class="p">]))</span>
+                                <span class="o">+</span> <span class="mf">1.0</span>
+                                <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C21&quot;</span><span class="p">]</span>
+                                <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi21&quot;</span><span class="p">]))</span>
+                        <span class="p">)</span>
+                        <span class="o">*</span> <span class="n">alpha</span> <span class="o">**</span> <span class="mi">2</span>
+                        <span class="o">+</span> <span class="mi">1</span>
+                        <span class="o">/</span> <span class="mf">4.0</span>
+                        <span class="o">*</span> <span class="p">(</span>
+                                <span class="mf">4.0</span> <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C34&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi34&quot;</span><span class="p">]))</span>
+                                <span class="o">+</span> <span class="mf">2.0</span>
+                                <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C32&quot;</span><span class="p">]</span>
+                                <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi32&quot;</span><span class="p">]))</span>
+                        <span class="p">)</span>
+                        <span class="o">*</span> <span class="n">alpha</span> <span class="o">**</span> <span class="mi">3</span>
+                        <span class="o">+</span> <span class="mi">1</span>
+                        <span class="o">/</span> <span class="mf">5.0</span>
+                        <span class="o">*</span> <span class="p">(</span>
+                                <span class="mf">5.0</span> <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C45&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">5.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi45&quot;</span><span class="p">]))</span>
+                                <span class="o">+</span> <span class="mf">3.0</span>
+                                <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C43&quot;</span><span class="p">]</span>
+                                <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi43&quot;</span><span class="p">]))</span>
+                                <span class="o">+</span> <span class="mf">1.0</span>
+                                <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C41&quot;</span><span class="p">]</span>
+                                <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi41&quot;</span><span class="p">]))</span>
+                        <span class="p">)</span>
+                        <span class="o">*</span> <span class="n">alpha</span> <span class="o">**</span> <span class="mi">4</span>
+                        <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mf">6.0</span><span class="p">)</span>
+                        <span class="o">*</span> <span class="p">(</span>
+                                <span class="mf">6.0</span> <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C56&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">6.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi56&quot;</span><span class="p">]))</span>
+                                <span class="o">+</span> <span class="mf">4.0</span>
+                                <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C54&quot;</span><span class="p">]</span>
+                                <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi54&quot;</span><span class="p">]))</span>
+                                <span class="o">+</span> <span class="mf">2.0</span>
+                                <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C52&quot;</span><span class="p">]</span>
+                                <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi52&quot;</span><span class="p">]))</span>
+                        <span class="p">)</span>
+                        <span class="o">*</span> <span class="n">alpha</span> <span class="o">**</span> <span class="mi">5</span>
                 <span class="p">)</span>
-                <span class="o">*</span> <span class="n">alpha</span><span class="o">**</span><span class="mi">2</span>
-                <span class="o">+</span> <span class="mi">1</span>
-                <span class="o">/</span> <span class="mf">4.0</span>
-                <span class="o">*</span> <span class="p">(</span>
-                    <span class="mf">4.0</span> <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C34&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi34&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="mf">2.0</span>
-                    <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C32&quot;</span><span class="p">]</span>
-                    <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi32&quot;</span><span class="p">]))</span>
-                <span class="p">)</span>
-                <span class="o">*</span> <span class="n">alpha</span><span class="o">**</span><span class="mi">3</span>
-                <span class="o">+</span> <span class="mi">1</span>
-                <span class="o">/</span> <span class="mf">5.0</span>
-                <span class="o">*</span> <span class="p">(</span>
-                    <span class="mf">5.0</span> <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C45&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">5.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi45&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="mf">3.0</span>
-                    <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C43&quot;</span><span class="p">]</span>
-                    <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi43&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="mf">1.0</span>
-                    <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C41&quot;</span><span class="p">]</span>
-                    <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi41&quot;</span><span class="p">]))</span>
-                <span class="p">)</span>
-                <span class="o">*</span> <span class="n">alpha</span><span class="o">**</span><span class="mi">4</span>
-                <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mf">6.0</span><span class="p">)</span>
-                <span class="o">*</span> <span class="p">(</span>
-                    <span class="mf">6.0</span> <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C56&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">6.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi56&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="mf">4.0</span>
-                    <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C54&quot;</span><span class="p">]</span>
-                    <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi54&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="mf">2.0</span>
-                    <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C52&quot;</span><span class="p">]</span>
-                    <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi52&quot;</span><span class="p">]))</span>
-                <span class="p">)</span>
-                <span class="o">*</span> <span class="n">alpha</span><span class="o">**</span><span class="mi">5</span>
-            <span class="p">)</span>
         <span class="p">)</span>
 
         <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
             <span class="o">-</span><span class="n">xp</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">angular_spread</span><span class="p">)</span>
             <span class="o">*</span> <span class="p">(</span><span class="n">angular_spread</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
-            <span class="o">*</span> <span class="p">(</span><span class="n">dchi_dk</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dchi_dphi</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="o">*</span> <span class="p">(</span><span class="n">dchi_dk</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">dchi_dphi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">array</span></div>
 
 
 <div class="viewcode-block" id="Aberrations"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.Aberrations.html#abtem.transfer.Aberrations">[docs]</a><span class="k">class</span> <span class="nc">Aberrations</span><span class="p">(</span>
-    <span class="n">_HasAberrations</span><span class="p">,</span> <span class="n">_EnsembleFromDistributionsMixin</span><span class="p">,</span> <span class="n">FourierSpaceConvolution</span>
+    <span class="n">_EnsembleFromDistributionsMixin</span><span class="p">,</span> <span class="n">FourierSpaceConvolution</span><span class="p">,</span> <span class="n">_HasAberrations</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Phase aberrations.</span>
@@ -1771,17 +1859,33 @@ title="Open an issue"
 <span class="sd">        [Å] and angles should be given in [radian].</span>
 <span class="sd">    energy : float, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">    extent : float or two float, optional</span>
+<span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single float is given, both are set equal.</span>
+<span class="sd">    gpts : two ints, optional</span>
+<span class="sd">        Number of grid points describing the wave functions.</span>
+<span class="sd">    sampling : two float, optional</span>
+<span class="sd">        Lateral sampling of wave functions [1 / Å]. If &#39;gpts&#39; is also given, will be ignored.</span>
 <span class="sd">    kwargs : dict, optional</span>
 <span class="sd">        Optionally provide the aberration coefficients as keyword arguments.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Aberrations.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.Aberrations.html#abtem.transfer.Aberrations.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">aberration_coefficients</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">aberration_coefficients</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">distributions</span><span class="o">=</span><span class="n">polar_symbols</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">distributions</span><span class="o">=</span><span class="n">polar_symbols</span><span class="p">,</span>
+            <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+            <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="n">aberration_coefficients</span> <span class="o">=</span> <span class="p">(</span>
             <span class="p">{}</span> <span class="k">if</span> <span class="n">aberration_coefficients</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">aberration_coefficients</span>
@@ -1805,7 +1909,7 @@ title="Open an issue"
         <span class="bp">self</span><span class="o">.</span><span class="n">C10</span> <span class="o">=</span> <span class="o">-</span><span class="n">value</span>
 
     <span class="k">def</span> <span class="nf">_evaluate_with_alpha_and_phi</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">phi</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">phi</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
 
@@ -1819,81 +1923,81 @@ title="Open an issue"
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
         <span class="n">phi</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
-        <span class="n">alpha2</span> <span class="o">=</span> <span class="n">alpha</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">alpha2</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">**</span> <span class="mi">2</span>
 
         <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">alpha</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;C10&quot;</span><span class="p">,</span> <span class="s2">&quot;C12&quot;</span><span class="p">,</span> <span class="s2">&quot;phi12&quot;</span><span class="p">)):</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">array</span> <span class="o">+</span> <span class="p">(</span>
-                <span class="mi">1</span>
-                <span class="o">/</span> <span class="mi">2</span>
-                <span class="o">*</span> <span class="n">alpha2</span>
-                <span class="o">*</span> <span class="p">(</span>
-                    <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C10&quot;</span><span class="p">]</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C12&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi12&quot;</span><span class="p">]))</span>
-                <span class="p">)</span>
+                    <span class="mi">1</span>
+                    <span class="o">/</span> <span class="mi">2</span>
+                    <span class="o">*</span> <span class="n">alpha2</span>
+                    <span class="o">*</span> <span class="p">(</span>
+                            <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C10&quot;</span><span class="p">]</span>
+                            <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C12&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi12&quot;</span><span class="p">]))</span>
+                    <span class="p">)</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;C21&quot;</span><span class="p">,</span> <span class="s2">&quot;phi21&quot;</span><span class="p">,</span> <span class="s2">&quot;C23&quot;</span><span class="p">,</span> <span class="s2">&quot;phi23&quot;</span><span class="p">)</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;C21&quot;</span><span class="p">,</span> <span class="s2">&quot;phi21&quot;</span><span class="p">,</span> <span class="s2">&quot;C23&quot;</span><span class="p">,</span> <span class="s2">&quot;phi23&quot;</span><span class="p">)</span>
         <span class="p">):</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">array</span> <span class="o">+</span> <span class="p">(</span>
-                <span class="mi">1</span>
-                <span class="o">/</span> <span class="mi">3</span>
-                <span class="o">*</span> <span class="n">alpha2</span>
-                <span class="o">*</span> <span class="n">alpha</span>
-                <span class="o">*</span> <span class="p">(</span>
-                    <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C21&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi21&quot;</span><span class="p">])</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C23&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi23&quot;</span><span class="p">]))</span>
-                <span class="p">)</span>
+                    <span class="mi">1</span>
+                    <span class="o">/</span> <span class="mi">3</span>
+                    <span class="o">*</span> <span class="n">alpha2</span>
+                    <span class="o">*</span> <span class="n">alpha</span>
+                    <span class="o">*</span> <span class="p">(</span>
+                            <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C21&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi21&quot;</span><span class="p">])</span>
+                            <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C23&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi23&quot;</span><span class="p">]))</span>
+                    <span class="p">)</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;C30&quot;</span><span class="p">,</span> <span class="s2">&quot;C32&quot;</span><span class="p">,</span> <span class="s2">&quot;phi32&quot;</span><span class="p">,</span> <span class="s2">&quot;C34&quot;</span><span class="p">,</span> <span class="s2">&quot;phi34&quot;</span><span class="p">)</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;C30&quot;</span><span class="p">,</span> <span class="s2">&quot;C32&quot;</span><span class="p">,</span> <span class="s2">&quot;phi32&quot;</span><span class="p">,</span> <span class="s2">&quot;C34&quot;</span><span class="p">,</span> <span class="s2">&quot;phi34&quot;</span><span class="p">)</span>
         <span class="p">):</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">array</span> <span class="o">+</span> <span class="p">(</span>
-                <span class="mi">1</span>
-                <span class="o">/</span> <span class="mi">4</span>
-                <span class="o">*</span> <span class="n">alpha2</span><span class="o">**</span><span class="mi">2</span>
-                <span class="o">*</span> <span class="p">(</span>
-                    <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C30&quot;</span><span class="p">]</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C32&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi32&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C34&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi34&quot;</span><span class="p">]))</span>
-                <span class="p">)</span>
+                    <span class="mi">1</span>
+                    <span class="o">/</span> <span class="mi">4</span>
+                    <span class="o">*</span> <span class="n">alpha2</span> <span class="o">**</span> <span class="mi">2</span>
+                    <span class="o">*</span> <span class="p">(</span>
+                            <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C30&quot;</span><span class="p">]</span>
+                            <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C32&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi32&quot;</span><span class="p">]))</span>
+                            <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C34&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi34&quot;</span><span class="p">]))</span>
+                    <span class="p">)</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;C41&quot;</span><span class="p">,</span> <span class="s2">&quot;phi41&quot;</span><span class="p">,</span> <span class="s2">&quot;C43&quot;</span><span class="p">,</span> <span class="s2">&quot;phi43&quot;</span><span class="p">,</span> <span class="s2">&quot;C45&quot;</span><span class="p">,</span> <span class="s2">&quot;phi41&quot;</span><span class="p">)</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;C41&quot;</span><span class="p">,</span> <span class="s2">&quot;phi41&quot;</span><span class="p">,</span> <span class="s2">&quot;C43&quot;</span><span class="p">,</span> <span class="s2">&quot;phi43&quot;</span><span class="p">,</span> <span class="s2">&quot;C45&quot;</span><span class="p">,</span> <span class="s2">&quot;phi41&quot;</span><span class="p">)</span>
         <span class="p">):</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">array</span> <span class="o">+</span> <span class="p">(</span>
-                <span class="mi">1</span>
-                <span class="o">/</span> <span class="mi">5</span>
-                <span class="o">*</span> <span class="n">alpha2</span><span class="o">**</span><span class="mi">2</span>
-                <span class="o">*</span> <span class="n">alpha</span>
-                <span class="o">*</span> <span class="p">(</span>
-                    <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C41&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">((</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi41&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C43&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi43&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C45&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi45&quot;</span><span class="p">]))</span>
-                <span class="p">)</span>
+                    <span class="mi">1</span>
+                    <span class="o">/</span> <span class="mi">5</span>
+                    <span class="o">*</span> <span class="n">alpha2</span> <span class="o">**</span> <span class="mi">2</span>
+                    <span class="o">*</span> <span class="n">alpha</span>
+                    <span class="o">*</span> <span class="p">(</span>
+                            <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C41&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">((</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi41&quot;</span><span class="p">]))</span>
+                            <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C43&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi43&quot;</span><span class="p">]))</span>
+                            <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C45&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi45&quot;</span><span class="p">]))</span>
+                    <span class="p">)</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;C50&quot;</span><span class="p">,</span> <span class="s2">&quot;C52&quot;</span><span class="p">,</span> <span class="s2">&quot;phi52&quot;</span><span class="p">,</span> <span class="s2">&quot;C54&quot;</span><span class="p">,</span> <span class="s2">&quot;phi54&quot;</span><span class="p">,</span> <span class="s2">&quot;C56&quot;</span><span class="p">,</span> <span class="s2">&quot;phi56&quot;</span><span class="p">)</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;C50&quot;</span><span class="p">,</span> <span class="s2">&quot;C52&quot;</span><span class="p">,</span> <span class="s2">&quot;phi52&quot;</span><span class="p">,</span> <span class="s2">&quot;C54&quot;</span><span class="p">,</span> <span class="s2">&quot;phi54&quot;</span><span class="p">,</span> <span class="s2">&quot;C56&quot;</span><span class="p">,</span> <span class="s2">&quot;phi56&quot;</span><span class="p">)</span>
         <span class="p">):</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">array</span> <span class="o">+</span> <span class="p">(</span>
-                <span class="mi">1</span>
-                <span class="o">/</span> <span class="mi">6</span>
-                <span class="o">*</span> <span class="n">alpha2</span><span class="o">**</span><span class="mi">3</span>
-                <span class="o">*</span> <span class="p">(</span>
-                    <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C50&quot;</span><span class="p">]</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C52&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi52&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C54&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi54&quot;</span><span class="p">]))</span>
-                    <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C56&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">6</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi56&quot;</span><span class="p">]))</span>
-                <span class="p">)</span>
+                    <span class="mi">1</span>
+                    <span class="o">/</span> <span class="mi">6</span>
+                    <span class="o">*</span> <span class="n">alpha2</span> <span class="o">**</span> <span class="mi">3</span>
+                    <span class="o">*</span> <span class="p">(</span>
+                            <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C50&quot;</span><span class="p">]</span>
+                            <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C52&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi52&quot;</span><span class="p">]))</span>
+                            <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C54&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi54&quot;</span><span class="p">]))</span>
+                            <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;C56&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">6</span> <span class="o">*</span> <span class="p">(</span><span class="n">phi</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;phi56&quot;</span><span class="p">]))</span>
+                    <span class="p">)</span>
             <span class="p">)</span>
 
         <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span><span class="p">)</span> <span class="o">*</span> <span class="n">array</span>
@@ -1924,8 +2028,8 @@ title="Open an issue"
 <span class="sd">    semiangle_cutoff: float, optional</span>
 <span class="sd">        The semiangle cutoff describes the sharp reciprocal-space cutoff due to the objective aperture [mrad]</span>
 <span class="sd">        (default is no cutoff).</span>
-<span class="sd">    taper: float, optional</span>
-<span class="sd">        Tapers the cutoff edge over the given angular range [mrad] (default is 0).</span>
+<span class="sd">    soft : bool, optional</span>
+<span class="sd">        If True, the edge of the aperture is softened (default is True).</span>
 <span class="sd">    focal_spread: float, optional</span>
 <span class="sd">        The standard deviation of the focal spread due to chromatic aberration and lens current instability [Å]</span>
 <span class="sd">        (default is 0).</span>
@@ -1936,6 +2040,12 @@ title="Open an issue"
 <span class="sd">        [Å] and angles should be given in [radian].</span>
 <span class="sd">    energy : float, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">    extent : float or two float, optional</span>
+<span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single float is given, both are set equal.</span>
+<span class="sd">    gpts : two ints, optional</span>
+<span class="sd">        Number of grid points describing the wave functions.</span>
+<span class="sd">    sampling : two float, optional</span>
+<span class="sd">        Lateral sampling of wave functions [1 / Å]. If &#39;gpts&#39; is also given, will be ignored.</span>
 <span class="sd">    kwargs : dict, optional</span>
 <span class="sd">        Optionally provide the aberration coefficients as keyword arguments.</span>
 
@@ -1946,25 +2056,31 @@ title="Open an issue"
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="CTF.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.CTF.html#abtem.transfer.CTF.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
-        <span class="n">taper</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">focal_spread</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">angular_spread</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">aberration_coefficients</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+            <span class="n">soft</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="n">focal_spread</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">angular_spread</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">aberration_coefficients</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">distributions</span><span class="o">=</span><span class="n">polar_symbols</span>
-            <span class="o">+</span> <span class="p">(</span>
-                <span class="s2">&quot;angular_spread&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;focal_spread&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;semiangle_cutoff&quot;</span><span class="p">,</span>
-            <span class="p">),</span>
+                          <span class="o">+</span> <span class="p">(</span>
+                              <span class="s2">&quot;angular_spread&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;focal_spread&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;semiangle_cutoff&quot;</span><span class="p">,</span>
+                          <span class="p">),</span>
             <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
             <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="n">semiangle_cutoff</span><span class="p">,</span>
+            <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_aberration_coefficients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_aberration_coefficients</span><span class="p">()</span>
@@ -1978,7 +2094,7 @@ title="Open an issue"
         <span class="bp">self</span><span class="o">.</span><span class="n">_angular_spread</span> <span class="o">=</span> <span class="n">angular_spread</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_focal_spread</span> <span class="o">=</span> <span class="n">focal_spread</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span> <span class="o">=</span> <span class="n">semiangle_cutoff</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_taper</span> <span class="o">=</span> <span class="n">taper</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_soft</span> <span class="o">=</span> <span class="n">soft</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">aberration_coefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2004,13 +2120,20 @@ title="Open an issue"
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_aberrations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">Aberrations</span><span class="p">(</span>
-            <span class="n">aberration_coefficients</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aberration_coefficients</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span>
+            <span class="n">aberration_coefficients</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aberration_coefficients</span><span class="p">,</span>
+            <span class="n">energy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span>
+            <span class="n">extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_aperture</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">Aperture</span><span class="p">(</span>
-            <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="n">taper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">taper</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span>
+            <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">semiangle_cutoff</span><span class="p">,</span>
+            <span class="n">soft</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_soft</span><span class="p">,</span>
+            <span class="n">energy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span>
+            <span class="n">extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -2031,14 +2154,14 @@ title="Open an issue"
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">ensemble_axes_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_envelope</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
-            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_temporal_envelope</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
-            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aperture</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_envelope</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_temporal_envelope</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aperture</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">taper</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_taper</span>
+    <span class="k">def</span> <span class="nf">soft</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_soft</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">semiangle_cutoff</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -2144,8 +2267,8 @@ title="Open an issue"
             <span class="n">axis_metadata</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;aperture&quot;</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_temporal_envelope</span><span class="o">.</span><span class="n">focal_spread</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
-            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_envelope</span><span class="o">.</span><span class="n">angular_spread</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_temporal_envelope</span><span class="o">.</span><span class="n">focal_spread</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_envelope</span><span class="o">.</span><span class="n">angular_spread</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
         <span class="p">):</span>
             <span class="n">profiles</span> <span class="o">+=</span> <span class="p">[</span>
                 <span class="n">ReciprocalSpaceLineProfiles</span><span class="p">(</span>
@@ -2173,7 +2296,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">stack</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">axis_metadata</span><span class="o">=</span><span class="n">OrdinalAxis</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">axis_metadata</span><span class="p">)))</span></div>
 
 
-<div class="viewcode-block" id="nyquist_sampling"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.nyquist_sampling.html#abtem.transfer.nyquist_sampling">[docs]</a><span class="k">def</span> <span class="nf">nyquist_sampling</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">nyquist_sampling</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the Nyquist sampling.</span>
 
@@ -2185,10 +2308,10 @@ title="Open an issue"
 <span class="sd">        Electron energy [eV].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">wavelength</span> <span class="o">=</span> <span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
-    <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">semiangle_cutoff</span> <span class="o">/</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">semiangle_cutoff</span> <span class="o">/</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="scherzer_defocus"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.scherzer_defocus.html#abtem.transfer.scherzer_defocus">[docs]</a><span class="k">def</span> <span class="nf">scherzer_defocus</span><span class="p">(</span><span class="n">Cs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">scherzer_defocus</span><span class="p">(</span><span class="n">Cs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the Scherzer defocus.</span>
 
@@ -2199,10 +2322,10 @@ title="Open an issue"
 <span class="sd">    energy: float</span>
 <span class="sd">        Electron energy [eV].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">Cs</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Cs</span><span class="p">)</span> <span class="o">*</span> <span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">Cs</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Cs</span><span class="p">)</span> <span class="o">*</span> <span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">))</span>
 
 
-<div class="viewcode-block" id="point_resolution"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.point_resolution.html#abtem.transfer.point_resolution">[docs]</a><span class="k">def</span> <span class="nf">point_resolution</span><span class="p">(</span><span class="n">Cs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">point_resolution</span><span class="p">(</span><span class="n">Cs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the Scherzer point resolution.</span>
 
@@ -2213,10 +2336,10 @@ title="Open an issue"
 <span class="sd">    energy: float</span>
 <span class="sd">        Electron energy [eV].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Cs</span><span class="p">)</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="p">(</span><span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Cs</span><span class="p">)</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="polar2cartesian"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.polar2cartesian.html#abtem.transfer.polar2cartesian">[docs]</a><span class="k">def</span> <span class="nf">polar2cartesian</span><span class="p">(</span><span class="n">polar</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">polar2cartesian</span><span class="p">(</span><span class="n">polar</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert between polar and Cartesian aberration coefficients.</span>
 
@@ -2247,18 +2370,18 @@ title="Open an issue"
     <span class="n">cartesian</span><span class="p">[</span><span class="s2">&quot;C34a&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">polar</span><span class="p">[</span><span class="s2">&quot;C34&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span> <span class="o">*</span> <span class="n">polar</span><span class="p">[</span><span class="s2">&quot;phi34&quot;</span><span class="p">])</span>
     <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">8.0</span><span class="p">))</span>
     <span class="n">cartesian</span><span class="p">[</span><span class="s2">&quot;C34b&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="mi">1</span>
-        <span class="o">/</span> <span class="mf">4.0</span>
-        <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">K</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
-        <span class="o">/</span> <span class="p">(</span><span class="n">K</span><span class="o">**</span><span class="mi">3</span> <span class="o">-</span> <span class="n">K</span><span class="p">)</span>
-        <span class="o">*</span> <span class="n">polar</span><span class="p">[</span><span class="s2">&quot;C34&quot;</span><span class="p">]</span>
-        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">K</span><span class="p">)</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">polar</span><span class="p">[</span><span class="s2">&quot;phi34&quot;</span><span class="p">])</span>
+            <span class="mi">1</span>
+            <span class="o">/</span> <span class="mf">4.0</span>
+            <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">K</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="o">/</span> <span class="p">(</span><span class="n">K</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">-</span> <span class="n">K</span><span class="p">)</span>
+            <span class="o">*</span> <span class="n">polar</span><span class="p">[</span><span class="s2">&quot;C34&quot;</span><span class="p">]</span>
+            <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">K</span><span class="p">)</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">polar</span><span class="p">[</span><span class="s2">&quot;phi34&quot;</span><span class="p">])</span>
     <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">cartesian</span></div>
+    <span class="k">return</span> <span class="n">cartesian</span>
 
 
-<div class="viewcode-block" id="cartesian2polar"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.cartesian2polar.html#abtem.transfer.cartesian2polar">[docs]</a><span class="k">def</span> <span class="nf">cartesian2polar</span><span class="p">(</span><span class="n">cartesian</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">cartesian2polar</span><span class="p">(</span><span class="n">cartesian</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert between Cartesian and polar aberration coefficients.</span>
 
@@ -2289,7 +2412,7 @@ title="Open an issue"
     <span class="n">polar</span><span class="p">[</span><span class="s2">&quot;C34&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cartesian</span><span class="p">[</span><span class="s2">&quot;C34a&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">cartesian</span><span class="p">[</span><span class="s2">&quot;C34b&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
     <span class="n">polar</span><span class="p">[</span><span class="s2">&quot;phi34&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">cartesian</span><span class="p">[</span><span class="s2">&quot;C34b&quot;</span><span class="p">],</span> <span class="n">cartesian</span><span class="p">[</span><span class="s2">&quot;C34a&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="mi">4</span>
 
-    <span class="k">return</span> <span class="n">polar</span></div>
+    <span class="k">return</span> <span class="n">polar</span>
 </pre></div>
 
               </div>

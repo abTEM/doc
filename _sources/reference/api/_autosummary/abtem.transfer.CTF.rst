@@ -1,4 +1,4 @@
-CTF
+﻿CTF
 ===
 
 .. currentmodule:: abtem.transfer
@@ -22,6 +22,7 @@ CTF
       ~CTF.ensemble_blocks
       ~CTF.evaluate
       ~CTF.generate_blocks
+      ~CTF.match_grid
       ~CTF.profiles
       ~CTF.select_block
       ~CTF.set_aberrations
@@ -52,6 +53,7 @@ CTF
       ~CTF.Cs
       ~CTF.aberration_coefficients
       ~CTF.accelerator
+      ~CTF.angular_sampling
       ~CTF.angular_spread
       ~CTF.astigmatism
       ~CTF.astigmatism_angle
@@ -59,10 +61,14 @@ CTF
       ~CTF.coma_angle
       ~CTF.crossover_angle
       ~CTF.defocus
+      ~CTF.device
       ~CTF.energy
       ~CTF.ensemble_axes_metadata
       ~CTF.ensemble_shape
+      ~CTF.extent
       ~CTF.focal_spread
+      ~CTF.gpts
+      ~CTF.grid
       ~CTF.metadata
       ~CTF.nyquist_sampling
       ~CTF.phi12
@@ -77,9 +83,11 @@ CTF
       ~CTF.phi54
       ~CTF.phi56
       ~CTF.point_resolution
+      ~CTF.reciprocal_space_sampling
+      ~CTF.sampling
       ~CTF.scherzer_defocus
       ~CTF.semiangle_cutoff
-      ~CTF.taper
+      ~CTF.soft
       ~CTF.wavelength
    
    

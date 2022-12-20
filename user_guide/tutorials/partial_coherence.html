@@ -50,6 +50,8 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -844,6 +846,11 @@ const thebe_selector_output = ".output, .cell_output"
     </label>
     <ul>
      <li class="toctree-l3">
+      <a class="reference internal" href="../../reference/api/_autosummary/abtem.multislice.allocate_measurement.html">
+       allocate_measurement
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../../reference/api/_autosummary/abtem.multislice.allocate_multislice_measurements.html">
        allocate_multislice_measurements
       </a>
@@ -856,6 +863,11 @@ const thebe_selector_output = ".output, .cell_output"
      <li class="toctree-l3">
       <a class="reference internal" href="../../reference/api/_autosummary/abtem.multislice.multislice_step.html">
        multislice_step
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../reference/api/_autosummary/abtem.multislice.transition_potential_multislice_and_detect.html">
+       transition_potential_multislice_and_detect
       </a>
      </li>
      <li class="toctree-l3">
@@ -1170,7 +1182,7 @@ title="Print to PDF"
 </div>
 </div>
 <section class="tex2jax_ignore mathjax_ignore" id="partial-coherence">
-<span id="walkthrough-partial-coherence"></span><h1>Partial coherence<a class="headerlink" href="#partial-coherence" title="Permalink to this headline">#</a></h1>
+<span id="tutorials-partial-coherence"></span><h1>Partial coherence<a class="headerlink" href="#partial-coherence" title="Permalink to this headline">#</a></h1>
 <p>In our <a class="reference internal" href="../walkthrough/contrast_transfer_function.html#walkthrough-contrast-transfer-function"><span class="std std-ref">walkthrough on the contrast transfer function</span></a>, we described how partial coherence may be approximated by multiplication with an envelope function. This approach is not always appropriate for simulating experiments with plane wave illumination and it is never appropriate for simulating experiments with a convergent beam. In this walkthrough, we cover a more accurate approach and compare fully coherent, quasi-coherent and incoherent simulations.</p>
 <section id="partial-coherence-with-plane-waves">
 <h2>Partial coherence with plane waves<a class="headerlink" href="#partial-coherence-with-plane-waves" title="Permalink to this headline">#</a></h2>
@@ -1178,9 +1190,11 @@ title="Print to PDF"
 <p>As a test system, we simulate an exit wave at <span class="math notranslate nohighlight">\(80 \ \mathrm{keV}\)</span> using a sample of MoS<sub>2</sub>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">exit_wave</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">PlaneWave</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="mf">80e3</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span><span class="o">.</span><span class="n">multislice</span><span class="p">(</span>
-    <span class="n">ase</span><span class="o">.</span><span class="n">build</span><span class="o">.</span><span class="n">mx2</span><span class="p">(</span><span class="n">vacuum</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">atoms</span> <span class="o">=</span> <span class="n">ase</span><span class="o">.</span><span class="n">build</span><span class="o">.</span><span class="n">mx2</span><span class="p">(</span><span class="n">vacuum</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">plane_wave</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">PlaneWave</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="mf">80e3</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+
+<span class="n">exit_wave</span> <span class="o">=</span> <span class="n">plane_wave</span><span class="o">.</span><span class="n">multislice</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1208,8 +1222,8 @@ title="Print to PDF"
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed | 105.94 ms
-[########################################] | 100% Completed | 105.05 ms
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed |  0.2s
+[########################################] | 100% Completed |  0.2s
 </pre></div>
 </div>
 </div>
@@ -1270,7 +1284,7 @@ title="Print to PDF"
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed | 103.23 ms
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed |  0.1s
 </pre></div>
 </div>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>type           label    coordinates
@@ -1411,11 +1425,7 @@ $<span class="math notranslate nohighlight">\(
 
 <span class="n">detector</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">PixelatedDetector</span><span class="p">()</span>
 
-<span class="n">scan</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">GridScan</span><span class="o">.</span><span class="n">from_fractional_coordinates</span><span class="p">(</span>
-    <span class="n">atoms</span><span class="p">,</span>
-    <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-    <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
-<span class="p">)</span>
+<span class="n">scan</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">GridScan</span><span class="o">.</span><span class="n">from_fractional_coordinates</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),)</span>
 
 <span class="n">measurement_coherent</span> <span class="o">=</span> <span class="n">probe_coherent</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span>
     <span class="n">atoms</span><span class="p">,</span> <span class="n">detectors</span><span class="o">=</span><span class="n">detector</span><span class="p">,</span> <span class="n">scan</span><span class="o">=</span><span class="n">scan</span>
@@ -1428,8 +1438,8 @@ $<span class="math notranslate nohighlight">\(
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed |  2.0s
-[########################################] | 100% Completed | 12.1s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed | 10.8s
+[########################################] | 100% Completed | 41.3s
 </pre></div>
 </div>
 </div>
@@ -1527,16 +1537,16 @@ $<span class="math notranslate nohighlight">\(
         },
         codeMirrorConfig: {
             theme: "abcdef",
-            mode: "abtem"
+            mode: "abtem-dask"
         },
         kernelOptions: {
-            kernelName: "abtem",
+            kernelName: "abtem-dask",
             path: "./user_guide/tutorials"
         },
         predefinedOutput: true
     }
     </script>
-    <script>kernelName = 'abtem'</script>
+    <script>kernelName = 'abtem-dask'</script>
 
               </div>
               

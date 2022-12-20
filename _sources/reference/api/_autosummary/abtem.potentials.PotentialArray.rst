@@ -76,7 +76,6 @@
       ~PotentialArray.exit_planes_axes_metadata
       ~PotentialArray.exit_thicknesses
       ~PotentialArray.extent
-      ~PotentialArray.fourier_space_sampling
       ~PotentialArray.gpts
       ~PotentialArray.grid
       ~PotentialArray.is_complex
@@ -88,6 +87,7 @@
       ~PotentialArray.num_exit_planes
       ~PotentialArray.num_frozen_phonons
       ~PotentialArray.num_slices
+      ~PotentialArray.reciprocal_space_sampling
       ~PotentialArray.sampling
       ~PotentialArray.shape
       ~PotentialArray.slice_limits

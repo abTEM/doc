@@ -51,7 +51,6 @@
       ~ChargeDensityPotential.exit_planes_axes_metadata
       ~ChargeDensityPotential.exit_thicknesses
       ~ChargeDensityPotential.extent
-      ~ChargeDensityPotential.fourier_space_sampling
       ~ChargeDensityPotential.frozen_phonons
       ~ChargeDensityPotential.gpts
       ~ChargeDensityPotential.grid
@@ -65,6 +64,7 @@
       ~ChargeDensityPotential.origin
       ~ChargeDensityPotential.periodic
       ~ChargeDensityPotential.plane
+      ~ChargeDensityPotential.reciprocal_space_sampling
       ~ChargeDensityPotential.sampling
       ~ChargeDensityPotential.shape
       ~ChargeDensityPotential.slice_limits

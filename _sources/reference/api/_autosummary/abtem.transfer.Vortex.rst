@@ -1,4 +1,4 @@
-Vortex
+﻿Vortex
 ======
 
 .. currentmodule:: abtem.transfer
@@ -22,6 +22,7 @@ Vortex
       ~Vortex.ensemble_blocks
       ~Vortex.evaluate
       ~Vortex.generate_blocks
+      ~Vortex.match_grid
       ~Vortex.select_block
    
    
@@ -33,12 +34,19 @@ Vortex
    .. autosummary::
    
       ~Vortex.accelerator
+      ~Vortex.angular_sampling
+      ~Vortex.device
       ~Vortex.energy
       ~Vortex.ensemble_axes_metadata
       ~Vortex.ensemble_shape
+      ~Vortex.extent
+      ~Vortex.gpts
+      ~Vortex.grid
       ~Vortex.metadata
       ~Vortex.nyquist_sampling
       ~Vortex.quantum_number
+      ~Vortex.reciprocal_space_sampling
+      ~Vortex.sampling
       ~Vortex.semiangle_cutoff
       ~Vortex.wavelength
    

@@ -1,4 +1,4 @@
-DiffractionPatterns
+﻿DiffractionPatterns
 ===================
 
 .. currentmodule:: abtem.measurements
@@ -31,6 +31,7 @@ DiffractionPatterns
       ~DiffractionPatterns.expand_dims
       ~DiffractionPatterns.from_array_and_metadata
       ~DiffractionPatterns.from_zarr
+      ~DiffractionPatterns.gaussian_filter
       ~DiffractionPatterns.gaussian_source_size
       ~DiffractionPatterns.get_items
       ~DiffractionPatterns.imag

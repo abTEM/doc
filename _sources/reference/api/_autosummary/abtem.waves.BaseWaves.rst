@@ -1,4 +1,4 @@
-BaseWaves
+﻿BaseWaves
 =========
 
 .. currentmodule:: abtem.waves
@@ -44,7 +44,6 @@ BaseWaves
       ~BaseWaves.ensemble_shape
       ~BaseWaves.extent
       ~BaseWaves.fourier_space_axes_metadata
-      ~BaseWaves.fourier_space_sampling
       ~BaseWaves.full_cutoff_angles
       ~BaseWaves.gpts
       ~BaseWaves.grid
@@ -52,6 +51,7 @@ BaseWaves
       ~BaseWaves.num_axes
       ~BaseWaves.num_base_axes
       ~BaseWaves.num_ensemble_axes
+      ~BaseWaves.reciprocal_space_sampling
       ~BaseWaves.rectangle_cutoff_angles
       ~BaseWaves.sampling
       ~BaseWaves.shape

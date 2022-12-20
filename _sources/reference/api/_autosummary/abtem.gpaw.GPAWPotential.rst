@@ -51,7 +51,6 @@
       ~GPAWPotential.exit_planes_axes_metadata
       ~GPAWPotential.exit_thicknesses
       ~GPAWPotential.extent
-      ~GPAWPotential.fourier_space_sampling
       ~GPAWPotential.frozen_phonons
       ~GPAWPotential.gpts
       ~GPAWPotential.grid
@@ -65,6 +64,7 @@
       ~GPAWPotential.origin
       ~GPAWPotential.periodic
       ~GPAWPotential.plane
+      ~GPAWPotential.reciprocal_space_sampling
       ~GPAWPotential.repetitions
       ~GPAWPotential.sampling
       ~GPAWPotential.shape

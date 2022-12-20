@@ -1,4 +1,4 @@
-BaseAperture
+﻿BaseAperture
 ============
 
 .. currentmodule:: abtem.transfer
@@ -22,6 +22,7 @@ BaseAperture
       ~BaseAperture.ensemble_blocks
       ~BaseAperture.evaluate
       ~BaseAperture.generate_blocks
+      ~BaseAperture.match_grid
       ~BaseAperture.select_block
    
    
@@ -33,11 +34,18 @@ BaseAperture
    .. autosummary::
    
       ~BaseAperture.accelerator
+      ~BaseAperture.angular_sampling
+      ~BaseAperture.device
       ~BaseAperture.energy
       ~BaseAperture.ensemble_axes_metadata
       ~BaseAperture.ensemble_shape
+      ~BaseAperture.extent
+      ~BaseAperture.gpts
+      ~BaseAperture.grid
       ~BaseAperture.metadata
       ~BaseAperture.nyquist_sampling
+      ~BaseAperture.reciprocal_space_sampling
+      ~BaseAperture.sampling
       ~BaseAperture.wavelength
    
    

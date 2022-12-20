@@ -37,7 +37,8 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 **CBED**
 ^^^
 
-```{glue:} cbed_quickstart
+```{image} thumbnails/cbed_quickstart.png
+:align: center
 ```
 
 +++
@@ -56,7 +57,8 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 **HRTEM**
 ^^^
 
-```{glue:} hrtem_quickstart
+```{image} thumbnails/hrtem_quickstart.png
+:align: center
 ```
 
 +++
@@ -75,7 +77,8 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 **STEM**
 ^^^
 
-```{glue:} prism_quickstart
+```{image} thumbnails/stem_quickstart.png
+:align: center
 ```
 
 +++
@@ -95,7 +98,41 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 ```{image} thumbnails/prism_quickstart.png
 :align: center
 ```
-```{glue:} prism_quickstart
+
++++
+{bdg-success}`basic`
+:::
+
+
+:::{grid-item-card}
+:link: examples:saed_quickstart
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+
+**SAED**
+^^^
+
+```{image} thumbnails/saed_quickstart.png
+:align: center
+```
+
++++
+{bdg-success}`basic`
+:::
+
+
+:::{grid-item-card}
+:link: examples:saed_quickstart
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+
+**PED**
+^^^
+
+```{image} thumbnails/ped_quickstart.png
+:align: center
 ```
 
 +++
@@ -103,35 +140,18 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 :::
 
 :::{grid-item-card}
-:link: examples:hbn_dft_iam
+:link: examples:4d-stem_quickstart
 :link-type: ref
 :class-body: text-center
 :class-header: bg-light text-center
-
-**hBN with DFT potential**
+**4D-STEM**
 ^^^
-
-```{glue:} hbn_dft_iam
+```{image} thumbnails/4d-stem_quickstart.png
+:align: center
 ```
 
 +++
-{bdg-primary}`publication`
-:::
-
-:::{grid-item-card}
-:link: examples:hbn_dft_iam
-:link-type: ref
-:class-body: text-center
-:class-header: bg-light text-center
-
-**test**
-^^^
-
-```{glue:} prism_quickstart
-```
-
-+++
-{bdg-danger}`specialized`
+{bdg-success}`basic`
 :::
 
 ::::

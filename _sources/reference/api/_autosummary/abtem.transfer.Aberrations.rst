@@ -1,4 +1,4 @@
-Aberrations
+﻿Aberrations
 ===========
 
 .. currentmodule:: abtem.transfer
@@ -22,6 +22,7 @@ Aberrations
       ~Aberrations.ensemble_blocks
       ~Aberrations.evaluate
       ~Aberrations.generate_blocks
+      ~Aberrations.match_grid
       ~Aberrations.select_block
       ~Aberrations.set_aberrations
    
@@ -51,14 +52,19 @@ Aberrations
       ~Aberrations.Cs
       ~Aberrations.aberration_coefficients
       ~Aberrations.accelerator
+      ~Aberrations.angular_sampling
       ~Aberrations.astigmatism
       ~Aberrations.astigmatism_angle
       ~Aberrations.coma
       ~Aberrations.coma_angle
       ~Aberrations.defocus
+      ~Aberrations.device
       ~Aberrations.energy
       ~Aberrations.ensemble_axes_metadata
       ~Aberrations.ensemble_shape
+      ~Aberrations.extent
+      ~Aberrations.gpts
+      ~Aberrations.grid
       ~Aberrations.metadata
       ~Aberrations.phi12
       ~Aberrations.phi21
@@ -71,6 +77,8 @@ Aberrations
       ~Aberrations.phi52
       ~Aberrations.phi54
       ~Aberrations.phi56
+      ~Aberrations.reciprocal_space_sampling
+      ~Aberrations.sampling
       ~Aberrations.wavelength
    
    

@@ -1,4 +1,4 @@
-Probe
+﻿Probe
 =====
 
 .. currentmodule:: abtem.waves
@@ -52,7 +52,6 @@ Probe
       ~Probe.ensemble_shape
       ~Probe.extent
       ~Probe.fourier_space_axes_metadata
-      ~Probe.fourier_space_sampling
       ~Probe.full_cutoff_angles
       ~Probe.gpts
       ~Probe.grid
@@ -60,6 +59,7 @@ Probe
       ~Probe.num_axes
       ~Probe.num_base_axes
       ~Probe.num_ensemble_axes
+      ~Probe.reciprocal_space_sampling
       ~Probe.rectangle_cutoff_angles
       ~Probe.sampling
       ~Probe.shape

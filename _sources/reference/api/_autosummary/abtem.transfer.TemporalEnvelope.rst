@@ -1,4 +1,4 @@
-TemporalEnvelope
+﻿TemporalEnvelope
 ================
 
 .. currentmodule:: abtem.transfer
@@ -22,6 +22,7 @@ TemporalEnvelope
       ~TemporalEnvelope.ensemble_blocks
       ~TemporalEnvelope.evaluate
       ~TemporalEnvelope.generate_blocks
+      ~TemporalEnvelope.match_grid
       ~TemporalEnvelope.select_block
    
    
@@ -33,11 +34,18 @@ TemporalEnvelope
    .. autosummary::
    
       ~TemporalEnvelope.accelerator
+      ~TemporalEnvelope.angular_sampling
+      ~TemporalEnvelope.device
       ~TemporalEnvelope.energy
       ~TemporalEnvelope.ensemble_axes_metadata
       ~TemporalEnvelope.ensemble_shape
+      ~TemporalEnvelope.extent
       ~TemporalEnvelope.focal_spread
+      ~TemporalEnvelope.gpts
+      ~TemporalEnvelope.grid
       ~TemporalEnvelope.metadata
+      ~TemporalEnvelope.reciprocal_space_sampling
+      ~TemporalEnvelope.sampling
       ~TemporalEnvelope.wavelength
    
    

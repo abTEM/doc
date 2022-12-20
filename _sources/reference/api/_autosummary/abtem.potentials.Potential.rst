@@ -52,7 +52,6 @@
       ~Potential.exit_planes_axes_metadata
       ~Potential.exit_thicknesses
       ~Potential.extent
-      ~Potential.fourier_space_sampling
       ~Potential.frozen_phonons
       ~Potential.gpts
       ~Potential.grid
@@ -66,6 +65,7 @@
       ~Potential.origin
       ~Potential.periodic
       ~Potential.plane
+      ~Potential.reciprocal_space_sampling
       ~Potential.sampling
       ~Potential.shape
       ~Potential.slice_limits

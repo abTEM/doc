@@ -78,5 +78,5 @@ where * should be substituted for the CUDA Toolkit version.
 
 ### Development
 
-See [our guide to contributing](constributing:clone_and_install) for instructions on a development installation of 
+See [our guide to contributing](contributing:clone_and_install) for instructions on a development installation of 
 *ab*TEM.
