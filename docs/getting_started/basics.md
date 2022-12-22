@@ -90,4 +90,20 @@ the [gallery](user_guide:example_gallery).
 ```
 :::
 
+:::{grid-item-card}
+:link: examples:prism_quickstart
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+
+**PRISM**
+^^^
+```{image} ../user_guide/examples/thumbnails/prism_quickstart.png
+:align: center
+```
+
++++
+{bdg-success}`basic`
+:::
+
 ::::
