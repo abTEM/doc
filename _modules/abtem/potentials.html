@@ -49,8 +49,6 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -1771,23 +1769,37 @@ title="Open an issue"
         <span class="n">exit_plane_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_plane_after</span>
 
         <span class="n">cum_thickness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span>
+
         <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="ow">in</span> <span class="n">generate_chunks</span><span class="p">(</span>
             <span class="n">last_slice</span> <span class="o">-</span> <span class="n">first_slice</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">first_slice</span>
         <span class="p">):</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">stop</span> <span class="o">-</span> <span class="n">start</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">array</span> <span class="o">=</span> <span class="kc">None</span>
+
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">slice_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)):</span>
 
                 <span class="k">for</span> <span class="n">Z</span><span class="p">,</span> <span class="n">integrator</span> <span class="ow">in</span> <span class="n">integrators</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="n">atoms</span> <span class="o">=</span> <span class="n">sliced_atoms</span><span class="o">.</span><span class="n">get_atoms_in_slices</span><span class="p">(</span><span class="n">slice_idx</span><span class="p">,</span> <span class="n">atomic_number</span><span class="o">=</span><span class="n">Z</span><span class="p">)</span>
 
-                    <span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">integrator</span><span class="o">.</span><span class="n">integrate_on_grid</span><span class="p">(</span>
-                        <span class="n">positions</span><span class="o">=</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span>
-                        <span class="n">a</span><span class="o">=</span><span class="n">sliced_atoms</span><span class="o">.</span><span class="n">slice_limits</span><span class="p">[</span><span class="n">slice_idx</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
-                        <span class="n">b</span><span class="o">=</span><span class="n">sliced_atoms</span><span class="o">.</span><span class="n">slice_limits</span><span class="p">[</span><span class="n">slice_idx</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
-                        <span class="n">gpts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span>
-                        <span class="n">sampling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span>
-                        <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-                    <span class="p">)</span>
+                    <span class="n">new_array</span> <span class="o">=</span> <span class="n">integrator</span><span class="o">.</span><span class="n">integrate_on_grid</span><span class="p">(</span>
+                            <span class="n">positions</span><span class="o">=</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span>
+                            <span class="n">a</span><span class="o">=</span><span class="n">sliced_atoms</span><span class="o">.</span><span class="n">slice_limits</span><span class="p">[</span><span class="n">slice_idx</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                            <span class="n">b</span><span class="o">=</span><span class="n">sliced_atoms</span><span class="o">.</span><span class="n">slice_limits</span><span class="p">[</span><span class="n">slice_idx</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+                            <span class="n">gpts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span>
+                            <span class="n">sampling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span>
+                            <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+                        <span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">array</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_array</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">array</span> <span class="o">=</span> <span class="n">new_array</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">array</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
             <span class="n">array</span> <span class="o">-=</span> <span class="n">array</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
 
@@ -2015,6 +2027,7 @@ title="Open an issue"
                 <span class="n">blocks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">blocks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">chunk_shape</span><span class="p">(</span><span class="n">chunks</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+
             <span class="n">ensemble_axes_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_partition_ensemble_axes_metadata</span><span class="p">(</span>
                 <span class="n">chunks</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="kc">False</span>
             <span class="p">)</span>
@@ -2065,12 +2078,28 @@ title="Open an issue"
         <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
+        <span class="n">exit_plane_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_plane_after</span>
+        <span class="n">cum_thickness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">first_slice</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">first_slice</span> <span class="o">+</span> <span class="mi">1</span>
+
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">):</span>
             <span class="n">s</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">,)</span>
             <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="kc">None</span><span class="p">]</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+
+            <span class="n">slic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
                 <span class="n">array</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span>
-            <span class="p">)</span></div>
+            <span class="p">)</span>
+
+            <span class="n">exit_planes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">exit_plane_after</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span>
+
+            <span class="n">slic</span><span class="o">.</span><span class="n">_exit_planes</span> <span class="o">=</span> <span class="n">exit_planes</span>
+
+            <span class="n">start</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">stop</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">yield</span> <span class="n">slic</span></div>
+
 
 <div class="viewcode-block" id="PotentialArray.transmission_function"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.potentials.PotentialArray.html#abtem.potentials.PotentialArray.transmission_function">[docs]</a>    <span class="k">def</span> <span class="nf">transmission_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;TransmissionFunction&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2539,6 +2568,7 @@ title="Open an issue"
         <span class="n">cum_thickness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span>
         <span class="n">start</span> <span class="o">=</span> <span class="n">first_slice</span>
         <span class="n">stop</span> <span class="o">=</span> <span class="n">first_slice</span> <span class="o">+</span> <span class="mi">1</span>
+
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repetitions</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
             <span class="n">generator</span> <span class="o">=</span> <span class="n">potentials</span><span class="p">[</span>
                 <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">potentials</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>

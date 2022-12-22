@@ -49,8 +49,6 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -1204,7 +1202,7 @@ title="Open an issue"
         <span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">fourier_space_axes_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">reciprocal_space_axes_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]:</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
@@ -1221,61 +1219,7 @@ title="Open an issue"
             <span class="p">),</span>
         <span class="p">]</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">_antialias_valid_gpts</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-        <span class="n">cutoff_gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">antialias_cutoff_gpts</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="n">safe_floor_int</span><span class="p">(</span><span class="n">cutoff_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span>
-            <span class="n">safe_floor_int</span><span class="p">(</span><span class="n">cutoff_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span>
-        <span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">antialias_valid_gpts</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The number of grid points along the x and y direction in the simulation grid for the largest rectangle that fits</span>
-<span class="sd">        within antialiasing cutoff scattering angle.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpts_within_angle</span><span class="p">(</span><span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;same&quot;</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">_antialias_cutoff_gpts</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
-        <span class="n">kcut</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">)</span>
-        <span class="n">extent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">safe_floor_int</span><span class="p">(</span><span class="n">kcut</span> <span class="o">*</span> <span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">safe_floor_int</span><span class="p">(</span><span class="n">kcut</span> <span class="o">*</span> <span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">antialias_cutoff_gpts</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The number of grid points along the x and y direction in the simulation grid at the antialiasing cutoff</span>
-<span class="sd">        scattering angle.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpts_within_angle</span><span class="p">(</span><span class="s2">&quot;cutoff&quot;</span><span class="p">,</span> <span class="s2">&quot;same&quot;</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_gpts_within_angle</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">angle</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">parity</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;same&quot;</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-
-        <span class="k">if</span> <span class="n">angle</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">angle</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span>
-
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="p">(</span><span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
-            <span class="n">gpts</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">angle</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-                <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">angle</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="p">)</span>
-
-        <span class="k">elif</span> <span class="n">angle</span> <span class="o">==</span> <span class="s2">&quot;cutoff&quot;</span><span class="p">:</span>
-            <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_antialias_cutoff_gpts</span>
-
-        <span class="k">elif</span> <span class="n">angle</span> <span class="o">==</span> <span class="s2">&quot;valid&quot;</span><span class="p">:</span>
-            <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_antialias_valid_gpts</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Angle must be a number or one of &#39;cutoff&#39;, &#39;valid&#39; or &#39;full&#39;&quot;</span>
-            <span class="p">)</span>
-
+    <span class="k">def</span> <span class="nf">_ensure_parity_of_gpts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">parity</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">parity</span> <span class="o">==</span> <span class="s2">&quot;same&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">(</span>
                 <span class="n">_ensure_parity</span><span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">),</span>
@@ -1294,7 +1238,72 @@ title="Open an issue"
         <span class="k">elif</span> <span class="n">parity</span> <span class="o">!=</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">antialias_cutoff_gpts</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The number of grid points along the x and y direction in the simulation grid at the antialiasing cutoff</span>
+<span class="sd">        scattering angle.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;adjusted_antialias_cutoff_gpts&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;adjusted_antialias_cutoff_gpts&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
+        <span class="n">kcut</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">)</span>
+        <span class="n">extent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">gpts</span> <span class="o">=</span> <span class="n">safe_floor_int</span><span class="p">(</span><span class="n">kcut</span> <span class="o">*</span> <span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">safe_floor_int</span><span class="p">(</span><span class="n">kcut</span> <span class="o">*</span> <span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_parity_of_gpts</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">parity</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">antialias_valid_gpts</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The number of grid points along the x and y direction in the simulation grid for the largest rectangle that fits</span>
+<span class="sd">        within antialiasing cutoff scattering angle.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cutoff_gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">antialias_cutoff_gpts</span>
+        <span class="n">gpts</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">safe_floor_int</span><span class="p">(</span><span class="n">cutoff_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span>
+            <span class="n">safe_floor_int</span><span class="p">(</span><span class="n">cutoff_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span>
+        <span class="p">)</span>
+        <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_parity_of_gpts</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">parity</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;adjusted_antialias_cutoff_gpts&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;adjusted_antialias_cutoff_gpts&quot;</span><span class="p">],</span> <span class="n">gpts</span><span class="p">)</span>
+            <span class="p">)</span>
+
         <span class="k">return</span> <span class="n">gpts</span>
+
+    <span class="k">def</span> <span class="nf">_gpts_within_angle</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">angle</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">parity</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;same&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+
+        <span class="k">if</span> <span class="n">angle</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">angle</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="p">(</span><span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="n">gpts</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">angle</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">angle</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">angle</span> <span class="o">==</span> <span class="s2">&quot;cutoff&quot;</span><span class="p">:</span>
+            <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">antialias_cutoff_gpts</span>
+
+        <span class="k">elif</span> <span class="n">angle</span> <span class="o">==</span> <span class="s2">&quot;valid&quot;</span><span class="p">:</span>
+            <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">antialias_valid_gpts</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Angle must be a number or one of &#39;cutoff&#39;, &#39;valid&#39; or &#39;full&#39;&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_parity_of_gpts</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">parity</span><span class="o">=</span><span class="n">parity</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">cutoff_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
@@ -1324,16 +1333,22 @@ title="Open an issue"
     <span class="k">def</span> <span class="nf">angular_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Reciprocal-space sampling in units of scattering angles [mrad].&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
-        <span class="n">fourier_space_sampling</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourier_space_sampling</span>
+        <span class="n">fourier_space_sampling</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_space_sampling</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="n">fourier_space_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">,</span>
             <span class="n">fourier_space_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_angular_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
+        <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="n">polar_spatial_frequencies</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">xp</span><span class="p">)</span>
+        <span class="n">alpha</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span>
+        <span class="k">return</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span></div>
 
 
 <span class="k">class</span> <span class="nc">_WaveRenormalization</span><span class="p">(</span><span class="n">EmptyEnsemble</span><span class="p">,</span> <span class="n">WaveTransform</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">waves</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">waves</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Waves"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.waves.Waves.html#abtem.waves.Waves">[docs]</a><span class="k">class</span> <span class="nc">Waves</span><span class="p">(</span><span class="n">HasArray</span><span class="p">,</span> <span class="n">BaseWaves</span><span class="p">):</span>
@@ -1469,17 +1484,12 @@ title="Open an issue"
             <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_angular_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
-        <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="n">polar_spatial_frequencies</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">xp</span><span class="p">)</span>
-        <span class="n">alpha</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span>
-        <span class="k">return</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span>
-
 <div class="viewcode-block" id="Waves.convolve"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.waves.Waves.html#abtem.waves.Waves.convolve">[docs]</a>    <span class="k">def</span> <span class="nf">convolve</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">kernel</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
             <span class="n">axes_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">out_space</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;in_space&quot;</span><span class="p">,</span>
+            <span class="n">overwrite_x</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convolve the wave-function array with a given array.</span>
@@ -1512,8 +1522,7 @@ title="Open an issue"
         <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">kernel</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">axes_metadata</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;provide axes metadata for each ensemble axis&quot;</span><span class="p">)</span>
 
-        <span class="n">waves</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensure_reciprocal_space</span><span class="p">(</span><span class="n">in_place</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
+        <span class="n">waves</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensure_reciprocal_space</span><span class="p">(</span><span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">)</span>
         <span class="n">waves_dims</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">kernel</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">))</span>
         <span class="n">kernel_dims</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
             <span class="nb">range</span><span class="p">(</span>
@@ -1522,21 +1531,26 @@ title="Open an issue"
             <span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="n">array</span> <span class="o">=</span> <span class="n">expand_dims</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">waves_dims</span><span class="p">)</span> <span class="o">*</span> <span class="n">expand_dims</span><span class="p">(</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">expand_dims</span><span class="p">(</span>
             <span class="n">kernel</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">kernel_dims</span>
         <span class="p">)</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">expand_dims</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">waves_dims</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">overwrite_x</span> <span class="ow">and</span> <span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">kernel</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
+            <span class="n">array</span> <span class="o">*=</span> <span class="n">kernel</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">array</span> <span class="o">*</span> <span class="n">kernel</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">fourier_space_out</span><span class="p">:</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">)</span>
 
         <span class="n">d</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;array&quot;</span><span class="p">,))</span>
         <span class="n">d</span><span class="p">[</span><span class="s2">&quot;reciprocal_space&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fourier_space_out</span>
         <span class="n">d</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span>
         <span class="n">d</span><span class="p">[</span><span class="s2">&quot;ensemble_axes_metadata&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">axes_metadata</span> <span class="o">+</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;ensemble_axes_metadata&quot;</span><span class="p">]</span>
-
         <span class="k">return</span> <span class="n">waves</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">d</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Waves.normalize"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.waves.Waves.html#abtem.waves.Waves.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">space</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;reciprocal&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="Waves.normalize"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.waves.Waves.html#abtem.waves.Waves.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">space</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;reciprocal&quot;</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Normalize the wave functions in real or reciprocal space.</span>
 
@@ -1560,11 +1574,15 @@ title="Open an issue"
         <span class="n">reciprocal_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_space</span>
 
         <span class="k">if</span> <span class="n">space</span> <span class="o">==</span> <span class="s2">&quot;reciprocal&quot;</span><span class="p">:</span>
-            <span class="n">waves</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensure_reciprocal_space</span><span class="p">()</span>
+            <span class="n">waves</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensure_reciprocal_space</span><span class="p">(</span><span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">)</span>
             <span class="n">f</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">abs2</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-            <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span> <span class="o">/</span> <span class="n">f</span>
+            <span class="k">if</span> <span class="n">overwrite_x</span><span class="p">:</span>
+                <span class="n">waves</span><span class="o">.</span><span class="n">_array</span> <span class="o">/=</span> <span class="n">f</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">waves</span><span class="o">.</span><span class="n">_array</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">_array</span> <span class="o">/</span> <span class="n">f</span>
+
             <span class="k">if</span> <span class="ow">not</span> <span class="n">reciprocal_space</span><span class="p">:</span>
-                <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensure_real_space</span><span class="p">()</span>
+                <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensure_real_space</span><span class="p">(</span><span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">space</span> <span class="o">==</span> <span class="s2">&quot;real&quot;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
@@ -1613,7 +1631,7 @@ title="Open an issue"
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Waves.ensure_reciprocal_space"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.waves.Waves.html#abtem.waves.Waves.ensure_reciprocal_space">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_reciprocal_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_place</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Waves.ensure_reciprocal_space"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.waves.Waves.html#abtem.waves.Waves.ensure_reciprocal_space">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_reciprocal_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Transform to reciprocal space if the wave functions are represented in real space.</span>
 
@@ -1632,11 +1650,11 @@ title="Open an issue"
             <span class="k">return</span> <span class="bp">self</span>
 
         <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;array&quot;</span><span class="p">,))</span>
-        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fft2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="n">in_place</span><span class="p">)</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fft2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">)</span>
         <span class="n">d</span><span class="p">[</span><span class="s2">&quot;reciprocal_space&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">d</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Waves.ensure_real_space"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.waves.Waves.html#abtem.waves.Waves.ensure_real_space">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_real_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_place</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Waves.ensure_real_space"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.waves.Waves.html#abtem.waves.Waves.ensure_real_space">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_real_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Transform to real space if the wave functions are represented in reciprocal space.</span>
 
@@ -1655,7 +1673,7 @@ title="Open an issue"
             <span class="k">return</span> <span class="bp">self</span>
 
         <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;array&quot;</span><span class="p">,))</span>
-        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="n">in_place</span><span class="p">)</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">)</span>
         <span class="n">d</span><span class="p">[</span><span class="s2">&quot;reciprocal_space&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">d</span><span class="p">)</span></div>
 
@@ -1798,6 +1816,9 @@ title="Open an issue"
         <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;array&quot;</span><span class="p">,))</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sampling&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">][</span>
+            <span class="s2">&quot;adjusted_antialias_cutoff_gpts&quot;</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">antialias_cutoff_gpts</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Waves.diffraction_patterns"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.waves.Waves.html#abtem.waves.Waves.diffraction_patterns">[docs]</a>    <span class="k">def</span> <span class="nf">diffraction_patterns</span><span class="p">(</span>
@@ -1888,7 +1909,7 @@ title="Open an issue"
 
         <span class="n">diffraction_patterns</span> <span class="o">=</span> <span class="n">DiffractionPatterns</span><span class="p">(</span>
             <span class="n">pattern</span><span class="p">,</span>
-            <span class="n">sampling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fourier_space_sampling</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_space_sampling</span><span class="p">,</span>
             <span class="n">fftshift</span><span class="o">=</span><span class="n">fftshift</span><span class="p">,</span>
             <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">,</span>
             <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
@@ -2151,12 +2172,12 @@ title="Open an issue"
     <span class="nd">@tilt</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">tilt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="n">old_tilt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tilt</span>
-
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">transform</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">:</span>
+        <span class="n">new_tilt</span> <span class="o">=</span> <span class="n">validate_tilt</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">transform</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">transform</span> <span class="ow">is</span> <span class="n">old_tilt</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_tilt</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_tilt</span> <span class="o">=</span> <span class="n">validate_tilt</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tilt</span> <span class="o">=</span> <span class="n">new_tilt</span>
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2438,7 +2459,6 @@ title="Open an issue"
         <span class="n">waves</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_waves_partial</span><span class="p">()()</span>
         <span class="k">return</span> <span class="n">waves</span></div>
 
-    <span class="c1"># TODO: multislice should probably take only a keyword for core-loss, and transition_potentials should be a property of the potential</span>
 <div class="viewcode-block" id="PlaneWave.multislice"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.waves.PlaneWave.html#abtem.waves.PlaneWave.multislice">[docs]</a>    <span class="k">def</span> <span class="nf">multislice</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">potential</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">BasePotential</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">],</span>
@@ -2533,7 +2553,7 @@ title="Open an issue"
 <span class="sd">        Lateral sampling of wave functions [1 / Å]. If &#39;gpts&#39; is also given, will be ignored.</span>
 <span class="sd">    energy : float, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
-<span class="sd">    taper : float, optional</span>
+<span class="sd">    soft : float, optional</span>
 <span class="sd">        Taper the edge of the default aperture [mrad] (default is 2.0). Ignored if a custom aperture is given.</span>
 <span class="sd">    tilt : two float, two 1D :class:`.BaseDistribution`, 2D :class:`.BaseDistribution`, optional</span>
 <span class="sd">        Small-angle beam tilt [mrad]. This value should generally not exceed one degree.</span>
@@ -2556,7 +2576,7 @@ title="Open an issue"
             <span class="n">gpts</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">taper</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+            <span class="n">soft</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
             <span class="n">tilt</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
                 <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">]],</span>
                 <span class="n">BaseDistribution</span><span class="p">,</span>
@@ -2568,6 +2588,7 @@ title="Open an issue"
             <span class="n">aperture</span><span class="p">:</span> <span class="n">Aperture</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">aberrations</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Aberrations</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">transforms</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">WaveTransform</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">):</span>
 
@@ -2579,7 +2600,7 @@ title="Open an issue"
             <span class="n">semiangle_cutoff</span> <span class="o">=</span> <span class="mf">30.0</span>
 
         <span class="k">if</span> <span class="n">aperture</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">aperture</span> <span class="o">=</span> <span class="n">Aperture</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="o">=</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="n">taper</span><span class="o">=</span><span class="n">taper</span><span class="p">)</span>
+            <span class="n">aperture</span> <span class="o">=</span> <span class="n">Aperture</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="o">=</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="n">soft</span><span class="o">=</span><span class="n">soft</span><span class="p">)</span>
 
         <span class="n">aperture</span><span class="o">.</span><span class="n">_accelerator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accelerator</span>
 
@@ -2598,9 +2619,10 @@ title="Open an issue"
         <span class="bp">self</span><span class="o">.</span><span class="n">_grid</span> <span class="o">=</span> <span class="n">Grid</span><span class="p">(</span><span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span> <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_device</span> <span class="o">=</span> <span class="n">validate_device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">metadata</span>
 
         <span class="n">transforms</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">transforms</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">transforms</span>
-        <span class="n">transforms</span> <span class="o">=</span> <span class="n">transforms</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">aperture</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">aberrations</span><span class="p">]</span>
+        <span class="n">transforms</span> <span class="o">=</span> <span class="n">transforms</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">aperture</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">aberrations</span><span class="p">]</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">transforms</span><span class="o">=</span><span class="n">transforms</span><span class="p">)</span>
 
@@ -2610,7 +2632,7 @@ title="Open an issue"
     <span class="k">def</span> <span class="nf">_from_ctf</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">ctf</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
             <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="n">ctf</span><span class="o">.</span><span class="n">semiangle_cutoff</span><span class="p">,</span>
-            <span class="n">taper</span><span class="o">=</span><span class="n">ctf</span><span class="o">.</span><span class="n">taper</span><span class="p">,</span>
+            <span class="n">soft</span><span class="o">=</span><span class="n">ctf</span><span class="o">.</span><span class="n">soft</span><span class="p">,</span>
             <span class="n">aberrations</span><span class="o">=</span><span class="n">ctf</span><span class="o">.</span><span class="n">aberration_coefficients</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span>
         <span class="p">)</span>
@@ -2636,7 +2658,12 @@ title="Open an issue"
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Metadata describing the probe wave functions.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">aperture</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_tilt</span><span class="o">.</span><span class="n">metadata</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">,</span>
+            <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">aperture</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_tilt</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+        <span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">_base_waves_partial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">base_probe</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">extent</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">metadata</span><span class="p">):</span>
@@ -2723,9 +2750,9 @@ title="Open an issue"
         <span class="k">else</span><span class="p">:</span>
             <span class="n">waves</span> <span class="o">=</span> <span class="n">probe</span><span class="o">.</span><span class="n">_base_waves_partial</span><span class="p">()()</span>
 
-            <span class="n">waves</span> <span class="o">=</span> <span class="n">CompositeWaveTransform</span><span class="p">(</span><span class="n">probe</span><span class="o">.</span><span class="n">transforms</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+            <span class="n">waves</span> <span class="o">=</span> <span class="n">CompositeWaveTransform</span><span class="p">(</span><span class="n">probe</span><span class="o">.</span><span class="n">transforms</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-            <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensure_real_space</span><span class="p">()</span>
+            <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensure_real_space</span><span class="p">(</span><span class="n">overwrite_x</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">squeeze</span><span class="p">)</span>
 

@@ -65,6 +65,7 @@
       ~Aberrations.extent
       ~Aberrations.gpts
       ~Aberrations.grid
+      ~Aberrations.has_aberrations
       ~Aberrations.metadata
       ~Aberrations.phi12
       ~Aberrations.phi21

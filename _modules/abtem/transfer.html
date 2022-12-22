@@ -1042,9 +1042,10 @@ title="Open an issue"
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span>
 
+<span class="kn">import</span> <span class="nn">dask</span>
+<span class="kn">import</span> <span class="nn">dask.array</span> <span class="k">as</span> <span class="nn">da</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">abtem</span> <span class="kn">import</span> <span class="n">stack</span>
@@ -1053,6 +1054,7 @@ title="Open an issue"
 <span class="kn">from</span> <span class="nn">abtem.core.backend</span> <span class="kn">import</span> <span class="n">get_array_module</span>
 <span class="kn">from</span> <span class="nn">abtem.core.complex</span> <span class="kn">import</span> <span class="n">complex_exponential</span>
 <span class="kn">from</span> <span class="nn">abtem.core.energy</span> <span class="kn">import</span> <span class="n">Accelerator</span><span class="p">,</span> <span class="n">energy2wavelength</span>
+<span class="kn">from</span> <span class="nn">abtem.core.fft</span> <span class="kn">import</span> <span class="n">fft_crop</span>
 <span class="kn">from</span> <span class="nn">abtem.core.grid</span> <span class="kn">import</span> <span class="n">HasGridMixin</span><span class="p">,</span> <span class="n">GridUndefinedError</span>
 <span class="kn">from</span> <span class="nn">abtem.core.transform</span> <span class="kn">import</span> <span class="n">FourierSpaceConvolution</span>
 <span class="kn">from</span> <span class="nn">abtem.core.utils</span> <span class="kn">import</span> <span class="n">expand_dims_to_match</span>
@@ -1063,6 +1065,9 @@ title="Open an issue"
     <span class="n">_validate_distribution</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">abtem.measurements</span> <span class="kn">import</span> <span class="n">ReciprocalSpaceLineProfiles</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">abtem.waves</span> <span class="kn">import</span> <span class="n">Waves</span>
 
 
 <div class="viewcode-block" id="BaseAperture"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.BaseAperture.html#abtem.transfer.BaseAperture">[docs]</a><span class="k">class</span> <span class="nc">BaseAperture</span><span class="p">(</span><span class="n">FourierSpaceConvolution</span><span class="p">,</span> <span class="n">HasGridMixin</span><span class="p">):</span>
@@ -1095,13 +1100,43 @@ title="Open an issue"
         <span class="k">return</span> <span class="p">[]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">nyquist_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_max_semiangle_cutoff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
-            <span class="n">semiangle_cutoff</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">semiangle_cutoff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span>
 
-        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">semiangle_cutoff</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">)</span></div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">nyquist_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_semiangle_cutoff</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_cropped_aperture</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">gpts</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_semiangle_cutoff</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_semiangle_cutoff</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">cropped_aperture</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">cropped_aperture</span><span class="o">.</span><span class="n">gpts</span> <span class="o">=</span> <span class="n">gpts</span>
+        <span class="k">return</span> <span class="n">cropped_aperture</span>
+
+    <span class="k">def</span> <span class="nf">_evaluate_from_cropped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gpts</span><span class="p">):</span>
+        <span class="n">cropped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cropped_aperture</span><span class="p">()</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">cropped</span><span class="o">.</span><span class="n">_evaluate</span><span class="p">()</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">fft_crop</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">gpts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">array</span>
+
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="s2">&quot;Waves&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">lazy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">waves</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">lazy</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_from_cropped</span><span class="p">)(</span><span class="n">gpts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">)</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">from_delayed</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex64</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">array</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_from_cropped</span><span class="p">(</span><span class="n">gpts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Aperture"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.Aperture.html#abtem.transfer.Aperture">[docs]</a><span class="k">class</span> <span class="nc">Aperture</span><span class="p">(</span><span class="n">_EnsembleFromDistributionsMixin</span><span class="p">,</span> <span class="n">BaseAperture</span><span class="p">):</span>
@@ -1184,34 +1219,33 @@ title="Open an issue"
         <span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">,)</span> <span class="o">=</span> <span class="n">unpacked</span>
         <span class="n">semiangle_cutoff</span> <span class="o">=</span> <span class="n">semiangle_cutoff</span> <span class="o">*</span> <span class="mf">1e-3</span>
 
-        <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_ensemble_axes</span><span class="p">)))</span>
-        <span class="n">phi</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_ensemble_axes</span><span class="p">)))</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">semiangle_cutoff</span> <span class="o">==</span> <span class="n">xp</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">soft</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alpha</span> <span class="o">&lt;</span> <span class="n">semiangle_cutoff</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-
-        <span class="n">numerator</span> <span class="o">=</span> <span class="n">semiangle_cutoff</span> <span class="o">*</span> <span class="n">alpha</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">**</span> <span class="mi">2</span>
-
-        <span class="n">alpha_vector</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">),</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alpha</span> <span class="o">&lt;=</span> <span class="n">semiangle_cutoff</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">angular_sampling</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-3</span>
         <span class="k">except</span> <span class="n">GridUndefinedError</span><span class="p">:</span>
             <span class="n">angular_sampling</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
 
-        <span class="n">denominator</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
-            <span class="n">alpha_vector</span> <span class="o">*</span> <span class="n">angular_sampling</span><span class="p">[(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">alpha_vector</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)],</span>
-            <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_ensemble_axes</span><span class="p">)))</span>
+
+        <span class="n">denominator</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">angular_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span>
+            <span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">angular_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
         <span class="p">)</span>
 
-        <span class="n">zeros</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">0</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">numerator</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">))</span>
+        <span class="n">zeros</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">0</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">denominator</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span>
+        <span class="p">)</span>
+
         <span class="n">denominator</span><span class="p">[</span><span class="n">zeros</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
 
-        <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">clip</span><span class="p">((</span><span class="n">semiangle_cutoff</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">/</span> <span class="n">denominator</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
         <span class="n">array</span><span class="p">[</span><span class="n">zeros</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
 
         <span class="k">return</span> <span class="n">array</span></div>
@@ -1626,6 +1660,13 @@ title="Open an issue"
         <span class="sd">&quot;&quot;&quot;The parameters.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_aberration_coefficients</span><span class="p">)</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">has_aberrations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_aberration_coefficients</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span> <span class="o">==</span> <span class="mf">0.</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
     <span class="k">def</span> <span class="nf">set_aberrations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">]]):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the phase of the phase aberration.</span>
@@ -1694,10 +1735,11 @@ title="Open an issue"
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">distributions</span><span class="o">=</span><span class="n">polar_symbols</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;angular_spread&quot;</span><span class="p">,),</span> <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+            <span class="n">distributions</span><span class="o">=</span><span class="n">polar_symbols</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;angular_spread&quot;</span><span class="p">,),</span>
+            <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
             <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
             <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
-            <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_angular_spread</span> <span class="o">=</span> <span class="n">_validate_distribution</span><span class="p">(</span><span class="n">angular_spread</span><span class="p">)</span>
@@ -1913,6 +1955,9 @@ title="Open an issue"
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_aberrations</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span> <span class="o">+</span> <span class="n">alpha</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">complex64</span><span class="p">)</span>
+
         <span class="n">parameters</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">_unpack_distributions</span><span class="p">(</span>
             <span class="o">*</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aberration_coefficients</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">shape</span><span class="o">=</span><span class="n">alpha</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">xp</span>
         <span class="p">)</span>
@@ -2007,7 +2052,13 @@ title="Open an issue"
         <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">*</span> <span class="n">array</span>
 
-        <span class="k">return</span> <span class="n">array</span></div>
+        <span class="k">return</span> <span class="n">array</span>
+
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_aberrations</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">waves</span></div>
 
 
 <div class="viewcode-block" id="CTF"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.CTF.html#abtem.transfer.CTF">[docs]</a><span class="k">class</span> <span class="nc">CTF</span><span class="p">(</span><span class="n">_HasAberrations</span><span class="p">,</span> <span class="n">_EnsembleFromDistributionsMixin</span><span class="p">,</span> <span class="n">BaseAperture</span><span class="p">):</span>
@@ -2296,7 +2347,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">stack</span><span class="p">(</span><span class="n">profiles</span><span class="p">,</span> <span class="n">axis_metadata</span><span class="o">=</span><span class="n">OrdinalAxis</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">axis_metadata</span><span class="p">)))</span></div>
 
 
-<span class="k">def</span> <span class="nf">nyquist_sampling</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<div class="viewcode-block" id="nyquist_sampling"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.nyquist_sampling.html#abtem.transfer.nyquist_sampling">[docs]</a><span class="k">def</span> <span class="nf">nyquist_sampling</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the Nyquist sampling.</span>
 
@@ -2308,10 +2359,10 @@ title="Open an issue"
 <span class="sd">        Electron energy [eV].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">wavelength</span> <span class="o">=</span> <span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
-    <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">semiangle_cutoff</span> <span class="o">/</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">semiangle_cutoff</span> <span class="o">/</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">scherzer_defocus</span><span class="p">(</span><span class="n">Cs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<div class="viewcode-block" id="scherzer_defocus"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.scherzer_defocus.html#abtem.transfer.scherzer_defocus">[docs]</a><span class="k">def</span> <span class="nf">scherzer_defocus</span><span class="p">(</span><span class="n">Cs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the Scherzer defocus.</span>
 
@@ -2322,10 +2373,10 @@ title="Open an issue"
 <span class="sd">    energy: float</span>
 <span class="sd">        Electron energy [eV].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">Cs</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Cs</span><span class="p">)</span> <span class="o">*</span> <span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">Cs</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Cs</span><span class="p">)</span> <span class="o">*</span> <span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">))</span></div>
 
 
-<span class="k">def</span> <span class="nf">point_resolution</span><span class="p">(</span><span class="n">Cs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<div class="viewcode-block" id="point_resolution"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.point_resolution.html#abtem.transfer.point_resolution">[docs]</a><span class="k">def</span> <span class="nf">point_resolution</span><span class="p">(</span><span class="n">Cs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the Scherzer point resolution.</span>
 
@@ -2336,10 +2387,10 @@ title="Open an issue"
 <span class="sd">    energy: float</span>
 <span class="sd">        Electron energy [eV].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Cs</span><span class="p">)</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Cs</span><span class="p">)</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">polar2cartesian</span><span class="p">(</span><span class="n">polar</span><span class="p">):</span>
+<div class="viewcode-block" id="polar2cartesian"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.polar2cartesian.html#abtem.transfer.polar2cartesian">[docs]</a><span class="k">def</span> <span class="nf">polar2cartesian</span><span class="p">(</span><span class="n">polar</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert between polar and Cartesian aberration coefficients.</span>
 
@@ -2378,10 +2429,10 @@ title="Open an issue"
             <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">K</span><span class="p">)</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">polar</span><span class="p">[</span><span class="s2">&quot;phi34&quot;</span><span class="p">])</span>
     <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">cartesian</span>
+    <span class="k">return</span> <span class="n">cartesian</span></div>
 
 
-<span class="k">def</span> <span class="nf">cartesian2polar</span><span class="p">(</span><span class="n">cartesian</span><span class="p">):</span>
+<div class="viewcode-block" id="cartesian2polar"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.cartesian2polar.html#abtem.transfer.cartesian2polar">[docs]</a><span class="k">def</span> <span class="nf">cartesian2polar</span><span class="p">(</span><span class="n">cartesian</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert between Cartesian and polar aberration coefficients.</span>
 
@@ -2412,7 +2463,7 @@ title="Open an issue"
     <span class="n">polar</span><span class="p">[</span><span class="s2">&quot;C34&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cartesian</span><span class="p">[</span><span class="s2">&quot;C34a&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">cartesian</span><span class="p">[</span><span class="s2">&quot;C34b&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
     <span class="n">polar</span><span class="p">[</span><span class="s2">&quot;phi34&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">cartesian</span><span class="p">[</span><span class="s2">&quot;C34b&quot;</span><span class="p">],</span> <span class="n">cartesian</span><span class="p">[</span><span class="s2">&quot;C34a&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="mi">4</span>
 
-    <span class="k">return</span> <span class="n">polar</span>
+    <span class="k">return</span> <span class="n">polar</span></div>
 </pre></div>
 
               </div>

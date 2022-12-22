@@ -51,7 +51,6 @@
       ~Probe.ensemble_axes_metadata
       ~Probe.ensemble_shape
       ~Probe.extent
-      ~Probe.fourier_space_axes_metadata
       ~Probe.full_cutoff_angles
       ~Probe.gpts
       ~Probe.grid
@@ -59,6 +58,7 @@
       ~Probe.num_axes
       ~Probe.num_base_axes
       ~Probe.num_ensemble_axes
+      ~Probe.reciprocal_space_axes_metadata
       ~Probe.reciprocal_space_sampling
       ~Probe.rectangle_cutoff_angles
       ~Probe.sampling

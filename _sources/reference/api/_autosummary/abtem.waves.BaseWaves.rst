@@ -43,7 +43,6 @@
       ~BaseWaves.ensemble_axes_metadata
       ~BaseWaves.ensemble_shape
       ~BaseWaves.extent
-      ~BaseWaves.fourier_space_axes_metadata
       ~BaseWaves.full_cutoff_angles
       ~BaseWaves.gpts
       ~BaseWaves.grid
@@ -51,6 +50,7 @@
       ~BaseWaves.num_axes
       ~BaseWaves.num_base_axes
       ~BaseWaves.num_ensemble_axes
+      ~BaseWaves.reciprocal_space_axes_metadata
       ~BaseWaves.reciprocal_space_sampling
       ~BaseWaves.rectangle_cutoff_angles
       ~BaseWaves.sampling

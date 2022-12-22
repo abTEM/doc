@@ -82,7 +82,6 @@
       ~Waves.ensemble_axes_metadata
       ~Waves.ensemble_shape
       ~Waves.extent
-      ~Waves.fourier_space_axes_metadata
       ~Waves.full_cutoff_angles
       ~Waves.gpts
       ~Waves.grid
@@ -93,6 +92,7 @@
       ~Waves.num_base_axes
       ~Waves.num_ensemble_axes
       ~Waves.reciprocal_space
+      ~Waves.reciprocal_space_axes_metadata
       ~Waves.reciprocal_space_sampling
       ~Waves.rectangle_cutoff_angles
       ~Waves.sampling

@@ -69,6 +69,7 @@
       ~CTF.focal_spread
       ~CTF.gpts
       ~CTF.grid
+      ~CTF.has_aberrations
       ~CTF.metadata
       ~CTF.nyquist_sampling
       ~CTF.phi12

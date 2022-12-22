@@ -46,7 +46,6 @@
       ~PlaneWave.ensemble_axes_metadata
       ~PlaneWave.ensemble_shape
       ~PlaneWave.extent
-      ~PlaneWave.fourier_space_axes_metadata
       ~PlaneWave.full_cutoff_angles
       ~PlaneWave.gpts
       ~PlaneWave.grid
@@ -55,6 +54,7 @@
       ~PlaneWave.num_axes
       ~PlaneWave.num_base_axes
       ~PlaneWave.num_ensemble_axes
+      ~PlaneWave.reciprocal_space_axes_metadata
       ~PlaneWave.reciprocal_space_sampling
       ~PlaneWave.rectangle_cutoff_angles
       ~PlaneWave.sampling

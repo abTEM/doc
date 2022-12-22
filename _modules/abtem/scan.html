@@ -1084,7 +1084,7 @@ title="Open an issue"
             <span class="n">scan</span><span class="o">.</span><span class="n">sampling</span> <span class="o">=</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="n">probe</span><span class="o">.</span><span class="n">aperture</span><span class="o">.</span><span class="n">nyquist_sampling</span>
 
 
-<span class="k">class</span> <span class="nc">BaseScan</span><span class="p">(</span><span class="n">WaveTransform</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseScan"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.scan.BaseScan.html#abtem.scan.BaseScan">[docs]</a><span class="k">class</span> <span class="nc">BaseScan</span><span class="p">(</span><span class="n">WaveTransform</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Abstract class to describe scans.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1108,10 +1108,10 @@ title="Open an issue"
     <span class="k">def</span> <span class="nf">_default_ensemble_chunks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;auto&quot;</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span>
 
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="BaseScan.get_positions"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.scan.BaseScan.html#abtem.scan.BaseScan.get_positions">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">get_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the scan positions as numpy array.&quot;&quot;&quot;</span>
-        <span class="k">pass</span>
+        <span class="k">pass</span></div>
 
     <span class="k">def</span> <span class="nf">get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
@@ -1144,6 +1144,7 @@ title="Open an issue"
         <span class="n">positions</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_positions</span><span class="p">())</span> <span class="o">/</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
             <span class="n">waves</span><span class="o">.</span><span class="n">sampling</span>
         <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
         <span class="n">kernel</span> <span class="o">=</span> <span class="n">fft_shift_kernel</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">gpts</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -1153,13 +1154,13 @@ title="Open an issue"
 
         <span class="k">return</span> <span class="n">kernel</span>
 
-    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="s2">&quot;Waves&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Waves&quot;</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="s2">&quot;Waves&quot;</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Waves&quot;</span><span class="p">:</span>
         <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
         <span class="n">axes_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
-        <span class="k">return</span> <span class="n">waves</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axes_metadata</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">waves</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axes_metadata</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">)</span></div>
 
 
-<span class="k">class</span> <span class="nc">SourceOffset</span><span class="p">(</span><span class="n">BaseScan</span><span class="p">):</span>
+<div class="viewcode-block" id="SourceOffset"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.scan.SourceOffset.html#abtem.scan.SourceOffset">[docs]</a><span class="k">class</span> <span class="nc">SourceOffset</span><span class="p">(</span><span class="n">BaseScan</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Distribution of electron source offsets.</span>
 
@@ -1169,16 +1170,16 @@ title="Open an issue"
 <span class="sd">        Distribution describing the positions and weights of the source offsets.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distribution</span><span class="p">:</span> <span class="n">BaseDistribution</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_distribution</span> <span class="o">=</span> <span class="n">distribution</span>
+<div class="viewcode-block" id="SourceOffset.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.scan.SourceOffset.html#abtem.scan.SourceOffset.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distribution</span><span class="p">:</span> <span class="n">BaseDistribution</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_distribution</span> <span class="o">=</span> <span class="n">distribution</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distribution</span><span class="o">.</span><span class="n">shape</span>
 
-    <span class="k">def</span> <span class="nf">get_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SourceOffset.get_positions"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.scan.SourceOffset.html#abtem.scan.SourceOffset.get_positions">[docs]</a>    <span class="k">def</span> <span class="nf">get_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">xi</span> <span class="o">=</span> <span class="p">[</span><span class="n">factor</span><span class="o">.</span><span class="n">values</span> <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distribution</span><span class="o">.</span><span class="n">factors</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="o">*</span><span class="n">xi</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="o">*</span><span class="n">xi</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distribution</span><span class="o">.</span><span class="n">weights</span>
@@ -1187,7 +1188,7 @@ title="Open an issue"
     <span class="k">def</span> <span class="nf">ensemble_axes_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">PositionsAxis</span><span class="p">()]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">ensemble_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="SourceOffset.ensemble_blocks"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.scan.SourceOffset.html#abtem.scan.SourceOffset.ensemble_blocks">[docs]</a>    <span class="k">def</span> <span class="nf">ensemble_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">chunks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_ensemble_chunks</span>
 
@@ -1197,7 +1198,7 @@ title="Open an issue"
         <span class="k">for</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_distribution</span><span class="o">.</span><span class="n">factors</span><span class="p">,</span> <span class="n">chunks</span><span class="p">):</span>
             <span class="n">blocks</span> <span class="o">+=</span> <span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="kc">True</span><span class="p">),)</span>
 
-        <span class="k">return</span> <span class="n">blocks</span>
+        <span class="k">return</span> <span class="n">blocks</span></div>
 
     <span class="k">def</span> <span class="nf">ensemble_partial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">distribution</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
@@ -1211,10 +1212,10 @@ title="Open an issue"
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">limits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
+        <span class="k">pass</span></div>
 
 
-<span class="k">class</span> <span class="nc">CustomScan</span><span class="p">(</span><span class="n">BaseScan</span><span class="p">):</span>
+<div class="viewcode-block" id="CustomScan"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.scan.CustomScan.html#abtem.scan.CustomScan">[docs]</a><span class="k">class</span> <span class="nc">CustomScan</span><span class="p">(</span><span class="n">BaseScan</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Custom scan based on explicit 2D probe positions.</span>
 
@@ -1225,7 +1226,7 @@ title="Open an issue"
 <span class="sd">        (0., 0.).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">positions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)):</span>
+<div class="viewcode-block" id="CustomScan.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.scan.CustomScan.html#abtem.scan.CustomScan.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">positions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)):</span>
         <span class="n">positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -1233,7 +1234,7 @@ title="Open an issue"
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_positions</span> <span class="o">=</span> <span class="n">positions</span>
 
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">match_probe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">probe</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1306,8 +1307,8 @@ title="Open an issue"
             <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])),</span>
         <span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">get_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_positions</span>
+<div class="viewcode-block" id="CustomScan.get_positions"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.scan.CustomScan.html#abtem.scan.CustomScan.get_positions">[docs]</a>    <span class="k">def</span> <span class="nf">get_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_positions</span></div></div>
 
 
 <span class="k">def</span> <span class="nf">_validate_coordinate</span><span class="p">(</span><span class="n">coordinate</span><span class="p">,</span> <span class="n">potential</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fractional</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
@@ -1341,7 +1342,7 @@ title="Open an issue"
     <span class="k">return</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span>
 
 
-<span class="k">class</span> <span class="nc">LineScan</span><span class="p">(</span><span class="n">BaseScan</span><span class="p">):</span>
+<div class="viewcode-block" id="LineScan"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.scan.LineScan.html#abtem.scan.LineScan">[docs]</a><span class="k">class</span> <span class="nc">LineScan</span><span class="p">(</span><span class="n">BaseScan</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A scan along a straight line.</span>
 
@@ -1360,7 +1361,7 @@ title="Open an issue"
 <span class="sd">        If True, end is the last position. Otherwise, it is not included. Default is True.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="LineScan.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.scan.LineScan.html#abtem.scan.LineScan.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">start</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
             <span class="n">end</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1379,9 +1380,9 @@ title="Open an issue"
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span> <span class="o">=</span> <span class="n">endpoint</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_adjust_gpts</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_adjust_sampling</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_adjust_sampling</span><span class="p">()</span></div>
 
-    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="LineScan.from_fractional_coordinates"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.scan.LineScan.html#abtem.scan.LineScan.from_fractional_coordinates">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_fractional_coordinates</span><span class="p">(</span>
             <span class="bp">cls</span><span class="p">,</span>
             <span class="n">potential</span><span class="p">:</span> <span class="n">BasePotential</span><span class="p">,</span>
@@ -1411,7 +1412,7 @@ title="Open an issue"
 <span class="sd">        grid_scan : GridScan</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">potential</span><span class="o">=</span><span class="n">potential</span><span class="p">,</span> <span class="n">fractional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">potential</span><span class="o">=</span><span class="n">potential</span><span class="p">,</span> <span class="n">fractional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">add_margin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">margin</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">margin</span><span class="p">,</span> <span class="n">Number</span><span class="p">):</span>
@@ -1605,7 +1606,7 @@ title="Open an issue"
 
         <span class="k">return</span> <span class="p">(</span><span class="n">block</span><span class="p">,)</span>
 
-    <span class="k">def</span> <span class="nf">get_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">lazy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="LineScan.get_positions"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.scan.LineScan.html#abtem.scan.LineScan.get_positions">[docs]</a>    <span class="k">def</span> <span class="nf">get_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">lazy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
@@ -1620,9 +1621,9 @@ title="Open an issue"
             <span class="n">endpoint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoint</span><span class="p">,</span>
             <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)),</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,))),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)),</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,))),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">add_to_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span><span class="p">,</span> <span class="n">linestyle</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="LineScan.add_to_plot"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.scan.LineScan.html#abtem.scan.LineScan.add_to_plot">[docs]</a>    <span class="k">def</span> <span class="nf">add_to_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span><span class="p">,</span> <span class="n">linestyle</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add a visualization of a scan line to a matplotlib plot.</span>
 
@@ -1643,7 +1644,7 @@ title="Open an issue"
             <span class="n">linestyle</span><span class="o">=</span><span class="n">linestyle</span><span class="p">,</span>
             <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="GridScan"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.scan.GridScan.html#abtem.scan.GridScan">[docs]</a><span class="k">class</span> <span class="nc">GridScan</span><span class="p">(</span><span class="n">HasGridMixin</span><span class="p">,</span> <span class="n">BaseScan</span><span class="p">):</span>

@@ -66,6 +66,7 @@
       ~SpatialEnvelope.extent
       ~SpatialEnvelope.gpts
       ~SpatialEnvelope.grid
+      ~SpatialEnvelope.has_aberrations
       ~SpatialEnvelope.metadata
       ~SpatialEnvelope.phi12
       ~SpatialEnvelope.phi21

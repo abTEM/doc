@@ -50,7 +50,7 @@ const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -1069,7 +1069,7 @@ title="Open an issue"
 <span class="kn">from</span> <span class="nn">abtem.core.complex</span> <span class="kn">import</span> <span class="n">abs2</span>
 <span class="kn">from</span> <span class="nn">abtem.core.energy</span> <span class="kn">import</span> <span class="n">energy2wavelength</span>
 <span class="kn">from</span> <span class="nn">abtem.core.fft</span> <span class="kn">import</span> <span class="n">fft2</span><span class="p">,</span> <span class="n">fft_interpolate</span><span class="p">,</span> <span class="n">fft_crop</span>
-<span class="kn">from</span> <span class="nn">abtem.core.grid</span> <span class="kn">import</span> <span class="n">adjusted_gpts</span><span class="p">,</span> <span class="n">polar_spatial_frequencies</span>
+<span class="kn">from</span> <span class="nn">abtem.core.grid</span> <span class="kn">import</span> <span class="n">adjusted_gpts</span><span class="p">,</span> <span class="n">polar_spatial_frequencies</span><span class="p">,</span> <span class="n">spatial_frequencies</span>
 <span class="kn">from</span> <span class="nn">abtem.core.indexing</span> <span class="kn">import</span> <span class="n">IndexedDiffractionPatterns</span>
 <span class="kn">from</span> <span class="nn">abtem.core.interpolate</span> <span class="kn">import</span> <span class="n">interpolate_bilinear</span>
 <span class="kn">from</span> <span class="nn">abtem.core.utils</span> <span class="kn">import</span> <span class="n">CopyMixin</span><span class="p">,</span> <span class="n">EqualityMixin</span><span class="p">,</span> <span class="n">label_to_index</span>
@@ -1136,7 +1136,7 @@ title="Open an issue"
 
 
 <span class="k">def</span> <span class="nf">_scanned_measurement_type</span><span class="p">(</span>
-        <span class="n">measurement</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;BaseMeasurement&quot;</span><span class="p">,</span> <span class="s2">&quot;BaseWaves&quot;</span><span class="p">]</span>
+    <span class="n">measurement</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;BaseMeasurement&quot;</span><span class="p">,</span> <span class="s2">&quot;BaseWaves&quot;</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">[</span><span class="s2">&quot;BaseMeasurement&quot;</span><span class="p">]:</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_scan_shape</span><span class="p">(</span><span class="n">measurement</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_SinglePointMeasurement</span>
@@ -1155,9 +1155,9 @@ title="Open an issue"
 
 
 <span class="k">def</span> <span class="nf">_reduced_scanned_images_or_line_profiles</span><span class="p">(</span>
-        <span class="n">new_array</span><span class="p">,</span>
-        <span class="n">old_measurement</span><span class="p">,</span>
-        <span class="n">metadata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">new_array</span><span class="p">,</span>
+    <span class="n">old_measurement</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;RealSpaceLineProfiles&quot;</span><span class="p">,</span> <span class="s2">&quot;Images&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
     <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1241,17 +1241,50 @@ title="Open an issue"
     <span class="k">return</span> <span class="n">extent</span>
 
 
+<span class="k">def</span> <span class="nf">_annular_detector_mask</span><span class="p">(</span>
+    <span class="n">gpts</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">sampling</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">inner</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">offset</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+    <span class="n">fftshift</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">xp</span><span class="o">=</span><span class="n">np</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+
+    <span class="n">kx</span><span class="p">,</span> <span class="n">ky</span> <span class="o">=</span> <span class="n">spatial_frequencies</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="kc">False</span><span class="p">,</span> <span class="n">xp</span><span class="p">)</span>
+
+    <span class="n">k2</span> <span class="o">=</span> <span class="n">kx</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">ky</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="n">bins</span> <span class="o">=</span> <span class="p">(</span><span class="n">k2</span> <span class="o">&gt;=</span> <span class="n">inner</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">k2</span> <span class="o">&lt;</span> <span class="n">outer</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">):</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">])),</span>
+            <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># if (abs(offset[0]) &gt; bins[0]) or (abs(offset[1]) &gt; bins[1]):</span>
+        <span class="c1">#     raise RuntimeError(&quot;Detector offset exceeds maximum detected angle.&quot;)</span>
+
+        <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">fftshift</span><span class="p">:</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">bins</span>
+
+
 <span class="k">def</span> <span class="nf">_polar_detector_bins</span><span class="p">(</span>
-        <span class="n">gpts</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
-        <span class="n">sampling</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
-        <span class="n">inner</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">nbins_radial</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">nbins_azimuthal</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">rotation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">offset</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
-        <span class="n">fftshift</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">return_indices</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">gpts</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">sampling</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">inner</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">nbins_radial</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">nbins_azimuthal</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">rotation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">offset</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+    <span class="n">fftshift</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">return_indices</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
     <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="n">polar_spatial_frequencies</span><span class="p">(</span>
         <span class="n">gpts</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
@@ -1275,8 +1308,8 @@ title="Open an issue"
             <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span>
         <span class="p">)</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">bins</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Detector offset exceeds maximum detected angle.&quot;</span><span class="p">)</span>
+        <span class="c1"># if (abs(offset[0]) &gt; bins[0]) or (abs(offset[1]) &gt; bins[1]):</span>
+        <span class="c1">#     raise RuntimeError(&quot;Detector offset exceeds maximum detected angle.&quot;)</span>
 
         <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
@@ -1339,11 +1372,11 @@ title="Open an issue"
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="BaseMeasurement.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.BaseMeasurement.html#abtem.measurements.BaseMeasurement.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">array</span><span class="p">,</span>
-            <span class="n">ensemble_axes_metadata</span><span class="p">,</span>
-            <span class="n">metadata</span><span class="p">,</span>
-            <span class="n">allow_base_axis_chunks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">array</span><span class="p">,</span>
+        <span class="n">ensemble_axes_metadata</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">,</span>
+        <span class="n">allow_base_axis_chunks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
 
         <span class="k">if</span> <span class="n">ensemble_axes_metadata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1361,7 +1394,7 @@ title="Open an issue"
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_base_axis_chunks</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span> <span class="ow">and</span> <span class="p">(</span>
-                    <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">chunks</span> <span class="ow">in</span> <span class="n">array</span><span class="o">.</span><span class="n">chunks</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
+                <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">chunks</span> <span class="ow">in</span> <span class="n">array</span><span class="o">.</span><span class="n">chunks</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
             <span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Chunks not allowed in base axes of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s2">.&quot;</span>
@@ -1442,7 +1475,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_element_wise_func</span><span class="p">(</span><span class="n">abs2</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="BaseMeasurement.relative_difference"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.BaseMeasurement.html#abtem.measurements.BaseMeasurement.relative_difference">[docs]</a>    <span class="k">def</span> <span class="nf">relative_difference</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;BaseMeasurement&quot;</span><span class="p">,</span> <span class="n">min_relative_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;BaseMeasurement&quot;</span><span class="p">,</span> <span class="n">min_relative_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates the relative difference with respect to another compatible measurement.</span>
@@ -1475,12 +1508,12 @@ title="Open an issue"
 
     <span class="k">def</span> <span class="nf">power</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number</span><span class="p">):</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;array&quot;</span><span class="p">,))</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span> <span class="o">**</span> <span class="n">number</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">**</span><span class="n">number</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 <div class="viewcode-block" id="BaseMeasurement.from_array_and_metadata"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.BaseMeasurement.html#abtem.measurements.BaseMeasurement.from_array_and_metadata">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">from_array_and_metadata</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">axes_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">],</span> <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">axes_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">],</span> <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;T&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Documented in the subclasses.&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
@@ -1527,11 +1560,11 @@ title="Open an issue"
         <span class="p">)</span>
 
 <div class="viewcode-block" id="BaseMeasurement.poisson_noise"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.BaseMeasurement.html#abtem.measurements.BaseMeasurement.poisson_noise">[docs]</a>    <span class="k">def</span> <span class="nf">poisson_noise</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">dose_per_area</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">total_dose</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dose_per_area</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">total_dose</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add Poisson noise (i.e. shot noise) to a measurement corresponding to the provided &#39;total_dose&#39; (per measurement</span>
@@ -1608,7 +1641,7 @@ title="Open an issue"
         <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;array&quot;</span><span class="p">,))</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">arrays</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ensemble_axes_metadata&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">axes_metadata</span> <span class="o">+</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ensemble_axes_metadata&quot;</span><span class="p">]</span>
+            <span class="n">axes_metadata</span> <span class="o">+</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ensemble_axes_metadata&quot;</span><span class="p">]</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
@@ -1670,11 +1703,11 @@ title="Open an issue"
     <span class="n">_base_dims</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># Images are assumed to be 2D</span>
 
 <div class="viewcode-block" id="Images.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.Images.html#abtem.measurements.Images.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">array</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">],</span>
-            <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
-            <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">array</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">],</span>
+        <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+        <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">sampling</span><span class="p">):</span>
@@ -1796,7 +1829,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Images.crop"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.Images.html#abtem.measurements.Images.crop">[docs]</a>    <span class="k">def</span> <span class="nf">crop</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">extent</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">offset</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">extent</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">offset</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Crop images to a smaller extent.</span>
@@ -1824,24 +1857,24 @@ title="Open an issue"
         <span class="p">)</span>
 
         <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span>
-                <span class="o">...</span><span class="p">,</span>
-                <span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">new_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">new_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                <span class="p">]</span>
+            <span class="o">...</span><span class="p">,</span>
+            <span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">new_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">new_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="p">]</span>
 
         <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;array&quot;</span><span class="p">,))</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Images.interpolate"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.Images.html#abtem.measurements.Images.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">gpts</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;fft&quot;</span><span class="p">,</span>
-            <span class="n">boundary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;periodic&quot;</span><span class="p">,</span>
-            <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
-            <span class="n">normalization</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;values&quot;</span><span class="p">,</span>
-            <span class="n">cval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">gpts</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;fft&quot;</span><span class="p">,</span>
+        <span class="n">boundary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;periodic&quot;</span><span class="p">,</span>
+        <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">normalization</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;values&quot;</span><span class="p">,</span>
+        <span class="n">cval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Images&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Interpolate images producing equivalent images with a different sampling. Either &#39;sampling&#39; or &#39;gpts&#39; must be</span>
@@ -1981,15 +2014,15 @@ title="Open an issue"
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">interpolate_line_at_position</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">center</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Atom</span><span class="p">],</span>
-            <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-            <span class="n">extent</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-            <span class="n">gpts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-            <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
-            <span class="n">endpoint</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">center</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Atom</span><span class="p">],</span>
+        <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">extent</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">gpts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">endpoint</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
 
         <span class="kn">from</span> <span class="nn">abtem.scan</span> <span class="kn">import</span> <span class="n">LineScan</span>
@@ -2007,15 +2040,15 @@ title="Open an issue"
         <span class="p">)</span>
 
 <div class="viewcode-block" id="Images.interpolate_line"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.Images.html#abtem.measurements.Images.interpolate_line">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate_line</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">start</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Atom</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">end</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Atom</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">gpts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-            <span class="n">margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-            <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
-            <span class="n">endpoint</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Atom</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Atom</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">gpts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">endpoint</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;RealSpaceLineProfiles&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Interpolate image(s) along a given line. Either &#39;sampling&#39; or &#39;gpts&#39; must be provided.</span>
@@ -2076,8 +2109,8 @@ title="Open an issue"
             <span class="n">perpendicular_direction</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">direction</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">direction</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
             <span class="n">n</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">width</span> <span class="o">/</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="n">perpendicular_positions</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">xp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">n</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">))[:,</span> <span class="kc">None</span><span class="p">]</span>
-                    <span class="o">*</span> <span class="n">perpendicular_direction</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+                <span class="n">xp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">n</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">))[:,</span> <span class="kc">None</span><span class="p">]</span>
+                <span class="o">*</span> <span class="n">perpendicular_direction</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
             <span class="p">)</span>
             <span class="n">positions</span> <span class="o">=</span> <span class="n">perpendicular_positions</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">positions</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
 
@@ -2131,10 +2164,10 @@ title="Open an issue"
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Images.gaussian_filter"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.Images.html#abtem.measurements.Images.gaussian_filter">[docs]</a>    <span class="k">def</span> <span class="nf">gaussian_filter</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">sigma</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
-            <span class="n">boundary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;periodic&quot;</span><span class="p">,</span>
-            <span class="n">cval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sigma</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+        <span class="n">boundary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;periodic&quot;</span><span class="p">,</span>
+        <span class="n">cval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Apply 2D gaussian filter to image(s).</span>
@@ -2238,32 +2271,32 @@ title="Open an issue"
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="Images.show"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.Images.html#abtem.measurements.Images.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;viridis&quot;</span><span class="p">,</span>
-            <span class="n">explode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">figsize</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">title</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">panel_titles</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">x_ticks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">y_ticks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">x_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">y_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">row_super_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="n">col_super_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="n">power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-            <span class="n">vmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">vmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">common_color_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">cbar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="n">cbar_labels</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">sizebar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="n">float_formatting</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.2f&quot;</span><span class="p">,</span>
-            <span class="n">panel_labels</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">image_grid_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">imshow_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">anchored_text_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">complex_coloring_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;viridis&quot;</span><span class="p">,</span>
+        <span class="n">explode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">figsize</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">title</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">panel_titles</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">x_ticks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">y_ticks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">x_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">y_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">row_super_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">col_super_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">vmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">vmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">common_color_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">cbar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cbar_labels</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sizebar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">float_formatting</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.2f&quot;</span><span class="p">,</span>
+        <span class="n">panel_labels</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">image_grid_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">imshow_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">anchored_text_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">complex_coloring_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Axes</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Show the image(s) using matplotlib.</span>
@@ -2382,11 +2415,11 @@ title="Open an issue"
     <span class="n">_base_dims</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-            <span class="n">sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_sampling</span> <span class="o">=</span> <span class="n">sampling</span>
@@ -2480,11 +2513,11 @@ title="Open an issue"
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">gpts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
-            <span class="n">endpoint</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">gpts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">endpoint</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;T&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Interpolate line profile(s) producing equivalent line profile(s) with a different sampling. Either &#39;sampling&#39; or</span>
@@ -2570,11 +2603,11 @@ title="Open an issue"
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="RealSpaceLineProfiles.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.RealSpaceLineProfiles.html#abtem.measurements.RealSpaceLineProfiles.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-            <span class="n">sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -2602,21 +2635,24 @@ title="Open an issue"
 
     <span class="k">def</span> <span class="nf">add_to_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;The metadata does not contain the keys &#39;start&#39; and &#39;end&#39;&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;The metadata does not contain the keys &#39;start&#39; and &#39;end&#39;&quot;</span>
+            <span class="p">)</span>
 
         <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">]</span>
         <span class="kn">from</span> <span class="nn">abtem.scan</span> <span class="kn">import</span> <span class="n">LineScan</span>
+
         <span class="k">return</span> <span class="n">LineScan</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">)</span><span class="o">.</span><span class="n">add_to_plot</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 <div class="viewcode-block" id="RealSpaceLineProfiles.show"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.RealSpaceLineProfiles.html#abtem.measurements.RealSpaceLineProfiles.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">figsize</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">x_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">y_label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># TODO: needs to be implemented!</span>
-            <span class="n">float_formatting</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.2f&quot;</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">figsize</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">x_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">y_label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># TODO: needs to be implemented!</span>
+        <span class="n">float_formatting</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.2f&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Show the line profile(s) using matplotlib.</span>
@@ -2673,11 +2709,11 @@ title="Open an issue"
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ReciprocalSpaceLineProfiles.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.ReciprocalSpaceLineProfiles.html#abtem.measurements.ReciprocalSpaceLineProfiles.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-            <span class="n">sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">array</span><span class="o">=</span><span class="n">array</span><span class="p">,</span>
@@ -2695,15 +2731,15 @@ title="Open an issue"
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e3</span>
 
 <div class="viewcode-block" id="ReciprocalSpaceLineProfiles.show"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.ReciprocalSpaceLineProfiles.html#abtem.measurements.ReciprocalSpaceLineProfiles.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">figsize</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">x_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">y_label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># TODO: needs to be implemented</span>
-            <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;reciprocal&quot;</span><span class="p">,</span>
-            <span class="n">float_formatting</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.2f&quot;</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">figsize</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">x_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">y_label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># TODO: needs to be implemented</span>
+        <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;reciprocal&quot;</span><span class="p">,</span>
+        <span class="n">float_formatting</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.2f&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Show the reciprocal-space line profile(s) using matplotlib.</span>
@@ -2761,7 +2797,7 @@ title="Open an issue"
     <span class="n">ikx</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="n">sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">iky</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">ny</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="n">sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">grid_ikx</span><span class="p">,</span> <span class="n">grid_iky</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">ikx</span><span class="p">,</span> <span class="n">iky</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)</span>
-    <span class="n">k</span> <span class="o">=</span> <span class="n">grid_ikx</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">grid_iky</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">grid_ikx</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">grid_iky</span><span class="o">**</span><span class="mi">2</span>
     <span class="n">k</span><span class="p">[</span><span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e-12</span>
     <span class="n">That</span> <span class="o">=</span> <span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">gx</span><span class="p">)</span> <span class="o">*</span> <span class="n">grid_ikx</span> <span class="o">+</span> <span class="n">xp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">gy</span><span class="p">)</span> <span class="o">*</span> <span class="n">grid_iky</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">k</span><span class="p">)</span>
     <span class="n">T</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifft2</span><span class="p">(</span><span class="n">That</span><span class="p">))</span>
@@ -2770,11 +2806,11 @@ title="Open an issue"
 
 
 <span class="k">def</span> <span class="nf">_fourier_space_bilinear_nodes_and_weight</span><span class="p">(</span>
-        <span class="n">old_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
-        <span class="n">new_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
-        <span class="n">old_angular_sampling</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
-        <span class="n">new_angular_sampling</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
-        <span class="n">xp</span><span class="p">,</span>
+    <span class="n">old_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">new_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">old_angular_sampling</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">new_angular_sampling</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">xp</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
     <span class="n">nodes</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
@@ -2804,9 +2840,7 @@ title="Open an issue"
     <span class="k">return</span> <span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">vw</span><span class="p">,</span> <span class="n">uw</span>
 
 
-<span class="k">def</span> <span class="nf">_gaussian_source_size</span><span class="p">(</span>
-        <span class="n">measurements</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
-<span class="p">):</span>
+<span class="k">def</span> <span class="nf">_gaussian_source_size</span><span class="p">(</span><span class="n">measurements</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]):</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_scan_axes</span><span class="p">(</span><span class="n">measurements</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
             <span class="s2">&quot;Gaussian source size not implemented for diffraction patterns with less than two scan axes.&quot;</span>
@@ -2847,10 +2881,7 @@ title="Open an issue"
 
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">measurements</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;array&quot;</span><span class="p">,))</span>
 
-    <span class="k">return</span> <span class="n">measurements</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
-        <span class="n">array</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">measurements</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="DiffractionPatterns"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.DiffractionPatterns.html#abtem.measurements.DiffractionPatterns">[docs]</a><span class="k">class</span> <span class="nc">DiffractionPatterns</span><span class="p">(</span><span class="n">BaseMeasurement</span><span class="p">):</span>
@@ -2876,12 +2907,12 @@ title="Open an issue"
     <span class="n">_base_dims</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># The dimension of diffraction patterns is 2.</span>
 
 <div class="viewcode-block" id="DiffractionPatterns.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.DiffractionPatterns.html#abtem.measurements.DiffractionPatterns.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">array</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">],</span>
-            <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
-            <span class="n">fftshift</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">array</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">],</span>
+        <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+        <span class="n">fftshift</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">sampling</span><span class="p">):</span>
@@ -2958,7 +2989,7 @@ title="Open an issue"
         <span class="p">]</span>
 
 <div class="viewcode-block" id="DiffractionPatterns.index_diffraction_spots"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.DiffractionPatterns.html#abtem.measurements.DiffractionPatterns.index_diffraction_spots">[docs]</a>    <span class="k">def</span> <span class="nf">index_diffraction_spots</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Cell</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Cell</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Indexes the Bragg reflections (diffraction spots) by their Miller indices.</span>
@@ -2974,7 +3005,10 @@ title="Open an issue"
 <span class="sd">        indexed_patterns : IndexedDiffractionPatterns</span>
 <span class="sd">            The indexed diffraction pattern(s).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">IndexedDiffractionPatterns</span><span class="o">.</span><span class="n">index_diffraction_patterns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span></div>
+
+        <span class="n">diffraction_patterns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_direct</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">IndexedDiffractionPatterns</span><span class="o">.</span><span class="n">index_diffraction_patterns</span><span class="p">(</span><span class="n">diffraction_patterns</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">fftshift</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -3127,7 +3161,9 @@ title="Open an issue"
     <span class="c1">#     return array</span>
     <span class="c1">#     # print(array.chunks[-2:], gpts[0] / self.scan_shape[0] * sum(array.chunks[-2]), gpts)</span>
 
-<div class="viewcode-block" id="DiffractionPatterns.interpolate"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.DiffractionPatterns.html#abtem.measurements.DiffractionPatterns.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="DiffractionPatterns.interpolate"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.DiffractionPatterns.html#abtem.measurements.DiffractionPatterns.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">sampling</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">gpts</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Interpolate diffraction pattern(s) producing equivalent pattern(s) with a different sampling.</span>
 
@@ -3143,14 +3179,19 @@ title="Open an issue"
 <span class="sd">        interpolated_diffraction_patterns : DiffractionPatterns</span>
 <span class="sd">            The interpolated diffraction pattern(s).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">gpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sampling</span> <span class="o">==</span> <span class="s2">&quot;uniform&quot;</span><span class="p">:</span>
+                <span class="n">sampling</span> <span class="o">=</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">),)</span> <span class="o">*</span> <span class="mi">2</span>
 
-        <span class="k">if</span> <span class="n">sampling</span> <span class="o">==</span> <span class="s2">&quot;uniform&quot;</span><span class="p">:</span>
-            <span class="n">sampling</span> <span class="o">=</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">),)</span> <span class="o">*</span> <span class="mi">2</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">sampling</span><span class="p">):</span>
+                <span class="n">sampling</span> <span class="o">=</span> <span class="p">(</span><span class="n">sampling</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">2</span>
 
-        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">sampling</span><span class="p">):</span>
-            <span class="n">sampling</span> <span class="o">=</span> <span class="p">(</span><span class="n">sampling</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">2</span>
-
-        <span class="n">sampling</span><span class="p">,</span> <span class="n">gpts</span> <span class="o">=</span> <span class="n">adjusted_gpts</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_shape</span><span class="p">)</span>
+            <span class="n">sampling</span><span class="p">,</span> <span class="n">gpts</span> <span class="o">=</span> <span class="n">adjusted_gpts</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_shape</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sampling</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="n">d</span> <span class="o">*</span> <span class="n">old_n</span> <span class="o">/</span> <span class="n">new_n</span>
+                <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">old_n</span><span class="p">,</span> <span class="n">new_n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_shape</span><span class="p">,</span> <span class="n">gpts</span><span class="p">)</span>
+            <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
             <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span>
@@ -3186,8 +3227,62 @@ title="Open an issue"
                     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_angles</span><span class="p">)</span><span class="si">}</span><span class="s2"> mrad), please increase the number of grid points.&quot;</span>
                 <span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">gaussian_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+        <span class="c1"># if len(_scan_axes(self)) &lt; 2:</span>
+        <span class="c1">#     raise RuntimeError(</span>
+        <span class="c1">#         &quot;Gaussian source size not implemented for diffraction patterns with less than two scan axes.&quot;</span>
+        <span class="c1">#     )</span>
+        <span class="c1">#</span>
+        <span class="c1"># if np.isscalar(sigma):</span>
+        <span class="c1">#     sigma = (sigma,) * 2</span>
+
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+        <span class="n">gaussian_filter</span> <span class="o">=</span> <span class="n">get_ndimage_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_array</span><span class="p">)</span><span class="o">.</span><span class="n">gaussian_filter</span>
+
+        <span class="c1"># padded_sigma = ()</span>
+        <span class="c1"># depth = ()</span>
+        <span class="c1"># i = 0</span>
+        <span class="c1"># for axis, n in zip(self.ensemble_axes, self.ensemble_shape):</span>
+        <span class="c1">#     if axis in _scan_axes(self):</span>
+        <span class="c1">#         scan_sampling = _scan_sampling(self)[i]</span>
+        <span class="c1">#         padded_sigma += (sigma[i] / scan_sampling,)</span>
+        <span class="c1">#         depth += (min(int(np.ceil(4.0 * sigma[i] / scan_sampling)), n),)</span>
+        <span class="c1">#         i += 1</span>
+        <span class="c1">#     else:</span>
+        <span class="c1">#         padded_sigma += (0.0,)</span>
+        <span class="c1">#         depth += (0,)</span>
+        <span class="c1">#</span>
+        <span class="c1"># padded_sigma += (0.0,) * 2</span>
+        <span class="c1"># depth += (0,) * 2</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">sigma</span><span class="p">):</span>
+            <span class="n">sigma</span> <span class="o">=</span> <span class="p">(</span><span class="n">sigma</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">2</span>
+
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">s</span> <span class="o">/</span> <span class="n">d</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">))</span>
+        <span class="n">padded_sigma</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span> <span class="o">+</span> <span class="n">sigma</span>
+        <span class="n">depth</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">ps</span><span class="p">))</span> <span class="k">for</span> <span class="n">ps</span> <span class="ow">in</span> <span class="n">padded_sigma</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">map_overlap</span><span class="p">(</span>
+                <span class="n">gaussian_filter</span><span class="p">,</span>
+                <span class="n">sigma</span><span class="o">=</span><span class="n">padded_sigma</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;wrap&quot;</span><span class="p">,</span>
+                <span class="n">depth</span><span class="o">=</span><span class="n">depth</span><span class="p">,</span>
+                <span class="n">meta</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">gaussian_filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">padded_sigma</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;wrap&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+            <span class="n">array</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span>
+            <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+            <span class="n">fftshift</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fftshift</span><span class="p">,</span>
+        <span class="p">)</span>
+
 <div class="viewcode-block" id="DiffractionPatterns.gaussian_source_size"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.DiffractionPatterns.html#abtem.measurements.DiffractionPatterns.gaussian_source_size">[docs]</a>    <span class="k">def</span> <span class="nf">gaussian_source_size</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DiffractionPatterns&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the effect of a finite source size on diffraction pattern(s) using a Gaussian filter.</span>
@@ -3259,13 +3354,13 @@ title="Open an issue"
         <span class="c1"># )</span>
 
 <div class="viewcode-block" id="DiffractionPatterns.polar_binning"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.DiffractionPatterns.html#abtem.measurements.DiffractionPatterns.polar_binning">[docs]</a>    <span class="k">def</span> <span class="nf">polar_binning</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">nbins_radial</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-            <span class="n">nbins_azimuthal</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-            <span class="n">inner</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-            <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">rotation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-            <span class="n">offset</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">nbins_radial</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">nbins_azimuthal</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">inner</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rotation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create polar measurements from the diffraction patterns by binning the measurements on a polar grid. This</span>
@@ -3359,10 +3454,10 @@ title="Open an issue"
                 <span class="n">sampling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">,</span>
                 <span class="n">drop_axis</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span>
                 <span class="n">chunks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">chunks</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-                       <span class="o">+</span> <span class="p">(</span>
-                           <span class="p">(</span><span class="n">nbins_radial</span><span class="p">,),</span>
-                           <span class="p">(</span><span class="n">nbins_azimuthal</span><span class="p">,),</span>
-                       <span class="p">),</span>
+                <span class="o">+</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="n">nbins_radial</span><span class="p">,),</span>
+                    <span class="p">(</span><span class="n">nbins_azimuthal</span><span class="p">,),</span>
+                <span class="p">),</span>
                 <span class="n">new_axis</span><span class="o">=</span><span class="p">(</span>
                     <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span>
                     <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
@@ -3391,7 +3486,7 @@ title="Open an issue"
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="DiffractionPatterns.radial_binning"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.DiffractionPatterns.html#abtem.measurements.DiffractionPatterns.radial_binning">[docs]</a>    <span class="k">def</span> <span class="nf">radial_binning</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">step_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">inner</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">step_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">inner</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PolarMeasurements&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create polar measurement(s) from the diffraction pattern(s) by binning the measurements in annular regions. This</span>
@@ -3421,7 +3516,7 @@ title="Open an issue"
         <span class="n">nbins_radial</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">outer</span> <span class="o">-</span> <span class="n">inner</span><span class="p">)</span> <span class="o">/</span> <span class="n">step_size</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">polar_binning</span><span class="p">(</span><span class="n">nbins_radial</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">inner</span><span class="p">,</span> <span class="n">outer</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DiffractionPatterns.integrate_radial"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.DiffractionPatterns.html#abtem.measurements.DiffractionPatterns.integrate_radial">[docs]</a>    <span class="k">def</span> <span class="nf">integrate_radial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inner</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Images</span><span class="p">:</span>
+<div class="viewcode-block" id="DiffractionPatterns.integrate_radial"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.DiffractionPatterns.html#abtem.measurements.DiffractionPatterns.integrate_radial">[docs]</a>    <span class="k">def</span> <span class="nf">integrate_radial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inner</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">Images</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create images by integrating the diffraction patterns over an annulus defined by an inner and outer integration</span>
 <span class="sd">        angle.</span>
@@ -3444,20 +3539,25 @@ title="Open an issue"
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">integrate_fourier_space</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">sampling</span><span class="p">):</span>
-            <span class="n">bins</span> <span class="o">=</span> <span class="n">_polar_detector_bins</span><span class="p">(</span>
+            <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+
+            <span class="n">bins</span> <span class="o">=</span> <span class="n">_annular_detector_mask</span><span class="p">(</span>
                 <span class="n">gpts</span><span class="o">=</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:],</span>
                 <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
                 <span class="n">inner</span><span class="o">=</span><span class="n">inner</span><span class="p">,</span>
                 <span class="n">outer</span><span class="o">=</span><span class="n">outer</span><span class="p">,</span>
-                <span class="n">nbins_radial</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                <span class="n">nbins_azimuthal</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                 <span class="n">fftshift</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fftshift</span><span class="p">,</span>
+                <span class="n">xp</span><span class="o">=</span><span class="n">xp</span><span class="p">,</span>
             <span class="p">)</span>
 
-            <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
-            <span class="n">bins</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="c1"># import matplotlib.pyplot as plt</span>
+            <span class="c1"># plt.imshow(xp.asnumpy(bins))</span>
+            <span class="c1"># plt.show()</span>
 
-            <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">array</span> <span class="o">*</span> <span class="p">(</span><span class="n">bins</span> <span class="o">==</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+            <span class="c1">#bins = xp.ones_like(array)</span>
+
+            <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">array</span> <span class="o">*</span> <span class="n">bins</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
             <span class="n">integrated_intensity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span>
@@ -3501,7 +3601,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">com</span>
 
 <div class="viewcode-block" id="DiffractionPatterns.center_of_mass"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.DiffractionPatterns.html#abtem.measurements.DiffractionPatterns.center_of_mass">[docs]</a>    <span class="k">def</span> <span class="nf">center_of_mass</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;reciprocal&quot;</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;reciprocal&quot;</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Images</span><span class="p">,</span> <span class="n">RealSpaceLineProfiles</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate center-of-mass images or line profiles from diffraction patterns. The results are of type `complex`</span>
@@ -3536,15 +3636,15 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">_reduced_scanned_images_or_line_profiles</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DiffractionPatterns.epie"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.DiffractionPatterns.html#abtem.measurements.DiffractionPatterns.epie">[docs]</a>    <span class="k">def</span> <span class="nf">epie</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">probe_guess</span><span class="p">,</span>
-            <span class="n">max_batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
-            <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
-            <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-            <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-            <span class="n">fix_probe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="n">fix_com</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">crop_to_scan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">probe_guess</span><span class="p">,</span>
+        <span class="n">max_batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+        <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">fix_probe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">fix_com</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">crop_to_scan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Images</span><span class="p">:</span>
 
         <span class="sd">&quot;&quot;&quot;</span>
@@ -3607,7 +3707,7 @@ title="Open an issue"
         <span class="k">def</span> <span class="nf">bandlimit</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">inner</span><span class="p">,</span> <span class="n">outer</span><span class="p">):</span>
             <span class="n">alpha_x</span><span class="p">,</span> <span class="n">alpha_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_coordinates</span>
             <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha_x</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">alpha_y</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
-            <span class="n">block</span> <span class="o">=</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">&gt;=</span> <span class="n">inner</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">&lt;</span> <span class="n">outer</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">block</span> <span class="o">=</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">&gt;=</span> <span class="n">inner</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">&lt;</span> <span class="n">outer</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">array</span> <span class="o">*</span> <span class="n">block</span>
 
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
@@ -3623,11 +3723,12 @@ title="Open an issue"
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">crop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_angle</span><span class="p">):</span>
-        <span class="n">gpts</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">max_angle</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">max_angle</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="p">)</span>
+    <span class="k">def</span> <span class="nf">crop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_angle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">gpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">gpts</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">max_angle</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">max_angle</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
         <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span>
@@ -3677,33 +3778,33 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">array</span>
 
 <div class="viewcode-block" id="DiffractionPatterns.show"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.DiffractionPatterns.html#abtem.measurements.DiffractionPatterns.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;reciprocal&quot;</span><span class="p">,</span>
-            <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;viridis&quot;</span><span class="p">,</span>
-            <span class="n">explode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">figsize</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">title</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">panel_titles</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">x_ticks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">y_ticks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">x_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">y_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">row_super_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="n">col_super_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="n">power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-            <span class="n">vmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">vmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">common_color_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">cbar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="n">cbar_labels</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">sizebar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="n">float_formatting</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.2f&quot;</span><span class="p">,</span>
-            <span class="n">panel_labels</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">image_grid_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">imshow_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">anchored_text_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">complex_coloring_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;reciprocal&quot;</span><span class="p">,</span>
+        <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;viridis&quot;</span><span class="p">,</span>
+        <span class="n">explode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">figsize</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">title</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">panel_titles</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">x_ticks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">y_ticks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">x_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">y_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">row_super_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">col_super_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">vmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">vmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">common_color_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">cbar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cbar_labels</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sizebar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">float_formatting</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.2f&quot;</span><span class="p">,</span>
+        <span class="n">panel_labels</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">image_grid_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">imshow_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">anchored_text_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">complex_coloring_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Axes</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Show the diffraction pattern(s) using matplotlib.</span>
@@ -3862,14 +3963,14 @@ title="Open an issue"
     <span class="n">_base_dims</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># The dimension of polar measurements is 2.</span>
 
 <div class="viewcode-block" id="PolarMeasurements.__init__"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.PolarMeasurements.html#abtem.measurements.PolarMeasurements.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-            <span class="n">radial_sampling</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-            <span class="n">azimuthal_sampling</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-            <span class="n">radial_offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-            <span class="n">azimuthal_offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-            <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">radial_sampling</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">azimuthal_sampling</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">radial_offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">azimuthal_offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_radial_sampling</span> <span class="o">=</span> <span class="n">radial_sampling</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_azimuthal_sampling</span> <span class="o">=</span> <span class="n">azimuthal_sampling</span>
@@ -3884,7 +3985,7 @@ title="Open an issue"
 
 <div class="viewcode-block" id="PolarMeasurements.from_array_and_metadata"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.PolarMeasurements.html#abtem.measurements.PolarMeasurements.from_array_and_metadata">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_array_and_metadata</span><span class="p">(</span>
-            <span class="bp">cls</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">axes_metadata</span><span class="p">,</span> <span class="n">metadata</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">axes_metadata</span><span class="p">,</span> <span class="n">metadata</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PolarMeasurements&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Creates polar measurements(s) from a given array and metadata.</span>
@@ -3962,7 +4063,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_azimuthal_offset</span>
 
 <div class="viewcode-block" id="PolarMeasurements.integrate_radial"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.PolarMeasurements.html#abtem.measurements.PolarMeasurements.integrate_radial">[docs]</a>    <span class="k">def</span> <span class="nf">integrate_radial</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">inner</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">inner</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Images</span><span class="p">,</span> <span class="n">RealSpaceLineProfiles</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create images by integrating the polar measurements over an annulus defined by an inner and outer integration</span>
@@ -3986,10 +4087,10 @@ title="Open an issue"
 
     <span class="c1"># TODO: to be documented</span>
 <div class="viewcode-block" id="PolarMeasurements.integrate"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.PolarMeasurements.html#abtem.measurements.PolarMeasurements.integrate">[docs]</a>    <span class="k">def</span> <span class="nf">integrate</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">radial_limits</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">azimuthal_limits</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">detector_regions</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">radial_limits</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">azimuthal_limits</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">detector_regions</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Images</span><span class="p">,</span> <span class="n">RealSpaceLineProfiles</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Integrate polar regions to produce an image or line profiles.</span>
@@ -4024,6 +4125,9 @@ title="Open an issue"
                 <span class="p">)</span>
                 <span class="n">radial_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">inner_index</span><span class="p">,</span> <span class="n">outer_index</span><span class="p">)</span>
 
+                <span class="k">if</span> <span class="n">outer_index</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Integration limit exceeded.&quot;</span><span class="p">)</span>
+
             <span class="k">if</span> <span class="n">azimuthal_limits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">azimuthal_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -4036,7 +4140,7 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">_reduced_scanned_images_or_line_profiles</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="PolarMeasurements.gaussian_source_size"><a class="viewcode-back" href="../../reference/api/_autosummary/abtem.measurements.PolarMeasurements.html#abtem.measurements.PolarMeasurements.gaussian_source_size">[docs]</a>    <span class="k">def</span> <span class="nf">gaussian_source_size</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PolarMeasurements&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the effect of a finite source size on diffraction pattern(s) using a Gaussian filter.</span>
@@ -4062,10 +4166,10 @@ title="Open an issue"
         <span class="k">return</span> <span class="n">_gaussian_source_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">differentials</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">direction_1</span><span class="p">,</span>
-            <span class="n">direction_2</span><span class="p">,</span>
-            <span class="n">return_complex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">direction_1</span><span class="p">,</span>
+        <span class="n">direction_2</span><span class="p">,</span>
+        <span class="n">return_complex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="n">differential_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span>
             <span class="n">detector_regions</span><span class="o">=</span><span class="n">direction_1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -4090,16 +4194,16 @@ title="Open an issue"
 
     <span class="c1"># TODO: to be documented.</span>
     <span class="k">def</span> <span class="nf">show</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">min_azimuthal_division</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">20</span><span class="p">,</span>
-            <span class="n">grid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">radial_ticks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">azimuthal_ticks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">cbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">min_azimuthal_division</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">grid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">radial_ticks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">azimuthal_ticks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">cbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
 
         <span class="kn">import</span> <span class="nn">matplotlib.patheffects</span> <span class="k">as</span> <span class="nn">pe</span>
