@@ -24,4 +24,5 @@ physical models. Numpy-style docstrings embedded in the code allow the reference
    abtem.atoms
    abtem.multislice
    abtem.prism.s_matrix
+   abtem.indexing
 ```
