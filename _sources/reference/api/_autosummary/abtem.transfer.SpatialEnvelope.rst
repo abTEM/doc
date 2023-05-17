@@ -1,4 +1,4 @@
-﻿SpatialEnvelope
+SpatialEnvelope
 ===============
 
 .. currentmodule:: abtem.transfer

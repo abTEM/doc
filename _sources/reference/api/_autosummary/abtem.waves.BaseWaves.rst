@@ -1,4 +1,4 @@
-﻿BaseWaves
+BaseWaves
 =========
 
 .. currentmodule:: abtem.waves

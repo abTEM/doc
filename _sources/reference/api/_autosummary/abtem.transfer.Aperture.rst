@@ -1,4 +1,4 @@
-﻿Aperture
+Aperture
 ========
 
 .. currentmodule:: abtem.transfer

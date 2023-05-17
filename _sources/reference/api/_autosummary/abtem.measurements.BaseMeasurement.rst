@@ -18,6 +18,7 @@ BaseMeasurement
    
       ~BaseMeasurement.__init__
       ~BaseMeasurement.abs
+      ~BaseMeasurement.apply_transform
       ~BaseMeasurement.check_is_compatible
       ~BaseMeasurement.compute
       ~BaseMeasurement.copy
@@ -25,10 +26,12 @@ BaseMeasurement
       ~BaseMeasurement.ensure_lazy
       ~BaseMeasurement.expand_dims
       ~BaseMeasurement.from_array_and_metadata
+      ~BaseMeasurement.from_partitioned_args
       ~BaseMeasurement.from_zarr
       ~BaseMeasurement.get_items
       ~BaseMeasurement.imag
       ~BaseMeasurement.intensity
+      ~BaseMeasurement.interact
       ~BaseMeasurement.iterate_ensemble
       ~BaseMeasurement.max
       ~BaseMeasurement.mean
@@ -41,6 +44,8 @@ BaseMeasurement
       ~BaseMeasurement.reduce_ensemble
       ~BaseMeasurement.relative_difference
       ~BaseMeasurement.scan_positions
+      ~BaseMeasurement.set_ensemble_axes_metadata
+      ~BaseMeasurement.show
       ~BaseMeasurement.squeeze
       ~BaseMeasurement.std
       ~BaseMeasurement.sum
@@ -48,6 +53,7 @@ BaseMeasurement
       ~BaseMeasurement.to_delayed
       ~BaseMeasurement.to_gpu
       ~BaseMeasurement.to_hyperspy
+      ~BaseMeasurement.to_tiff
       ~BaseMeasurement.to_zarr
       ~BaseMeasurement.visualize_graph
    

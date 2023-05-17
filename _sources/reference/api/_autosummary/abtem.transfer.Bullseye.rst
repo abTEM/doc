@@ -1,4 +1,4 @@
-﻿Bullseye
+Bullseye
 ========
 
 .. currentmodule:: abtem.transfer

@@ -1,4 +1,4 @@
-﻿Vortex
+Vortex
 ======
 
 .. currentmodule:: abtem.transfer

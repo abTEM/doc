@@ -12,16 +12,17 @@ physical models. Numpy-style docstrings embedded in the code allow the reference
    :recursive:
 
    abtem.waves
-   abtem.potentials
    abtem.scan
    abtem.detectors
    abtem.measurements
    abtem.transfer
    abtem.distributions
-   abtem.charge_density
-   abtem.gpaw
+   abtem.potentials.iam
+   abtem.potentials.charge_density
+   abtem.potentials.gpaw
    abtem.visualize
    abtem.atoms
    abtem.multislice
    abtem.prism.s_matrix
+   abtem.indexing
 ```

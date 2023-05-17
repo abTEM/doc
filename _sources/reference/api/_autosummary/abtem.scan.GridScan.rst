@@ -1,4 +1,4 @@
-﻿GridScan
+GridScan
 ========
 
 .. currentmodule:: abtem.scan

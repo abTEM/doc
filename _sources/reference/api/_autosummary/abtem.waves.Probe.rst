@@ -1,4 +1,4 @@
-﻿Probe
+Probe
 =====
 
 .. currentmodule:: abtem.waves
@@ -22,7 +22,7 @@
       ~Probe.insert_transform
       ~Probe.match_grid
       ~Probe.multislice
-      ~Probe.profile
+      ~Probe.profiles
       ~Probe.scan
       ~Probe.show
    
@@ -44,6 +44,7 @@
       ~Probe.base_axes
       ~Probe.base_axes_metadata
       ~Probe.base_shape
+      ~Probe.ctf
       ~Probe.cutoff_angles
       ~Probe.device
       ~Probe.energy
@@ -62,6 +63,7 @@
       ~Probe.reciprocal_space_sampling
       ~Probe.rectangle_cutoff_angles
       ~Probe.sampling
+      ~Probe.semiangle_cutoff
       ~Probe.shape
       ~Probe.tilt
       ~Probe.transforms

@@ -1,4 +1,4 @@
-﻿BaseAperture
+BaseAperture
 ============
 
 .. currentmodule:: abtem.transfer
@@ -46,6 +46,7 @@
       ~BaseAperture.nyquist_sampling
       ~BaseAperture.reciprocal_space_sampling
       ~BaseAperture.sampling
+      ~BaseAperture.semiangle_cutoff
       ~BaseAperture.wavelength
    
    

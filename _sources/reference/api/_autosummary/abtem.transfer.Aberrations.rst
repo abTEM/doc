@@ -1,4 +1,4 @@
-﻿Aberrations
+Aberrations
 ===========
 
 .. currentmodule:: abtem.transfer
@@ -67,6 +67,7 @@
       ~Aberrations.grid
       ~Aberrations.has_aberrations
       ~Aberrations.metadata
+      ~Aberrations.nyquist_sampling
       ~Aberrations.phi12
       ~Aberrations.phi21
       ~Aberrations.phi23
@@ -80,6 +81,7 @@
       ~Aberrations.phi56
       ~Aberrations.reciprocal_space_sampling
       ~Aberrations.sampling
+      ~Aberrations.semiangle_cutoff
       ~Aberrations.wavelength
    
    

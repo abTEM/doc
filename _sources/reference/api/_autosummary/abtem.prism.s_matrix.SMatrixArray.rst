@@ -17,6 +17,7 @@ SMatrixArray
    .. autosummary::
    
       ~SMatrixArray.__init__
+      ~SMatrixArray.apply_transform
       ~SMatrixArray.check_is_compatible
       ~SMatrixArray.compute
       ~SMatrixArray.copy
@@ -36,12 +37,14 @@ SMatrixArray
       ~SMatrixArray.rechunk
       ~SMatrixArray.reduce
       ~SMatrixArray.scan
+      ~SMatrixArray.set_ensemble_axes_metadata
       ~SMatrixArray.squeeze
       ~SMatrixArray.std
       ~SMatrixArray.sum
       ~SMatrixArray.to_cpu
       ~SMatrixArray.to_delayed
       ~SMatrixArray.to_gpu
+      ~SMatrixArray.to_tiff
       ~SMatrixArray.to_zarr
       ~SMatrixArray.visualize_graph
    
@@ -74,7 +77,6 @@ SMatrixArray
       ~SMatrixArray.full_cutoff_angles
       ~SMatrixArray.gpts
       ~SMatrixArray.grid
-      ~SMatrixArray.interpolated_antialias_cutoff_gpts
       ~SMatrixArray.interpolation
       ~SMatrixArray.is_complex
       ~SMatrixArray.is_lazy
@@ -89,7 +91,7 @@ SMatrixArray
       ~SMatrixArray.sampling
       ~SMatrixArray.semiangle_cutoff
       ~SMatrixArray.shape
-      ~SMatrixArray.tilt
+      ~SMatrixArray.storage_device
       ~SMatrixArray.wave_vectors
       ~SMatrixArray.wavelength
       ~SMatrixArray.waves

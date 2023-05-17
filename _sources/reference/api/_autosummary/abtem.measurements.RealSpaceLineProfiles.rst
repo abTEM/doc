@@ -18,7 +18,8 @@ RealSpaceLineProfiles
    
       ~RealSpaceLineProfiles.__init__
       ~RealSpaceLineProfiles.abs
-      ~RealSpaceLineProfiles.add_to_plot
+      ~RealSpaceLineProfiles.add_to_axes
+      ~RealSpaceLineProfiles.apply_transform
       ~RealSpaceLineProfiles.check_is_compatible
       ~RealSpaceLineProfiles.compute
       ~RealSpaceLineProfiles.copy
@@ -26,15 +27,18 @@ RealSpaceLineProfiles
       ~RealSpaceLineProfiles.ensure_lazy
       ~RealSpaceLineProfiles.expand_dims
       ~RealSpaceLineProfiles.from_array_and_metadata
+      ~RealSpaceLineProfiles.from_partitioned_args
       ~RealSpaceLineProfiles.from_zarr
       ~RealSpaceLineProfiles.get_items
       ~RealSpaceLineProfiles.imag
       ~RealSpaceLineProfiles.intensity
+      ~RealSpaceLineProfiles.interact
       ~RealSpaceLineProfiles.interpolate
       ~RealSpaceLineProfiles.iterate_ensemble
       ~RealSpaceLineProfiles.max
       ~RealSpaceLineProfiles.mean
       ~RealSpaceLineProfiles.min
+      ~RealSpaceLineProfiles.normalize_ensemble
       ~RealSpaceLineProfiles.phase
       ~RealSpaceLineProfiles.poisson_noise
       ~RealSpaceLineProfiles.power
@@ -43,6 +47,7 @@ RealSpaceLineProfiles
       ~RealSpaceLineProfiles.reduce_ensemble
       ~RealSpaceLineProfiles.relative_difference
       ~RealSpaceLineProfiles.scan_positions
+      ~RealSpaceLineProfiles.set_ensemble_axes_metadata
       ~RealSpaceLineProfiles.show
       ~RealSpaceLineProfiles.squeeze
       ~RealSpaceLineProfiles.std
@@ -52,6 +57,7 @@ RealSpaceLineProfiles
       ~RealSpaceLineProfiles.to_delayed
       ~RealSpaceLineProfiles.to_gpu
       ~RealSpaceLineProfiles.to_hyperspy
+      ~RealSpaceLineProfiles.to_tiff
       ~RealSpaceLineProfiles.to_zarr
       ~RealSpaceLineProfiles.visualize_graph
       ~RealSpaceLineProfiles.width

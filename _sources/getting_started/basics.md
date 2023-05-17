@@ -101,9 +101,4 @@ the [gallery](user_guide:example_gallery).
 ```{image} ../user_guide/examples/thumbnails/prism_quickstart.png
 :align: center
 ```
-
-+++
-{bdg-success}`basic`
-:::
-
 ::::

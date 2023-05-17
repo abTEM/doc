@@ -18,6 +18,8 @@ ReciprocalSpaceLineProfiles
    
       ~ReciprocalSpaceLineProfiles.__init__
       ~ReciprocalSpaceLineProfiles.abs
+      ~ReciprocalSpaceLineProfiles.add_to_axes
+      ~ReciprocalSpaceLineProfiles.apply_transform
       ~ReciprocalSpaceLineProfiles.check_is_compatible
       ~ReciprocalSpaceLineProfiles.compute
       ~ReciprocalSpaceLineProfiles.copy
@@ -25,15 +27,18 @@ ReciprocalSpaceLineProfiles
       ~ReciprocalSpaceLineProfiles.ensure_lazy
       ~ReciprocalSpaceLineProfiles.expand_dims
       ~ReciprocalSpaceLineProfiles.from_array_and_metadata
+      ~ReciprocalSpaceLineProfiles.from_partitioned_args
       ~ReciprocalSpaceLineProfiles.from_zarr
       ~ReciprocalSpaceLineProfiles.get_items
       ~ReciprocalSpaceLineProfiles.imag
       ~ReciprocalSpaceLineProfiles.intensity
+      ~ReciprocalSpaceLineProfiles.interact
       ~ReciprocalSpaceLineProfiles.interpolate
       ~ReciprocalSpaceLineProfiles.iterate_ensemble
       ~ReciprocalSpaceLineProfiles.max
       ~ReciprocalSpaceLineProfiles.mean
       ~ReciprocalSpaceLineProfiles.min
+      ~ReciprocalSpaceLineProfiles.normalize_ensemble
       ~ReciprocalSpaceLineProfiles.phase
       ~ReciprocalSpaceLineProfiles.poisson_noise
       ~ReciprocalSpaceLineProfiles.power
@@ -42,6 +47,7 @@ ReciprocalSpaceLineProfiles
       ~ReciprocalSpaceLineProfiles.reduce_ensemble
       ~ReciprocalSpaceLineProfiles.relative_difference
       ~ReciprocalSpaceLineProfiles.scan_positions
+      ~ReciprocalSpaceLineProfiles.set_ensemble_axes_metadata
       ~ReciprocalSpaceLineProfiles.show
       ~ReciprocalSpaceLineProfiles.squeeze
       ~ReciprocalSpaceLineProfiles.std
@@ -50,6 +56,7 @@ ReciprocalSpaceLineProfiles
       ~ReciprocalSpaceLineProfiles.to_delayed
       ~ReciprocalSpaceLineProfiles.to_gpu
       ~ReciprocalSpaceLineProfiles.to_hyperspy
+      ~ReciprocalSpaceLineProfiles.to_tiff
       ~ReciprocalSpaceLineProfiles.to_zarr
       ~ReciprocalSpaceLineProfiles.visualize_graph
       ~ReciprocalSpaceLineProfiles.width

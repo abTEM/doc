@@ -20,8 +20,10 @@
       :template: custom-class-template.rst
    
       BaseMeasurement
+      BaseMeasurement2D
       DiffractionPatterns
       Images
+      IndexedDiffractionPatterns
       PolarMeasurements
       RealSpaceLineProfiles
       ReciprocalSpaceLineProfiles

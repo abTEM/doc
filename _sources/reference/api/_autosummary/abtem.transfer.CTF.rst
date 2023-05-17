@@ -1,4 +1,4 @@
-﻿CTF
+CTF
 ===
 
 .. currentmodule:: abtem.transfer
@@ -66,6 +66,7 @@
       ~CTF.ensemble_axes_metadata
       ~CTF.ensemble_shape
       ~CTF.extent
+      ~CTF.flip_phase
       ~CTF.focal_spread
       ~CTF.gpts
       ~CTF.grid
@@ -90,5 +91,6 @@
       ~CTF.semiangle_cutoff
       ~CTF.soft
       ~CTF.wavelength
+      ~CTF.wiener_snr
    
    

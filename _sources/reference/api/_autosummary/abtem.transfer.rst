@@ -20,6 +20,7 @@
       point_resolution
       polar2cartesian
       scherzer_defocus
+      soft_aperture
    
    
 

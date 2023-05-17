@@ -20,11 +20,14 @@ SMatrix
       ~SMatrix.build
       ~SMatrix.copy
       ~SMatrix.dummy_probes
+      ~SMatrix.ensemble_blocks
+      ~SMatrix.generate_blocks
       ~SMatrix.match_grid
       ~SMatrix.multislice
       ~SMatrix.reduce
       ~SMatrix.round_gpts_to_interpolation
       ~SMatrix.scan
+      ~SMatrix.select_block
       ~SMatrix.set_potential
    
    
@@ -70,6 +73,7 @@ SMatrix
       ~SMatrix.semiangle_cutoff
       ~SMatrix.shape
       ~SMatrix.store_on_host
+      ~SMatrix.thickness
       ~SMatrix.tilt
       ~SMatrix.wave_vectors
       ~SMatrix.wavelength

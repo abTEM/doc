@@ -1,4 +1,4 @@
-﻿PolarMeasurements
+PolarMeasurements
 =================
 
 .. currentmodule:: abtem.measurements
@@ -18,6 +18,7 @@
    
       ~PolarMeasurements.__init__
       ~PolarMeasurements.abs
+      ~PolarMeasurements.apply_transform
       ~PolarMeasurements.check_is_compatible
       ~PolarMeasurements.compute
       ~PolarMeasurements.copy
@@ -26,6 +27,7 @@
       ~PolarMeasurements.ensure_lazy
       ~PolarMeasurements.expand_dims
       ~PolarMeasurements.from_array_and_metadata
+      ~PolarMeasurements.from_partitioned_args
       ~PolarMeasurements.from_zarr
       ~PolarMeasurements.gaussian_source_size
       ~PolarMeasurements.get_items
@@ -33,6 +35,7 @@
       ~PolarMeasurements.integrate
       ~PolarMeasurements.integrate_radial
       ~PolarMeasurements.intensity
+      ~PolarMeasurements.interact
       ~PolarMeasurements.iterate_ensemble
       ~PolarMeasurements.max
       ~PolarMeasurements.mean
@@ -45,6 +48,7 @@
       ~PolarMeasurements.reduce_ensemble
       ~PolarMeasurements.relative_difference
       ~PolarMeasurements.scan_positions
+      ~PolarMeasurements.set_ensemble_axes_metadata
       ~PolarMeasurements.show
       ~PolarMeasurements.squeeze
       ~PolarMeasurements.std
@@ -53,6 +57,8 @@
       ~PolarMeasurements.to_delayed
       ~PolarMeasurements.to_gpu
       ~PolarMeasurements.to_hyperspy
+      ~PolarMeasurements.to_image_ensemble
+      ~PolarMeasurements.to_tiff
       ~PolarMeasurements.to_zarr
       ~PolarMeasurements.visualize_graph
    

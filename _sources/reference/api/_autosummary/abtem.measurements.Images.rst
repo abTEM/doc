@@ -18,6 +18,7 @@ Images
    
       ~Images.__init__
       ~Images.abs
+      ~Images.apply_transform
       ~Images.check_is_compatible
       ~Images.compute
       ~Images.copy
@@ -27,12 +28,14 @@ Images
       ~Images.ensure_lazy
       ~Images.expand_dims
       ~Images.from_array_and_metadata
+      ~Images.from_partitioned_args
       ~Images.from_zarr
       ~Images.gaussian_filter
       ~Images.get_items
       ~Images.imag
       ~Images.integrate_gradient
       ~Images.intensity
+      ~Images.interact
       ~Images.interpolate
       ~Images.interpolate_line
       ~Images.interpolate_line_at_position
@@ -48,6 +51,7 @@ Images
       ~Images.reduce_ensemble
       ~Images.relative_difference
       ~Images.scan_positions
+      ~Images.set_ensemble_axes_metadata
       ~Images.show
       ~Images.squeeze
       ~Images.std
@@ -57,6 +61,7 @@ Images
       ~Images.to_delayed
       ~Images.to_gpu
       ~Images.to_hyperspy
+      ~Images.to_tiff
       ~Images.to_zarr
       ~Images.visualize_graph
    
@@ -89,6 +94,7 @@ Images
       ~Images.num_axes
       ~Images.num_base_axes
       ~Images.num_ensemble_axes
+      ~Images.offset
       ~Images.sampling
       ~Images.shape
       ~Images.wavelength

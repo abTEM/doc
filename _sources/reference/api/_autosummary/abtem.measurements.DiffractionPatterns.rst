@@ -1,4 +1,4 @@
-﻿DiffractionPatterns
+DiffractionPatterns
 ===================
 
 .. currentmodule:: abtem.measurements
@@ -18,6 +18,7 @@
    
       ~DiffractionPatterns.__init__
       ~DiffractionPatterns.abs
+      ~DiffractionPatterns.apply_transform
       ~DiffractionPatterns.bandlimit
       ~DiffractionPatterns.block_direct
       ~DiffractionPatterns.center_of_mass
@@ -30,6 +31,7 @@
       ~DiffractionPatterns.epie
       ~DiffractionPatterns.expand_dims
       ~DiffractionPatterns.from_array_and_metadata
+      ~DiffractionPatterns.from_partitioned_args
       ~DiffractionPatterns.from_zarr
       ~DiffractionPatterns.gaussian_filter
       ~DiffractionPatterns.gaussian_source_size
@@ -39,7 +41,10 @@
       ~DiffractionPatterns.integrate_radial
       ~DiffractionPatterns.integrated_center_of_mass
       ~DiffractionPatterns.intensity
+      ~DiffractionPatterns.interact
       ~DiffractionPatterns.interpolate
+      ~DiffractionPatterns.interpolate_line
+      ~DiffractionPatterns.interpolate_line_at_position
       ~DiffractionPatterns.iterate_ensemble
       ~DiffractionPatterns.max
       ~DiffractionPatterns.mean
@@ -54,14 +59,17 @@
       ~DiffractionPatterns.reduce_ensemble
       ~DiffractionPatterns.relative_difference
       ~DiffractionPatterns.scan_positions
+      ~DiffractionPatterns.set_ensemble_axes_metadata
       ~DiffractionPatterns.show
       ~DiffractionPatterns.squeeze
       ~DiffractionPatterns.std
       ~DiffractionPatterns.sum
+      ~DiffractionPatterns.tile_scan
       ~DiffractionPatterns.to_cpu
       ~DiffractionPatterns.to_delayed
       ~DiffractionPatterns.to_gpu
       ~DiffractionPatterns.to_hyperspy
+      ~DiffractionPatterns.to_tiff
       ~DiffractionPatterns.to_zarr
       ~DiffractionPatterns.visualize_graph
    
@@ -90,6 +98,7 @@
       ~DiffractionPatterns.ensemble_axes
       ~DiffractionPatterns.ensemble_axes_metadata
       ~DiffractionPatterns.ensemble_shape
+      ~DiffractionPatterns.extent
       ~DiffractionPatterns.fftshift
       ~DiffractionPatterns.is_complex
       ~DiffractionPatterns.is_lazy
@@ -99,6 +108,7 @@
       ~DiffractionPatterns.num_axes
       ~DiffractionPatterns.num_base_axes
       ~DiffractionPatterns.num_ensemble_axes
+      ~DiffractionPatterns.offset
       ~DiffractionPatterns.sampling
       ~DiffractionPatterns.shape
       ~DiffractionPatterns.wavelength

@@ -1,4 +1,4 @@
-﻿Waves
+Waves
 =====
 
 .. currentmodule:: abtem.waves
@@ -20,6 +20,7 @@
       ~Waves.apply_ctf
       ~Waves.apply_transform
       ~Waves.check_is_compatible
+      ~Waves.complex_images
       ~Waves.compute
       ~Waves.convolve
       ~Waves.copy
@@ -34,8 +35,8 @@
       ~Waves.from_partitioned_args
       ~Waves.from_zarr
       ~Waves.get_items
-      ~Waves.images
       ~Waves.intensity
+      ~Waves.interact
       ~Waves.match_grid
       ~Waves.max
       ~Waves.mean
@@ -44,6 +45,7 @@
       ~Waves.normalize
       ~Waves.phase_shift
       ~Waves.rechunk
+      ~Waves.set_ensemble_axes_metadata
       ~Waves.show
       ~Waves.squeeze
       ~Waves.std
@@ -52,6 +54,7 @@
       ~Waves.to_cpu
       ~Waves.to_delayed
       ~Waves.to_gpu
+      ~Waves.to_tiff
       ~Waves.to_zarr
       ~Waves.visualize_graph
    

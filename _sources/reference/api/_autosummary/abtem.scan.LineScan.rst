@@ -18,7 +18,7 @@ LineScan
    
       ~LineScan.__init__
       ~LineScan.add_margin
-      ~LineScan.add_to_plot
+      ~LineScan.add_to_axes
       ~LineScan.apply
       ~LineScan.at_position
       ~LineScan.copy
@@ -41,7 +41,9 @@ LineScan
 
    .. autosummary::
    
+      ~LineScan.angle
       ~LineScan.axes_metadata
+      ~LineScan.direction
       ~LineScan.end
       ~LineScan.endpoint
       ~LineScan.ensemble_axes_metadata

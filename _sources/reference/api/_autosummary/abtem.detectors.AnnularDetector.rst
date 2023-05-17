@@ -1,4 +1,4 @@
-﻿AnnularDetector
+AnnularDetector
 ===============
 
 .. currentmodule:: abtem.detectors

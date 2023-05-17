@@ -1,4 +1,4 @@
-﻿TemporalEnvelope
+TemporalEnvelope
 ================
 
 .. currentmodule:: abtem.transfer
