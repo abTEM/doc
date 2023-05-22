@@ -12,7 +12,7 @@
    notebooks/4d-stem_quickstart
    notebooks/saed_quickstart
    notebooks/ped_quickstart
-   notebooks/hbn_dft_iam
+   notebooks/animations
 ```
 
 Welcome to the `abTEM` gallery. These notebooks demonstrate specific a many of the concepts learned in the
@@ -153,5 +153,42 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 +++
 {bdg-success}`basic`
 :::
+
+:::{grid-item-card}
+:link: examples:animations
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+**Animations**
+^^^
+```{image} thumbnails/animations.gif
+:align: center
+```
+
++++
+{bdg-danger}`specialized`
+:::
+
+:::{grid-item-card}
+:link: examples:interactions
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+**Animations**
+^^^
+```{image} thumbnails/interactions
+.gif
+:align: center
+```
+
++++
+{bdg-danger}`specialized`
+:::
+
+
+
+
+
+
 
 ::::
