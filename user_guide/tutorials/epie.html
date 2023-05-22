@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Ptychography with ePIE</title>
+    <title>Ptychography with PIE</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -203,6 +203,11 @@ const thebe_selector_output = ".output, .cell_output"
     </label>
     <ul>
      <li class="toctree-l3">
+      <a class="reference internal" href="../appendix/conventions.html">
+       Conventions
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../appendix/multislice_derivation.html">
        Deriving the Multislice Algorithm
       </a>
@@ -251,7 +256,7 @@ const thebe_selector_output = ".output, .cell_output"
    </li>
    <li class="toctree-l2 current active">
     <a class="current reference internal" href="#">
-     Ptychography with ePIE
+     Ptychography with PIE
     </a>
    </li>
    <li class="toctree-l2">
@@ -314,6 +319,11 @@ const thebe_selector_output = ".output, .cell_output"
    <li class="toctree-l2">
     <a class="reference internal" href="../examples/notebooks/ped_quickstart.html">
      PED quickstart
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../examples/notebooks/animations.html">
+     Animations
     </a>
    </li>
   </ul>
@@ -1182,7 +1192,7 @@ title="Print to PDF"
         <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1>Ptychography with ePIE</h1>
+                <h1>Ptychography with PIE</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
@@ -1207,7 +1217,12 @@ title="Print to PDF"
                 
               <div>
                 
-  <div class="cell docutils container">
+  <div class="cell tag_hide-input docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">config</span> InlineBackend.rc = {&quot;figure.dpi&quot;: 72, &#39;figure.figsize&#39;: (6.0, 4.0)}
 <span class="o">%</span><span class="k">matplotlib</span> inline
@@ -1220,10 +1235,11 @@ title="Print to PDF"
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<section class="tex2jax_ignore mathjax_ignore" id="ptychography-with-epie">
-<h1>Ptychography with ePIE<a class="headerlink" href="#ptychography-with-epie" title="Permalink to this headline">#</a></h1>
-<p>Ptychography describes a family of reconstruction algorithms which attempts to find a phase object <span class="math notranslate nohighlight">\(O(\vec{r})\)</span> (representing the electrostatic potential) and probe <span class="math notranslate nohighlight">\(P(\vec{r})\)</span> from a collection of overlapping diffraction patterns. Given a current guess, the wave function at a given position <span class="math notranslate nohighlight">\(\vec{r}_p\)</span> is, in the weak phase approximation, given as</p>
+<section class="tex2jax_ignore mathjax_ignore" id="ptychography-with-pie">
+<h1>Ptychography with PIE<a class="headerlink" href="#ptychography-with-pie" title="Permalink to this headline">#</a></h1>
+<p>Ptychography describes a family of reconstruction algorithms which attempts to find a phase object <span class="math notranslate nohighlight">\(O(\vec{r})\)</span> (representing the electrostatic potential) and a probe <span class="math notranslate nohighlight">\(P(\vec{r})\)</span> from a collection of overlapping diffraction patterns. Given a some guess, the wave function describing the probe at a given position <span class="math notranslate nohighlight">\(\vec{r}_p\)</span> is, in the weak phase approximation, given as</p>
 <div class="math notranslate nohighlight">
 \[
     \psi(\vec{r}_p, \vec{r}) = O(\vec{r}) P(\vec{r}_p, \vec{r}) \quad ,
@@ -1238,7 +1254,7 @@ I(\vec{r}_p, \vec{k}) = \| \mathcal{F} \left[ O(\vec{r}) P(\vec{r}_p, \vec{r})\r
 \[
     \mathrm{SSE} = \sum_{\vec{r}_p, \vec{k}} = (I_{measured}(\vec{r}_p, \vec{k}) - I(\vec{r}_p, \vec{k})) ^2 \ .
 \]</div>
-<p>The ptychographic iterative engine (PIE) is an iterative technique which modifies the current estimate of the exit wave, <span class="math notranslate nohighlight">\(\psi_j(\vec{r}_p, \vec{r})\)</span>, by replacing its Fourier amplitude with the square root of the measured diffraction pattern.</p>
+<p>The Ptychographic Iterative Engine (PIE) is an iterative technique which at each step transmits a guess of the probe to produce a guess of the resulting diffraction, the guess for that exitr wave, <span class="math notranslate nohighlight">\(\psi_j(\vec{r}_p, \vec{r})\)</span>, by replacing its reciprocal space amplitude with the square root of the measured diffraction pattern. This producedure is continued until convergence.</p>
 <p>abTEM implements several different flavors of PIE:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">RegularizedPtychographicOperator</span></code>: Used to reconstruct weak-phase objects.</p></li>
@@ -1247,10 +1263,6 @@ I(\vec{r}_p, \vec{k}) = \| \mathcal{F} \left[ O(\vec{r}) P(\vec{r}_p, \vec{r})\r
 <li><p><code class="docutils literal notranslate"><span class="pre">MultislicePtychographicOperator</span></code>: Used to reconstruct <em>thick</em> weak-phase objects.</p></li>
 </ul>
 <p>In this tutorial, we describe how to use regularized PIE<span id="id1">[]</span> with the <code class="docutils literal notranslate"><span class="pre">RegularizedPtychographicOperator</span></code>.</p>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p>See our example gallery for examples of each of the different algorithms.</p>
-</div>
 <section id="d-stem-simulation-of-ws2">
 <h2>4D-STEM simulation of WS2<a class="headerlink" href="#d-stem-simulation-of-ws2" title="Permalink to this headline">#</a></h2>
 <p>As a test system we will simulate WS2.</p>
@@ -1279,7 +1291,7 @@ I(\vec{r}_p, \vec{k}) = \| \mathcal{F} \left[ O(\vec{r}) P(\vec{r}_p, \vec{r})\r
     <span class="n">sampling</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">aberrations</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;C10&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;C12&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;phi12&quot;</span><span class="p">:</span> <span class="mf">0.785</span><span class="p">,</span> <span class="s2">&quot;C30&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2e4</span><span class="p">}</span>
+<span class="n">aberrations</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;C10&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">130</span><span class="p">,</span> <span class="s2">&quot;C12&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;phi12&quot;</span><span class="p">:</span> <span class="mf">0.785</span><span class="p">,</span> <span class="s2">&quot;C30&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2e4</span><span class="p">}</span>
 
 <span class="n">probe</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Probe</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="mf">100e3</span><span class="p">,</span> <span class="o">**</span><span class="n">aberrations</span><span class="p">)</span>
 
@@ -1293,11 +1305,11 @@ I(\vec{r}_p, \vec{k}) = \| \mathcal{F} \left[ O(\vec{r}) P(\vec{r}_p, \vec{r})\r
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed | 1.53 ss
-[########################################] | 100% Completed | 113.64 ms
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed | 1.41 ss
+[########################################] | 100% Completed | 114.73 ms
 </pre></div>
 </div>
-<img alt="../../_images/1343b856ff65c4078bc46123d783c4bb7b3abaddd294ec1d093d1342af9a33dd.png" src="../../_images/1343b856ff65c4078bc46123d783c4bb7b3abaddd294ec1d093d1342af9a33dd.png" />
+<img alt="../../_images/c05c36be1128148e3fc5a920abbb395340ea0b9c6e77dd2f78c403814e38bef2.png" src="../../_images/c05c36be1128148e3fc5a920abbb395340ea0b9c6e77dd2f78c403814e38bef2.png" />
 </div>
 </div>
 <p>We run a 4D-STEM simulation over a periodic area of the sample (i.e. using fractional coordinates we scan the reciprocal of the number of repetitions of the potential, see our walkthrough for details). In contrast to when we simulate STEM-ADF images scanning at the Nyquist sampling rate has no particular significance, as the sampling of the reconstruction is determined by the maximum scattering angle of the diffraction patterns, however, to make a comparison we scan at the Nyquist sampling rate (the default).</p>
@@ -1316,10 +1328,10 @@ I(\vec{r}_p, \vec{k}) = \| \mathcal{F} \left[ O(\vec{r}) P(\vec{r}_p, \vec{r})\r
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed | 8.73 sms
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[########################################] | 100% Completed | 7.04 sms
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;abtem.measurements.DiffractionPatterns object at 0x000001A521A0CC40&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;abtem.measurements.DiffractionPatterns object at 0x00000184D8868E20&gt;
 </pre></div>
 </div>
 </div>
@@ -1345,7 +1357,7 @@ I(\vec{r}_p, \vec{k}) = \| \mathcal{F} \left[ O(\vec{r}) P(\vec{r}_p, \vec{r})\r
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/881b3c56f8c10228062c1b64ed3399e151c8beb5c01e2f3ab0c6ccf604f664d0.png" src="../../_images/881b3c56f8c10228062c1b64ed3399e151c8beb5c01e2f3ab0c6ccf604f664d0.png" />
+<img alt="../../_images/d06917c12857cc37636b86b50a9a7fcebf282e935fb66816105748bc365f1e84.png" src="../../_images/d06917c12857cc37636b86b50a9a7fcebf282e935fb66816105748bc365f1e84.png" />
 </div>
 </div>
 <p>To run PIE we create a <code class="docutils literal notranslate"><span class="pre">RegularizedPtychographicOperator</span></code> and initialize it with <code class="docutils literal notranslate"><span class="pre">DiffractionPatterns</span></code>. The necessary experimental parameters are:</p>
@@ -1380,7 +1392,7 @@ I(\vec{r}_p, \vec{k}) = \| \mathcal{F} \left[ O(\vec{r}) P(\vec{r}_p, \vec{r})\r
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;abtem.reconstruct.RegularizedPtychographicOperator at 0x1a522360a30&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;abtem.reconstruct.RegularizedPtychographicOperator at 0x18481d68550&gt;
 </pre></div>
 </div>
 </div>
@@ -1407,11 +1419,11 @@ I(\vec{r}_p, \vec{k}) = \| \mathcal{F} \left[ O(\vec{r}) P(\vec{r}_p, \vec{r})\r
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Ptychographic reconstruction will perform the following steps:
 --Regularized PIE for 6825 steps
 --Probe correction is enabled
-----Iteration 0, SSE = 7.281e-04
-----Iteration 1, SSE = 5.813e-06
-----Iteration 2, SSE = 5.674e-06
-----Iteration 3, SSE = 5.643e-06
-----Iteration 4, SSE = 5.577e-06
+----Iteration 0, SSE = 7.303e-04
+----Iteration 1, SSE = 6.316e-06
+----Iteration 2, SSE = 5.917e-06
+----Iteration 3, SSE = 5.528e-06
+----Iteration 4, SSE = 5.494e-06
 </pre></div>
 </div>
 </div>
@@ -1421,8 +1433,6 @@ I(\vec{r}_p, \vec{k}) = \| \mathcal{F} \left[ O(\vec{r}) P(\vec{r}_p, \vec{r})\r
 <li><p>We see that the rPIE algorithm succesfully deconvolved the effect of the probe from the potential after just a few iterations.</p></li>
 <li><p>Improved resolution, we scanned at the nyquist sampling with probe with a convergence semiangle of <span class="math notranslate nohighlight">\(20 \ \mathrm{mrad}\)</span>, however we obtained reconstruction with a reciprocal space sampling matching the detector, which has a significantly higher maximum angle than the probe.</p></li>
 </ul>
-<p>We should note that this id a somewhat unfair comparison, as we should compare number of electrons).
-The improvement in resolution is due to the higher maximum scattering angle collected by the detector compared to the convergence semiangle of the probe.</p>
 <div class="cell tag_full-width docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rpie_objects</span><span class="o">.</span><span class="n">phase</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">(</span>
@@ -1432,7 +1442,7 @@ The improvement in resolution is due to the higher maximum scattering angle coll
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/4d4aa3d0c5ce056b9a66814758921531100976d8dc6df118644c756f60ee79d8.png" src="../../_images/4d4aa3d0c5ce056b9a66814758921531100976d8dc6df118644c756f60ee79d8.png" />
+<img alt="../../_images/c73f413e00ed4d97c409a5d12ea386f823326b1d1409bba3ed9928f0bb43c8ae.png" src="../../_images/c73f413e00ed4d97c409a5d12ea386f823326b1d1409bba3ed9928f0bb43c8ae.png" />
 </div>
 </div>
 <div class="cell tag_full-width docutils container">
@@ -1444,7 +1454,7 @@ The improvement in resolution is due to the higher maximum scattering angle coll
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/cc9dae8c3caba010362451f20b194fbae0972dcecbdf83685962b383f99596b1.png" src="../../_images/cc9dae8c3caba010362451f20b194fbae0972dcecbdf83685962b383f99596b1.png" />
+<img alt="../../_images/7c4f8c3512e37a08a627e35d375f09bda374fe3f171df7c24fa46d2c964e841b.png" src="../../_images/7c4f8c3512e37a08a627e35d375f09bda374fe3f171df7c24fa46d2c964e841b.png" />
 </div>
 </div>
 </section>

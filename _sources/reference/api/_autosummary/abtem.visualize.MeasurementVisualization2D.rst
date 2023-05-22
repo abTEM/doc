@@ -1,4 +1,4 @@
-MeasurementVisualization2D
+﻿MeasurementVisualization2D
 ==========================
 
 .. currentmodule:: abtem.visualize
@@ -20,6 +20,7 @@ MeasurementVisualization2D
       ~MeasurementVisualization2D.add_area_indicator
       ~MeasurementVisualization2D.adjust_axes_position
       ~MeasurementVisualization2D.adjust_figure_aspect
+      ~MeasurementVisualization2D.adjust_tight_bbox
       ~MeasurementVisualization2D.animate
       ~MeasurementVisualization2D.axis_off
       ~MeasurementVisualization2D.iterate_measurements

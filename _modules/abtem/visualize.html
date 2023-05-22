@@ -198,6 +198,11 @@ const thebe_selector_output = ".output, .cell_output"
     </label>
     <ul>
      <li class="toctree-l3">
+      <a class="reference internal" href="../../user_guide/appendix/conventions.html">
+       Conventions
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../../user_guide/appendix/multislice_derivation.html">
        Deriving the Multislice Algorithm
       </a>
@@ -246,7 +251,7 @@ const thebe_selector_output = ".output, .cell_output"
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../../user_guide/tutorials/epie.html">
-     Ptychographic Reconstructions with ePIE
+     Ptychography with PIE
     </a>
    </li>
    <li class="toctree-l2">
@@ -309,6 +314,11 @@ const thebe_selector_output = ".output, .cell_output"
    <li class="toctree-l2">
     <a class="reference internal" href="../../user_guide/examples/notebooks/ped_quickstart.html">
      PED quickstart
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user_guide/examples/notebooks/animations.html">
+     Animations
     </a>
    </li>
   </ul>
@@ -1407,6 +1417,7 @@ title="Open an issue"
             <span class="n">label</span> <span class="o">=</span> <span class="n">axes_metadata</span><span class="o">.</span><span class="n">format_label</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">axes_type</span> <span class="o">==</span> <span class="s2">&quot;range&quot;</span><span class="p">:</span>
+
             <span class="n">sliders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="n">widgets</span><span class="o">.</span><span class="n">SelectionRangeSlider</span><span class="p">(</span>
                     <span class="n">description</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
@@ -1423,6 +1434,8 @@ title="Open an issue"
                     <span class="n">continuous_update</span><span class="o">=</span><span class="n">continuous_update</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)</span>
+
+    <span class="n">_set_update_indices_callback</span><span class="p">(</span><span class="n">sliders</span><span class="p">,</span> <span class="n">visualization</span><span class="p">,</span> <span class="n">callbacks</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">sliders</span>
 
@@ -1625,13 +1638,26 @@ title="Open an issue"
 
         <span class="n">indexed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurements</span><span class="o">.</span><span class="n">get_items</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">,</span> <span class="n">keep_dims</span><span class="o">=</span><span class="n">keepdims</span><span class="p">)</span>
 
-        <span class="n">indexed</span> <span class="o">=</span> <span class="n">indexed</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-            <span class="n">axes</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span>
+
+        <span class="k">if</span> <span class="n">keepdims</span><span class="p">:</span>
+            <span class="n">summed_axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
                 <span class="n">i</span>
                 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">axes_type</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_axes_types</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">axes_type</span> <span class="o">==</span> <span class="s2">&quot;range&quot;</span>
             <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">summed_axes</span> <span class="o">=</span> <span class="p">()</span>
+            <span class="k">for</span> <span class="n">axes_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axes_types</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">axes_type</span> <span class="o">==</span> <span class="s2">&quot;range&quot;</span><span class="p">:</span>
+                    <span class="n">summed_axes</span> <span class="o">+=</span> <span class="p">(</span><span class="n">i</span><span class="p">,)</span>
+                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">indexed</span> <span class="o">=</span> <span class="n">indexed</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+            <span class="n">axes</span><span class="o">=</span><span class="n">summed_axes</span><span class="p">,</span>
+            <span class="n">keepdims</span><span class="o">=</span><span class="n">keepdims</span>
         <span class="p">)</span>
+
         <span class="k">return</span> <span class="n">indexed</span>
 
     <span class="k">def</span> <span class="nf">set_column_titles</span><span class="p">(</span>
@@ -2407,6 +2433,18 @@ title="Open an issue"
 
         <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_artists</span><span class="o">.</span><span class="n">ravel</span><span class="p">():</span>
             <span class="n">image</span><span class="o">.</span><span class="n">set_extent</span><span class="p">(</span><span class="n">extent</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">adjust_tight_bbox</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">x_extent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurements</span><span class="o">.</span><span class="n">_plot_extent_x</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_x_units</span><span class="p">)</span>
+        <span class="n">y_extent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurements</span><span class="o">.</span><span class="n">_plot_extent_y</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_y_units</span><span class="p">)</span>
+
+        <span class="n">aspect</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">y_extent</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">x_extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x_extent</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">size_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">get_size_inches</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">size_y</span> <span class="o">=</span> <span class="n">size_x</span> <span class="o">*</span> <span class="n">aspect</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">((</span><span class="n">size_x</span><span class="p">,</span> <span class="n">size_y</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_add_domain_coloring_imshow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">norm</span><span class="p">):</span>
         <span class="n">abs_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
