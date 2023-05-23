@@ -13,6 +13,7 @@
    notebooks/saed_quickstart
    notebooks/ped_quickstart
    notebooks/animations
+   notebooks/interactions
 ```
 
 Welcome to the `abTEM` gallery. These notebooks demonstrate specific a many of the concepts learned in the
@@ -174,21 +175,15 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 :link-type: ref
 :class-body: text-center
 :class-header: bg-light text-center
-**Animations**
+**Interactions**
 ^^^
-```{image} thumbnails/interactions
-.gif
+```{image} thumbnails/interactions.gif
 :align: center
 ```
 
 +++
 {bdg-danger}`specialized`
 :::
-
-
-
-
-
 
 
 ::::
