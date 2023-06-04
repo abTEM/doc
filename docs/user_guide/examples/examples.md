@@ -166,7 +166,7 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 ```
 
 +++
-{bdg-danger}`specialized`
+{bdg-danger}`basic`
 :::
 
 :::{grid-item-card}
@@ -176,19 +176,12 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 :class-header: bg-light text-center
 **Animations**
 ^^^
-```{image} thumbnails/interactions
-.gif
+```{image} thumbnails/interactions.gif
 :align: center
 ```
 
 +++
-{bdg-danger}`specialized`
+{bdg-danger}`basic`
 :::
-
-
-
-
-
-
 
 ::::

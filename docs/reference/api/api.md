@@ -10,19 +10,17 @@ physical models. Numpy-style docstrings embedded in the code allow the reference
    :toctree: _autosummary
    :template: custom-module-template.rst
    :recursive:
-
+   
+   abtem.core
+   abtem.atoms
    abtem.waves
    abtem.scan
    abtem.detectors
    abtem.measurements
    abtem.transfer
    abtem.distributions
-   abtem.potentials.iam
-   abtem.potentials.charge_density
-   abtem.potentials.gpaw
+   abtem.potentials
    abtem.visualize
-   abtem.atoms
    abtem.multislice
-   abtem.prism.s_matrix
-   abtem.indexing
+   abtem.prism
 ```
