@@ -13,6 +13,7 @@
    notebooks/saed_quickstart
    notebooks/ped_quickstart
    notebooks/animations
+   notebooks/interactions
 ```
 
 Welcome to the `abTEM` gallery. These notebooks demonstrate specific a many of the concepts learned in the
