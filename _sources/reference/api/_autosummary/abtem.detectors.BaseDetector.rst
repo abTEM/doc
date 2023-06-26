@@ -18,13 +18,12 @@ BaseDetector
    
       ~BaseDetector.__init__
       ~BaseDetector.angular_limits
+      ~BaseDetector.apply
       ~BaseDetector.copy
       ~BaseDetector.detect
-      ~BaseDetector.measurement_axes_metadata
-      ~BaseDetector.measurement_meta
-      ~BaseDetector.measurement_metadata
-      ~BaseDetector.measurement_shape
-      ~BaseDetector.measurement_type
+      ~BaseDetector.ensemble_blocks
+      ~BaseDetector.generate_blocks
+      ~BaseDetector.select_block
    
    
 
@@ -34,7 +33,9 @@ BaseDetector
 
    .. autosummary::
    
-      ~BaseDetector.measurement_dtype
+      ~BaseDetector.ensemble_axes_metadata
+      ~BaseDetector.ensemble_shape
+      ~BaseDetector.metadata
       ~BaseDetector.to_cpu
       ~BaseDetector.url
    

@@ -20,10 +20,11 @@ BaseAperture
       ~BaseAperture.apply
       ~BaseAperture.copy
       ~BaseAperture.ensemble_blocks
-      ~BaseAperture.evaluate
       ~BaseAperture.generate_blocks
       ~BaseAperture.match_grid
       ~BaseAperture.select_block
+      ~BaseAperture.show
+      ~BaseAperture.to_diffraction_patterns
    
    
 
@@ -35,13 +36,13 @@ BaseAperture
    
       ~BaseAperture.accelerator
       ~BaseAperture.angular_sampling
-      ~BaseAperture.device
       ~BaseAperture.energy
       ~BaseAperture.ensemble_axes_metadata
       ~BaseAperture.ensemble_shape
       ~BaseAperture.extent
       ~BaseAperture.gpts
       ~BaseAperture.grid
+      ~BaseAperture.in_place
       ~BaseAperture.metadata
       ~BaseAperture.nyquist_sampling
       ~BaseAperture.reciprocal_space_sampling

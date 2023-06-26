@@ -41,14 +41,13 @@ Probe
       ~Probe.antialias_valid_gpts
       ~Probe.aperture
       ~Probe.axes_metadata
-      ~Probe.base_axes
       ~Probe.base_axes_metadata
       ~Probe.base_shape
       ~Probe.ctf
       ~Probe.cutoff_angles
       ~Probe.device
+      ~Probe.dtype
       ~Probe.energy
-      ~Probe.ensemble_axes
       ~Probe.ensemble_axes_metadata
       ~Probe.ensemble_shape
       ~Probe.extent
@@ -56,9 +55,6 @@ Probe
       ~Probe.gpts
       ~Probe.grid
       ~Probe.metadata
-      ~Probe.num_axes
-      ~Probe.num_base_axes
-      ~Probe.num_ensemble_axes
       ~Probe.reciprocal_space_axes_metadata
       ~Probe.reciprocal_space_sampling
       ~Probe.rectangle_cutoff_angles

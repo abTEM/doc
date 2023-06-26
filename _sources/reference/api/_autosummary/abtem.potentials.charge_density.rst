@@ -1,4 +1,4 @@
-﻿charge\_density
+charge\_density
 ===============
 
 .. automodule:: abtem.potentials.charge_density

@@ -1,4 +1,4 @@
-﻿MeasurementVisualization2D
+MeasurementVisualization2D
 ==========================
 
 .. currentmodule:: abtem.visualize
@@ -23,7 +23,8 @@
       ~MeasurementVisualization2D.adjust_tight_bbox
       ~MeasurementVisualization2D.animate
       ~MeasurementVisualization2D.axis_off
-      ~MeasurementVisualization2D.iterate_measurements
+      ~MeasurementVisualization2D.generate_measurements
+      ~MeasurementVisualization2D.get_global_vmin_vmax
       ~MeasurementVisualization2D.set_artists
       ~MeasurementVisualization2D.set_axes_padding
       ~MeasurementVisualization2D.set_cbar_labels
@@ -39,12 +40,12 @@
       ~MeasurementVisualization2D.set_row_titles
       ~MeasurementVisualization2D.set_scale_units
       ~MeasurementVisualization2D.set_sizebars
-      ~MeasurementVisualization2D.set_x_labels
-      ~MeasurementVisualization2D.set_x_units
+      ~MeasurementVisualization2D.set_xlabels
       ~MeasurementVisualization2D.set_xlim
-      ~MeasurementVisualization2D.set_y_labels
-      ~MeasurementVisualization2D.set_y_units
+      ~MeasurementVisualization2D.set_xunits
+      ~MeasurementVisualization2D.set_ylabels
       ~MeasurementVisualization2D.set_ylim
+      ~MeasurementVisualization2D.set_yunits
       ~MeasurementVisualization2D.update_artists
       ~MeasurementVisualization2D.update_panel_labels
    
@@ -59,15 +60,11 @@
       ~MeasurementVisualization2D.artists
       ~MeasurementVisualization2D.axes
       ~MeasurementVisualization2D.axes_types
-      ~MeasurementVisualization2D.explode_axes
       ~MeasurementVisualization2D.fig
-      ~MeasurementVisualization2D.index_axes
       ~MeasurementVisualization2D.indices
       ~MeasurementVisualization2D.measurements
       ~MeasurementVisualization2D.ncols
       ~MeasurementVisualization2D.nrows
-      ~MeasurementVisualization2D.overlay_axes
-      ~MeasurementVisualization2D.range_axes
       ~MeasurementVisualization2D.widgets
    
    

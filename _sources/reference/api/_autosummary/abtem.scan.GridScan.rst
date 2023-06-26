@@ -21,16 +21,11 @@ GridScan
       ~GridScan.apply
       ~GridScan.copy
       ~GridScan.ensemble_blocks
-      ~GridScan.evaluate
-      ~GridScan.from_fractional_coordinates
       ~GridScan.generate_blocks
-      ~GridScan.generate_blocks_by_extents
       ~GridScan.get_positions
-      ~GridScan.get_weights
       ~GridScan.match_grid
       ~GridScan.match_probe
       ~GridScan.select_block
-      ~GridScan.sort_into_extents
    
    
 
@@ -40,7 +35,6 @@ GridScan
 
    .. autosummary::
    
-      ~GridScan.dimensions
       ~GridScan.end
       ~GridScan.endpoint
       ~GridScan.ensemble_axes_metadata
@@ -48,6 +42,7 @@ GridScan
       ~GridScan.extent
       ~GridScan.gpts
       ~GridScan.grid
+      ~GridScan.in_place
       ~GridScan.limits
       ~GridScan.metadata
       ~GridScan.num_positions

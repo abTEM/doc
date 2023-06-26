@@ -20,10 +20,11 @@ Vortex
       ~Vortex.apply
       ~Vortex.copy
       ~Vortex.ensemble_blocks
-      ~Vortex.evaluate
       ~Vortex.generate_blocks
       ~Vortex.match_grid
       ~Vortex.select_block
+      ~Vortex.show
+      ~Vortex.to_diffraction_patterns
    
    
 
@@ -35,13 +36,13 @@ Vortex
    
       ~Vortex.accelerator
       ~Vortex.angular_sampling
-      ~Vortex.device
       ~Vortex.energy
       ~Vortex.ensemble_axes_metadata
       ~Vortex.ensemble_shape
       ~Vortex.extent
       ~Vortex.gpts
       ~Vortex.grid
+      ~Vortex.in_place
       ~Vortex.metadata
       ~Vortex.nyquist_sampling
       ~Vortex.quantum_number

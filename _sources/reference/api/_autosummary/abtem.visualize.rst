@@ -15,6 +15,7 @@
       :toctree:
       :template: custom-function-template.rst
    
+      discrete_cmap
       make_toggle_hkl_button
       show_atoms
    

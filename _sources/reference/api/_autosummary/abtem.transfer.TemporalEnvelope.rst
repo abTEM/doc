@@ -20,10 +20,11 @@ TemporalEnvelope
       ~TemporalEnvelope.apply
       ~TemporalEnvelope.copy
       ~TemporalEnvelope.ensemble_blocks
-      ~TemporalEnvelope.evaluate
       ~TemporalEnvelope.generate_blocks
       ~TemporalEnvelope.match_grid
       ~TemporalEnvelope.select_block
+      ~TemporalEnvelope.show
+      ~TemporalEnvelope.to_diffraction_patterns
    
    
 
@@ -35,7 +36,6 @@ TemporalEnvelope
    
       ~TemporalEnvelope.accelerator
       ~TemporalEnvelope.angular_sampling
-      ~TemporalEnvelope.device
       ~TemporalEnvelope.energy
       ~TemporalEnvelope.ensemble_axes_metadata
       ~TemporalEnvelope.ensemble_shape
@@ -43,6 +43,7 @@ TemporalEnvelope
       ~TemporalEnvelope.focal_spread
       ~TemporalEnvelope.gpts
       ~TemporalEnvelope.grid
+      ~TemporalEnvelope.in_place
       ~TemporalEnvelope.metadata
       ~TemporalEnvelope.reciprocal_space_sampling
       ~TemporalEnvelope.sampling

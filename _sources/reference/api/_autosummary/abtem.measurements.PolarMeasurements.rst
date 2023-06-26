@@ -19,7 +19,6 @@ PolarMeasurements
       ~PolarMeasurements.__init__
       ~PolarMeasurements.abs
       ~PolarMeasurements.apply_transform
-      ~PolarMeasurements.check_is_compatible
       ~PolarMeasurements.compute
       ~PolarMeasurements.copy
       ~PolarMeasurements.copy_to_device
@@ -27,40 +26,37 @@ PolarMeasurements
       ~PolarMeasurements.ensure_lazy
       ~PolarMeasurements.expand_dims
       ~PolarMeasurements.from_array_and_metadata
-      ~PolarMeasurements.from_partitioned_args
       ~PolarMeasurements.from_zarr
       ~PolarMeasurements.gaussian_source_size
+      ~PolarMeasurements.generate_ensemble
       ~PolarMeasurements.get_items
       ~PolarMeasurements.imag
       ~PolarMeasurements.integrate
       ~PolarMeasurements.integrate_radial
       ~PolarMeasurements.intensity
-      ~PolarMeasurements.interact
-      ~PolarMeasurements.iterate_ensemble
       ~PolarMeasurements.max
       ~PolarMeasurements.mean
       ~PolarMeasurements.min
+      ~PolarMeasurements.no_base_chunks
+      ~PolarMeasurements.normalize_ensemble
       ~PolarMeasurements.phase
       ~PolarMeasurements.poisson_noise
-      ~PolarMeasurements.power
       ~PolarMeasurements.real
       ~PolarMeasurements.rechunk
       ~PolarMeasurements.reduce_ensemble
       ~PolarMeasurements.relative_difference
-      ~PolarMeasurements.scan_positions
       ~PolarMeasurements.set_ensemble_axes_metadata
       ~PolarMeasurements.show
       ~PolarMeasurements.squeeze
       ~PolarMeasurements.std
       ~PolarMeasurements.sum
       ~PolarMeasurements.to_cpu
-      ~PolarMeasurements.to_delayed
+      ~PolarMeasurements.to_diffraction_patterns
       ~PolarMeasurements.to_gpu
       ~PolarMeasurements.to_hyperspy
       ~PolarMeasurements.to_image_ensemble
       ~PolarMeasurements.to_tiff
       ~PolarMeasurements.to_zarr
-      ~PolarMeasurements.visualize_graph
    
    
 
@@ -74,27 +70,18 @@ PolarMeasurements
       ~PolarMeasurements.axes_metadata
       ~PolarMeasurements.azimuthal_offset
       ~PolarMeasurements.azimuthal_sampling
-      ~PolarMeasurements.base_axes
       ~PolarMeasurements.base_axes_metadata
       ~PolarMeasurements.base_shape
-      ~PolarMeasurements.chunks
       ~PolarMeasurements.device
-      ~PolarMeasurements.dimensions
       ~PolarMeasurements.dtype
-      ~PolarMeasurements.energy
-      ~PolarMeasurements.ensemble_axes
       ~PolarMeasurements.ensemble_axes_metadata
       ~PolarMeasurements.ensemble_shape
       ~PolarMeasurements.is_complex
       ~PolarMeasurements.is_lazy
       ~PolarMeasurements.metadata
-      ~PolarMeasurements.num_axes
-      ~PolarMeasurements.num_base_axes
-      ~PolarMeasurements.num_ensemble_axes
       ~PolarMeasurements.outer_angle
       ~PolarMeasurements.radial_offset
       ~PolarMeasurements.radial_sampling
       ~PolarMeasurements.shape
-      ~PolarMeasurements.wavelength
    
    

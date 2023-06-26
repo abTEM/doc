@@ -19,7 +19,6 @@ Waves
       ~Waves.__init__
       ~Waves.apply_ctf
       ~Waves.apply_transform
-      ~Waves.check_is_compatible
       ~Waves.complex_images
       ~Waves.compute
       ~Waves.convolve
@@ -32,16 +31,16 @@ Waves
       ~Waves.ensure_reciprocal_space
       ~Waves.expand_dims
       ~Waves.from_array_and_metadata
-      ~Waves.from_partitioned_args
       ~Waves.from_zarr
+      ~Waves.generate_ensemble
       ~Waves.get_items
       ~Waves.intensity
-      ~Waves.interact
       ~Waves.match_grid
       ~Waves.max
       ~Waves.mean
       ~Waves.min
       ~Waves.multislice
+      ~Waves.no_base_chunks
       ~Waves.normalize
       ~Waves.phase_shift
       ~Waves.rechunk
@@ -52,11 +51,9 @@ Waves
       ~Waves.sum
       ~Waves.tile
       ~Waves.to_cpu
-      ~Waves.to_delayed
       ~Waves.to_gpu
       ~Waves.to_tiff
       ~Waves.to_zarr
-      ~Waves.visualize_graph
    
    
 
@@ -72,16 +69,13 @@ Waves
       ~Waves.antialias_valid_gpts
       ~Waves.array
       ~Waves.axes_metadata
-      ~Waves.base_axes
       ~Waves.base_axes_metadata
       ~Waves.base_shape
       ~Waves.base_tilt
-      ~Waves.chunks
       ~Waves.cutoff_angles
       ~Waves.device
       ~Waves.dtype
       ~Waves.energy
-      ~Waves.ensemble_axes
       ~Waves.ensemble_axes_metadata
       ~Waves.ensemble_shape
       ~Waves.extent
@@ -91,17 +85,12 @@ Waves
       ~Waves.is_complex
       ~Waves.is_lazy
       ~Waves.metadata
-      ~Waves.num_axes
-      ~Waves.num_base_axes
-      ~Waves.num_ensemble_axes
       ~Waves.reciprocal_space
       ~Waves.reciprocal_space_axes_metadata
       ~Waves.reciprocal_space_sampling
       ~Waves.rectangle_cutoff_angles
       ~Waves.sampling
       ~Waves.shape
-      ~Waves.tilt_axes
-      ~Waves.tilt_axes_metadata
       ~Waves.wavelength
    
    

@@ -18,13 +18,12 @@ WavesDetector
    
       ~WavesDetector.__init__
       ~WavesDetector.angular_limits
+      ~WavesDetector.apply
       ~WavesDetector.copy
       ~WavesDetector.detect
-      ~WavesDetector.measurement_axes_metadata
-      ~WavesDetector.measurement_meta
-      ~WavesDetector.measurement_metadata
-      ~WavesDetector.measurement_shape
-      ~WavesDetector.measurement_type
+      ~WavesDetector.ensemble_blocks
+      ~WavesDetector.generate_blocks
+      ~WavesDetector.select_block
    
    
 
@@ -34,7 +33,9 @@ WavesDetector
 
    .. autosummary::
    
-      ~WavesDetector.measurement_dtype
+      ~WavesDetector.ensemble_axes_metadata
+      ~WavesDetector.ensemble_shape
+      ~WavesDetector.metadata
       ~WavesDetector.to_cpu
       ~WavesDetector.url
    

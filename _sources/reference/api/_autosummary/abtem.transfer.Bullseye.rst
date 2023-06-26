@@ -20,10 +20,11 @@ Bullseye
       ~Bullseye.apply
       ~Bullseye.copy
       ~Bullseye.ensemble_blocks
-      ~Bullseye.evaluate
       ~Bullseye.generate_blocks
       ~Bullseye.match_grid
       ~Bullseye.select_block
+      ~Bullseye.show
+      ~Bullseye.to_diffraction_patterns
    
    
 
@@ -35,13 +36,13 @@ Bullseye
    
       ~Bullseye.accelerator
       ~Bullseye.angular_sampling
-      ~Bullseye.device
       ~Bullseye.energy
       ~Bullseye.ensemble_axes_metadata
       ~Bullseye.ensemble_shape
       ~Bullseye.extent
       ~Bullseye.gpts
       ~Bullseye.grid
+      ~Bullseye.in_place
       ~Bullseye.metadata
       ~Bullseye.num_rings
       ~Bullseye.num_spokes

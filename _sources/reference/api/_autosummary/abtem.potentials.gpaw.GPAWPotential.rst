@@ -22,11 +22,11 @@ GPAWPotential
       ~GPAWPotential.ensemble_blocks
       ~GPAWPotential.generate_blocks
       ~GPAWPotential.generate_slices
-      ~GPAWPotential.images
       ~GPAWPotential.match_grid
       ~GPAWPotential.project
       ~GPAWPotential.select_block
       ~GPAWPotential.show
+      ~GPAWPotential.to_images
    
    
 
@@ -37,27 +37,20 @@ GPAWPotential
    .. autosummary::
    
       ~GPAWPotential.axes_metadata
-      ~GPAWPotential.base_axes
       ~GPAWPotential.base_axes_metadata
       ~GPAWPotential.base_shape
       ~GPAWPotential.box
       ~GPAWPotential.calculators
       ~GPAWPotential.device
-      ~GPAWPotential.ensemble_axes
       ~GPAWPotential.ensemble_axes_metadata
       ~GPAWPotential.ensemble_shape
-      ~GPAWPotential.exit_plane_after
       ~GPAWPotential.exit_planes
-      ~GPAWPotential.exit_planes_axes_metadata
       ~GPAWPotential.exit_thicknesses
       ~GPAWPotential.extent
       ~GPAWPotential.frozen_phonons
       ~GPAWPotential.gpts
       ~GPAWPotential.grid
       ~GPAWPotential.gridrefinement
-      ~GPAWPotential.num_axes
-      ~GPAWPotential.num_base_axes
-      ~GPAWPotential.num_ensemble_axes
       ~GPAWPotential.num_exit_planes
       ~GPAWPotential.num_frozen_phonons
       ~GPAWPotential.num_slices

@@ -20,10 +20,11 @@ Aperture
       ~Aperture.apply
       ~Aperture.copy
       ~Aperture.ensemble_blocks
-      ~Aperture.evaluate
       ~Aperture.generate_blocks
       ~Aperture.match_grid
       ~Aperture.select_block
+      ~Aperture.show
+      ~Aperture.to_diffraction_patterns
    
    
 
@@ -35,13 +36,13 @@ Aperture
    
       ~Aperture.accelerator
       ~Aperture.angular_sampling
-      ~Aperture.device
       ~Aperture.energy
       ~Aperture.ensemble_axes_metadata
       ~Aperture.ensemble_shape
       ~Aperture.extent
       ~Aperture.gpts
       ~Aperture.grid
+      ~Aperture.in_place
       ~Aperture.metadata
       ~Aperture.nyquist_sampling
       ~Aperture.reciprocal_space_sampling

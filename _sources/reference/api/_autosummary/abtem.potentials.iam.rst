@@ -1,4 +1,4 @@
-﻿iam
+iam
 ===
 
 .. automodule:: abtem.potentials.iam

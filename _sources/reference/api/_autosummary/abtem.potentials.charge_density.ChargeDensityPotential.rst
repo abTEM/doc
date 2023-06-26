@@ -22,11 +22,11 @@ ChargeDensityPotential
       ~ChargeDensityPotential.ensemble_blocks
       ~ChargeDensityPotential.generate_blocks
       ~ChargeDensityPotential.generate_slices
-      ~ChargeDensityPotential.images
       ~ChargeDensityPotential.match_grid
       ~ChargeDensityPotential.project
       ~ChargeDensityPotential.select_block
       ~ChargeDensityPotential.show
+      ~ChargeDensityPotential.to_images
    
    
 
@@ -37,27 +37,20 @@ ChargeDensityPotential
    .. autosummary::
    
       ~ChargeDensityPotential.axes_metadata
-      ~ChargeDensityPotential.base_axes
       ~ChargeDensityPotential.base_axes_metadata
       ~ChargeDensityPotential.base_shape
       ~ChargeDensityPotential.box
       ~ChargeDensityPotential.charge_density
       ~ChargeDensityPotential.device
-      ~ChargeDensityPotential.ensemble_axes
       ~ChargeDensityPotential.ensemble_axes_metadata
       ~ChargeDensityPotential.ensemble_shape
-      ~ChargeDensityPotential.exit_plane_after
       ~ChargeDensityPotential.exit_planes
-      ~ChargeDensityPotential.exit_planes_axes_metadata
       ~ChargeDensityPotential.exit_thicknesses
       ~ChargeDensityPotential.extent
       ~ChargeDensityPotential.frozen_phonons
       ~ChargeDensityPotential.gpts
       ~ChargeDensityPotential.grid
       ~ChargeDensityPotential.is_lazy
-      ~ChargeDensityPotential.num_axes
-      ~ChargeDensityPotential.num_base_axes
-      ~ChargeDensityPotential.num_ensemble_axes
       ~ChargeDensityPotential.num_exit_planes
       ~ChargeDensityPotential.num_frozen_phonons
       ~ChargeDensityPotential.num_slices

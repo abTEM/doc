@@ -22,11 +22,11 @@ BasePotential
       ~BasePotential.ensemble_blocks
       ~BasePotential.generate_blocks
       ~BasePotential.generate_slices
-      ~BasePotential.images
       ~BasePotential.match_grid
       ~BasePotential.project
       ~BasePotential.select_block
       ~BasePotential.show
+      ~BasePotential.to_images
    
    
 
@@ -37,23 +37,15 @@ BasePotential
    .. autosummary::
    
       ~BasePotential.axes_metadata
-      ~BasePotential.base_axes
       ~BasePotential.base_axes_metadata
       ~BasePotential.base_shape
-      ~BasePotential.device
-      ~BasePotential.ensemble_axes
       ~BasePotential.ensemble_axes_metadata
       ~BasePotential.ensemble_shape
-      ~BasePotential.exit_plane_after
       ~BasePotential.exit_planes
-      ~BasePotential.exit_planes_axes_metadata
       ~BasePotential.exit_thicknesses
       ~BasePotential.extent
       ~BasePotential.gpts
       ~BasePotential.grid
-      ~BasePotential.num_axes
-      ~BasePotential.num_base_axes
-      ~BasePotential.num_ensemble_axes
       ~BasePotential.num_exit_planes
       ~BasePotential.num_frozen_phonons
       ~BasePotential.num_slices

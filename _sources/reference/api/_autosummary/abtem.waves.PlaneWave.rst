@@ -36,13 +36,12 @@ PlaneWave
       ~PlaneWave.antialias_cutoff_gpts
       ~PlaneWave.antialias_valid_gpts
       ~PlaneWave.axes_metadata
-      ~PlaneWave.base_axes
       ~PlaneWave.base_axes_metadata
       ~PlaneWave.base_shape
       ~PlaneWave.cutoff_angles
       ~PlaneWave.device
+      ~PlaneWave.dtype
       ~PlaneWave.energy
-      ~PlaneWave.ensemble_axes
       ~PlaneWave.ensemble_axes_metadata
       ~PlaneWave.ensemble_shape
       ~PlaneWave.extent
@@ -51,9 +50,6 @@ PlaneWave
       ~PlaneWave.grid
       ~PlaneWave.metadata
       ~PlaneWave.normalize
-      ~PlaneWave.num_axes
-      ~PlaneWave.num_base_axes
-      ~PlaneWave.num_ensemble_axes
       ~PlaneWave.reciprocal_space_axes_metadata
       ~PlaneWave.reciprocal_space_sampling
       ~PlaneWave.rectangle_cutoff_angles

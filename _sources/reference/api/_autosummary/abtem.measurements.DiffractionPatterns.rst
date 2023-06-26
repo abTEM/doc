@@ -22,56 +22,52 @@ DiffractionPatterns
       ~DiffractionPatterns.bandlimit
       ~DiffractionPatterns.block_direct
       ~DiffractionPatterns.center_of_mass
-      ~DiffractionPatterns.check_is_compatible
       ~DiffractionPatterns.compute
       ~DiffractionPatterns.copy
       ~DiffractionPatterns.copy_to_device
       ~DiffractionPatterns.crop
+      ~DiffractionPatterns.ensure_centered
       ~DiffractionPatterns.ensure_lazy
-      ~DiffractionPatterns.epie
       ~DiffractionPatterns.expand_dims
       ~DiffractionPatterns.from_array_and_metadata
-      ~DiffractionPatterns.from_partitioned_args
       ~DiffractionPatterns.from_zarr
       ~DiffractionPatterns.gaussian_filter
       ~DiffractionPatterns.gaussian_source_size
+      ~DiffractionPatterns.generate_ensemble
       ~DiffractionPatterns.get_items
       ~DiffractionPatterns.imag
       ~DiffractionPatterns.index_diffraction_spots
       ~DiffractionPatterns.integrate_radial
       ~DiffractionPatterns.integrated_center_of_mass
       ~DiffractionPatterns.intensity
-      ~DiffractionPatterns.interact
       ~DiffractionPatterns.interpolate
       ~DiffractionPatterns.interpolate_line
       ~DiffractionPatterns.interpolate_line_at_position
-      ~DiffractionPatterns.iterate_ensemble
       ~DiffractionPatterns.max
       ~DiffractionPatterns.mean
       ~DiffractionPatterns.min
+      ~DiffractionPatterns.no_base_chunks
+      ~DiffractionPatterns.normalize_ensemble
       ~DiffractionPatterns.phase
       ~DiffractionPatterns.poisson_noise
       ~DiffractionPatterns.polar_binning
-      ~DiffractionPatterns.power
       ~DiffractionPatterns.radial_binning
       ~DiffractionPatterns.real
       ~DiffractionPatterns.rechunk
       ~DiffractionPatterns.reduce_ensemble
       ~DiffractionPatterns.relative_difference
-      ~DiffractionPatterns.scan_positions
       ~DiffractionPatterns.set_ensemble_axes_metadata
+      ~DiffractionPatterns.shift_spectrum
       ~DiffractionPatterns.show
       ~DiffractionPatterns.squeeze
       ~DiffractionPatterns.std
       ~DiffractionPatterns.sum
       ~DiffractionPatterns.tile_scan
       ~DiffractionPatterns.to_cpu
-      ~DiffractionPatterns.to_delayed
       ~DiffractionPatterns.to_gpu
       ~DiffractionPatterns.to_hyperspy
       ~DiffractionPatterns.to_tiff
       ~DiffractionPatterns.to_zarr
-      ~DiffractionPatterns.visualize_graph
    
    
 
@@ -86,16 +82,11 @@ DiffractionPatterns
       ~DiffractionPatterns.angular_sampling
       ~DiffractionPatterns.array
       ~DiffractionPatterns.axes_metadata
-      ~DiffractionPatterns.base_axes
       ~DiffractionPatterns.base_axes_metadata
       ~DiffractionPatterns.base_shape
-      ~DiffractionPatterns.chunks
       ~DiffractionPatterns.coordinates
       ~DiffractionPatterns.device
-      ~DiffractionPatterns.dimensions
       ~DiffractionPatterns.dtype
-      ~DiffractionPatterns.energy
-      ~DiffractionPatterns.ensemble_axes
       ~DiffractionPatterns.ensemble_axes_metadata
       ~DiffractionPatterns.ensemble_shape
       ~DiffractionPatterns.extent
@@ -105,12 +96,8 @@ DiffractionPatterns
       ~DiffractionPatterns.limits
       ~DiffractionPatterns.max_angles
       ~DiffractionPatterns.metadata
-      ~DiffractionPatterns.num_axes
-      ~DiffractionPatterns.num_base_axes
-      ~DiffractionPatterns.num_ensemble_axes
       ~DiffractionPatterns.offset
       ~DiffractionPatterns.sampling
       ~DiffractionPatterns.shape
-      ~DiffractionPatterns.wavelength
    
    

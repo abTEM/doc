@@ -18,7 +18,6 @@ SMatrixArray
    
       ~SMatrixArray.__init__
       ~SMatrixArray.apply_transform
-      ~SMatrixArray.check_is_compatible
       ~SMatrixArray.compute
       ~SMatrixArray.copy
       ~SMatrixArray.copy_to_device
@@ -26,14 +25,15 @@ SMatrixArray
       ~SMatrixArray.ensure_lazy
       ~SMatrixArray.expand_dims
       ~SMatrixArray.from_array_and_metadata
-      ~SMatrixArray.from_waves
       ~SMatrixArray.from_zarr
+      ~SMatrixArray.generate_ensemble
       ~SMatrixArray.get_items
       ~SMatrixArray.match_grid
       ~SMatrixArray.max
       ~SMatrixArray.mean
       ~SMatrixArray.min
       ~SMatrixArray.multislice
+      ~SMatrixArray.no_base_chunks
       ~SMatrixArray.rechunk
       ~SMatrixArray.reduce
       ~SMatrixArray.scan
@@ -42,11 +42,9 @@ SMatrixArray
       ~SMatrixArray.std
       ~SMatrixArray.sum
       ~SMatrixArray.to_cpu
-      ~SMatrixArray.to_delayed
       ~SMatrixArray.to_gpu
       ~SMatrixArray.to_tiff
       ~SMatrixArray.to_zarr
-      ~SMatrixArray.visualize_graph
    
    
 
@@ -62,15 +60,12 @@ SMatrixArray
       ~SMatrixArray.antialias_valid_gpts
       ~SMatrixArray.array
       ~SMatrixArray.axes_metadata
-      ~SMatrixArray.base_axes
       ~SMatrixArray.base_axes_metadata
       ~SMatrixArray.base_shape
-      ~SMatrixArray.chunks
       ~SMatrixArray.cutoff_angles
       ~SMatrixArray.device
       ~SMatrixArray.dtype
       ~SMatrixArray.energy
-      ~SMatrixArray.ensemble_axes
       ~SMatrixArray.ensemble_axes_metadata
       ~SMatrixArray.ensemble_shape
       ~SMatrixArray.extent
@@ -81,9 +76,6 @@ SMatrixArray
       ~SMatrixArray.is_complex
       ~SMatrixArray.is_lazy
       ~SMatrixArray.metadata
-      ~SMatrixArray.num_axes
-      ~SMatrixArray.num_base_axes
-      ~SMatrixArray.num_ensemble_axes
       ~SMatrixArray.periodic
       ~SMatrixArray.reciprocal_space_axes_metadata
       ~SMatrixArray.reciprocal_space_sampling

@@ -23,15 +23,10 @@ LineScan
       ~LineScan.at_position
       ~LineScan.copy
       ~LineScan.ensemble_blocks
-      ~LineScan.evaluate
-      ~LineScan.from_fractional_coordinates
       ~LineScan.generate_blocks
-      ~LineScan.generate_blocks_by_extents
       ~LineScan.get_positions
-      ~LineScan.get_weights
       ~LineScan.match_probe
       ~LineScan.select_block
-      ~LineScan.sort_into_extents
    
    
 
@@ -42,7 +37,6 @@ LineScan
    .. autosummary::
    
       ~LineScan.angle
-      ~LineScan.axes_metadata
       ~LineScan.direction
       ~LineScan.end
       ~LineScan.endpoint
@@ -50,6 +44,7 @@ LineScan
       ~LineScan.ensemble_shape
       ~LineScan.extent
       ~LineScan.gpts
+      ~LineScan.in_place
       ~LineScan.limits
       ~LineScan.metadata
       ~LineScan.num_positions

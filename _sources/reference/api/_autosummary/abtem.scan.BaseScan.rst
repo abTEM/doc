@@ -20,13 +20,9 @@ BaseScan
       ~BaseScan.apply
       ~BaseScan.copy
       ~BaseScan.ensemble_blocks
-      ~BaseScan.evaluate
       ~BaseScan.generate_blocks
-      ~BaseScan.generate_blocks_by_extents
       ~BaseScan.get_positions
-      ~BaseScan.get_weights
       ~BaseScan.select_block
-      ~BaseScan.sort_into_extents
    
    
 
@@ -38,6 +34,7 @@ BaseScan
    
       ~BaseScan.ensemble_axes_metadata
       ~BaseScan.ensemble_shape
+      ~BaseScan.in_place
       ~BaseScan.limits
       ~BaseScan.metadata
       ~BaseScan.num_positions

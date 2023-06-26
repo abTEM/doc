@@ -16,6 +16,7 @@
       :template: custom-function-template.rst
    
       cartesian2polar
+      hard_aperture
       nyquist_sampling
       point_resolution
       polar2cartesian
@@ -35,6 +36,7 @@
       Aberrations
       Aperture
       BaseAperture
+      BaseTransferFunction
       Bullseye
       CTF
       SpatialEnvelope

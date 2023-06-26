@@ -1,4 +1,4 @@
-﻿s\_matrix
+s\_matrix
 =========
 
 .. automodule:: abtem.prism.s_matrix

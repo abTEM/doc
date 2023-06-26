@@ -20,11 +20,12 @@ SpatialEnvelope
       ~SpatialEnvelope.apply
       ~SpatialEnvelope.copy
       ~SpatialEnvelope.ensemble_blocks
-      ~SpatialEnvelope.evaluate
       ~SpatialEnvelope.generate_blocks
       ~SpatialEnvelope.match_grid
       ~SpatialEnvelope.select_block
       ~SpatialEnvelope.set_aberrations
+      ~SpatialEnvelope.show
+      ~SpatialEnvelope.to_diffraction_patterns
    
    
 
@@ -59,14 +60,13 @@ SpatialEnvelope
       ~SpatialEnvelope.coma
       ~SpatialEnvelope.coma_angle
       ~SpatialEnvelope.defocus
-      ~SpatialEnvelope.device
       ~SpatialEnvelope.energy
       ~SpatialEnvelope.ensemble_axes_metadata
       ~SpatialEnvelope.ensemble_shape
       ~SpatialEnvelope.extent
       ~SpatialEnvelope.gpts
       ~SpatialEnvelope.grid
-      ~SpatialEnvelope.has_aberrations
+      ~SpatialEnvelope.in_place
       ~SpatialEnvelope.metadata
       ~SpatialEnvelope.phi12
       ~SpatialEnvelope.phi21

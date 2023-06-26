@@ -20,11 +20,12 @@ Aberrations
       ~Aberrations.apply
       ~Aberrations.copy
       ~Aberrations.ensemble_blocks
-      ~Aberrations.evaluate
       ~Aberrations.generate_blocks
       ~Aberrations.match_grid
       ~Aberrations.select_block
       ~Aberrations.set_aberrations
+      ~Aberrations.show
+      ~Aberrations.to_diffraction_patterns
    
    
 
@@ -58,16 +59,14 @@ Aberrations
       ~Aberrations.coma
       ~Aberrations.coma_angle
       ~Aberrations.defocus
-      ~Aberrations.device
       ~Aberrations.energy
       ~Aberrations.ensemble_axes_metadata
       ~Aberrations.ensemble_shape
       ~Aberrations.extent
       ~Aberrations.gpts
       ~Aberrations.grid
-      ~Aberrations.has_aberrations
+      ~Aberrations.in_place
       ~Aberrations.metadata
-      ~Aberrations.nyquist_sampling
       ~Aberrations.phi12
       ~Aberrations.phi21
       ~Aberrations.phi23
@@ -81,7 +80,6 @@ Aberrations
       ~Aberrations.phi56
       ~Aberrations.reciprocal_space_sampling
       ~Aberrations.sampling
-      ~Aberrations.semiangle_cutoff
       ~Aberrations.wavelength
    
    

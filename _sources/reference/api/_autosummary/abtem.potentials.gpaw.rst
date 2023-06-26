@@ -1,4 +1,4 @@
-﻿gpaw
+gpaw
 ====
 
 .. automodule:: abtem.potentials.gpaw

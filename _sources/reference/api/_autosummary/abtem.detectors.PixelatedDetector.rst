@@ -18,13 +18,12 @@ PixelatedDetector
    
       ~PixelatedDetector.__init__
       ~PixelatedDetector.angular_limits
+      ~PixelatedDetector.apply
       ~PixelatedDetector.copy
       ~PixelatedDetector.detect
-      ~PixelatedDetector.measurement_axes_metadata
-      ~PixelatedDetector.measurement_meta
-      ~PixelatedDetector.measurement_metadata
-      ~PixelatedDetector.measurement_shape
-      ~PixelatedDetector.measurement_type
+      ~PixelatedDetector.ensemble_blocks
+      ~PixelatedDetector.generate_blocks
+      ~PixelatedDetector.select_block
    
    
 
@@ -34,9 +33,11 @@ PixelatedDetector
 
    .. autosummary::
    
-      ~PixelatedDetector.fourier_space
+      ~PixelatedDetector.ensemble_axes_metadata
+      ~PixelatedDetector.ensemble_shape
       ~PixelatedDetector.max_angle
-      ~PixelatedDetector.measurement_dtype
+      ~PixelatedDetector.metadata
+      ~PixelatedDetector.reciprocal_space
       ~PixelatedDetector.resample
       ~PixelatedDetector.to_cpu
       ~PixelatedDetector.url

@@ -19,8 +19,7 @@
       :toctree:
       :template: custom-class-template.rst
    
-      BaseMeasurement
-      BaseMeasurement2D
+      BaseMeasurements
       DiffractionPatterns
       Images
       IndexedDiffractionPatterns

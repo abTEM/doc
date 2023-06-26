@@ -18,13 +18,13 @@ FlexibleAnnularDetector
    
       ~FlexibleAnnularDetector.__init__
       ~FlexibleAnnularDetector.angular_limits
+      ~FlexibleAnnularDetector.apply
       ~FlexibleAnnularDetector.copy
       ~FlexibleAnnularDetector.detect
-      ~FlexibleAnnularDetector.measurement_axes_metadata
-      ~FlexibleAnnularDetector.measurement_meta
-      ~FlexibleAnnularDetector.measurement_metadata
-      ~FlexibleAnnularDetector.measurement_shape
-      ~FlexibleAnnularDetector.measurement_type
+      ~FlexibleAnnularDetector.ensemble_blocks
+      ~FlexibleAnnularDetector.generate_blocks
+      ~FlexibleAnnularDetector.get_detector_regions
+      ~FlexibleAnnularDetector.select_block
       ~FlexibleAnnularDetector.show
    
    
@@ -36,8 +36,10 @@ FlexibleAnnularDetector
    .. autosummary::
    
       ~FlexibleAnnularDetector.azimuthal_sampling
+      ~FlexibleAnnularDetector.ensemble_axes_metadata
+      ~FlexibleAnnularDetector.ensemble_shape
       ~FlexibleAnnularDetector.inner
-      ~FlexibleAnnularDetector.measurement_dtype
+      ~FlexibleAnnularDetector.metadata
       ~FlexibleAnnularDetector.outer
       ~FlexibleAnnularDetector.radial_sampling
       ~FlexibleAnnularDetector.rotation

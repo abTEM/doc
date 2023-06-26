@@ -20,9 +20,11 @@ DiffractionSpotsVisualization
       ~DiffractionSpotsVisualization.add_area_indicator
       ~DiffractionSpotsVisualization.adjust_axes_position
       ~DiffractionSpotsVisualization.adjust_figure_aspect
+      ~DiffractionSpotsVisualization.adjust_tight_bbox
       ~DiffractionSpotsVisualization.animate
       ~DiffractionSpotsVisualization.axis_off
-      ~DiffractionSpotsVisualization.iterate_measurements
+      ~DiffractionSpotsVisualization.generate_measurements
+      ~DiffractionSpotsVisualization.get_global_vmin_vmax
       ~DiffractionSpotsVisualization.pick_events
       ~DiffractionSpotsVisualization.remove_miller_index_annotations
       ~DiffractionSpotsVisualization.set_artists
@@ -41,12 +43,12 @@ DiffractionSpotsVisualization
       ~DiffractionSpotsVisualization.set_row_titles
       ~DiffractionSpotsVisualization.set_scale_units
       ~DiffractionSpotsVisualization.set_sizebars
-      ~DiffractionSpotsVisualization.set_x_labels
-      ~DiffractionSpotsVisualization.set_x_units
+      ~DiffractionSpotsVisualization.set_xlabels
       ~DiffractionSpotsVisualization.set_xlim
-      ~DiffractionSpotsVisualization.set_y_labels
-      ~DiffractionSpotsVisualization.set_y_units
+      ~DiffractionSpotsVisualization.set_xunits
+      ~DiffractionSpotsVisualization.set_ylabels
       ~DiffractionSpotsVisualization.set_ylim
+      ~DiffractionSpotsVisualization.set_yunits
       ~DiffractionSpotsVisualization.update_artists
       ~DiffractionSpotsVisualization.update_panel_labels
    
@@ -61,15 +63,11 @@ DiffractionSpotsVisualization
       ~DiffractionSpotsVisualization.artists
       ~DiffractionSpotsVisualization.axes
       ~DiffractionSpotsVisualization.axes_types
-      ~DiffractionSpotsVisualization.explode_axes
       ~DiffractionSpotsVisualization.fig
-      ~DiffractionSpotsVisualization.index_axes
       ~DiffractionSpotsVisualization.indices
       ~DiffractionSpotsVisualization.measurements
       ~DiffractionSpotsVisualization.ncols
       ~DiffractionSpotsVisualization.nrows
-      ~DiffractionSpotsVisualization.overlay_axes
-      ~DiffractionSpotsVisualization.range_axes
       ~DiffractionSpotsVisualization.widgets
    
    

@@ -22,12 +22,13 @@ Potential
       ~Potential.ensemble_blocks
       ~Potential.generate_blocks
       ~Potential.generate_slices
-      ~Potential.images
+      ~Potential.get_sliced_atoms
+      ~Potential.get_transformed_atoms
       ~Potential.match_grid
       ~Potential.project
       ~Potential.select_block
       ~Potential.show
-      ~Potential.transformed_atoms
+      ~Potential.to_images
    
    
 
@@ -38,26 +39,19 @@ Potential
    .. autosummary::
    
       ~Potential.axes_metadata
-      ~Potential.base_axes
       ~Potential.base_axes_metadata
       ~Potential.base_shape
       ~Potential.box
       ~Potential.device
-      ~Potential.ensemble_axes
       ~Potential.ensemble_axes_metadata
       ~Potential.ensemble_shape
-      ~Potential.exit_plane_after
       ~Potential.exit_planes
-      ~Potential.exit_planes_axes_metadata
       ~Potential.exit_thicknesses
       ~Potential.extent
       ~Potential.frozen_phonons
       ~Potential.gpts
       ~Potential.grid
       ~Potential.integrator
-      ~Potential.num_axes
-      ~Potential.num_base_axes
-      ~Potential.num_ensemble_axes
       ~Potential.num_exit_planes
       ~Potential.num_frozen_phonons
       ~Potential.num_slices
@@ -69,7 +63,6 @@ Potential
       ~Potential.shape
       ~Potential.slice_limits
       ~Potential.slice_thickness
-      ~Potential.sliced_atoms
       ~Potential.thickness
    
    

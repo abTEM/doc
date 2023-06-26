@@ -20,12 +20,14 @@ CTF
       ~CTF.apply
       ~CTF.copy
       ~CTF.ensemble_blocks
-      ~CTF.evaluate
       ~CTF.generate_blocks
       ~CTF.match_grid
       ~CTF.profiles
       ~CTF.select_block
       ~CTF.set_aberrations
+      ~CTF.show
+      ~CTF.to_diffraction_patterns
+      ~CTF.to_point_spread_functions
    
    
 
@@ -61,7 +63,6 @@ CTF
       ~CTF.coma_angle
       ~CTF.crossover_angle
       ~CTF.defocus
-      ~CTF.device
       ~CTF.energy
       ~CTF.ensemble_axes_metadata
       ~CTF.ensemble_shape
@@ -70,7 +71,7 @@ CTF
       ~CTF.focal_spread
       ~CTF.gpts
       ~CTF.grid
-      ~CTF.has_aberrations
+      ~CTF.in_place
       ~CTF.metadata
       ~CTF.nyquist_sampling
       ~CTF.phi12

@@ -23,7 +23,6 @@
       CustomScan
       GridScan
       LineScan
-      SourceOffset
    
    
 

@@ -1,0 +1,32 @@
+gaussians
+=========
+
+.. automodule:: abtem.core.integrals.gaussians
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      GaussianProjectionIntegrals
+      GaussianScatteringFactors
+   
+   
+
+   
+   
+   
+
+
+

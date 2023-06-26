@@ -18,13 +18,13 @@ SegmentedDetector
    
       ~SegmentedDetector.__init__
       ~SegmentedDetector.angular_limits
+      ~SegmentedDetector.apply
       ~SegmentedDetector.copy
       ~SegmentedDetector.detect
-      ~SegmentedDetector.measurement_axes_metadata
-      ~SegmentedDetector.measurement_meta
-      ~SegmentedDetector.measurement_metadata
-      ~SegmentedDetector.measurement_shape
-      ~SegmentedDetector.measurement_type
+      ~SegmentedDetector.ensemble_blocks
+      ~SegmentedDetector.generate_blocks
+      ~SegmentedDetector.get_detector_regions
+      ~SegmentedDetector.select_block
       ~SegmentedDetector.show
    
    
@@ -36,8 +36,10 @@ SegmentedDetector
    .. autosummary::
    
       ~SegmentedDetector.azimuthal_sampling
+      ~SegmentedDetector.ensemble_axes_metadata
+      ~SegmentedDetector.ensemble_shape
       ~SegmentedDetector.inner
-      ~SegmentedDetector.measurement_dtype
+      ~SegmentedDetector.metadata
       ~SegmentedDetector.nbins_azimuthal
       ~SegmentedDetector.nbins_radial
       ~SegmentedDetector.outer

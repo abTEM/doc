@@ -17,17 +17,14 @@ AnnularDetector
    .. autosummary::
    
       ~AnnularDetector.__init__
-      ~AnnularDetector.add_to_plot
       ~AnnularDetector.angular_limits
+      ~AnnularDetector.apply
       ~AnnularDetector.copy
       ~AnnularDetector.detect
+      ~AnnularDetector.ensemble_blocks
+      ~AnnularDetector.generate_blocks
       ~AnnularDetector.get_detector_region
-      ~AnnularDetector.measurement_axes_metadata
-      ~AnnularDetector.measurement_meta
-      ~AnnularDetector.measurement_metadata
-      ~AnnularDetector.measurement_shape
-      ~AnnularDetector.measurement_type
-      ~AnnularDetector.show
+      ~AnnularDetector.select_block
    
    
 
@@ -37,8 +34,10 @@ AnnularDetector
 
    .. autosummary::
    
+      ~AnnularDetector.ensemble_axes_metadata
+      ~AnnularDetector.ensemble_shape
       ~AnnularDetector.inner
-      ~AnnularDetector.measurement_dtype
+      ~AnnularDetector.metadata
       ~AnnularDetector.offset
       ~AnnularDetector.outer
       ~AnnularDetector.to_cpu

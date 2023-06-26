@@ -20,14 +20,10 @@ CustomScan
       ~CustomScan.apply
       ~CustomScan.copy
       ~CustomScan.ensemble_blocks
-      ~CustomScan.evaluate
       ~CustomScan.generate_blocks
-      ~CustomScan.generate_blocks_by_extents
       ~CustomScan.get_positions
-      ~CustomScan.get_weights
       ~CustomScan.match_probe
       ~CustomScan.select_block
-      ~CustomScan.sort_into_extents
    
    
 
@@ -39,6 +35,7 @@ CustomScan
    
       ~CustomScan.ensemble_axes_metadata
       ~CustomScan.ensemble_shape
+      ~CustomScan.in_place
       ~CustomScan.limits
       ~CustomScan.metadata
       ~CustomScan.num_positions
