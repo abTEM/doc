@@ -2144,7 +2144,7 @@ title="Open an issue"
     <span class="n">reciprocal_space_sampling_to_angular_sampling</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">abtem.core.fft</span> <span class="kn">import</span> <span class="n">fft_crop</span>
-<span class="kn">from</span> <span class="nn">abtem.core.grid</span> <span class="kn">import</span> <span class="n">HasGridMixin</span><span class="p">,</span> <span class="n">polar_spatial_frequencies</span><span class="p">,</span> <span class="n">Grid</span>
+<span class="kn">from</span> <span class="nn">abtem.core.grid</span> <span class="kn">import</span> <span class="n">HasGridMixin</span><span class="p">,</span> <span class="n">polar_spatial_frequencies</span><span class="p">,</span> <span class="n">Grid</span><span class="p">,</span> <span class="n">GridUndefinedError</span>
 <span class="kn">from</span> <span class="nn">abtem.core.utils</span> <span class="kn">import</span> <span class="n">expand_dims_to_broadcast</span>
 <span class="kn">from</span> <span class="nn">abtem.distributions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">BaseDistribution</span><span class="p">,</span>
@@ -2458,10 +2458,13 @@ title="Open an issue"
         <span class="n">semiangle_cutoff</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">semiangle_cutoff</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-3</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">soft</span><span class="p">:</span>
-            <span class="n">aperture</span> <span class="o">=</span> <span class="n">soft_aperture</span><span class="p">(</span>
-                <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span>
-            <span class="p">)</span>
-            <span class="k">return</span> <span class="n">aperture</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">aperture</span> <span class="o">=</span> <span class="n">soft_aperture</span><span class="p">(</span>
+                    <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="n">aperture</span>
+            <span class="k">except</span> <span class="n">GridUndefinedError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">hard_aperture</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">semiangle_cutoff</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">hard_aperture</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">semiangle_cutoff</span><span class="p">)</span></div>
 
