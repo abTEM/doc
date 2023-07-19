@@ -22,10 +22,12 @@ SMatrixArray
       ~SMatrixArray.copy
       ~SMatrixArray.copy_to_device
       ~SMatrixArray.dummy_probes
+      ~SMatrixArray.ensemble_blocks
       ~SMatrixArray.ensure_lazy
       ~SMatrixArray.expand_dims
       ~SMatrixArray.from_array_and_metadata
       ~SMatrixArray.from_zarr
+      ~SMatrixArray.generate_blocks
       ~SMatrixArray.generate_ensemble
       ~SMatrixArray.get_items
       ~SMatrixArray.match_grid
@@ -37,12 +39,14 @@ SMatrixArray
       ~SMatrixArray.rechunk
       ~SMatrixArray.reduce
       ~SMatrixArray.scan
+      ~SMatrixArray.select_block
       ~SMatrixArray.set_ensemble_axes_metadata
       ~SMatrixArray.squeeze
       ~SMatrixArray.std
       ~SMatrixArray.sum
       ~SMatrixArray.to_cpu
       ~SMatrixArray.to_gpu
+      ~SMatrixArray.to_hyperspy
       ~SMatrixArray.to_tiff
       ~SMatrixArray.to_zarr
    
@@ -61,12 +65,14 @@ SMatrixArray
       ~SMatrixArray.array
       ~SMatrixArray.axes_metadata
       ~SMatrixArray.base_axes_metadata
+      ~SMatrixArray.base_dims
       ~SMatrixArray.base_shape
       ~SMatrixArray.cutoff_angles
       ~SMatrixArray.device
       ~SMatrixArray.dtype
       ~SMatrixArray.energy
       ~SMatrixArray.ensemble_axes_metadata
+      ~SMatrixArray.ensemble_dims
       ~SMatrixArray.ensemble_shape
       ~SMatrixArray.extent
       ~SMatrixArray.full_cutoff_angles

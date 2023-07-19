@@ -35,6 +35,10 @@ GridScan
 
    .. autosummary::
    
+      ~GridScan.axes_metadata
+      ~GridScan.base_axes_metadata
+      ~GridScan.base_shape
+      ~GridScan.distributions
       ~GridScan.end
       ~GridScan.endpoint
       ~GridScan.ensemble_axes_metadata

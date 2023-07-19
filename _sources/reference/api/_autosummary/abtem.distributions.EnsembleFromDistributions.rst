@@ -30,7 +30,11 @@ EnsembleFromDistributions
 
    .. autosummary::
    
-      ~EnsembleFromDistributions.ensemble_shape
+      ~EnsembleFromDistributions.axes_metadata
+      ~EnsembleFromDistributions.base_axes_metadata
+      ~EnsembleFromDistributions.base_shape
       ~EnsembleFromDistributions.ensemble_axes_metadata
+      ~EnsembleFromDistributions.ensemble_shape
+      ~EnsembleFromDistributions.shape
    
    

@@ -39,7 +39,7 @@ MeasurementVisualization2D
       ~MeasurementVisualization2D.set_panel_labels
       ~MeasurementVisualization2D.set_row_titles
       ~MeasurementVisualization2D.set_scale_units
-      ~MeasurementVisualization2D.set_sizebars
+      ~MeasurementVisualization2D.set_scalebars
       ~MeasurementVisualization2D.set_xlabels
       ~MeasurementVisualization2D.set_xlim
       ~MeasurementVisualization2D.set_xunits

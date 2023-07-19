@@ -18,10 +18,13 @@ PlaneWave
    
       ~PlaneWave.__init__
       ~PlaneWave.build
+      ~PlaneWave.check_can_build
       ~PlaneWave.copy
-      ~PlaneWave.insert_transform
+      ~PlaneWave.ensemble_blocks
+      ~PlaneWave.generate_blocks
       ~PlaneWave.match_grid
       ~PlaneWave.multislice
+      ~PlaneWave.select_block
    
    
 
@@ -56,7 +59,6 @@ PlaneWave
       ~PlaneWave.sampling
       ~PlaneWave.shape
       ~PlaneWave.tilt
-      ~PlaneWave.transforms
       ~PlaneWave.wavelength
    
    

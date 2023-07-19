@@ -34,12 +34,16 @@ AnnularDetector
 
    .. autosummary::
    
+      ~AnnularDetector.axes_metadata
+      ~AnnularDetector.base_axes_metadata
+      ~AnnularDetector.base_shape
       ~AnnularDetector.ensemble_axes_metadata
       ~AnnularDetector.ensemble_shape
       ~AnnularDetector.inner
       ~AnnularDetector.metadata
       ~AnnularDetector.offset
       ~AnnularDetector.outer
+      ~AnnularDetector.shape
       ~AnnularDetector.to_cpu
       ~AnnularDetector.url
    

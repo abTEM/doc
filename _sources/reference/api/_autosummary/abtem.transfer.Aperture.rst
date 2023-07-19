@@ -36,6 +36,10 @@ Aperture
    
       ~Aperture.accelerator
       ~Aperture.angular_sampling
+      ~Aperture.axes_metadata
+      ~Aperture.base_axes_metadata
+      ~Aperture.base_shape
+      ~Aperture.distributions
       ~Aperture.energy
       ~Aperture.ensemble_axes_metadata
       ~Aperture.ensemble_shape
@@ -48,6 +52,7 @@ Aperture
       ~Aperture.reciprocal_space_sampling
       ~Aperture.sampling
       ~Aperture.semiangle_cutoff
+      ~Aperture.shape
       ~Aperture.soft
       ~Aperture.wavelength
    

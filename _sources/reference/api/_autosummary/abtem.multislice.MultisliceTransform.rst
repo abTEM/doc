@@ -31,12 +31,16 @@ MultisliceTransform
 
    .. autosummary::
    
+      ~MultisliceTransform.axes_metadata
+      ~MultisliceTransform.base_axes_metadata
+      ~MultisliceTransform.base_shape
       ~MultisliceTransform.conjugate
       ~MultisliceTransform.detectors
       ~MultisliceTransform.ensemble_axes_metadata
       ~MultisliceTransform.ensemble_shape
       ~MultisliceTransform.metadata
       ~MultisliceTransform.potential
+      ~MultisliceTransform.shape
       ~MultisliceTransform.transpose
    
    

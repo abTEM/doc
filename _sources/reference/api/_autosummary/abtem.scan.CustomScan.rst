@@ -33,6 +33,10 @@ CustomScan
 
    .. autosummary::
    
+      ~CustomScan.axes_metadata
+      ~CustomScan.base_axes_metadata
+      ~CustomScan.base_shape
+      ~CustomScan.distributions
       ~CustomScan.ensemble_axes_metadata
       ~CustomScan.ensemble_shape
       ~CustomScan.in_place

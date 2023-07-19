@@ -41,6 +41,7 @@ SMatrix
       ~SMatrix.angular_sampling
       ~SMatrix.antialias_cutoff_gpts
       ~SMatrix.antialias_valid_gpts
+      ~SMatrix.axes_metadata
       ~SMatrix.base_axes_metadata
       ~SMatrix.base_shape
       ~SMatrix.cutoff_angles

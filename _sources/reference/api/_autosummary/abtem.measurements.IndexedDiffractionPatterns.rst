@@ -24,10 +24,12 @@ IndexedDiffractionPatterns
       ~IndexedDiffractionPatterns.copy
       ~IndexedDiffractionPatterns.copy_to_device
       ~IndexedDiffractionPatterns.crop
+      ~IndexedDiffractionPatterns.ensemble_blocks
       ~IndexedDiffractionPatterns.ensure_lazy
       ~IndexedDiffractionPatterns.expand_dims
       ~IndexedDiffractionPatterns.from_array_and_metadata
       ~IndexedDiffractionPatterns.from_zarr
+      ~IndexedDiffractionPatterns.generate_blocks
       ~IndexedDiffractionPatterns.generate_ensemble
       ~IndexedDiffractionPatterns.get_items
       ~IndexedDiffractionPatterns.imag
@@ -45,6 +47,7 @@ IndexedDiffractionPatterns
       ~IndexedDiffractionPatterns.reduce_ensemble
       ~IndexedDiffractionPatterns.relative_difference
       ~IndexedDiffractionPatterns.remove_low_intensity
+      ~IndexedDiffractionPatterns.select_block
       ~IndexedDiffractionPatterns.set_ensemble_axes_metadata
       ~IndexedDiffractionPatterns.show
       ~IndexedDiffractionPatterns.sort
@@ -71,10 +74,12 @@ IndexedDiffractionPatterns
       ~IndexedDiffractionPatterns.array
       ~IndexedDiffractionPatterns.axes_metadata
       ~IndexedDiffractionPatterns.base_axes_metadata
+      ~IndexedDiffractionPatterns.base_dims
       ~IndexedDiffractionPatterns.base_shape
       ~IndexedDiffractionPatterns.device
       ~IndexedDiffractionPatterns.dtype
       ~IndexedDiffractionPatterns.ensemble_axes_metadata
+      ~IndexedDiffractionPatterns.ensemble_dims
       ~IndexedDiffractionPatterns.ensemble_shape
       ~IndexedDiffractionPatterns.intensities
       ~IndexedDiffractionPatterns.intensities_dict

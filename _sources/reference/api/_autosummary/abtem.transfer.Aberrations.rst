@@ -56,9 +56,13 @@ Aberrations
       ~Aberrations.angular_sampling
       ~Aberrations.astigmatism
       ~Aberrations.astigmatism_angle
+      ~Aberrations.axes_metadata
+      ~Aberrations.base_axes_metadata
+      ~Aberrations.base_shape
       ~Aberrations.coma
       ~Aberrations.coma_angle
       ~Aberrations.defocus
+      ~Aberrations.distributions
       ~Aberrations.energy
       ~Aberrations.ensemble_axes_metadata
       ~Aberrations.ensemble_shape
@@ -80,6 +84,7 @@ Aberrations
       ~Aberrations.phi56
       ~Aberrations.reciprocal_space_sampling
       ~Aberrations.sampling
+      ~Aberrations.shape
       ~Aberrations.wavelength
    
    

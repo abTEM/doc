@@ -22,10 +22,12 @@ RealSpaceLineProfiles
       ~RealSpaceLineProfiles.compute
       ~RealSpaceLineProfiles.copy
       ~RealSpaceLineProfiles.copy_to_device
+      ~RealSpaceLineProfiles.ensemble_blocks
       ~RealSpaceLineProfiles.ensure_lazy
       ~RealSpaceLineProfiles.expand_dims
       ~RealSpaceLineProfiles.from_array_and_metadata
       ~RealSpaceLineProfiles.from_zarr
+      ~RealSpaceLineProfiles.generate_blocks
       ~RealSpaceLineProfiles.generate_ensemble
       ~RealSpaceLineProfiles.get_items
       ~RealSpaceLineProfiles.imag
@@ -42,6 +44,7 @@ RealSpaceLineProfiles
       ~RealSpaceLineProfiles.rechunk
       ~RealSpaceLineProfiles.reduce_ensemble
       ~RealSpaceLineProfiles.relative_difference
+      ~RealSpaceLineProfiles.select_block
       ~RealSpaceLineProfiles.set_ensemble_axes_metadata
       ~RealSpaceLineProfiles.show
       ~RealSpaceLineProfiles.squeeze
@@ -66,10 +69,12 @@ RealSpaceLineProfiles
       ~RealSpaceLineProfiles.array
       ~RealSpaceLineProfiles.axes_metadata
       ~RealSpaceLineProfiles.base_axes_metadata
+      ~RealSpaceLineProfiles.base_dims
       ~RealSpaceLineProfiles.base_shape
       ~RealSpaceLineProfiles.device
       ~RealSpaceLineProfiles.dtype
       ~RealSpaceLineProfiles.ensemble_axes_metadata
+      ~RealSpaceLineProfiles.ensemble_dims
       ~RealSpaceLineProfiles.ensemble_shape
       ~RealSpaceLineProfiles.extent
       ~RealSpaceLineProfiles.is_complex

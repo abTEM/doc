@@ -36,6 +36,10 @@ BaseTransferFunction
    
       ~BaseTransferFunction.accelerator
       ~BaseTransferFunction.angular_sampling
+      ~BaseTransferFunction.axes_metadata
+      ~BaseTransferFunction.base_axes_metadata
+      ~BaseTransferFunction.base_shape
+      ~BaseTransferFunction.distributions
       ~BaseTransferFunction.energy
       ~BaseTransferFunction.ensemble_axes_metadata
       ~BaseTransferFunction.ensemble_shape
@@ -46,6 +50,7 @@ BaseTransferFunction
       ~BaseTransferFunction.metadata
       ~BaseTransferFunction.reciprocal_space_sampling
       ~BaseTransferFunction.sampling
+      ~BaseTransferFunction.shape
       ~BaseTransferFunction.wavelength
    
    

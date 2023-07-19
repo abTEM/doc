@@ -33,9 +33,13 @@ BaseDetector
 
    .. autosummary::
    
+      ~BaseDetector.axes_metadata
+      ~BaseDetector.base_axes_metadata
+      ~BaseDetector.base_shape
       ~BaseDetector.ensemble_axes_metadata
       ~BaseDetector.ensemble_shape
       ~BaseDetector.metadata
+      ~BaseDetector.shape
       ~BaseDetector.to_cpu
       ~BaseDetector.url
    

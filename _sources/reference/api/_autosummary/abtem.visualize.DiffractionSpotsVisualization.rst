@@ -42,7 +42,7 @@ DiffractionSpotsVisualization
       ~DiffractionSpotsVisualization.set_panel_labels
       ~DiffractionSpotsVisualization.set_row_titles
       ~DiffractionSpotsVisualization.set_scale_units
-      ~DiffractionSpotsVisualization.set_sizebars
+      ~DiffractionSpotsVisualization.set_scalebars
       ~DiffractionSpotsVisualization.set_xlabels
       ~DiffractionSpotsVisualization.set_xlim
       ~DiffractionSpotsVisualization.set_xunits

@@ -36,6 +36,10 @@ TemporalEnvelope
    
       ~TemporalEnvelope.accelerator
       ~TemporalEnvelope.angular_sampling
+      ~TemporalEnvelope.axes_metadata
+      ~TemporalEnvelope.base_axes_metadata
+      ~TemporalEnvelope.base_shape
+      ~TemporalEnvelope.distributions
       ~TemporalEnvelope.energy
       ~TemporalEnvelope.ensemble_axes_metadata
       ~TemporalEnvelope.ensemble_shape
@@ -47,6 +51,7 @@ TemporalEnvelope
       ~TemporalEnvelope.metadata
       ~TemporalEnvelope.reciprocal_space_sampling
       ~TemporalEnvelope.sampling
+      ~TemporalEnvelope.shape
       ~TemporalEnvelope.wavelength
    
    

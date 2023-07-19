@@ -32,6 +32,10 @@ BaseScan
 
    .. autosummary::
    
+      ~BaseScan.axes_metadata
+      ~BaseScan.base_axes_metadata
+      ~BaseScan.base_shape
+      ~BaseScan.distributions
       ~BaseScan.ensemble_axes_metadata
       ~BaseScan.ensemble_shape
       ~BaseScan.in_place

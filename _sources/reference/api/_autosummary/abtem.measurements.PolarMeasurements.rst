@@ -23,11 +23,13 @@ PolarMeasurements
       ~PolarMeasurements.copy
       ~PolarMeasurements.copy_to_device
       ~PolarMeasurements.differentials
+      ~PolarMeasurements.ensemble_blocks
       ~PolarMeasurements.ensure_lazy
       ~PolarMeasurements.expand_dims
       ~PolarMeasurements.from_array_and_metadata
       ~PolarMeasurements.from_zarr
       ~PolarMeasurements.gaussian_source_size
+      ~PolarMeasurements.generate_blocks
       ~PolarMeasurements.generate_ensemble
       ~PolarMeasurements.get_items
       ~PolarMeasurements.imag
@@ -45,6 +47,7 @@ PolarMeasurements
       ~PolarMeasurements.rechunk
       ~PolarMeasurements.reduce_ensemble
       ~PolarMeasurements.relative_difference
+      ~PolarMeasurements.select_block
       ~PolarMeasurements.set_ensemble_axes_metadata
       ~PolarMeasurements.show
       ~PolarMeasurements.squeeze
@@ -71,10 +74,12 @@ PolarMeasurements
       ~PolarMeasurements.azimuthal_offset
       ~PolarMeasurements.azimuthal_sampling
       ~PolarMeasurements.base_axes_metadata
+      ~PolarMeasurements.base_dims
       ~PolarMeasurements.base_shape
       ~PolarMeasurements.device
       ~PolarMeasurements.dtype
       ~PolarMeasurements.ensemble_axes_metadata
+      ~PolarMeasurements.ensemble_dims
       ~PolarMeasurements.ensemble_shape
       ~PolarMeasurements.is_complex
       ~PolarMeasurements.is_lazy

@@ -38,7 +38,7 @@ BaseMeasurementVisualization2D
       ~BaseMeasurementVisualization2D.set_panel_labels
       ~BaseMeasurementVisualization2D.set_row_titles
       ~BaseMeasurementVisualization2D.set_scale_units
-      ~BaseMeasurementVisualization2D.set_sizebars
+      ~BaseMeasurementVisualization2D.set_scalebars
       ~BaseMeasurementVisualization2D.set_xlabels
       ~BaseMeasurementVisualization2D.set_xlim
       ~BaseMeasurementVisualization2D.set_xunits

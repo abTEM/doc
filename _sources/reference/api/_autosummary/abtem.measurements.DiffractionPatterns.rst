@@ -26,13 +26,14 @@ DiffractionPatterns
       ~DiffractionPatterns.copy
       ~DiffractionPatterns.copy_to_device
       ~DiffractionPatterns.crop
-      ~DiffractionPatterns.ensure_centered
+      ~DiffractionPatterns.ensemble_blocks
       ~DiffractionPatterns.ensure_lazy
       ~DiffractionPatterns.expand_dims
       ~DiffractionPatterns.from_array_and_metadata
       ~DiffractionPatterns.from_zarr
       ~DiffractionPatterns.gaussian_filter
       ~DiffractionPatterns.gaussian_source_size
+      ~DiffractionPatterns.generate_blocks
       ~DiffractionPatterns.generate_ensemble
       ~DiffractionPatterns.get_items
       ~DiffractionPatterns.imag
@@ -56,8 +57,8 @@ DiffractionPatterns
       ~DiffractionPatterns.rechunk
       ~DiffractionPatterns.reduce_ensemble
       ~DiffractionPatterns.relative_difference
+      ~DiffractionPatterns.select_block
       ~DiffractionPatterns.set_ensemble_axes_metadata
-      ~DiffractionPatterns.shift_spectrum
       ~DiffractionPatterns.show
       ~DiffractionPatterns.squeeze
       ~DiffractionPatterns.std
@@ -83,11 +84,13 @@ DiffractionPatterns
       ~DiffractionPatterns.array
       ~DiffractionPatterns.axes_metadata
       ~DiffractionPatterns.base_axes_metadata
+      ~DiffractionPatterns.base_dims
       ~DiffractionPatterns.base_shape
       ~DiffractionPatterns.coordinates
       ~DiffractionPatterns.device
       ~DiffractionPatterns.dtype
       ~DiffractionPatterns.ensemble_axes_metadata
+      ~DiffractionPatterns.ensemble_dims
       ~DiffractionPatterns.ensemble_shape
       ~DiffractionPatterns.extent
       ~DiffractionPatterns.fftshift

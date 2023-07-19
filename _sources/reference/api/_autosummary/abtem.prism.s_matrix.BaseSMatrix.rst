@@ -17,7 +17,6 @@ BaseSMatrix
    .. autosummary::
    
       ~BaseSMatrix.__init__
-      ~BaseSMatrix.copy
       ~BaseSMatrix.dummy_probes
       ~BaseSMatrix.match_grid
    

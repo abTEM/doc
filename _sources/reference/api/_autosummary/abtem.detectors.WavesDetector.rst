@@ -33,9 +33,13 @@ WavesDetector
 
    .. autosummary::
    
+      ~WavesDetector.axes_metadata
+      ~WavesDetector.base_axes_metadata
+      ~WavesDetector.base_shape
       ~WavesDetector.ensemble_axes_metadata
       ~WavesDetector.ensemble_shape
       ~WavesDetector.metadata
+      ~WavesDetector.shape
       ~WavesDetector.to_cpu
       ~WavesDetector.url
    

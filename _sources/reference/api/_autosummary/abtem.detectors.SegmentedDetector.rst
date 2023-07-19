@@ -35,7 +35,10 @@ SegmentedDetector
 
    .. autosummary::
    
+      ~SegmentedDetector.axes_metadata
       ~SegmentedDetector.azimuthal_sampling
+      ~SegmentedDetector.base_axes_metadata
+      ~SegmentedDetector.base_shape
       ~SegmentedDetector.ensemble_axes_metadata
       ~SegmentedDetector.ensemble_shape
       ~SegmentedDetector.inner
@@ -45,6 +48,7 @@ SegmentedDetector
       ~SegmentedDetector.outer
       ~SegmentedDetector.radial_sampling
       ~SegmentedDetector.rotation
+      ~SegmentedDetector.shape
       ~SegmentedDetector.to_cpu
       ~SegmentedDetector.url
    

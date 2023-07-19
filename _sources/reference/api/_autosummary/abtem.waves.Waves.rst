@@ -26,12 +26,14 @@ Waves
       ~Waves.copy_to_device
       ~Waves.diffraction_patterns
       ~Waves.downsample
+      ~Waves.ensemble_blocks
       ~Waves.ensure_lazy
       ~Waves.ensure_real_space
       ~Waves.ensure_reciprocal_space
       ~Waves.expand_dims
       ~Waves.from_array_and_metadata
       ~Waves.from_zarr
+      ~Waves.generate_blocks
       ~Waves.generate_ensemble
       ~Waves.get_items
       ~Waves.intensity
@@ -44,6 +46,7 @@ Waves
       ~Waves.normalize
       ~Waves.phase_shift
       ~Waves.rechunk
+      ~Waves.select_block
       ~Waves.set_ensemble_axes_metadata
       ~Waves.show
       ~Waves.squeeze
@@ -52,6 +55,7 @@ Waves
       ~Waves.tile
       ~Waves.to_cpu
       ~Waves.to_gpu
+      ~Waves.to_hyperspy
       ~Waves.to_tiff
       ~Waves.to_zarr
    
@@ -70,6 +74,7 @@ Waves
       ~Waves.array
       ~Waves.axes_metadata
       ~Waves.base_axes_metadata
+      ~Waves.base_dims
       ~Waves.base_shape
       ~Waves.base_tilt
       ~Waves.cutoff_angles
@@ -77,6 +82,7 @@ Waves
       ~Waves.dtype
       ~Waves.energy
       ~Waves.ensemble_axes_metadata
+      ~Waves.ensemble_dims
       ~Waves.ensemble_shape
       ~Waves.extent
       ~Waves.full_cutoff_angles

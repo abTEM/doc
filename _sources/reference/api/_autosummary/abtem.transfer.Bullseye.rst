@@ -36,6 +36,10 @@ Bullseye
    
       ~Bullseye.accelerator
       ~Bullseye.angular_sampling
+      ~Bullseye.axes_metadata
+      ~Bullseye.base_axes_metadata
+      ~Bullseye.base_shape
+      ~Bullseye.distributions
       ~Bullseye.energy
       ~Bullseye.ensemble_axes_metadata
       ~Bullseye.ensemble_shape
@@ -51,6 +55,7 @@ Bullseye
       ~Bullseye.ring_width
       ~Bullseye.sampling
       ~Bullseye.semiangle_cutoff
+      ~Bullseye.shape
       ~Bullseye.spoke_width
       ~Bullseye.wavelength
    

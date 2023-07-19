@@ -18,12 +18,15 @@ Probe
    
       ~Probe.__init__
       ~Probe.build
+      ~Probe.check_can_build
       ~Probe.copy
-      ~Probe.insert_transform
+      ~Probe.ensemble_blocks
+      ~Probe.generate_blocks
       ~Probe.match_grid
       ~Probe.multislice
       ~Probe.profiles
       ~Probe.scan
+      ~Probe.select_block
       ~Probe.show
    
    
@@ -55,14 +58,15 @@ Probe
       ~Probe.gpts
       ~Probe.grid
       ~Probe.metadata
+      ~Probe.positions
       ~Probe.reciprocal_space_axes_metadata
       ~Probe.reciprocal_space_sampling
       ~Probe.rectangle_cutoff_angles
       ~Probe.sampling
       ~Probe.semiangle_cutoff
       ~Probe.shape
+      ~Probe.soft
       ~Probe.tilt
-      ~Probe.transforms
       ~Probe.wavelength
    
    

@@ -35,7 +35,10 @@ FlexibleAnnularDetector
 
    .. autosummary::
    
+      ~FlexibleAnnularDetector.axes_metadata
       ~FlexibleAnnularDetector.azimuthal_sampling
+      ~FlexibleAnnularDetector.base_axes_metadata
+      ~FlexibleAnnularDetector.base_shape
       ~FlexibleAnnularDetector.ensemble_axes_metadata
       ~FlexibleAnnularDetector.ensemble_shape
       ~FlexibleAnnularDetector.inner
@@ -43,6 +46,7 @@ FlexibleAnnularDetector
       ~FlexibleAnnularDetector.outer
       ~FlexibleAnnularDetector.radial_sampling
       ~FlexibleAnnularDetector.rotation
+      ~FlexibleAnnularDetector.shape
       ~FlexibleAnnularDetector.step_size
       ~FlexibleAnnularDetector.to_cpu
       ~FlexibleAnnularDetector.url

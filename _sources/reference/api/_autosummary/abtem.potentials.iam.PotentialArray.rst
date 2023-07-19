@@ -65,10 +65,12 @@ PotentialArray
       ~PotentialArray.array
       ~PotentialArray.axes_metadata
       ~PotentialArray.base_axes_metadata
+      ~PotentialArray.base_dims
       ~PotentialArray.base_shape
       ~PotentialArray.device
       ~PotentialArray.dtype
       ~PotentialArray.ensemble_axes_metadata
+      ~PotentialArray.ensemble_dims
       ~PotentialArray.ensemble_shape
       ~PotentialArray.exit_planes
       ~PotentialArray.exit_thicknesses

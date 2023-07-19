@@ -17,7 +17,6 @@ BaseWaves
    .. autosummary::
    
       ~BaseWaves.__init__
-      ~BaseWaves.copy
       ~BaseWaves.match_grid
    
    
@@ -34,6 +33,7 @@ BaseWaves
       ~BaseWaves.antialias_valid_gpts
       ~BaseWaves.base_axes_metadata
       ~BaseWaves.cutoff_angles
+      ~BaseWaves.device
       ~BaseWaves.dtype
       ~BaseWaves.energy
       ~BaseWaves.extent
@@ -46,8 +46,5 @@ BaseWaves
       ~BaseWaves.rectangle_cutoff_angles
       ~BaseWaves.sampling
       ~BaseWaves.wavelength
-      ~BaseWaves.ensemble_axes_metadata
-      ~BaseWaves.ensemble_shape
-      ~BaseWaves.device
    
    

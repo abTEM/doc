@@ -31,5 +31,4 @@
    abtem.potentials.charge_density
    abtem.potentials.gpaw
    abtem.potentials.iam
-   abtem.potentials.poisson
 

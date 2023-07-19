@@ -67,11 +67,13 @@ TransmissionFunction
       ~TransmissionFunction.array
       ~TransmissionFunction.axes_metadata
       ~TransmissionFunction.base_axes_metadata
+      ~TransmissionFunction.base_dims
       ~TransmissionFunction.base_shape
       ~TransmissionFunction.device
       ~TransmissionFunction.dtype
       ~TransmissionFunction.energy
       ~TransmissionFunction.ensemble_axes_metadata
+      ~TransmissionFunction.ensemble_dims
       ~TransmissionFunction.ensemble_shape
       ~TransmissionFunction.exit_planes
       ~TransmissionFunction.exit_thicknesses

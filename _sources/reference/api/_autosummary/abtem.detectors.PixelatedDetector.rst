@@ -33,12 +33,16 @@ PixelatedDetector
 
    .. autosummary::
    
+      ~PixelatedDetector.axes_metadata
+      ~PixelatedDetector.base_axes_metadata
+      ~PixelatedDetector.base_shape
       ~PixelatedDetector.ensemble_axes_metadata
       ~PixelatedDetector.ensemble_shape
       ~PixelatedDetector.max_angle
       ~PixelatedDetector.metadata
       ~PixelatedDetector.reciprocal_space
       ~PixelatedDetector.resample
+      ~PixelatedDetector.shape
       ~PixelatedDetector.to_cpu
       ~PixelatedDetector.url
    

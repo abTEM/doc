@@ -36,6 +36,10 @@ BaseAperture
    
       ~BaseAperture.accelerator
       ~BaseAperture.angular_sampling
+      ~BaseAperture.axes_metadata
+      ~BaseAperture.base_axes_metadata
+      ~BaseAperture.base_shape
+      ~BaseAperture.distributions
       ~BaseAperture.energy
       ~BaseAperture.ensemble_axes_metadata
       ~BaseAperture.ensemble_shape
@@ -48,6 +52,7 @@ BaseAperture
       ~BaseAperture.reciprocal_space_sampling
       ~BaseAperture.sampling
       ~BaseAperture.semiangle_cutoff
+      ~BaseAperture.shape
       ~BaseAperture.wavelength
    
    

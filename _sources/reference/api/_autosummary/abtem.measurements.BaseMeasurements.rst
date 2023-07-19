@@ -22,10 +22,12 @@ BaseMeasurements
       ~BaseMeasurements.compute
       ~BaseMeasurements.copy
       ~BaseMeasurements.copy_to_device
+      ~BaseMeasurements.ensemble_blocks
       ~BaseMeasurements.ensure_lazy
       ~BaseMeasurements.expand_dims
       ~BaseMeasurements.from_array_and_metadata
       ~BaseMeasurements.from_zarr
+      ~BaseMeasurements.generate_blocks
       ~BaseMeasurements.generate_ensemble
       ~BaseMeasurements.get_items
       ~BaseMeasurements.imag
@@ -41,6 +43,7 @@ BaseMeasurements
       ~BaseMeasurements.rechunk
       ~BaseMeasurements.reduce_ensemble
       ~BaseMeasurements.relative_difference
+      ~BaseMeasurements.select_block
       ~BaseMeasurements.set_ensemble_axes_metadata
       ~BaseMeasurements.show
       ~BaseMeasurements.squeeze
@@ -63,10 +66,12 @@ BaseMeasurements
       ~BaseMeasurements.array
       ~BaseMeasurements.axes_metadata
       ~BaseMeasurements.base_axes_metadata
+      ~BaseMeasurements.base_dims
       ~BaseMeasurements.base_shape
       ~BaseMeasurements.device
       ~BaseMeasurements.dtype
       ~BaseMeasurements.ensemble_axes_metadata
+      ~BaseMeasurements.ensemble_dims
       ~BaseMeasurements.ensemble_shape
       ~BaseMeasurements.is_complex
       ~BaseMeasurements.is_lazy

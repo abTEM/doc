@@ -36,6 +36,10 @@ Vortex
    
       ~Vortex.accelerator
       ~Vortex.angular_sampling
+      ~Vortex.axes_metadata
+      ~Vortex.base_axes_metadata
+      ~Vortex.base_shape
+      ~Vortex.distributions
       ~Vortex.energy
       ~Vortex.ensemble_axes_metadata
       ~Vortex.ensemble_shape
@@ -49,6 +53,7 @@ Vortex
       ~Vortex.reciprocal_space_sampling
       ~Vortex.sampling
       ~Vortex.semiangle_cutoff
+      ~Vortex.shape
       ~Vortex.wavelength
    
    

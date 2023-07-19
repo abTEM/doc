@@ -37,7 +37,11 @@ LineScan
    .. autosummary::
    
       ~LineScan.angle
+      ~LineScan.axes_metadata
+      ~LineScan.base_axes_metadata
+      ~LineScan.base_shape
       ~LineScan.direction
+      ~LineScan.distributions
       ~LineScan.end
       ~LineScan.endpoint
       ~LineScan.ensemble_axes_metadata

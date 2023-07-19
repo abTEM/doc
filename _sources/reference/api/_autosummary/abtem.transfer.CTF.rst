@@ -59,10 +59,14 @@ CTF
       ~CTF.angular_spread
       ~CTF.astigmatism
       ~CTF.astigmatism_angle
+      ~CTF.axes_metadata
+      ~CTF.base_axes_metadata
+      ~CTF.base_shape
       ~CTF.coma
       ~CTF.coma_angle
       ~CTF.crossover_angle
       ~CTF.defocus
+      ~CTF.distributions
       ~CTF.energy
       ~CTF.ensemble_axes_metadata
       ~CTF.ensemble_shape
@@ -90,6 +94,7 @@ CTF
       ~CTF.sampling
       ~CTF.scherzer_defocus
       ~CTF.semiangle_cutoff
+      ~CTF.shape
       ~CTF.soft
       ~CTF.wavelength
       ~CTF.wiener_snr

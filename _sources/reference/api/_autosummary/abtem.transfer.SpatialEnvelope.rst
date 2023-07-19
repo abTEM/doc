@@ -57,9 +57,13 @@ SpatialEnvelope
       ~SpatialEnvelope.angular_spread
       ~SpatialEnvelope.astigmatism
       ~SpatialEnvelope.astigmatism_angle
+      ~SpatialEnvelope.axes_metadata
+      ~SpatialEnvelope.base_axes_metadata
+      ~SpatialEnvelope.base_shape
       ~SpatialEnvelope.coma
       ~SpatialEnvelope.coma_angle
       ~SpatialEnvelope.defocus
+      ~SpatialEnvelope.distributions
       ~SpatialEnvelope.energy
       ~SpatialEnvelope.ensemble_axes_metadata
       ~SpatialEnvelope.ensemble_shape
@@ -81,6 +85,7 @@ SpatialEnvelope
       ~SpatialEnvelope.phi56
       ~SpatialEnvelope.reciprocal_space_sampling
       ~SpatialEnvelope.sampling
+      ~SpatialEnvelope.shape
       ~SpatialEnvelope.wavelength
    
    

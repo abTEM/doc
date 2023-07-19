@@ -24,11 +24,13 @@ Images
       ~Images.copy_to_device
       ~Images.crop
       ~Images.diffractograms
+      ~Images.ensemble_blocks
       ~Images.ensure_lazy
       ~Images.expand_dims
       ~Images.from_array_and_metadata
       ~Images.from_zarr
       ~Images.gaussian_filter
+      ~Images.generate_blocks
       ~Images.generate_ensemble
       ~Images.get_items
       ~Images.imag
@@ -48,6 +50,7 @@ Images
       ~Images.rechunk
       ~Images.reduce_ensemble
       ~Images.relative_difference
+      ~Images.select_block
       ~Images.set_ensemble_axes_metadata
       ~Images.show
       ~Images.squeeze
@@ -71,11 +74,13 @@ Images
       ~Images.array
       ~Images.axes_metadata
       ~Images.base_axes_metadata
+      ~Images.base_dims
       ~Images.base_shape
       ~Images.coordinates
       ~Images.device
       ~Images.dtype
       ~Images.ensemble_axes_metadata
+      ~Images.ensemble_dims
       ~Images.ensemble_shape
       ~Images.extent
       ~Images.is_complex

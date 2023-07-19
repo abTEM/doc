@@ -22,10 +22,12 @@ ReciprocalSpaceLineProfiles
       ~ReciprocalSpaceLineProfiles.compute
       ~ReciprocalSpaceLineProfiles.copy
       ~ReciprocalSpaceLineProfiles.copy_to_device
+      ~ReciprocalSpaceLineProfiles.ensemble_blocks
       ~ReciprocalSpaceLineProfiles.ensure_lazy
       ~ReciprocalSpaceLineProfiles.expand_dims
       ~ReciprocalSpaceLineProfiles.from_array_and_metadata
       ~ReciprocalSpaceLineProfiles.from_zarr
+      ~ReciprocalSpaceLineProfiles.generate_blocks
       ~ReciprocalSpaceLineProfiles.generate_ensemble
       ~ReciprocalSpaceLineProfiles.get_items
       ~ReciprocalSpaceLineProfiles.imag
@@ -42,6 +44,7 @@ ReciprocalSpaceLineProfiles
       ~ReciprocalSpaceLineProfiles.rechunk
       ~ReciprocalSpaceLineProfiles.reduce_ensemble
       ~ReciprocalSpaceLineProfiles.relative_difference
+      ~ReciprocalSpaceLineProfiles.select_block
       ~ReciprocalSpaceLineProfiles.set_ensemble_axes_metadata
       ~ReciprocalSpaceLineProfiles.show
       ~ReciprocalSpaceLineProfiles.squeeze
@@ -66,10 +69,12 @@ ReciprocalSpaceLineProfiles
       ~ReciprocalSpaceLineProfiles.array
       ~ReciprocalSpaceLineProfiles.axes_metadata
       ~ReciprocalSpaceLineProfiles.base_axes_metadata
+      ~ReciprocalSpaceLineProfiles.base_dims
       ~ReciprocalSpaceLineProfiles.base_shape
       ~ReciprocalSpaceLineProfiles.device
       ~ReciprocalSpaceLineProfiles.dtype
       ~ReciprocalSpaceLineProfiles.ensemble_axes_metadata
+      ~ReciprocalSpaceLineProfiles.ensemble_dims
       ~ReciprocalSpaceLineProfiles.ensemble_shape
       ~ReciprocalSpaceLineProfiles.extent
       ~ReciprocalSpaceLineProfiles.is_complex

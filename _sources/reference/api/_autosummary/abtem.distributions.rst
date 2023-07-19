@@ -29,10 +29,10 @@
       :toctree:
       :template: custom-class-template.rst
    
-      AxisAlignedDistributionND
       BaseDistribution
       DistributionFromValues
       EnsembleFromDistributions
+      MultidimensionalDistribution
    
    
 
