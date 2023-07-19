@@ -3,7 +3,7 @@
 ````{important}
 The instructions on this page installs the stable version of *abTEM*. To install the upcoming version described in these pages, you have to install the code from source. 
 ```{code-block}
-pip install git+https://github.com/abtem/abtem@abtem-dask
+pip install git+https://github.com/abtem/abtem
 ```
 ````
 
