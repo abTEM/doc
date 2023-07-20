@@ -22,7 +22,6 @@ physical models. Numpy-style docstrings embedded in the code allow the reference
    abtem.transform
    abtem.parametrizations
    abtem.integrals
-   abtem.transform
    abtem.inelastic.phonons
    abtem.distributions
    abtem.potentials
