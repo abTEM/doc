@@ -19,6 +19,8 @@ GPAWParametrization
       ~GPAWParametrization.__init__
       ~GPAWParametrization.charge
       ~GPAWParametrization.potential
+      ~GPAWParametrization.scattering_factor
+      ~GPAWParametrization.x_ray_scattering_factor
    
    
 

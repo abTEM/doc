@@ -18,6 +18,7 @@
       from_values
       gaussian
       uniform
+      validate_distribution
    
    
 

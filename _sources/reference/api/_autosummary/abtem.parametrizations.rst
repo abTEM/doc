@@ -15,11 +15,25 @@
       :toctree:
       :template: custom-function-template.rst
    
+      validate_parameters
       validate_parametrization
+      validate_sigmas
    
    
 
    
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      EwaldParametrization
+      KirklandParametrization
+      LobatoParametrization
+      Parametrization
+      PengParametrization
    
    
 
@@ -36,9 +50,5 @@
    :template: custom-module-template.rst
    :recursive:
 
-   abtem.parametrizations.base
-   abtem.parametrizations.ewald
-   abtem.parametrizations.kirkland
-   abtem.parametrizations.lobato
-   abtem.parametrizations.peng
+   abtem.parametrizations.functions
 

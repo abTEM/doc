@@ -42,6 +42,7 @@
       SpatialEnvelope
       TemporalEnvelope
       Vortex
+      Zernike
    
    
 

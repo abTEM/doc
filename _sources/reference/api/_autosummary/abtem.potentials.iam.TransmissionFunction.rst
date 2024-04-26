@@ -17,6 +17,7 @@ TransmissionFunction
    .. autosummary::
    
       ~TransmissionFunction.__init__
+      ~TransmissionFunction.apply_func
       ~TransmissionFunction.apply_transform
       ~TransmissionFunction.build
       ~TransmissionFunction.compute
@@ -31,7 +32,9 @@ TransmissionFunction
       ~TransmissionFunction.generate_ensemble
       ~TransmissionFunction.generate_slices
       ~TransmissionFunction.get_chunk
+      ~TransmissionFunction.get_from_metadata
       ~TransmissionFunction.get_items
+      ~TransmissionFunction.lazy
       ~TransmissionFunction.match_grid
       ~TransmissionFunction.max
       ~TransmissionFunction.mean
@@ -47,6 +50,7 @@ TransmissionFunction
       ~TransmissionFunction.sum
       ~TransmissionFunction.tile
       ~TransmissionFunction.to_cpu
+      ~TransmissionFunction.to_data_array
       ~TransmissionFunction.to_gpu
       ~TransmissionFunction.to_hyperspy
       ~TransmissionFunction.to_images
@@ -83,8 +87,8 @@ TransmissionFunction
       ~TransmissionFunction.is_complex
       ~TransmissionFunction.is_lazy
       ~TransmissionFunction.metadata
+      ~TransmissionFunction.num_configurations
       ~TransmissionFunction.num_exit_planes
-      ~TransmissionFunction.num_frozen_phonons
       ~TransmissionFunction.num_slices
       ~TransmissionFunction.reciprocal_space_sampling
       ~TransmissionFunction.sampling

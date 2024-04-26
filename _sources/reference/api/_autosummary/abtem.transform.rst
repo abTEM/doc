@@ -24,6 +24,7 @@
       EmptyTransform
       EnsembleTransform
       ReciprocalSpaceMultiplication
+      TransformFromFunc
       WavesTransform
    
    

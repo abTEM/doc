@@ -17,7 +17,10 @@
    
       concatenate
       from_zarr
+      move_item
+      moveaxis
       stack
+      swapaxes
    
    
 

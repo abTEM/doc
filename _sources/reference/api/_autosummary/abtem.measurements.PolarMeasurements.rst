@@ -18,6 +18,7 @@ PolarMeasurements
    
       ~PolarMeasurements.__init__
       ~PolarMeasurements.abs
+      ~PolarMeasurements.apply_func
       ~PolarMeasurements.apply_transform
       ~PolarMeasurements.compute
       ~PolarMeasurements.copy
@@ -31,11 +32,13 @@ PolarMeasurements
       ~PolarMeasurements.gaussian_source_size
       ~PolarMeasurements.generate_blocks
       ~PolarMeasurements.generate_ensemble
+      ~PolarMeasurements.get_from_metadata
       ~PolarMeasurements.get_items
       ~PolarMeasurements.imag
       ~PolarMeasurements.integrate
       ~PolarMeasurements.integrate_radial
       ~PolarMeasurements.intensity
+      ~PolarMeasurements.lazy
       ~PolarMeasurements.max
       ~PolarMeasurements.mean
       ~PolarMeasurements.min
@@ -54,10 +57,12 @@ PolarMeasurements
       ~PolarMeasurements.std
       ~PolarMeasurements.sum
       ~PolarMeasurements.to_cpu
+      ~PolarMeasurements.to_data_array
       ~PolarMeasurements.to_diffraction_patterns
       ~PolarMeasurements.to_gpu
       ~PolarMeasurements.to_hyperspy
       ~PolarMeasurements.to_image_ensemble
+      ~PolarMeasurements.to_measurement_ensemble
       ~PolarMeasurements.to_tiff
       ~PolarMeasurements.to_zarr
    

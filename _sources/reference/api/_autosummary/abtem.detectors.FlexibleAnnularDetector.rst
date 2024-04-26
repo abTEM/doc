@@ -43,6 +43,8 @@ FlexibleAnnularDetector
       ~FlexibleAnnularDetector.ensemble_shape
       ~FlexibleAnnularDetector.inner
       ~FlexibleAnnularDetector.metadata
+      ~FlexibleAnnularDetector.nbins_azimuthal
+      ~FlexibleAnnularDetector.nbins_radial
       ~FlexibleAnnularDetector.outer
       ~FlexibleAnnularDetector.radial_sampling
       ~FlexibleAnnularDetector.rotation

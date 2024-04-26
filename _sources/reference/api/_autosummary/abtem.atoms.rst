@@ -19,6 +19,8 @@
       best_orthogonal_cell
       cut_cell
       decompose_affine_transform
+      euler_sequence
+      euler_to_rotation
       flip_atoms
       is_cell_hexagonal
       is_cell_orthogonal
@@ -28,6 +30,7 @@
       pad_atoms
       plane_to_axes
       pretty_print_transform
+      rotate_atoms
       rotate_atoms_to_plane
       rotation_matrix_from_plane
       rotation_matrix_to_euler

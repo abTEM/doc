@@ -18,6 +18,7 @@ Images
    
       ~Images.__init__
       ~Images.abs
+      ~Images.apply_func
       ~Images.apply_transform
       ~Images.compute
       ~Images.copy
@@ -32,6 +33,7 @@ Images
       ~Images.gaussian_filter
       ~Images.generate_blocks
       ~Images.generate_ensemble
+      ~Images.get_from_metadata
       ~Images.get_items
       ~Images.imag
       ~Images.integrate_gradient
@@ -39,6 +41,7 @@ Images
       ~Images.interpolate
       ~Images.interpolate_line
       ~Images.interpolate_line_at_position
+      ~Images.lazy
       ~Images.max
       ~Images.mean
       ~Images.min
@@ -50,6 +53,7 @@ Images
       ~Images.rechunk
       ~Images.reduce_ensemble
       ~Images.relative_difference
+      ~Images.scan_noise
       ~Images.select_block
       ~Images.set_ensemble_axes_metadata
       ~Images.show
@@ -58,8 +62,10 @@ Images
       ~Images.sum
       ~Images.tile
       ~Images.to_cpu
+      ~Images.to_data_array
       ~Images.to_gpu
       ~Images.to_hyperspy
+      ~Images.to_measurement_ensemble
       ~Images.to_tiff
       ~Images.to_zarr
    

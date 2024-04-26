@@ -48,8 +48,8 @@ CrystalPotential
       ~CrystalPotential.extent
       ~CrystalPotential.gpts
       ~CrystalPotential.grid
+      ~CrystalPotential.num_configurations
       ~CrystalPotential.num_exit_planes
-      ~CrystalPotential.num_frozen_phonons
       ~CrystalPotential.num_slices
       ~CrystalPotential.origin
       ~CrystalPotential.periodic

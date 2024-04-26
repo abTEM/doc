@@ -18,8 +18,8 @@ Waves
    
       ~Waves.__init__
       ~Waves.apply_ctf
+      ~Waves.apply_func
       ~Waves.apply_transform
-      ~Waves.complex_images
       ~Waves.compute
       ~Waves.convolve
       ~Waves.copy
@@ -35,8 +35,11 @@ Waves
       ~Waves.from_zarr
       ~Waves.generate_blocks
       ~Waves.generate_ensemble
+      ~Waves.get_from_metadata
       ~Waves.get_items
+      ~Waves.imag
       ~Waves.intensity
+      ~Waves.lazy
       ~Waves.match_grid
       ~Waves.max
       ~Waves.mean
@@ -44,8 +47,11 @@ Waves
       ~Waves.multislice
       ~Waves.no_base_chunks
       ~Waves.normalize
+      ~Waves.phase
       ~Waves.phase_shift
+      ~Waves.real
       ~Waves.rechunk
+      ~Waves.scan
       ~Waves.select_block
       ~Waves.set_ensemble_axes_metadata
       ~Waves.show
@@ -54,10 +60,13 @@ Waves
       ~Waves.sum
       ~Waves.tile
       ~Waves.to_cpu
+      ~Waves.to_data_array
       ~Waves.to_gpu
       ~Waves.to_hyperspy
+      ~Waves.to_images
       ~Waves.to_tiff
       ~Waves.to_zarr
+      ~Waves.transition_potential_multislice
    
    
 

@@ -52,8 +52,8 @@ Potential
       ~Potential.gpts
       ~Potential.grid
       ~Potential.integrator
+      ~Potential.num_configurations
       ~Potential.num_exit_planes
-      ~Potential.num_frozen_phonons
       ~Potential.num_slices
       ~Potential.origin
       ~Potential.periodic

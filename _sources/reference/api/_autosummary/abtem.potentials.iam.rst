@@ -19,8 +19,10 @@ iam
       :toctree:
       :template: custom-class-template.rst
    
+      BaseField
       BasePotential
       CrystalPotential
+      FieldArray
       Potential
       PotentialArray
       TransmissionFunction

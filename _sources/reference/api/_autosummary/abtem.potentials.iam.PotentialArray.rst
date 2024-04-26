@@ -17,6 +17,7 @@ PotentialArray
    .. autosummary::
    
       ~PotentialArray.__init__
+      ~PotentialArray.apply_func
       ~PotentialArray.apply_transform
       ~PotentialArray.build
       ~PotentialArray.compute
@@ -30,7 +31,9 @@ PotentialArray
       ~PotentialArray.generate_blocks
       ~PotentialArray.generate_ensemble
       ~PotentialArray.generate_slices
+      ~PotentialArray.get_from_metadata
       ~PotentialArray.get_items
+      ~PotentialArray.lazy
       ~PotentialArray.match_grid
       ~PotentialArray.max
       ~PotentialArray.mean
@@ -46,6 +49,7 @@ PotentialArray
       ~PotentialArray.sum
       ~PotentialArray.tile
       ~PotentialArray.to_cpu
+      ~PotentialArray.to_data_array
       ~PotentialArray.to_gpu
       ~PotentialArray.to_hyperspy
       ~PotentialArray.to_images
@@ -80,8 +84,8 @@ PotentialArray
       ~PotentialArray.is_complex
       ~PotentialArray.is_lazy
       ~PotentialArray.metadata
+      ~PotentialArray.num_configurations
       ~PotentialArray.num_exit_planes
-      ~PotentialArray.num_frozen_phonons
       ~PotentialArray.num_slices
       ~PotentialArray.reciprocal_space_sampling
       ~PotentialArray.sampling

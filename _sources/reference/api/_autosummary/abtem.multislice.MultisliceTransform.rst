@@ -39,6 +39,7 @@ MultisliceTransform
       ~MultisliceTransform.ensemble_axes_metadata
       ~MultisliceTransform.ensemble_shape
       ~MultisliceTransform.metadata
+      ~MultisliceTransform.multislice_func
       ~MultisliceTransform.potential
       ~MultisliceTransform.shape
       ~MultisliceTransform.transpose

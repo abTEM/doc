@@ -17,6 +17,7 @@ ArrayObject
    .. autosummary::
    
       ~ArrayObject.__init__
+      ~ArrayObject.apply_func
       ~ArrayObject.apply_transform
       ~ArrayObject.compute
       ~ArrayObject.copy
@@ -28,7 +29,9 @@ ArrayObject
       ~ArrayObject.from_zarr
       ~ArrayObject.generate_blocks
       ~ArrayObject.generate_ensemble
+      ~ArrayObject.get_from_metadata
       ~ArrayObject.get_items
+      ~ArrayObject.lazy
       ~ArrayObject.max
       ~ArrayObject.mean
       ~ArrayObject.min
@@ -40,6 +43,7 @@ ArrayObject
       ~ArrayObject.std
       ~ArrayObject.sum
       ~ArrayObject.to_cpu
+      ~ArrayObject.to_data_array
       ~ArrayObject.to_gpu
       ~ArrayObject.to_hyperspy
       ~ArrayObject.to_tiff

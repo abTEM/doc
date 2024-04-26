@@ -51,6 +51,7 @@ GPAWPotential
       ~GPAWPotential.gpts
       ~GPAWPotential.grid
       ~GPAWPotential.gridrefinement
+      ~GPAWPotential.num_configurations
       ~GPAWPotential.num_exit_planes
       ~GPAWPotential.num_frozen_phonons
       ~GPAWPotential.num_slices

@@ -18,6 +18,7 @@ BaseMeasurements
    
       ~BaseMeasurements.__init__
       ~BaseMeasurements.abs
+      ~BaseMeasurements.apply_func
       ~BaseMeasurements.apply_transform
       ~BaseMeasurements.compute
       ~BaseMeasurements.copy
@@ -29,9 +30,11 @@ BaseMeasurements
       ~BaseMeasurements.from_zarr
       ~BaseMeasurements.generate_blocks
       ~BaseMeasurements.generate_ensemble
+      ~BaseMeasurements.get_from_metadata
       ~BaseMeasurements.get_items
       ~BaseMeasurements.imag
       ~BaseMeasurements.intensity
+      ~BaseMeasurements.lazy
       ~BaseMeasurements.max
       ~BaseMeasurements.mean
       ~BaseMeasurements.min
@@ -50,8 +53,10 @@ BaseMeasurements
       ~BaseMeasurements.std
       ~BaseMeasurements.sum
       ~BaseMeasurements.to_cpu
+      ~BaseMeasurements.to_data_array
       ~BaseMeasurements.to_gpu
       ~BaseMeasurements.to_hyperspy
+      ~BaseMeasurements.to_measurement_ensemble
       ~BaseMeasurements.to_tiff
       ~BaseMeasurements.to_zarr
    

@@ -46,8 +46,8 @@ BasePotential
       ~BasePotential.extent
       ~BasePotential.gpts
       ~BasePotential.grid
+      ~BasePotential.num_configurations
       ~BasePotential.num_exit_planes
-      ~BasePotential.num_frozen_phonons
       ~BasePotential.num_slices
       ~BasePotential.reciprocal_space_sampling
       ~BasePotential.sampling

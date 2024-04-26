@@ -18,6 +18,7 @@ IndexedDiffractionPatterns
    
       ~IndexedDiffractionPatterns.__init__
       ~IndexedDiffractionPatterns.abs
+      ~IndexedDiffractionPatterns.apply_func
       ~IndexedDiffractionPatterns.apply_transform
       ~IndexedDiffractionPatterns.block_direct
       ~IndexedDiffractionPatterns.compute
@@ -31,10 +32,13 @@ IndexedDiffractionPatterns
       ~IndexedDiffractionPatterns.from_zarr
       ~IndexedDiffractionPatterns.generate_blocks
       ~IndexedDiffractionPatterns.generate_ensemble
+      ~IndexedDiffractionPatterns.get_from_metadata
       ~IndexedDiffractionPatterns.get_items
       ~IndexedDiffractionPatterns.imag
       ~IndexedDiffractionPatterns.intensity
+      ~IndexedDiffractionPatterns.lazy
       ~IndexedDiffractionPatterns.max
+      ~IndexedDiffractionPatterns.max_reciprocal_space_vector_length
       ~IndexedDiffractionPatterns.mean
       ~IndexedDiffractionPatterns.min
       ~IndexedDiffractionPatterns.no_base_chunks
@@ -59,6 +63,7 @@ IndexedDiffractionPatterns
       ~IndexedDiffractionPatterns.to_dataframe
       ~IndexedDiffractionPatterns.to_gpu
       ~IndexedDiffractionPatterns.to_hyperspy
+      ~IndexedDiffractionPatterns.to_measurement_ensemble
       ~IndexedDiffractionPatterns.to_tiff
       ~IndexedDiffractionPatterns.to_zarr
    
@@ -70,6 +75,7 @@ IndexedDiffractionPatterns
 
    .. autosummary::
    
+      ~IndexedDiffractionPatterns.all_positions
       ~IndexedDiffractionPatterns.angular_positions
       ~IndexedDiffractionPatterns.array
       ~IndexedDiffractionPatterns.axes_metadata
@@ -89,6 +95,7 @@ IndexedDiffractionPatterns
       ~IndexedDiffractionPatterns.miller_indices
       ~IndexedDiffractionPatterns.positions
       ~IndexedDiffractionPatterns.positions_dict
+      ~IndexedDiffractionPatterns.reciprocal_lattice_vectors
       ~IndexedDiffractionPatterns.shape
    
    

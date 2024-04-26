@@ -51,8 +51,8 @@ ChargeDensityPotential
       ~ChargeDensityPotential.gpts
       ~ChargeDensityPotential.grid
       ~ChargeDensityPotential.is_lazy
+      ~ChargeDensityPotential.num_configurations
       ~ChargeDensityPotential.num_exit_planes
-      ~ChargeDensityPotential.num_frozen_phonons
       ~ChargeDensityPotential.num_slices
       ~ChargeDensityPotential.origin
       ~ChargeDensityPotential.periodic

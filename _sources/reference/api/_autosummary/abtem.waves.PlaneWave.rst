@@ -17,6 +17,7 @@ PlaneWave
    .. autosummary::
    
       ~PlaneWave.__init__
+      ~PlaneWave.apply_transform
       ~PlaneWave.build
       ~PlaneWave.check_can_build
       ~PlaneWave.copy

@@ -18,6 +18,7 @@ ReciprocalSpaceLineProfiles
    
       ~ReciprocalSpaceLineProfiles.__init__
       ~ReciprocalSpaceLineProfiles.abs
+      ~ReciprocalSpaceLineProfiles.apply_func
       ~ReciprocalSpaceLineProfiles.apply_transform
       ~ReciprocalSpaceLineProfiles.compute
       ~ReciprocalSpaceLineProfiles.copy
@@ -29,10 +30,12 @@ ReciprocalSpaceLineProfiles
       ~ReciprocalSpaceLineProfiles.from_zarr
       ~ReciprocalSpaceLineProfiles.generate_blocks
       ~ReciprocalSpaceLineProfiles.generate_ensemble
+      ~ReciprocalSpaceLineProfiles.get_from_metadata
       ~ReciprocalSpaceLineProfiles.get_items
       ~ReciprocalSpaceLineProfiles.imag
       ~ReciprocalSpaceLineProfiles.intensity
       ~ReciprocalSpaceLineProfiles.interpolate
+      ~ReciprocalSpaceLineProfiles.lazy
       ~ReciprocalSpaceLineProfiles.max
       ~ReciprocalSpaceLineProfiles.mean
       ~ReciprocalSpaceLineProfiles.min
@@ -51,8 +54,10 @@ ReciprocalSpaceLineProfiles
       ~ReciprocalSpaceLineProfiles.std
       ~ReciprocalSpaceLineProfiles.sum
       ~ReciprocalSpaceLineProfiles.to_cpu
+      ~ReciprocalSpaceLineProfiles.to_data_array
       ~ReciprocalSpaceLineProfiles.to_gpu
       ~ReciprocalSpaceLineProfiles.to_hyperspy
+      ~ReciprocalSpaceLineProfiles.to_measurement_ensemble
       ~ReciprocalSpaceLineProfiles.to_tiff
       ~ReciprocalSpaceLineProfiles.to_zarr
       ~ReciprocalSpaceLineProfiles.width

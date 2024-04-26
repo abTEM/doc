@@ -18,6 +18,7 @@ RealSpaceLineProfiles
    
       ~RealSpaceLineProfiles.__init__
       ~RealSpaceLineProfiles.abs
+      ~RealSpaceLineProfiles.apply_func
       ~RealSpaceLineProfiles.apply_transform
       ~RealSpaceLineProfiles.compute
       ~RealSpaceLineProfiles.copy
@@ -29,10 +30,12 @@ RealSpaceLineProfiles
       ~RealSpaceLineProfiles.from_zarr
       ~RealSpaceLineProfiles.generate_blocks
       ~RealSpaceLineProfiles.generate_ensemble
+      ~RealSpaceLineProfiles.get_from_metadata
       ~RealSpaceLineProfiles.get_items
       ~RealSpaceLineProfiles.imag
       ~RealSpaceLineProfiles.intensity
       ~RealSpaceLineProfiles.interpolate
+      ~RealSpaceLineProfiles.lazy
       ~RealSpaceLineProfiles.max
       ~RealSpaceLineProfiles.mean
       ~RealSpaceLineProfiles.min
@@ -52,8 +55,10 @@ RealSpaceLineProfiles
       ~RealSpaceLineProfiles.sum
       ~RealSpaceLineProfiles.tile
       ~RealSpaceLineProfiles.to_cpu
+      ~RealSpaceLineProfiles.to_data_array
       ~RealSpaceLineProfiles.to_gpu
       ~RealSpaceLineProfiles.to_hyperspy
+      ~RealSpaceLineProfiles.to_measurement_ensemble
       ~RealSpaceLineProfiles.to_tiff
       ~RealSpaceLineProfiles.to_zarr
       ~RealSpaceLineProfiles.width

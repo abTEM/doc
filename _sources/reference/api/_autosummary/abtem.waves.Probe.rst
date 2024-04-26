@@ -17,6 +17,7 @@ Probe
    .. autosummary::
    
       ~Probe.__init__
+      ~Probe.apply_transform
       ~Probe.build
       ~Probe.check_can_build
       ~Probe.copy
@@ -28,6 +29,7 @@ Probe
       ~Probe.scan
       ~Probe.select_block
       ~Probe.show
+      ~Probe.transition_potential_scan
    
    
 

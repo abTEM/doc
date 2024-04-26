@@ -18,7 +18,9 @@ DiffractionPatterns
    
       ~DiffractionPatterns.__init__
       ~DiffractionPatterns.abs
+      ~DiffractionPatterns.apply_func
       ~DiffractionPatterns.apply_transform
+      ~DiffractionPatterns.azimuthal_average
       ~DiffractionPatterns.bandlimit
       ~DiffractionPatterns.block_direct
       ~DiffractionPatterns.center_of_mass
@@ -29,12 +31,14 @@ DiffractionPatterns
       ~DiffractionPatterns.ensemble_blocks
       ~DiffractionPatterns.ensure_lazy
       ~DiffractionPatterns.expand_dims
+      ~DiffractionPatterns.fourier_shell_correlation
       ~DiffractionPatterns.from_array_and_metadata
       ~DiffractionPatterns.from_zarr
       ~DiffractionPatterns.gaussian_filter
       ~DiffractionPatterns.gaussian_source_size
       ~DiffractionPatterns.generate_blocks
       ~DiffractionPatterns.generate_ensemble
+      ~DiffractionPatterns.get_from_metadata
       ~DiffractionPatterns.get_items
       ~DiffractionPatterns.imag
       ~DiffractionPatterns.index_diffraction_spots
@@ -44,6 +48,7 @@ DiffractionPatterns
       ~DiffractionPatterns.interpolate
       ~DiffractionPatterns.interpolate_line
       ~DiffractionPatterns.interpolate_line_at_position
+      ~DiffractionPatterns.lazy
       ~DiffractionPatterns.max
       ~DiffractionPatterns.mean
       ~DiffractionPatterns.min
@@ -65,8 +70,10 @@ DiffractionPatterns
       ~DiffractionPatterns.sum
       ~DiffractionPatterns.tile_scan
       ~DiffractionPatterns.to_cpu
+      ~DiffractionPatterns.to_data_array
       ~DiffractionPatterns.to_gpu
       ~DiffractionPatterns.to_hyperspy
+      ~DiffractionPatterns.to_measurement_ensemble
       ~DiffractionPatterns.to_tiff
       ~DiffractionPatterns.to_zarr
    
@@ -98,6 +105,7 @@ DiffractionPatterns
       ~DiffractionPatterns.is_lazy
       ~DiffractionPatterns.limits
       ~DiffractionPatterns.max_angles
+      ~DiffractionPatterns.max_frequency
       ~DiffractionPatterns.metadata
       ~DiffractionPatterns.offset
       ~DiffractionPatterns.sampling

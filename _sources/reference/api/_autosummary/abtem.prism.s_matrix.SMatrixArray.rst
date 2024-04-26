@@ -17,6 +17,7 @@ SMatrixArray
    .. autosummary::
    
       ~SMatrixArray.__init__
+      ~SMatrixArray.apply_func
       ~SMatrixArray.apply_transform
       ~SMatrixArray.compute
       ~SMatrixArray.copy
@@ -29,7 +30,9 @@ SMatrixArray
       ~SMatrixArray.from_zarr
       ~SMatrixArray.generate_blocks
       ~SMatrixArray.generate_ensemble
+      ~SMatrixArray.get_from_metadata
       ~SMatrixArray.get_items
+      ~SMatrixArray.lazy
       ~SMatrixArray.match_grid
       ~SMatrixArray.max
       ~SMatrixArray.mean
@@ -45,6 +48,7 @@ SMatrixArray
       ~SMatrixArray.std
       ~SMatrixArray.sum
       ~SMatrixArray.to_cpu
+      ~SMatrixArray.to_data_array
       ~SMatrixArray.to_gpu
       ~SMatrixArray.to_hyperspy
       ~SMatrixArray.to_tiff

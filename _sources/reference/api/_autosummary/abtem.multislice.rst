@@ -16,8 +16,9 @@
       :template: custom-function-template.rst
    
       allocate_multislice_measurements
+      conventional_multislice_step
       multislice_and_detect
-      multislice_step
+      transition_potential_multislice_and_detect
    
    
 

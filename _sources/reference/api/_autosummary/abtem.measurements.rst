@@ -9,6 +9,15 @@
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :template: custom-function-template.rst
+   
+      calculate_max_reciprocal_space_vector
+      reciprocal_lattice_vector_mask
+   
    
 
    
@@ -23,6 +32,7 @@
       DiffractionPatterns
       Images
       IndexedDiffractionPatterns
+      MeasurementsEnsemble
       PolarMeasurements
       RealSpaceLineProfiles
       ReciprocalSpaceLineProfiles
