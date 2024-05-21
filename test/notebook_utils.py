@@ -21,10 +21,8 @@ exclude_regex_paths = {
     r"root\['outputs'\]\[\d+\]\['execution_count'\]",
 }
 
-
-# ROOT_DIR = "/Users/jacobmadsen/PycharmProjects/abtem-doc/docs/user_guide/"
-ROOT_DIR = "C:\\Users\\jacob\\PycharmProjects\\abtem-docs\\docs\\user_guide"
-KERNEL_NAME = "abtem-devel"
+DOCS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.join(DOCS_DIR, "docs", "user_guide")
 
 
 @contextmanager
@@ -114,7 +112,7 @@ def _test_notebook(fname: str, working_directory: str, image_tolerance: float = 
     with set_working_directory(working_directory):
         nb = nbformat.read(fname, DEFAULT_NB_VERSION)
         nb_old = copy.deepcopy(nb)
-        client = NotebookClient(nb, kernel=KERNEL_NAME)
+        client = NotebookClient(nb)
         nb_new = client.execute()
 
     nb_old = strip_skipped(nb_old)
