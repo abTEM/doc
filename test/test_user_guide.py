@@ -52,7 +52,9 @@ def test_prism():
 
 
 def test_custom_simulation_objects():
-    _test_notebook("custom_simulation_objects.ipynb", os.path.join(ROOT_DIR, "tutorials"))
+    _test_notebook(
+        "custom_simulation_objects.ipynb", os.path.join(ROOT_DIR, "tutorials")
+    )
 
 
 # @pytest.mark.slow
