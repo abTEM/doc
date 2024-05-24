@@ -28,8 +28,8 @@ The *ab*TEM configuration system is usually accessed using the `abtem.config.get
 access, for example:
 
 ```python
-import dask
-dask.config.get("dask.chunk-size") # use "." for nested access
+import abtem
+abtem.config.get("dask.chunk-size") # use "." for nested access
 ```
 
 ## Specify configuration in Python
