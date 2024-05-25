@@ -76,7 +76,30 @@ where * should be substituted for the CUDA Toolkit version.
 ````
 `````
 
-### Development
+### Apple Silicon Metal (experimental)
+
+A subset of features in *ab*TEM can be accelerated with Apple Silicon Metal. To enable this features requires a working installation of [PyTorch](https://pytorch.org/). Metal support is currently highly experimental, and not all features are supported. Features not currently supported, will fall back to the NumPy implementation.
+
+```{code-block}
+conda install pytorch torchvision torchaudio -c pytorch-nightly
+conda install -c conda-forge abtem jupyterlab
+pip install scipy --force-reinstall --no-deps
+```
+To enable this feature you need to configure `enable_mps`.
+```python
+import abtem
+abtem.config.set(enable_mps=True)
+```
+You can verify that mps support is available using the code below:
+```python
+import torch
+assert torch.backends.mps.is_available()
+
+wave = abtem.PlaneWave(energy=100e3, gpts=128, sampling=0.05)
+assert wave.build(lazy=False).copy_to_device("mps").array.device.type == "mps"
+```
+
+### Development installation
 
 See [our guide to contributing](contributing:clone_and_install) for instructions on a development installation of 
 *ab*TEM.
