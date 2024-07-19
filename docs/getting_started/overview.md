@@ -170,5 +170,4 @@ For clarity, we have omitted import statements, and the atomic models are assume
 Equivalent complete executable code examples can be found [further in the documentation](getting_started:basic_examples)
 .
 
-We recommend that new users work through our [walkthrough](user_guide:walkthrough) to familiarize themselves with *ab*
-TEM and its features.
+We *strongly* recommend that new users work through our [walkthrough](user_guide:walkthrough) to familiarize themselves with *ab*TEM and its features.
