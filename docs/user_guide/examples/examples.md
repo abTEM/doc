@@ -12,6 +12,7 @@
    notebooks/4d-stem_quickstart
    notebooks/saed_quickstart
    notebooks/ped_quickstart
+   notebooks/bloch_wave_quickstart
 ```
 
 Welcome to the `abTEM` gallery. These notebooks demonstrate specific a many of the concepts learned in the
@@ -43,9 +44,6 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 +++
 {bdg-success}`basic`
 :::
-
-
-
 
 :::{grid-item-card}
 :link: examples:hrtem_quickstart
@@ -146,6 +144,56 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 **4D-STEM**
 ^^^
 ```{image} thumbnails/4d-stem_quickstart.png
+:align: center
+```
+
++++
+{bdg-success}`basic`
+:::
+
+
+:::{grid-item-card}
+:link: examples:ped_quickstart
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+
+**PED**
+^^^
+
+```{image} thumbnails/ped_quickstart.png
+:align: center
+```
+
++++
+{bdg-success}`basic`
+:::
+
+
+:::{grid-item-card}
+:link: examples:4d-stem_quickstart
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+**4D-STEM**
+^^^
+```{image} thumbnails/4d-stem_quickstart.png
+:align: center
+```
+
++++
+{bdg-success}`basic`
+:::
+
+
+:::{grid-item-card}
+:link: examples:bloch_wave_quickstart
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+**Bloch wave**
+^^^
+```{image} thumbnails/bloch_wave_quickstart.png
 :align: center
 ```
 

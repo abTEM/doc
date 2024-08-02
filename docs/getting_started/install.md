@@ -52,7 +52,7 @@ gpaw install-data <dir>
 ````
 `````
 
-### GPU (only Nvidia) 
+### GPU (only NVIDIA) 
 
 GPU calculations with *ab*TEM require a working installation of [CuPy](https://cupy.dev/) and compatible hardware.
 See [here](https://docs.cupy.dev/en/stable/install.html) for detailed installation instructions.
@@ -76,9 +76,12 @@ where * should be substituted for the CUDA Toolkit version.
 ````
 `````
 
-### Apple Silicon Metal (experimental)
+### Metal on Apple silicon (experimental)
 
-A subset of features in *ab*TEM can be accelerated with Apple Silicon Metal. To enable this features requires a working installation of [PyTorch](https://pytorch.org/). Metal support is currently highly experimental, and not all features are supported. Features not currently supported, will fall back to the NumPy implementation.
+A subset of features in *ab*TEM can be accelerated on Apple silicon processors using their [Metal API](https://developer.apple.com/metal/). 
+To enable this features requires a working installation of [PyTorch](https://pytorch.org/). Metal support is 
+currently highly experimental, and not all features are supported. Features not currently supported, will fall 
+back to the NumPy implementation.
 
 ```{code-block}
 conda install pytorch torchvision torchaudio -c pytorch-nightly
