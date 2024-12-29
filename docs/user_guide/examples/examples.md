@@ -12,19 +12,21 @@
    notebooks/4d-stem_quickstart
    notebooks/saed_quickstart
    notebooks/ped_quickstart
-   notebooks/bloch_wave_quickstart
+   notebooks/animations
+   notebooks/interactions
 ```
 
-Welcome to the `abTEM` gallery. These notebooks demonstrate specific a many of the concepts learned in the
+Welcome to the *ab*TEM gallery. These notebooks demonstrate specific examples of many of the concepts learned in the
+Walkthrough, which you should start with. These examples are currently not very actively maintained.
 
 * {bdg-success}`basic` Examples that cover the basics image simulation, these examples are generally appropriate for new
   users. Many of these examples may also be used as a template for performing a specific common type of simulation.
 * {bdg-danger}`specialized` Examples that introduce a less common topic in simulation of electron microscopy. Some of
-  these examples assume that the user have experience abTEM.
-* {bdg-primary}`publication` Examples that replicate published results, either fully or partially.
+  these examples assume that the user have experience *ab*TEM.
+#* {bdg-primary}`publication` Examples that replicate published results, either fully or partially.
 
-If you’d like to add your book to this list, simply add an entry to this gallery.yml file and open a Pull Request to add
-it. For more detailed instructions see our guide on contributing to abTEM.
+# If you’d like to add your book to this list, simply add an entry to this gallery.yml file and open a Pull Request to add
+# it. For more detailed instructions see our guide on contributing to *ab*TEM.
 
 ::::{grid} 3
 :gutter: 2
@@ -151,17 +153,14 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 {bdg-success}`basic`
 :::
 
-
 :::{grid-item-card}
-:link: examples:ped_quickstart
+:link: examples:animations
 :link-type: ref
 :class-body: text-center
 :class-header: bg-light text-center
-
-**PED**
+**Animations**
 ^^^
-
-```{image} thumbnails/ped_quickstart.png
+```{image} thumbnails/animations.gif
 :align: center
 ```
 
@@ -171,13 +170,13 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 
 
 :::{grid-item-card}
-:link: examples:4d-stem_quickstart
+:link: examples:interactions
 :link-type: ref
 :class-body: text-center
 :class-header: bg-light text-center
-**4D-STEM**
+**Interactive visualizations**
 ^^^
-```{image} thumbnails/4d-stem_quickstart.png
+```{image} thumbnails/interactions.gif
 :align: center
 ```
 
@@ -185,20 +184,5 @@ it. For more detailed instructions see our guide on contributing to abTEM.
 {bdg-success}`basic`
 :::
 
-
-:::{grid-item-card}
-:link: examples:bloch_wave_quickstart
-:link-type: ref
-:class-body: text-center
-:class-header: bg-light text-center
-**Bloch wave**
-^^^
-```{image} thumbnails/bloch_wave_quickstart.png
-:align: center
-```
-
-+++
-{bdg-success}`basic`
-:::
 
 ::::
