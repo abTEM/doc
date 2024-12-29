@@ -77,8 +77,7 @@ cd abtem
 Next, install:
 
 ```{code-block}
-python -m pip install -e .[testing,docs] 
-
+python -m pip install -e ".[testing,docs]"
 ```
 
 This will install *ab*TEM locally in your Python environment (we recommend using Conda), along with the packages needed
