@@ -7,12 +7,12 @@
 
    notebooks/cbed_quickstart
    notebooks/hrtem_quickstart
-   notebooks/prism_quickstart
    notebooks/stem_quickstart
-   notebooks/4d-stem_quickstart
+   notebooks/prism_quickstart
    notebooks/saed_quickstart
    notebooks/ped_quickstart
-   notebooks/animations
+   notebooks/blochwave_quickstart
+   notebooks/pacbed_quickstart
    notebooks/interactions
 ```
 
@@ -23,10 +23,9 @@ Walkthrough, which you should start with. These examples are currently not very 
   users. Many of these examples may also be used as a template for performing a specific common type of simulation.
 * {bdg-danger}`specialized` Examples that introduce a less common topic in simulation of electron microscopy. Some of
   these examples assume that the user have experience *ab*TEM.
-#* {bdg-primary}`publication` Examples that replicate published results, either fully or partially.
 
-# If you’d like to add your book to this list, simply add an entry to this gallery.yml file and open a Pull Request to add
-# it. For more detailed instructions see our guide on contributing to *ab*TEM.
+If you’d like to add your book to this list, simply add an entry to this gallery.yml file and open a Pull Request to add
+it. For more detailed instructions see our guide on contributing to *ab*TEM.
 
 ::::{grid} 3
 :gutter: 2
@@ -36,6 +35,7 @@ Walkthrough, which you should start with. These examples are currently not very 
 :link-type: ref
 :class-body: text-center
 :class-header: bg-light text-center
+
 **CBED**
 ^^^
 
@@ -64,9 +64,6 @@ Walkthrough, which you should start with. These examples are currently not very 
 {bdg-success}`basic`
 :::
 
-
-
-
 :::{grid-item-card}
 :link: examples:stem_quickstart
 :link-type: ref
@@ -84,8 +81,6 @@ Walkthrough, which you should start with. These examples are currently not very 
 {bdg-success}`basic`
 :::
 
-
-
 :::{grid-item-card}
 :link: examples:prism_quickstart
 :link-type: ref
@@ -101,7 +96,6 @@ Walkthrough, which you should start with. These examples are currently not very 
 +++
 {bdg-success}`basic`
 :::
-
 
 :::{grid-item-card}
 :link: examples:saed_quickstart
@@ -119,7 +113,6 @@ Walkthrough, which you should start with. These examples are currently not very 
 +++
 {bdg-success}`basic`
 :::
-
 
 :::{grid-item-card}
 :link: examples:ped_quickstart
@@ -139,13 +132,15 @@ Walkthrough, which you should start with. These examples are currently not very 
 :::
 
 :::{grid-item-card}
-:link: examples:4d-stem_quickstart
+:link: examples:blochwave_quickstart
 :link-type: ref
 :class-body: text-center
 :class-header: bg-light text-center
-**4D-STEM**
+
+**Blochwave**
 ^^^
-```{image} thumbnails/4d-stem_quickstart.png
+
+```{image} thumbnails/blochwave_quickstart.png
 :align: center
 ```
 
@@ -154,26 +149,27 @@ Walkthrough, which you should start with. These examples are currently not very 
 :::
 
 :::{grid-item-card}
-:link: examples:animations
+:link: examples:pacbed_quickstart
 :link-type: ref
 :class-body: text-center
 :class-header: bg-light text-center
-**Animations**
+
+**PACBED**
 ^^^
-```{image} thumbnails/animations.gif
+```{image} thumbnails/pacbed_quickstart.png
 :align: center
 ```
 
 +++
 {bdg-success}`basic`
 :::
-
 
 :::{grid-item-card}
 :link: examples:interactions
 :link-type: ref
 :class-body: text-center
 :class-header: bg-light text-center
+
 **Interactive visualizations**
 ^^^
 ```{image} thumbnails/interactions.gif
@@ -183,6 +179,3 @@ Walkthrough, which you should start with. These examples are currently not very 
 +++
 {bdg-success}`basic`
 :::
-
-
-::::
