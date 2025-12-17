@@ -1,0 +1,95 @@
+PotentialArray
+==============
+
+.. currentmodule:: abtem.potentials.iam
+
+.. autoclass:: abtem.potentials.iam.PotentialArray
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PotentialArray.__init__
+      ~PotentialArray.apply_func
+      ~PotentialArray.apply_transform
+      ~PotentialArray.build
+      ~PotentialArray.compute
+      ~PotentialArray.copy
+      ~PotentialArray.copy_to_device
+      ~PotentialArray.ensemble_blocks
+      ~PotentialArray.ensure_lazy
+      ~PotentialArray.expand_dims
+      ~PotentialArray.from_array_and_metadata
+      ~PotentialArray.from_zarr
+      ~PotentialArray.generate_blocks
+      ~PotentialArray.generate_slices
+      ~PotentialArray.get_from_metadata
+      ~PotentialArray.get_items
+      ~PotentialArray.lazy
+      ~PotentialArray.match_grid
+      ~PotentialArray.max
+      ~PotentialArray.mean
+      ~PotentialArray.min
+      ~PotentialArray.no_base_chunks
+      ~PotentialArray.project
+      ~PotentialArray.rechunk
+      ~PotentialArray.set_ensemble_axes_metadata
+      ~PotentialArray.show
+      ~PotentialArray.squeeze
+      ~PotentialArray.std
+      ~PotentialArray.sum
+      ~PotentialArray.tile
+      ~PotentialArray.to_cpu
+      ~PotentialArray.to_data_array
+      ~PotentialArray.to_gpu
+      ~PotentialArray.to_hyperspy
+      ~PotentialArray.to_images
+      ~PotentialArray.to_tiff
+      ~PotentialArray.to_zarr
+      ~PotentialArray.transmission_function
+      ~PotentialArray.transmit
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PotentialArray.array
+      ~PotentialArray.axes_metadata
+      ~PotentialArray.base_axes_metadata
+      ~PotentialArray.base_dims
+      ~PotentialArray.base_shape
+      ~PotentialArray.device
+      ~PotentialArray.dtype
+      ~PotentialArray.ensemble_axes_metadata
+      ~PotentialArray.ensemble_dims
+      ~PotentialArray.ensemble_shape
+      ~PotentialArray.exit_planes
+      ~PotentialArray.exit_thicknesses
+      ~PotentialArray.extent
+      ~PotentialArray.gpts
+      ~PotentialArray.grid
+      ~PotentialArray.is_complex
+      ~PotentialArray.is_lazy
+      ~PotentialArray.metadata
+      ~PotentialArray.num_configurations
+      ~PotentialArray.num_exit_planes
+      ~PotentialArray.num_slices
+      ~PotentialArray.reciprocal_space_sampling
+      ~PotentialArray.sampling
+      ~PotentialArray.shape
+      ~PotentialArray.slice_limits
+      ~PotentialArray.slice_thickness
+      ~PotentialArray.thickness
+   
+   
