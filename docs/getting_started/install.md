@@ -1,6 +1,6 @@
 # Installation
 
-There are two ways to install the *ab*TEM package, using conda or pip:
+There are many ways to install the *ab*TEM package, for example conda or pip:
 
 `````{tab-set}
 
@@ -17,7 +17,7 @@ Install *ab*TEM using pip:
 pip install abtem
 ```
 
-Alternatively, if you have git and want to use unreleased features, you can install directly from github:
+Alternatively, if you have git and want to use unreleased features, you can install directly from GitHub:
 ```{code-block}
 pip install git+https://github.com/abTEM/abTEM
 ```
