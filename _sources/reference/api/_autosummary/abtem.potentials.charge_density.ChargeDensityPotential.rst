@@ -19,12 +19,14 @@ ChargeDensityPotential
       ~ChargeDensityPotential.__init__
       ~ChargeDensityPotential.build
       ~ChargeDensityPotential.copy
+      ~ChargeDensityPotential.depth_profile
       ~ChargeDensityPotential.ensemble_blocks
       ~ChargeDensityPotential.generate_blocks
       ~ChargeDensityPotential.generate_slices
       ~ChargeDensityPotential.match_grid
       ~ChargeDensityPotential.project
       ~ChargeDensityPotential.show
+      ~ChargeDensityPotential.show_depth_profile
       ~ChargeDensityPotential.to_images
    
    
@@ -52,11 +54,13 @@ ChargeDensityPotential
       ~ChargeDensityPotential.is_lazy
       ~ChargeDensityPotential.num_configurations
       ~ChargeDensityPotential.num_exit_planes
+      ~ChargeDensityPotential.num_frozen_phonons
       ~ChargeDensityPotential.num_slices
       ~ChargeDensityPotential.origin
       ~ChargeDensityPotential.periodic
       ~ChargeDensityPotential.plane
       ~ChargeDensityPotential.reciprocal_space_sampling
+      ~ChargeDensityPotential.repetitions
       ~ChargeDensityPotential.sampling
       ~ChargeDensityPotential.shape
       ~ChargeDensityPotential.slice_limits

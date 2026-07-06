@@ -65,6 +65,7 @@ Images
       ~Images.to_gpu
       ~Images.to_hyperspy
       ~Images.to_measurement_ensemble
+      ~Images.to_quantem
       ~Images.to_tiff
       ~Images.to_zarr
    

@@ -33,7 +33,6 @@ MultisliceTransform
       ~MultisliceTransform.axes_metadata
       ~MultisliceTransform.base_axes_metadata
       ~MultisliceTransform.base_shape
-      ~MultisliceTransform.conjugate
       ~MultisliceTransform.detectors
       ~MultisliceTransform.distributions
       ~MultisliceTransform.ensemble_axes_metadata
@@ -42,6 +41,5 @@ MultisliceTransform
       ~MultisliceTransform.multislice_func
       ~MultisliceTransform.potential
       ~MultisliceTransform.shape
-      ~MultisliceTransform.transpose
    
    

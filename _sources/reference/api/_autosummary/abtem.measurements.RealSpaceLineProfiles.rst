@@ -57,6 +57,7 @@ RealSpaceLineProfiles
       ~RealSpaceLineProfiles.to_gpu
       ~RealSpaceLineProfiles.to_hyperspy
       ~RealSpaceLineProfiles.to_measurement_ensemble
+      ~RealSpaceLineProfiles.to_quantem
       ~RealSpaceLineProfiles.to_tiff
       ~RealSpaceLineProfiles.to_zarr
       ~RealSpaceLineProfiles.width

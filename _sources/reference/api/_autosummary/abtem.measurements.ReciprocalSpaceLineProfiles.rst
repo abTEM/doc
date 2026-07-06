@@ -56,6 +56,7 @@ ReciprocalSpaceLineProfiles
       ~ReciprocalSpaceLineProfiles.to_gpu
       ~ReciprocalSpaceLineProfiles.to_hyperspy
       ~ReciprocalSpaceLineProfiles.to_measurement_ensemble
+      ~ReciprocalSpaceLineProfiles.to_quantem
       ~ReciprocalSpaceLineProfiles.to_tiff
       ~ReciprocalSpaceLineProfiles.to_zarr
       ~ReciprocalSpaceLineProfiles.width

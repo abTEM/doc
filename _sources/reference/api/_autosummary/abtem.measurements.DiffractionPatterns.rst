@@ -71,6 +71,7 @@ DiffractionPatterns
       ~DiffractionPatterns.to_gpu
       ~DiffractionPatterns.to_hyperspy
       ~DiffractionPatterns.to_measurement_ensemble
+      ~DiffractionPatterns.to_quantem
       ~DiffractionPatterns.to_tiff
       ~DiffractionPatterns.to_zarr
    

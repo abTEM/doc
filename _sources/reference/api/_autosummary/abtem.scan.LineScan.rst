@@ -19,6 +19,7 @@ LineScan
       ~LineScan.__init__
       ~LineScan.add_margin
       ~LineScan.add_to_axes
+      ~LineScan.add_to_plot
       ~LineScan.apply
       ~LineScan.at_position
       ~LineScan.copy

@@ -17,6 +17,7 @@ CustomScan
    .. autosummary::
    
       ~CustomScan.__init__
+      ~CustomScan.add_to_plot
       ~CustomScan.apply
       ~CustomScan.copy
       ~CustomScan.ensemble_blocks

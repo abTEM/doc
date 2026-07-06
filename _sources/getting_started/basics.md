@@ -1,11 +1,6 @@
 (getting_started:basic_examples)=
 # Basic examples
 
-:::{admonition} {material-regular}`engineering;1.5rem;sd-mr-1` Under construction
-:class: no-icon
-The examples are currently a work in progress. 
-:::
-
 This is a selection of basic code examples for the most common types of simulations of electron microscopy experiments.
 
 If you have previous experience with multislice simulations, you should be able to jump right in and modify the most 
@@ -86,19 +81,6 @@ the [gallery](user_guide:example_gallery).
 **4D-STEM**
 ^^^
 ```{image} ../user_guide/examples/thumbnails/4d-stem_quickstart.png
-:align: center
-```
-:::
-
-:::{grid-item-card}
-:link: examples:prism_quickstart
-:link-type: ref
-:class-body: text-center
-:class-header: bg-light text-center
-
-**PRISM**
-^^^
-```{image} ../user_guide/examples/thumbnails/prism_quickstart.png
 :align: center
 ```
 ::::

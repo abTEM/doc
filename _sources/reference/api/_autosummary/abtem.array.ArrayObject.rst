@@ -44,6 +44,7 @@ ArrayObject
       ~ArrayObject.to_data_array
       ~ArrayObject.to_gpu
       ~ArrayObject.to_hyperspy
+      ~ArrayObject.to_quantem
       ~ArrayObject.to_tiff
       ~ArrayObject.to_zarr
    

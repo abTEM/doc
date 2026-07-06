@@ -55,6 +55,7 @@ BaseMeasurements
       ~BaseMeasurements.to_gpu
       ~BaseMeasurements.to_hyperspy
       ~BaseMeasurements.to_measurement_ensemble
+      ~BaseMeasurements.to_quantem
       ~BaseMeasurements.to_tiff
       ~BaseMeasurements.to_zarr
    

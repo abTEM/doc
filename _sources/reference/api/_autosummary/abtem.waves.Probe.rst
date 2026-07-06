@@ -28,6 +28,7 @@ Probe
       ~Probe.profiles
       ~Probe.scan
       ~Probe.show
+      ~Probe.transition_potential_scan
    
    
 

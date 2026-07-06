@@ -30,6 +30,7 @@ Visualization
       ~Visualization.set_common_value_limits
       ~Visualization.set_complex_conversion
       ~Visualization.set_legend
+      ~Visualization.set_logscale
       ~Visualization.set_power
       ~Visualization.set_row_titles
       ~Visualization.set_scale_bars

@@ -61,6 +61,7 @@ PolarMeasurements
       ~PolarMeasurements.to_hyperspy
       ~PolarMeasurements.to_image_ensemble
       ~PolarMeasurements.to_measurement_ensemble
+      ~PolarMeasurements.to_quantem
       ~PolarMeasurements.to_tiff
       ~PolarMeasurements.to_zarr
    

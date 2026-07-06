@@ -74,13 +74,21 @@ git clone https://github.com/abtem/abtem
 cd abtem
 ```
 
-Next, install:
+Next, install. The development dependencies are declared as [PEP 735 dependency groups](https://peps.python.org/pep-0735/)
+(`dev`, `test`, and `docs`), so use a tool that understands them. We recommend [uv](https://docs.astral.sh/uv/),
+which is also what our continuous integration uses:
 
 ```{code-block}
-python -m pip install -e ".[testing,docs]"
+uv sync --group test --group docs
 ```
 
-This will install *ab*TEM locally in your Python environment (we recommend using Conda), along with the packages needed
+Alternatively, with a recent pip (25.1 or newer):
+
+```{code-block}
+python -m pip install -e . --group test --group docs
+```
+
+This will install *ab*TEM locally in your Python environment, along with the packages needed
 to test it and the packages for producing documentation.
 
 ### Optional: Install the pre-commit hooks

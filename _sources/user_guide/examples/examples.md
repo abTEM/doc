@@ -13,6 +13,7 @@
    notebooks/ped_quickstart
    notebooks/blochwave_quickstart
    notebooks/pacbed_quickstart
+   notebooks/4d-stem_quickstart
    notebooks/interactions
 ```
 
@@ -157,6 +158,22 @@ it. For more detailed instructions see our guide on contributing to *ab*TEM.
 **PACBED**
 ^^^
 ```{image} thumbnails/pacbed_quickstart.png
+:align: center
+```
+
++++
+{bdg-success}`basic`
+:::
+
+:::{grid-item-card}
+:link: examples:4d-stem_quickstart
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+
+**4D-STEM**
+^^^
+```{image} thumbnails/4d-stem_quickstart.png
 :align: center
 ```
 

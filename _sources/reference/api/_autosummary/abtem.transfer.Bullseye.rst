@@ -38,7 +38,9 @@ Bullseye
       ~Bullseye.axes_metadata
       ~Bullseye.base_axes_metadata
       ~Bullseye.base_shape
+      ~Bullseye.corner_radius
       ~Bullseye.distributions
+      ~Bullseye.edge_softness
       ~Bullseye.energy
       ~Bullseye.ensemble_axes_metadata
       ~Bullseye.ensemble_shape
@@ -56,6 +58,7 @@ Bullseye
       ~Bullseye.semiangle_cutoff
       ~Bullseye.shape
       ~Bullseye.soft
+      ~Bullseye.soft_edges
       ~Bullseye.spoke_width
       ~Bullseye.wavelength
    

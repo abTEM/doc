@@ -23,6 +23,7 @@ TransmissionFunction
       ~TransmissionFunction.compute
       ~TransmissionFunction.copy
       ~TransmissionFunction.copy_to_device
+      ~TransmissionFunction.depth_profile
       ~TransmissionFunction.ensemble_blocks
       ~TransmissionFunction.ensure_lazy
       ~TransmissionFunction.expand_dims
@@ -43,6 +44,7 @@ TransmissionFunction
       ~TransmissionFunction.rechunk
       ~TransmissionFunction.set_ensemble_axes_metadata
       ~TransmissionFunction.show
+      ~TransmissionFunction.show_depth_profile
       ~TransmissionFunction.squeeze
       ~TransmissionFunction.std
       ~TransmissionFunction.sum
@@ -52,6 +54,7 @@ TransmissionFunction
       ~TransmissionFunction.to_gpu
       ~TransmissionFunction.to_hyperspy
       ~TransmissionFunction.to_images
+      ~TransmissionFunction.to_quantem
       ~TransmissionFunction.to_tiff
       ~TransmissionFunction.to_zarr
       ~TransmissionFunction.transmission_function

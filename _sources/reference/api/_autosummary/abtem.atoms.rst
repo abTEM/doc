@@ -15,6 +15,8 @@
       :toctree:
       :template: custom-function-template.rst
    
+      B_to_sigma
+      atom_property_dict_to_atom_property_array
       atoms_in_cell
       best_orthogonal_cell
       cut_cell
@@ -35,7 +37,10 @@
       rotation_matrix_from_plane
       rotation_matrix_to_euler
       shrink_cell
+      sigma_to_B
       standardize_cell
+      validate_per_atom_property
+      validate_sigmas
       wrap_with_tolerance
    
    

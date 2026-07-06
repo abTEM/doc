@@ -19,12 +19,14 @@ GPAWPotential
       ~GPAWPotential.__init__
       ~GPAWPotential.build
       ~GPAWPotential.copy
+      ~GPAWPotential.depth_profile
       ~GPAWPotential.ensemble_blocks
       ~GPAWPotential.generate_blocks
       ~GPAWPotential.generate_slices
       ~GPAWPotential.match_grid
       ~GPAWPotential.project
       ~GPAWPotential.show
+      ~GPAWPotential.show_depth_profile
       ~GPAWPotential.to_images
    
    

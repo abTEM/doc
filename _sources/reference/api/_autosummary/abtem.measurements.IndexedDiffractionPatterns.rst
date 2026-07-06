@@ -62,6 +62,7 @@ IndexedDiffractionPatterns
       ~IndexedDiffractionPatterns.to_gpu
       ~IndexedDiffractionPatterns.to_hyperspy
       ~IndexedDiffractionPatterns.to_measurement_ensemble
+      ~IndexedDiffractionPatterns.to_quantem
       ~IndexedDiffractionPatterns.to_tiff
       ~IndexedDiffractionPatterns.to_zarr
    

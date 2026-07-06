@@ -49,6 +49,7 @@ SMatrixArray
       ~SMatrixArray.to_data_array
       ~SMatrixArray.to_gpu
       ~SMatrixArray.to_hyperspy
+      ~SMatrixArray.to_quantem
       ~SMatrixArray.to_tiff
       ~SMatrixArray.to_zarr
    

@@ -23,6 +23,7 @@ FieldArray
       ~FieldArray.compute
       ~FieldArray.copy
       ~FieldArray.copy_to_device
+      ~FieldArray.depth_profile
       ~FieldArray.ensemble_blocks
       ~FieldArray.ensure_lazy
       ~FieldArray.expand_dims
@@ -42,6 +43,7 @@ FieldArray
       ~FieldArray.rechunk
       ~FieldArray.set_ensemble_axes_metadata
       ~FieldArray.show
+      ~FieldArray.show_depth_profile
       ~FieldArray.squeeze
       ~FieldArray.std
       ~FieldArray.sum
@@ -51,6 +53,7 @@ FieldArray
       ~FieldArray.to_gpu
       ~FieldArray.to_hyperspy
       ~FieldArray.to_images
+      ~FieldArray.to_quantem
       ~FieldArray.to_tiff
       ~FieldArray.to_zarr
    

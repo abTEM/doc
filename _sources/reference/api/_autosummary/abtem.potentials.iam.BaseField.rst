@@ -19,12 +19,14 @@ BaseField
       ~BaseField.__init__
       ~BaseField.build
       ~BaseField.copy
+      ~BaseField.depth_profile
       ~BaseField.ensemble_blocks
       ~BaseField.generate_blocks
       ~BaseField.generate_slices
       ~BaseField.match_grid
       ~BaseField.project
       ~BaseField.show
+      ~BaseField.show_depth_profile
       ~BaseField.to_images
    
    

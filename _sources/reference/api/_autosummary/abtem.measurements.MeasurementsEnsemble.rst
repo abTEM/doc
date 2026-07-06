@@ -55,6 +55,7 @@ MeasurementsEnsemble
       ~MeasurementsEnsemble.to_gpu
       ~MeasurementsEnsemble.to_hyperspy
       ~MeasurementsEnsemble.to_measurement_ensemble
+      ~MeasurementsEnsemble.to_quantem
       ~MeasurementsEnsemble.to_tiff
       ~MeasurementsEnsemble.to_zarr
    

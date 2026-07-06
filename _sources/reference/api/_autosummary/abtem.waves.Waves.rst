@@ -24,6 +24,7 @@ Waves
       ~Waves.convolve
       ~Waves.copy
       ~Waves.copy_to_device
+      ~Waves.depth_profile
       ~Waves.diffraction_patterns
       ~Waves.downsample
       ~Waves.ensemble_blocks
@@ -53,6 +54,7 @@ Waves
       ~Waves.scan
       ~Waves.set_ensemble_axes_metadata
       ~Waves.show
+      ~Waves.show_depth_profile
       ~Waves.squeeze
       ~Waves.std
       ~Waves.sum
@@ -62,6 +64,7 @@ Waves
       ~Waves.to_gpu
       ~Waves.to_hyperspy
       ~Waves.to_images
+      ~Waves.to_quantem
       ~Waves.to_tiff
       ~Waves.to_zarr
       ~Waves.transition_potential_multislice

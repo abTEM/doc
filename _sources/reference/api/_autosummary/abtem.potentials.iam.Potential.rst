@@ -19,6 +19,7 @@ Potential
       ~Potential.__init__
       ~Potential.build
       ~Potential.copy
+      ~Potential.depth_profile
       ~Potential.ensemble_blocks
       ~Potential.generate_blocks
       ~Potential.generate_slices
@@ -27,6 +28,7 @@ Potential
       ~Potential.match_grid
       ~Potential.project
       ~Potential.show
+      ~Potential.show_depth_profile
       ~Potential.to_images
    
    

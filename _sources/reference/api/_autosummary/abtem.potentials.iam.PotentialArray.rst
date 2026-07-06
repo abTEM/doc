@@ -23,6 +23,7 @@ PotentialArray
       ~PotentialArray.compute
       ~PotentialArray.copy
       ~PotentialArray.copy_to_device
+      ~PotentialArray.depth_profile
       ~PotentialArray.ensemble_blocks
       ~PotentialArray.ensure_lazy
       ~PotentialArray.expand_dims
@@ -42,6 +43,7 @@ PotentialArray
       ~PotentialArray.rechunk
       ~PotentialArray.set_ensemble_axes_metadata
       ~PotentialArray.show
+      ~PotentialArray.show_depth_profile
       ~PotentialArray.squeeze
       ~PotentialArray.std
       ~PotentialArray.sum
@@ -51,6 +53,7 @@ PotentialArray
       ~PotentialArray.to_gpu
       ~PotentialArray.to_hyperspy
       ~PotentialArray.to_images
+      ~PotentialArray.to_quantem
       ~PotentialArray.to_tiff
       ~PotentialArray.to_zarr
       ~PotentialArray.transmission_function

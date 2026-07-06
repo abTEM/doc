@@ -19,12 +19,15 @@ CrystalPotential
       ~CrystalPotential.__init__
       ~CrystalPotential.build
       ~CrystalPotential.copy
+      ~CrystalPotential.depth_profile
       ~CrystalPotential.ensemble_blocks
       ~CrystalPotential.generate_blocks
       ~CrystalPotential.generate_slices
+      ~CrystalPotential.get_sliced_atoms
       ~CrystalPotential.match_grid
       ~CrystalPotential.project
       ~CrystalPotential.show
+      ~CrystalPotential.show_depth_profile
       ~CrystalPotential.to_images
    
    
@@ -41,6 +44,7 @@ CrystalPotential
       ~CrystalPotential.box
       ~CrystalPotential.device
       ~CrystalPotential.ensemble_axes_metadata
+      ~CrystalPotential.ensemble_mean
       ~CrystalPotential.ensemble_shape
       ~CrystalPotential.exit_planes
       ~CrystalPotential.exit_thicknesses

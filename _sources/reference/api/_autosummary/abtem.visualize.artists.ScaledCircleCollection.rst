@@ -56,6 +56,7 @@ ScaledCircleCollection
       ~ScaledCircleCollection.get_gid
       ~ScaledCircleCollection.get_hatch
       ~ScaledCircleCollection.get_hatch_linewidth
+      ~ScaledCircleCollection.get_hatchcolor
       ~ScaledCircleCollection.get_in_layout
       ~ScaledCircleCollection.get_joinstyle
       ~ScaledCircleCollection.get_label
@@ -122,6 +123,7 @@ ScaledCircleCollection
       ~ScaledCircleCollection.set_gid
       ~ScaledCircleCollection.set_hatch
       ~ScaledCircleCollection.set_hatch_linewidth
+      ~ScaledCircleCollection.set_hatchcolor
       ~ScaledCircleCollection.set_in_layout
       ~ScaledCircleCollection.set_joinstyle
       ~ScaledCircleCollection.set_label

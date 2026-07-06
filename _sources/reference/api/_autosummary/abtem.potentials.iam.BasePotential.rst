@@ -19,12 +19,14 @@ BasePotential
       ~BasePotential.__init__
       ~BasePotential.build
       ~BasePotential.copy
+      ~BasePotential.depth_profile
       ~BasePotential.ensemble_blocks
       ~BasePotential.generate_blocks
       ~BasePotential.generate_slices
       ~BasePotential.match_grid
       ~BasePotential.project
       ~BasePotential.show
+      ~BasePotential.show_depth_profile
       ~BasePotential.to_images
    
    

@@ -19,6 +19,7 @@
       allocate_multislice_measurements
       conventional_multislice_step
       is_waves_base_measurements_or_list
+      lookahead
       multislice_and_detect
       transition_potential_multislice_and_detect
    
@@ -32,8 +33,10 @@
       :toctree:
       :template: custom-class-template.rst
    
+      FourierMultislice
       FresnelPropagator
       MultisliceTransform
+      RealSpaceMultislice
    
    
 
