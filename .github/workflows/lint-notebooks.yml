@@ -5,16 +5,15 @@ name: lint-notebooks
 # place, MyST-NB/nbconvert renders that leftover state into the built docs,
 # so old widget content (e.g. stale progress-bar text) can silently reappear
 # in published pages even after the code that produced it is gone.
+#
+# No `paths:` filter: this check is required by branch protection on main,
+# and a required check that never runs (e.g. filtered out by paths) leaves a
+# PR permanently blocked rather than passing, even if it's unrelated to
+# notebooks. The check itself is cheap, so we just run it on every PR/push.
 on:
   pull_request:
-    paths:
-      - "**/*.ipynb"
-      - "scripts/check_notebook_widgets.py"
   push:
     branches: [main]
-    paths:
-      - "**/*.ipynb"
-      - "scripts/check_notebook_widgets.py"
 
 jobs:
   check-notebook-widgets:
