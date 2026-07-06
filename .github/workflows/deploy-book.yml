@@ -24,6 +24,15 @@ jobs:
       run: |
         pip install -r docs/requirements.txt
 
+    # Defensive cleanup: strip any orphaned ipywidgets state (metadata.widgets
+    # entries no longer referenced by a cell's widget-view output) before
+    # building, so stale widget content (e.g. old progress-bar text) can't
+    # leak into the published HTML even if it was hand-edited back in after
+    # the lint-notebooks check last ran.
+    - name: Strip orphaned ipywidgets state
+      run: |
+        python scripts/check_notebook_widgets.py --fix
+
     # Build the book
     - name: Build the book
       run: |

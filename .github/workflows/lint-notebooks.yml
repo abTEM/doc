@@ -1,0 +1,31 @@
+name: lint-notebooks
+
+# Reject notebooks with stale/orphaned ipywidgets state (metadata.widgets
+# entries no longer referenced by any cell's widget-view output). Left in
+# place, MyST-NB/nbconvert renders that leftover state into the built docs,
+# so old widget content (e.g. stale progress-bar text) can silently reappear
+# in published pages even after the code that produced it is gone.
+on:
+  pull_request:
+    paths:
+      - "**/*.ipynb"
+      - "scripts/check_notebook_widgets.py"
+  push:
+    branches: [main]
+    paths:
+      - "**/*.ipynb"
+      - "scripts/check_notebook_widgets.py"
+
+jobs:
+  check-notebook-widgets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Check for orphaned ipywidgets state
+        run: python scripts/check_notebook_widgets.py
