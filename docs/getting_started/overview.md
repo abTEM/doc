@@ -68,44 +68,46 @@ The diagram below sketches how the core objects connect to form the six simulati
     <path d="M0,0 L10,5 L0,10 z" fill="var(--pst-color-text-base)" />
   </marker>
 </defs>
+<!-- Potential feeds into both the multislice(...) and scan(...) arrows below -->
+<line x1="280" y1="60" x2="280" y2="254" fill="none" stroke="var(--pst-color-text-base)" stroke-width="1.5" stroke-dasharray="4,3" />
+<circle cx="280" cy="192" r="3.5" fill="var(--pst-color-text-base)" />
+<circle cx="280" cy="254" r="3.5" fill="var(--pst-color-text-base)" />
 <g fill="none" stroke="var(--pst-color-text-base)" stroke-width="1.5">
-  <line x1="130" y1="42" x2="205" y2="42" marker-end="url(#om-arrow)" />
-  <line x1="190" y1="182" x2="325" y2="182" marker-end="url(#om-arrow)" />
-  <line x1="480" y1="168" x2="695" y2="100" marker-end="url(#om-arrow)" />
-  <line x1="480" y1="196" x2="695" y2="200" marker-end="url(#om-arrow)" />
-  <line x1="130" y1="375" x2="695" y2="375" marker-end="url(#om-arrow)" />
+  <line x1="150" y1="40" x2="205" y2="40" marker-end="url(#om-arrow)" />
+  <line x1="190" y1="192" x2="325" y2="192" marker-end="url(#om-arrow)" />
+  <line x1="480" y1="192" x2="695" y2="90" marker-end="url(#om-arrow)" />
+  <line x1="480" y1="228" x2="695" y2="200" marker-end="url(#om-arrow)" />
+  <line x1="190" y1="228" x2="695" y2="375" marker-end="url(#om-arrow)" />
 </g>
 <g font-size="12.5" fill="var(--pst-color-text-base)" text-anchor="middle">
-  <text x="260" y="172">multislice(potential)</text>
-  <text x="600" y="118">apply_ctf(CTF).intensity()</text>
-  <text x="600" y="227">diffraction_patterns()</text>
-  <text x="400" y="362">scan(potential, scan, detectors)</text>
+  <text x="260" y="180">multislice(potential)</text>
+  <text x="590" y="135">apply_ctf(CTF).intensity()</text>
+  <text x="590" y="208">diffraction_patterns()</text>
+  <text x="445" y="296">scan(potential, scan, detectors)</text>
 </g>
 <g stroke="var(--pst-color-border)" stroke-width="1.5" fill="var(--pst-color-surface)">
-  <rect x="20" y="20" width="110" height="44" rx="8" />
-  <rect x="210" y="20" width="160" height="44" rx="8" />
-  <rect x="20" y="150" width="170" height="64" rx="8" />
-  <rect x="330" y="150" width="150" height="64" rx="8" />
-  <rect x="20" y="350" width="110" height="50" rx="8" />
+  <rect x="20" y="20" width="130" height="40" rx="8" />
+  <rect x="210" y="20" width="140" height="40" rx="8" />
+  <rect x="20" y="160" width="170" height="90" rx="8" />
+  <rect x="330" y="160" width="150" height="90" rx="8" />
 </g>
 <g stroke="var(--pst-color-primary)" stroke-width="1.5" fill="var(--pst-color-primary-bg)">
-  <rect x="700" y="70" width="260" height="60" rx="8" />
+  <rect x="700" y="60" width="260" height="60" rx="8" />
   <rect x="700" y="170" width="260" height="60" rx="8" />
-  <rect x="700" y="345" width="260" height="60" rx="8" />
+  <rect x="700" y="350" width="260" height="60" rx="8" />
 </g>
 <g fill="var(--pst-color-on-surface)" text-anchor="middle">
-  <text x="75" y="47" font-size="14">Atoms</text>
-  <text x="290" y="47" font-size="14">Potential</text>
-  <text x="105" y="178" font-size="14" font-weight="600">Wave function</text>
-  <text x="105" y="197" font-size="12">PlaneWave, Probe</text>
-  <text x="405" y="186" font-size="14">Exit wave</text>
-  <text x="75" y="380" font-size="14">Probe</text>
-  <text x="830" y="97" font-size="14" font-weight="600">Measurement</text>
-  <text x="830" y="116" font-size="12">HRTEM</text>
+  <text x="85" y="45" font-size="14">Atoms</text>
+  <text x="280" y="45" font-size="14">Potential</text>
+  <text x="105" y="202" font-size="14" font-weight="600">Wave function</text>
+  <text x="105" y="221" font-size="12">PlaneWave, Probe</text>
+  <text x="405" y="210" font-size="14">Exit wave</text>
+  <text x="830" y="87" font-size="14" font-weight="600">Measurement</text>
+  <text x="830" y="106" font-size="12">HRTEM</text>
   <text x="830" y="197" font-size="14" font-weight="600">Measurement</text>
   <text x="830" y="216" font-size="12">SAED, CBED, PED</text>
-  <text x="830" y="372" font-size="14" font-weight="600">Measurement</text>
-  <text x="830" y="391" font-size="12">STEM, 4D-STEM</text>
+  <text x="830" y="377" font-size="14" font-weight="600">Measurement</text>
+  <text x="830" y="396" font-size="12">STEM, 4D-STEM</text>
 </g>
 </svg>
 <figcaption style="text-align: center; font-size: 0.9em; color: var(--pst-color-text-muted);">
