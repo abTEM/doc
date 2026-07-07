@@ -6,7 +6,8 @@ The *ab*TEM API generally follows an object-oriented design with objects represe
 physical models. Numpy-style docstrings embedded in the code allow the reference to be automatically generated.
 
 ```{toctree}
-:maxdepth: 2
+:titlesonly:
+:maxdepth: 3
 
-apidocs/index
+apidocs/abtem/abtem
 ```
