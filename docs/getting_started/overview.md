@@ -57,6 +57,63 @@ representing physical concepts; for example, a plane wave function is represente
 focused STEM probe wave function is represented by a `Probe` object. This makes the code easy to understand, not only for
 specialists but anyone familiar with transmission electron microscopy.
 
+The diagram below sketches how the core objects connect to form the six simulation modes shown below; see the
+[API reference](reference:api) for the full class hierarchy behind each of them.
+
+<figure style="margin: 1.5rem 0;">
+<svg viewBox="0 0 980 430" role="img" aria-labelledby="object-model-title" style="max-width: 820px; width: 100%; height: auto; display: block; margin: 0 auto;">
+<title id="object-model-title">The abTEM object-composition pipeline</title>
+<defs>
+  <marker id="om-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="var(--pst-color-text-base)" />
+  </marker>
+</defs>
+<g fill="none" stroke="var(--pst-color-text-base)" stroke-width="1.5">
+  <line x1="130" y1="42" x2="205" y2="42" marker-end="url(#om-arrow)" />
+  <line x1="190" y1="182" x2="325" y2="182" marker-end="url(#om-arrow)" />
+  <line x1="480" y1="168" x2="695" y2="100" marker-end="url(#om-arrow)" />
+  <line x1="480" y1="196" x2="695" y2="200" marker-end="url(#om-arrow)" />
+  <line x1="130" y1="375" x2="695" y2="375" marker-end="url(#om-arrow)" />
+</g>
+<g font-size="12.5" fill="var(--pst-color-text-base)" text-anchor="middle">
+  <text x="260" y="172">multislice(potential)</text>
+  <text x="600" y="118">apply_ctf(CTF).intensity()</text>
+  <text x="600" y="227">diffraction_patterns()</text>
+  <text x="400" y="362">scan(potential, scan, detectors)</text>
+</g>
+<g stroke="var(--pst-color-border)" stroke-width="1.5" fill="var(--pst-color-surface)">
+  <rect x="20" y="20" width="110" height="44" rx="8" />
+  <rect x="210" y="20" width="160" height="44" rx="8" />
+  <rect x="20" y="150" width="170" height="64" rx="8" />
+  <rect x="330" y="150" width="150" height="64" rx="8" />
+  <rect x="20" y="350" width="110" height="50" rx="8" />
+</g>
+<g stroke="var(--pst-color-primary)" stroke-width="1.5" fill="var(--pst-color-primary-bg)">
+  <rect x="700" y="70" width="260" height="60" rx="8" />
+  <rect x="700" y="170" width="260" height="60" rx="8" />
+  <rect x="700" y="345" width="260" height="60" rx="8" />
+</g>
+<g fill="var(--pst-color-on-surface)" text-anchor="middle">
+  <text x="75" y="47" font-size="14">Atoms</text>
+  <text x="290" y="47" font-size="14">Potential</text>
+  <text x="105" y="178" font-size="14" font-weight="600">Wave function</text>
+  <text x="105" y="197" font-size="12">PlaneWave, Probe</text>
+  <text x="405" y="186" font-size="14">Exit wave</text>
+  <text x="75" y="380" font-size="14">Probe</text>
+  <text x="830" y="97" font-size="14" font-weight="600">Measurement</text>
+  <text x="830" y="116" font-size="12">HRTEM</text>
+  <text x="830" y="197" font-size="14" font-weight="600">Measurement</text>
+  <text x="830" y="216" font-size="12">SAED, CBED, PED</text>
+  <text x="830" y="372" font-size="14" font-weight="600">Measurement</text>
+  <text x="830" y="391" font-size="12">STEM, 4D-STEM</text>
+</g>
+</svg>
+<figcaption style="text-align: center; font-size: 0.9em; color: var(--pst-color-text-muted);">
+A <code>PlaneWave</code> or <code>Probe</code> propagated through a <code>Potential</code> yields an exit wave (single-shot
+modes) or, via <code>Probe.scan</code>, a scanned measurement directly (STEM modes).
+</figcaption>
+</figure>
+
 To simulate a (basic) high-resolution TEM (HRTEM) image, we need a `PlaneWave` at a given energy (by default in units of
 $\mathrm{eV}$), a `Potential` with a given real-space sampling (in units of $\mathrm{Å}$), and a `CTF` (contrast
 transfer function) representing the objective lens with a given aperture (in $\mathrm{mrad}$) and spherical aberration
