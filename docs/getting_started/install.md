@@ -76,6 +76,11 @@ where * should be substituted for the CUDA Toolkit version.
 ````
 `````
 
+To distribute a calculation across **several GPUs** on a node, also install
+[`dask-cuda`](https://docs.rapids.ai/api/dask-cuda/stable/install/) (NVIDIA GPUs,
+Linux only), matched to your CUDA/RAPIDS version. See
+{ref}`Multiple GPUs <walkthrough:parallelization:multigpu>` in the walkthrough.
+
 ### Metal on Apple silicon (experimental)
 
 A subset of features in *ab*TEM can be accelerated on Apple silicon processors using their [Metal API](https://developer.apple.com/metal/). 
