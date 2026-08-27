@@ -15,20 +15,8 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`ProgressBar <abtem.reconstruct.ProgressBar>`
-  - ```{autodoc2-docstring} abtem.reconstruct.ProgressBar
-    :summary:
-    ```
 * - {py:obj}`AbstractPtychographicOperator <abtem.reconstruct.AbstractPtychographicOperator>`
   - ```{autodoc2-docstring} abtem.reconstruct.AbstractPtychographicOperator
-    :summary:
-    ```
-* - {py:obj}`RegularizedPtychographicOperator <abtem.reconstruct.RegularizedPtychographicOperator>`
-  - ```{autodoc2-docstring} abtem.reconstruct.RegularizedPtychographicOperator
-    :summary:
-    ```
-* - {py:obj}`SimultaneousPtychographicOperator <abtem.reconstruct.SimultaneousPtychographicOperator>`
-  - ```{autodoc2-docstring} abtem.reconstruct.SimultaneousPtychographicOperator
     :summary:
     ```
 * - {py:obj}`MixedStatePtychographicOperator <abtem.reconstruct.MixedStatePtychographicOperator>`
@@ -37,6 +25,18 @@
     ```
 * - {py:obj}`MultislicePtychographicOperator <abtem.reconstruct.MultislicePtychographicOperator>`
   - ```{autodoc2-docstring} abtem.reconstruct.MultislicePtychographicOperator
+    :summary:
+    ```
+* - {py:obj}`ProgressBar <abtem.reconstruct.ProgressBar>`
+  - ```{autodoc2-docstring} abtem.reconstruct.ProgressBar
+    :summary:
+    ```
+* - {py:obj}`RegularizedPtychographicOperator <abtem.reconstruct.RegularizedPtychographicOperator>`
+  - ```{autodoc2-docstring} abtem.reconstruct.RegularizedPtychographicOperator
+    :summary:
+    ```
+* - {py:obj}`SimultaneousPtychographicOperator <abtem.reconstruct.SimultaneousPtychographicOperator>`
+  - ```{autodoc2-docstring} abtem.reconstruct.SimultaneousPtychographicOperator
     :summary:
     ```
 ````
@@ -59,93 +59,19 @@
 
 ### API
 
-````{py:data} experimental_symbols
-:canonical: abtem.reconstruct.experimental_symbols
-:value: >
-   ('rotation_angle', 'scan_step_sizes', 'angular_sampling', 'background_counts_cutoff', 'counts_scalin...
-
-```{autodoc2-docstring} abtem.reconstruct.experimental_symbols
-```
-
-````
-
-````{py:data} reconstruction_symbols
-:canonical: abtem.reconstruct.reconstruction_symbols
-:value: >
-   None
-
-```{autodoc2-docstring} abtem.reconstruct.reconstruction_symbols
-```
-
-````
-
-`````{py:class} ProgressBar(**kwargs)
-:canonical: abtem.reconstruct.ProgressBar
-
-```{autodoc2-docstring} abtem.reconstruct.ProgressBar
-```
-
-```{rubric} Initialization
-```
-
-```{autodoc2-docstring} abtem.reconstruct.ProgressBar.__init__
-```
-
-````{py:property} tqdm
-:canonical: abtem.reconstruct.ProgressBar.tqdm
-
-```{autodoc2-docstring} abtem.reconstruct.ProgressBar.tqdm
-```
-
-````
-
-````{py:property} disable
-:canonical: abtem.reconstruct.ProgressBar.disable
-
-```{autodoc2-docstring} abtem.reconstruct.ProgressBar.disable
-```
-
-````
-
-````{py:method} update(n)
-:canonical: abtem.reconstruct.ProgressBar.update
-
-```{autodoc2-docstring} abtem.reconstruct.ProgressBar.update
-```
-
-````
-
-````{py:method} reset()
-:canonical: abtem.reconstruct.ProgressBar.reset
-
-```{autodoc2-docstring} abtem.reconstruct.ProgressBar.reset
-```
-
-````
-
-````{py:method} refresh()
-:canonical: abtem.reconstruct.ProgressBar.refresh
-
-```{autodoc2-docstring} abtem.reconstruct.ProgressBar.refresh
-```
-
-````
-
-````{py:method} close()
-:canonical: abtem.reconstruct.ProgressBar.close
-
-```{autodoc2-docstring} abtem.reconstruct.ProgressBar.close
-```
-
-````
-
-`````
-
 `````{py:class} AbstractPtychographicOperator
 :canonical: abtem.reconstruct.AbstractPtychographicOperator
 
 ```{autodoc2-docstring} abtem.reconstruct.AbstractPtychographicOperator
 ```
+
+````{py:property} angular_sampling
+:canonical: abtem.reconstruct.AbstractPtychographicOperator.angular_sampling
+
+```{autodoc2-docstring} abtem.reconstruct.AbstractPtychographicOperator.angular_sampling
+```
+
+````
 
 ````{py:method} preprocess()
 :canonical: abtem.reconstruct.AbstractPtychographicOperator.preprocess
@@ -165,18 +91,136 @@
 
 ````
 
-````{py:property} angular_sampling
-:canonical: abtem.reconstruct.AbstractPtychographicOperator.angular_sampling
-
-```{autodoc2-docstring} abtem.reconstruct.AbstractPtychographicOperator.angular_sampling
-```
-
-````
-
 ````{py:property} sampling
 :canonical: abtem.reconstruct.AbstractPtychographicOperator.sampling
 
 ```{autodoc2-docstring} abtem.reconstruct.AbstractPtychographicOperator.sampling
+```
+
+````
+
+`````
+
+`````{py:class} MixedStatePtychographicOperator(diffraction_patterns: typing.Union[numpy.ndarray, abtem.measurements.DiffractionPatterns], energy: float, num_probes: int, region_of_interest_shape: typing.Sequence[int] = None, objects: numpy.ndarray = None, probes: typing.Union[numpy.ndarray, abtem.waves.Probe] = None, positions: numpy.ndarray = None, semiangle_cutoff: float = None, preprocess: bool = False, device: str = 'cpu', parameters: typing.Mapping[str, float] = None, **kwargs)
+:canonical: abtem.reconstruct.MixedStatePtychographicOperator
+
+Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
+
+```{autodoc2-docstring} abtem.reconstruct.MixedStatePtychographicOperator
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.reconstruct.MixedStatePtychographicOperator.__init__
+```
+
+````{py:method} preprocess()
+:canonical: abtem.reconstruct.MixedStatePtychographicOperator.preprocess
+
+```{autodoc2-docstring} abtem.reconstruct.MixedStatePtychographicOperator.preprocess
+```
+
+````
+
+````{py:method} reconstruct(max_iterations: int = 5, return_iterations: bool = False, probe_orthogonalization_frequency: int = None, warmup_update_steps: int = 0, fix_com: bool = True, random_seed=None, verbose: bool = False, parameters: typing.Mapping[str, float] = None, functions_queue: typing.Iterable = None, **kwargs)
+:canonical: abtem.reconstruct.MixedStatePtychographicOperator.reconstruct
+
+```{autodoc2-docstring} abtem.reconstruct.MixedStatePtychographicOperator.reconstruct
+```
+
+````
+
+`````
+
+`````{py:class} MultislicePtychographicOperator(diffraction_patterns: typing.Union[numpy.ndarray, abtem.measurements.DiffractionPatterns], energy: float, num_slices: int, slice_thicknesses: typing.Union[float, typing.Sequence[float]], region_of_interest_shape: typing.Sequence[int] = None, objects: numpy.ndarray = None, probes: typing.Union[numpy.ndarray, abtem.waves.Probe] = None, positions: numpy.ndarray = None, semiangle_cutoff: float = None, preprocess: bool = False, device: str = 'cpu', parameters: typing.Mapping[str, float] = None, **kwargs)
+:canonical: abtem.reconstruct.MultislicePtychographicOperator
+
+Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
+
+```{autodoc2-docstring} abtem.reconstruct.MultislicePtychographicOperator
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.reconstruct.MultislicePtychographicOperator.__init__
+```
+
+````{py:method} preprocess()
+:canonical: abtem.reconstruct.MultislicePtychographicOperator.preprocess
+
+```{autodoc2-docstring} abtem.reconstruct.MultislicePtychographicOperator.preprocess
+```
+
+````
+
+````{py:method} reconstruct(max_iterations: int = 5, return_iterations: bool = False, fix_com: bool = True, random_seed=None, verbose: bool = False, parameters: typing.Mapping[str, float] = None, measurement_output_view: str = 'padded', functions_queue: typing.Iterable = None, **kwargs)
+:canonical: abtem.reconstruct.MultislicePtychographicOperator.reconstruct
+
+```{autodoc2-docstring} abtem.reconstruct.MultislicePtychographicOperator.reconstruct
+```
+
+````
+
+`````
+
+`````{py:class} ProgressBar(**kwargs)
+:canonical: abtem.reconstruct.ProgressBar
+
+```{autodoc2-docstring} abtem.reconstruct.ProgressBar
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.reconstruct.ProgressBar.__init__
+```
+
+````{py:method} close()
+:canonical: abtem.reconstruct.ProgressBar.close
+
+```{autodoc2-docstring} abtem.reconstruct.ProgressBar.close
+```
+
+````
+
+````{py:property} disable
+:canonical: abtem.reconstruct.ProgressBar.disable
+
+```{autodoc2-docstring} abtem.reconstruct.ProgressBar.disable
+```
+
+````
+
+````{py:method} refresh()
+:canonical: abtem.reconstruct.ProgressBar.refresh
+
+```{autodoc2-docstring} abtem.reconstruct.ProgressBar.refresh
+```
+
+````
+
+````{py:method} reset()
+:canonical: abtem.reconstruct.ProgressBar.reset
+
+```{autodoc2-docstring} abtem.reconstruct.ProgressBar.reset
+```
+
+````
+
+````{py:property} tqdm
+:canonical: abtem.reconstruct.ProgressBar.tqdm
+
+```{autodoc2-docstring} abtem.reconstruct.ProgressBar.tqdm
+```
+
+````
+
+````{py:method} update(n)
+:canonical: abtem.reconstruct.ProgressBar.update
+
+```{autodoc2-docstring} abtem.reconstruct.ProgressBar.update
 ```
 
 ````
@@ -247,66 +291,22 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 
 `````
 
-`````{py:class} MixedStatePtychographicOperator(diffraction_patterns: typing.Union[numpy.ndarray, abtem.measurements.DiffractionPatterns], energy: float, num_probes: int, region_of_interest_shape: typing.Sequence[int] = None, objects: numpy.ndarray = None, probes: typing.Union[numpy.ndarray, abtem.waves.Probe] = None, positions: numpy.ndarray = None, semiangle_cutoff: float = None, preprocess: bool = False, device: str = 'cpu', parameters: typing.Mapping[str, float] = None, **kwargs)
-:canonical: abtem.reconstruct.MixedStatePtychographicOperator
+````{py:data} experimental_symbols
+:canonical: abtem.reconstruct.experimental_symbols
+:value: >
+   ('rotation_angle', 'scan_step_sizes', 'angular_sampling', 'background_counts_cutoff', 'counts_scalin...
 
-Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
-
-```{autodoc2-docstring} abtem.reconstruct.MixedStatePtychographicOperator
-```
-
-```{rubric} Initialization
-```
-
-```{autodoc2-docstring} abtem.reconstruct.MixedStatePtychographicOperator.__init__
-```
-
-````{py:method} preprocess()
-:canonical: abtem.reconstruct.MixedStatePtychographicOperator.preprocess
-
-```{autodoc2-docstring} abtem.reconstruct.MixedStatePtychographicOperator.preprocess
+```{autodoc2-docstring} abtem.reconstruct.experimental_symbols
 ```
 
 ````
 
-````{py:method} reconstruct(max_iterations: int = 5, return_iterations: bool = False, probe_orthogonalization_frequency: int = None, warmup_update_steps: int = 0, fix_com: bool = True, random_seed=None, verbose: bool = False, parameters: typing.Mapping[str, float] = None, functions_queue: typing.Iterable = None, **kwargs)
-:canonical: abtem.reconstruct.MixedStatePtychographicOperator.reconstruct
+````{py:data} reconstruction_symbols
+:canonical: abtem.reconstruct.reconstruction_symbols
+:value: >
+   None
 
-```{autodoc2-docstring} abtem.reconstruct.MixedStatePtychographicOperator.reconstruct
+```{autodoc2-docstring} abtem.reconstruct.reconstruction_symbols
 ```
 
 ````
-
-`````
-
-`````{py:class} MultislicePtychographicOperator(diffraction_patterns: typing.Union[numpy.ndarray, abtem.measurements.DiffractionPatterns], energy: float, num_slices: int, slice_thicknesses: typing.Union[float, typing.Sequence[float]], region_of_interest_shape: typing.Sequence[int] = None, objects: numpy.ndarray = None, probes: typing.Union[numpy.ndarray, abtem.waves.Probe] = None, positions: numpy.ndarray = None, semiangle_cutoff: float = None, preprocess: bool = False, device: str = 'cpu', parameters: typing.Mapping[str, float] = None, **kwargs)
-:canonical: abtem.reconstruct.MultislicePtychographicOperator
-
-Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
-
-```{autodoc2-docstring} abtem.reconstruct.MultislicePtychographicOperator
-```
-
-```{rubric} Initialization
-```
-
-```{autodoc2-docstring} abtem.reconstruct.MultislicePtychographicOperator.__init__
-```
-
-````{py:method} preprocess()
-:canonical: abtem.reconstruct.MultislicePtychographicOperator.preprocess
-
-```{autodoc2-docstring} abtem.reconstruct.MultislicePtychographicOperator.preprocess
-```
-
-````
-
-````{py:method} reconstruct(max_iterations: int = 5, return_iterations: bool = False, fix_com: bool = True, random_seed=None, verbose: bool = False, parameters: typing.Mapping[str, float] = None, measurement_output_view: str = 'padded', functions_queue: typing.Iterable = None, **kwargs)
-:canonical: abtem.reconstruct.MultislicePtychographicOperator.reconstruct
-
-```{autodoc2-docstring} abtem.reconstruct.MultislicePtychographicOperator.reconstruct
-```
-
-````
-
-`````

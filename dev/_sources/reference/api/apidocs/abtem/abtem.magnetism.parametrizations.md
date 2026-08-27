@@ -35,13 +35,6 @@
 
 ### API
 
-````{py:function} get_parameters()
-:canonical: abtem.magnetism.parametrizations.get_parameters
-
-```{autodoc2-docstring} abtem.magnetism.parametrizations.get_parameters
-```
-````
-
 `````{py:class} LyonParametrization()
 :canonical: abtem.magnetism.parametrizations.LyonParametrization
 
@@ -63,3 +56,10 @@
 ````
 
 `````
+
+````{py:function} get_parameters()
+:canonical: abtem.magnetism.parametrizations.get_parameters
+
+```{autodoc2-docstring} abtem.magnetism.parametrizations.get_parameters
+```
+````

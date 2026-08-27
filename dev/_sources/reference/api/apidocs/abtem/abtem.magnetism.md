@@ -22,8 +22,8 @@ abtem.magnetism.parametrizations
 :titlesonly:
 :maxdepth: 1
 
-abtem.magnetism.utils
 abtem.magnetism.gpaw
-abtem.magnetism.pauli
 abtem.magnetism.iam
+abtem.magnetism.pauli
+abtem.magnetism.utils
 ```

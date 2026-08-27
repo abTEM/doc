@@ -41,60 +41,25 @@
   - ```{autodoc2-docstring} abtem.magnetism.gpaw.calculate_constant_magnetic_field
     :summary:
     ```
-* - {py:obj}`rotate_vector_field <abtem.magnetism.gpaw.rotate_vector_field>`
-  - ```{autodoc2-docstring} abtem.magnetism.gpaw.rotate_vector_field
-    :summary:
-    ```
 * - {py:obj}`calculate_magnetic_vector_potential <abtem.magnetism.gpaw.calculate_magnetic_vector_potential>`
   - ```{autodoc2-docstring} abtem.magnetism.gpaw.calculate_magnetic_vector_potential
-    :summary:
-    ```
-* - {py:obj}`get_vector_potential_from_gpaw <abtem.magnetism.gpaw.get_vector_potential_from_gpaw>`
-  - ```{autodoc2-docstring} abtem.magnetism.gpaw.get_vector_potential_from_gpaw
     :summary:
     ```
 * - {py:obj}`get_magnetic_field_from_gpaw <abtem.magnetism.gpaw.get_magnetic_field_from_gpaw>`
   - ```{autodoc2-docstring} abtem.magnetism.gpaw.get_magnetic_field_from_gpaw
     :summary:
     ```
+* - {py:obj}`get_vector_potential_from_gpaw <abtem.magnetism.gpaw.get_vector_potential_from_gpaw>`
+  - ```{autodoc2-docstring} abtem.magnetism.gpaw.get_vector_potential_from_gpaw
+    :summary:
+    ```
+* - {py:obj}`rotate_vector_field <abtem.magnetism.gpaw.rotate_vector_field>`
+  - ```{autodoc2-docstring} abtem.magnetism.gpaw.rotate_vector_field
+    :summary:
+    ```
 ````
 
 ### API
-
-````{py:function} calculate_constant_magnetic_field()
-:canonical: abtem.magnetism.gpaw.calculate_constant_magnetic_field
-
-```{autodoc2-docstring} abtem.magnetism.gpaw.calculate_constant_magnetic_field
-```
-````
-
-````{py:function} rotate_vector_field(vector_field: numpy.ndarray, euler_angles: tuple[float, float, float]) -> numpy.ndarray
-:canonical: abtem.magnetism.gpaw.rotate_vector_field
-
-```{autodoc2-docstring} abtem.magnetism.gpaw.rotate_vector_field
-```
-````
-
-````{py:function} calculate_magnetic_vector_potential(spin_density, cell)
-:canonical: abtem.magnetism.gpaw.calculate_magnetic_vector_potential
-
-```{autodoc2-docstring} abtem.magnetism.gpaw.calculate_magnetic_vector_potential
-```
-````
-
-````{py:function} get_vector_potential_from_gpaw(calc, gridrefinement=2, assume_colinear=True)
-:canonical: abtem.magnetism.gpaw.get_vector_potential_from_gpaw
-
-```{autodoc2-docstring} abtem.magnetism.gpaw.get_vector_potential_from_gpaw
-```
-````
-
-````{py:function} get_magnetic_field_from_gpaw(calc, gridrefinement=2, assume_colinear=True)
-:canonical: abtem.magnetism.gpaw.get_magnetic_field_from_gpaw
-
-```{autodoc2-docstring} abtem.magnetism.gpaw.get_magnetic_field_from_gpaw
-```
-````
 
 `````{py:class} GPAW
 :canonical: abtem.magnetism.gpaw.GPAW
@@ -164,4 +129,39 @@ Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.i
 ```{autodoc2-docstring} abtem.magnetism.gpaw.SpinDensityMagneticField.__init__
 ```
 
+````
+
+````{py:function} calculate_constant_magnetic_field()
+:canonical: abtem.magnetism.gpaw.calculate_constant_magnetic_field
+
+```{autodoc2-docstring} abtem.magnetism.gpaw.calculate_constant_magnetic_field
+```
+````
+
+````{py:function} calculate_magnetic_vector_potential(spin_density, cell)
+:canonical: abtem.magnetism.gpaw.calculate_magnetic_vector_potential
+
+```{autodoc2-docstring} abtem.magnetism.gpaw.calculate_magnetic_vector_potential
+```
+````
+
+````{py:function} get_magnetic_field_from_gpaw(calc, gridrefinement=2, assume_colinear=True)
+:canonical: abtem.magnetism.gpaw.get_magnetic_field_from_gpaw
+
+```{autodoc2-docstring} abtem.magnetism.gpaw.get_magnetic_field_from_gpaw
+```
+````
+
+````{py:function} get_vector_potential_from_gpaw(calc, gridrefinement=2, assume_colinear=True)
+:canonical: abtem.magnetism.gpaw.get_vector_potential_from_gpaw
+
+```{autodoc2-docstring} abtem.magnetism.gpaw.get_vector_potential_from_gpaw
+```
+````
+
+````{py:function} rotate_vector_field(vector_field: numpy.ndarray, euler_angles: tuple[float, float, float]) -> numpy.ndarray
+:canonical: abtem.magnetism.gpaw.rotate_vector_field
+
+```{autodoc2-docstring} abtem.magnetism.gpaw.rotate_vector_field
+```
 ````

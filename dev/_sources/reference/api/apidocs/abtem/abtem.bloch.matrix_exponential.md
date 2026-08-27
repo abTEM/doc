@@ -49,6 +49,13 @@
 
 ````
 
+````{py:function} expm(a: numpy.ndarray) -> numpy.ndarray
+:canonical: abtem.bloch.matrix_exponential.expm
+
+```{autodoc2-docstring} abtem.bloch.matrix_exponential.expm
+```
+````
+
 ````{py:data} th13
 :canonical: abtem.bloch.matrix_exponential.th13
 :value: >
@@ -57,11 +64,4 @@
 ```{autodoc2-docstring} abtem.bloch.matrix_exponential.th13
 ```
 
-````
-
-````{py:function} expm(a: numpy.ndarray) -> numpy.ndarray
-:canonical: abtem.bloch.matrix_exponential.expm
-
-```{autodoc2-docstring} abtem.bloch.matrix_exponential.expm
-```
 ````

@@ -13,19 +13,19 @@
 :titlesonly:
 :maxdepth: 1
 
-abtem.core.energy
-abtem.core.utils
-abtem.core.diagnostics
+abtem.core.axes
 abtem.core.backend
 abtem.core.chunks
-abtem.core.electron_configurations
-abtem.core.units
+abtem.core.colors
 abtem.core.complex
-abtem.core.grid
 abtem.core.config
-abtem.core.axes
+abtem.core.constants
+abtem.core.diagnostics
+abtem.core.electron_configurations
+abtem.core.energy
 abtem.core.ensemble
 abtem.core.fft
-abtem.core.constants
-abtem.core.colors
+abtem.core.grid
+abtem.core.units
+abtem.core.utils
 ```

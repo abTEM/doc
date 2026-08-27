@@ -19,12 +19,12 @@
   - ```{autodoc2-docstring} abtem.core.units.format_units
     :summary:
     ```
-* - {py:obj}`validate_units <abtem.core.units.validate_units>`
-  - ```{autodoc2-docstring} abtem.core.units.validate_units
-    :summary:
-    ```
 * - {py:obj}`get_conversion_factor <abtem.core.units.get_conversion_factor>`
   - ```{autodoc2-docstring} abtem.core.units.get_conversion_factor
+    :summary:
+    ```
+* - {py:obj}`validate_units <abtem.core.units.validate_units>`
+  - ```{autodoc2-docstring} abtem.core.units.validate_units
     :summary:
     ```
 ````
@@ -43,6 +43,20 @@
 
 ### API
 
+````{py:function} format_units(units: typing.Optional[str], use_tex: typing.Optional[bool] = None) -> str
+:canonical: abtem.core.units.format_units
+
+```{autodoc2-docstring} abtem.core.units.format_units
+```
+````
+
+````{py:function} get_conversion_factor(units: typing.Optional[str] = None, old_units: typing.Optional[str] = None, energy: typing.Optional[float] = None) -> float
+:canonical: abtem.core.units.get_conversion_factor
+
+```{autodoc2-docstring} abtem.core.units.get_conversion_factor
+```
+````
+
 ````{py:data} units_type
 :canonical: abtem.core.units.units_type
 :value: >
@@ -53,23 +67,9 @@
 
 ````
 
-````{py:function} format_units(units: typing.Optional[str], use_tex: typing.Optional[bool] = None) -> str
-:canonical: abtem.core.units.format_units
-
-```{autodoc2-docstring} abtem.core.units.format_units
-```
-````
-
 ````{py:function} validate_units(units: typing.Optional[str] = None, old_units: typing.Optional[str] = None) -> typing.Optional[str]
 :canonical: abtem.core.units.validate_units
 
 ```{autodoc2-docstring} abtem.core.units.validate_units
-```
-````
-
-````{py:function} get_conversion_factor(units: typing.Optional[str] = None, old_units: typing.Optional[str] = None, energy: typing.Optional[float] = None) -> float
-:canonical: abtem.core.units.get_conversion_factor
-
-```{autodoc2-docstring} abtem.core.units.get_conversion_factor
 ```
 ````

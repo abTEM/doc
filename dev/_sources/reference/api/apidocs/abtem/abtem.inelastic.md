@@ -14,6 +14,6 @@
 :maxdepth: 1
 
 abtem.inelastic.core_loss
-abtem.inelastic.plasmons
 abtem.inelastic.phonons
+abtem.inelastic.plasmons
 ```

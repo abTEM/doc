@@ -28,29 +28,19 @@
 
 Bases: {py:obj}`abtem.transform.EnsembleTransform`
 
+````{py:method} apply(array_object: abtem.array.ArrayObject, max_batch: int | str = 'auto') -> abtem.array.ArrayObject
+:canonical: abtem.noise.NoiseTransform.apply
+
+```{autodoc2-docstring} abtem.noise.NoiseTransform.apply
+```
+
+````
+
 ````{py:property} dose
 :canonical: abtem.noise.NoiseTransform.dose
 :type: float | numpy.ndarray | abtem.distributions.BaseDistribution
 
 ```{autodoc2-docstring} abtem.noise.NoiseTransform.dose
-```
-
-````
-
-````{py:property} seeds
-:canonical: abtem.noise.NoiseTransform.seeds
-:type: typing.Optional[abtem.distributions.BaseDistribution | int]
-
-```{autodoc2-docstring} abtem.noise.NoiseTransform.seeds
-```
-
-````
-
-````{py:property} samples
-:canonical: abtem.noise.NoiseTransform.samples
-:type: int
-
-```{autodoc2-docstring} abtem.noise.NoiseTransform.samples
 ```
 
 ````
@@ -67,10 +57,20 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 
 ````
 
-````{py:method} apply(array_object: abtem.array.ArrayObject, max_batch: int | str = 'auto') -> abtem.array.ArrayObject
-:canonical: abtem.noise.NoiseTransform.apply
+````{py:property} samples
+:canonical: abtem.noise.NoiseTransform.samples
+:type: int
 
-```{autodoc2-docstring} abtem.noise.NoiseTransform.apply
+```{autodoc2-docstring} abtem.noise.NoiseTransform.samples
+```
+
+````
+
+````{py:property} seeds
+:canonical: abtem.noise.NoiseTransform.seeds
+:type: typing.Optional[abtem.distributions.BaseDistribution | int]
+
+```{autodoc2-docstring} abtem.noise.NoiseTransform.seeds
 ```
 
 ````
@@ -82,21 +82,18 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 
 Bases: {py:obj}`abtem.transform.EnsembleTransform`
 
-````{py:property} rms_power
-:canonical: abtem.noise.ScanNoiseTransform.rms_power
-:type: float | numpy.ndarray | abtem.distributions.BaseDistribution
-
-```{autodoc2-docstring} abtem.noise.ScanNoiseTransform.rms_power
-```
-
-````
-
 ````{py:property} dwell_time
 :canonical: abtem.noise.ScanNoiseTransform.dwell_time
 :type: float
 
 ```{autodoc2-docstring} abtem.noise.ScanNoiseTransform.dwell_time
 ```
+
+````
+
+````{py:property} ensemble_axes_metadata
+:canonical: abtem.noise.ScanNoiseTransform.ensemble_axes_metadata
+:type: list[abtem.core.axes.AxisMetadata]
 
 ````
 
@@ -118,6 +115,12 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 
 ````
 
+````{py:property} metadata
+:canonical: abtem.noise.ScanNoiseTransform.metadata
+:type: dict
+
+````
+
 ````{py:property} num_components
 :canonical: abtem.noise.ScanNoiseTransform.num_components
 :type: int
@@ -127,11 +130,11 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 
 ````
 
-````{py:property} seeds
-:canonical: abtem.noise.ScanNoiseTransform.seeds
-:type: typing.Optional[abtem.distributions.BaseDistribution]
+````{py:property} rms_power
+:canonical: abtem.noise.ScanNoiseTransform.rms_power
+:type: float | numpy.ndarray | abtem.distributions.BaseDistribution
 
-```{autodoc2-docstring} abtem.noise.ScanNoiseTransform.seeds
+```{autodoc2-docstring} abtem.noise.ScanNoiseTransform.rms_power
 ```
 
 ````
@@ -145,15 +148,12 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 
 ````
 
-````{py:property} ensemble_axes_metadata
-:canonical: abtem.noise.ScanNoiseTransform.ensemble_axes_metadata
-:type: list[abtem.core.axes.AxisMetadata]
+````{py:property} seeds
+:canonical: abtem.noise.ScanNoiseTransform.seeds
+:type: typing.Optional[abtem.distributions.BaseDistribution]
 
-````
-
-````{py:property} metadata
-:canonical: abtem.noise.ScanNoiseTransform.metadata
-:type: dict
+```{autodoc2-docstring} abtem.noise.ScanNoiseTransform.seeds
+```
 
 ````
 

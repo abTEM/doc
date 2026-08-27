@@ -13,8 +13,8 @@
 :titlesonly:
 :maxdepth: 1
 
-abtem.visualize.axes_grid
-abtem.visualize.widgets
-abtem.visualize.visualizations
 abtem.visualize.artists
+abtem.visualize.axes_grid
+abtem.visualize.visualizations
+abtem.visualize.widgets
 ```

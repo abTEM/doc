@@ -13,14 +13,14 @@
 :titlesonly:
 :maxdepth: 3
 
-abtem.magnetism
-abtem.visualize
-abtem.core
 abtem.bloch
+abtem.core
+abtem.inelastic
+abtem.magnetism
 abtem.parametrizations
 abtem.potentials
 abtem.prism
-abtem.inelastic
+abtem.visualize
 ```
 
 ## Submodules
@@ -29,23 +29,23 @@ abtem.inelastic
 :titlesonly:
 :maxdepth: 1
 
-abtem.mcf
-abtem.mtf
-abtem.slicing
-abtem.transfer
-abtem.finite_difference
-abtem.transform
-abtem.tilt
-abtem.atoms
-abtem.multislice
+abtem.antialias
 abtem.array
-abtem.measurements
-abtem.waves
-abtem.reconstruct
+abtem.atoms
 abtem.detectors
 abtem.distributions
+abtem.finite_difference
 abtem.integrals
+abtem.mcf
+abtem.measurements
+abtem.mtf
+abtem.multislice
 abtem.noise
-abtem.antialias
+abtem.reconstruct
 abtem.scan
+abtem.slicing
+abtem.tilt
+abtem.transfer
+abtem.transform
+abtem.waves
 ```

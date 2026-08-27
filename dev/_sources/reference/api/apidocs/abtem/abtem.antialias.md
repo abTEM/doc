@@ -35,13 +35,6 @@
 
 ### API
 
-````{py:function} antialias_aperture(gpts: tuple[int, int], sampling: tuple[float, float], xp=None) -> numpy.ndarray
-:canonical: abtem.antialias.antialias_aperture
-
-```{autodoc2-docstring} abtem.antialias.antialias_aperture
-```
-````
-
 `````{py:class} AntialiasAperture()
 :canonical: abtem.antialias.AntialiasAperture
 
@@ -56,14 +49,6 @@ Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.core.utils.CopyM
 ```{autodoc2-docstring} abtem.antialias.AntialiasAperture.__init__
 ```
 
-````{py:method} get_array(x: abtem.antialias.U)
-:canonical: abtem.antialias.AntialiasAperture.get_array
-
-```{autodoc2-docstring} abtem.antialias.AntialiasAperture.get_array
-```
-
-````
-
 ````{py:method} bandlimit(x: abtem.antialias.U, in_place: bool = False) -> abtem.antialias.U
 :canonical: abtem.antialias.AntialiasAperture.bandlimit
 
@@ -72,4 +57,19 @@ Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.core.utils.CopyM
 
 ````
 
+````{py:method} get_array(x: abtem.antialias.U)
+:canonical: abtem.antialias.AntialiasAperture.get_array
+
+```{autodoc2-docstring} abtem.antialias.AntialiasAperture.get_array
+```
+
+````
+
 `````
+
+````{py:function} antialias_aperture(gpts: tuple[int, int], sampling: tuple[float, float], xp=None) -> numpy.ndarray
+:canonical: abtem.antialias.antialias_aperture
+
+```{autodoc2-docstring} abtem.antialias.antialias_aperture
+```
+````

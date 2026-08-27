@@ -96,30 +96,6 @@
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.__init__
 ```
 
-````{py:method} axis_location_to_indices(axis_location)
-:canonical: abtem.visualize.axes_grid.AxesGrid.axis_location_to_indices
-
-```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.axis_location_to_indices
-```
-
-````
-
-````{py:method} set_sizes(**kwargs)
-:canonical: abtem.visualize.axes_grid.AxesGrid.set_sizes
-
-```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.set_sizes
-```
-
-````
-
-````{py:method} set_cbar_layout(**kwargs)
-:canonical: abtem.visualize.axes_grid.AxesGrid.set_cbar_layout
-
-```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.set_cbar_layout
-```
-
-````
-
 ````{py:method} adjust_figure_to_bbox()
 :canonical: abtem.visualize.axes_grid.AxesGrid.adjust_figure_to_bbox
 
@@ -132,6 +108,14 @@
 :canonical: abtem.visualize.axes_grid.AxesGrid.axes
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.axes
+```
+
+````
+
+````{py:method} axis_location_to_indices(axis_location)
+:canonical: abtem.visualize.axes_grid.AxesGrid.axis_location_to_indices
+
+```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.axis_location_to_indices
 ```
 
 ````
@@ -158,6 +142,22 @@
 :type: int
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.nrows
+```
+
+````
+
+````{py:method} set_cbar_layout(**kwargs)
+:canonical: abtem.visualize.axes_grid.AxesGrid.set_cbar_layout
+
+```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.set_cbar_layout
+```
+
+````
+
+````{py:method} set_sizes(**kwargs)
+:canonical: abtem.visualize.axes_grid.AxesGrid.set_sizes
+
+```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.set_sizes
 ```
 
 ````

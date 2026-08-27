@@ -19,12 +19,12 @@
   - ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix
     :summary:
     ```
-* - {py:obj}`SMatrixArray <abtem.prism.s_matrix.SMatrixArray>`
-  - ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray
-    :summary:
-    ```
 * - {py:obj}`SMatrix <abtem.prism.s_matrix.SMatrix>`
   - ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix
+    :summary:
+    ```
+* - {py:obj}`SMatrixArray <abtem.prism.s_matrix.SMatrixArray>`
+  - ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray
     :summary:
     ```
 ````
@@ -38,6 +38,28 @@ Bases: {py:obj}`abtem.waves.BaseWaves`
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix
 ```
+
+````{py:property} base_axes_metadata
+:canonical: abtem.prism.s_matrix.BaseSMatrix.base_axes_metadata
+:type: list[abtem.core.axes.AxisMetadata]
+
+````
+
+````{py:property} device
+:canonical: abtem.prism.s_matrix.BaseSMatrix.device
+
+```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.device
+```
+
+````
+
+````{py:method} dummy_probes(scan: abtem.scan.BaseScan = None, ctf: abtem.transfer.CTF = None, plane: str = 'entrance', downsample: bool = True, **kwargs) -> abtem.waves.Probe
+:canonical: abtem.prism.s_matrix.BaseSMatrix.dummy_probes
+
+```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.dummy_probes
+```
+
+````
 
 ````{py:attribute} ensemble_axes_metadata
 :canonical: abtem.prism.s_matrix.BaseSMatrix.ensemble_axes_metadata
@@ -61,29 +83,11 @@ Bases: {py:obj}`abtem.waves.BaseWaves`
 
 ````
 
-````{py:property} device
-:canonical: abtem.prism.s_matrix.BaseSMatrix.device
-
-```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.device
-```
-
-````
-
 ````{py:property} interpolation
 :canonical: abtem.prism.s_matrix.BaseSMatrix.interpolation
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.interpolation
-```
-
-````
-
-````{py:property} wave_vectors
-:canonical: abtem.prism.s_matrix.BaseSMatrix.wave_vectors
-:abstractmethod:
-:type: numpy.ndarray
-
-```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.wave_vectors
 ```
 
 ````
@@ -94,6 +98,16 @@ Bases: {py:obj}`abtem.waves.BaseWaves`
 :type: float
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.semiangle_cutoff
+```
+
+````
+
+````{py:property} wave_vectors
+:canonical: abtem.prism.s_matrix.BaseSMatrix.wave_vectors
+:abstractmethod:
+:type: numpy.ndarray
+
+```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.wave_vectors
 ```
 
 ````
@@ -112,176 +126,6 @@ Bases: {py:obj}`abtem.waves.BaseWaves`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.window_gpts
-```
-
-````
-
-````{py:property} base_axes_metadata
-:canonical: abtem.prism.s_matrix.BaseSMatrix.base_axes_metadata
-:type: list[abtem.core.axes.AxisMetadata]
-
-````
-
-````{py:method} dummy_probes(scan: abtem.scan.BaseScan = None, ctf: abtem.transfer.CTF = None, plane: str = 'entrance', downsample: bool = True, **kwargs) -> abtem.waves.Probe
-:canonical: abtem.prism.s_matrix.BaseSMatrix.dummy_probes
-
-```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.dummy_probes
-```
-
-````
-
-`````
-
-`````{py:class} SMatrixArray(array: numpy.ndarray, wave_vectors: numpy.ndarray, semiangle_cutoff: float, energy: float = None, interpolation: int | tuple[int, int] = (1, 1), sampling: float | tuple[float, float] = None, extent: float | tuple[float, float] = None, window_gpts: tuple[int, int] = (0, 0), window_offset: tuple[int, int] = (0, 0), periodic: tuple[bool, bool] = (True, True), device: str = None, ensemble_axes_metadata: list[abtem.core.axes.AxisMetadata] = None, metadata: dict = None)
-:canonical: abtem.prism.s_matrix.SMatrixArray
-
-Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.array.ArrayObject`
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray
-```
-
-```{rubric} Initialization
-```
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.__init__
-```
-
-````{py:method} copy_to_device(device: str) -> abtem.prism.s_matrix.SMatrixArray
-:canonical: abtem.prism.s_matrix.SMatrixArray.copy_to_device
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.copy_to_device
-```
-
-````
-
-````{py:method} from_array_and_metadata(axes_metadata, metadata)
-:canonical: abtem.prism.s_matrix.SMatrixArray.from_array_and_metadata
-:abstractmethod:
-
-````
-
-````{py:property} device
-:canonical: abtem.prism.s_matrix.SMatrixArray.device
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.device
-```
-
-````
-
-````{py:property} storage_device
-:canonical: abtem.prism.s_matrix.SMatrixArray.storage_device
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.storage_device
-```
-
-````
-
-````{py:property} waves
-:canonical: abtem.prism.s_matrix.SMatrixArray.waves
-:type: abtem.waves.Waves
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.waves
-```
-
-````
-
-````{py:property} periodic
-:canonical: abtem.prism.s_matrix.SMatrixArray.periodic
-:type: tuple[bool, bool]
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.periodic
-```
-
-````
-
-````{py:property} metadata
-:canonical: abtem.prism.s_matrix.SMatrixArray.metadata
-:type: dict
-
-````
-
-````{py:property} ensemble_axes_metadata
-:canonical: abtem.prism.s_matrix.SMatrixArray.ensemble_axes_metadata
-:type: list[abtem.core.axes.AxisMetadata]
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.ensemble_axes_metadata
-```
-
-````
-
-````{py:property} ensemble_shape
-:canonical: abtem.prism.s_matrix.SMatrixArray.ensemble_shape
-:type: tuple[int, int]
-
-````
-
-````{py:property} interpolation
-:canonical: abtem.prism.s_matrix.SMatrixArray.interpolation
-:type: tuple[int, int]
-
-````
-
-````{py:method} rechunk(chunks: abtem.core.chunks.Chunks, in_place: bool = True)
-:canonical: abtem.prism.s_matrix.SMatrixArray.rechunk
-
-````
-
-````{py:property} semiangle_cutoff
-:canonical: abtem.prism.s_matrix.SMatrixArray.semiangle_cutoff
-:type: float
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.semiangle_cutoff
-```
-
-````
-
-````{py:property} wave_vectors
-:canonical: abtem.prism.s_matrix.SMatrixArray.wave_vectors
-:type: numpy.ndarray
-
-````
-
-````{py:property} window_gpts
-:canonical: abtem.prism.s_matrix.SMatrixArray.window_gpts
-:type: tuple[int, int]
-
-````
-
-````{py:property} window_extent
-:canonical: abtem.prism.s_matrix.SMatrixArray.window_extent
-:type: tuple[float, float]
-
-````
-
-````{py:property} window_offset
-:canonical: abtem.prism.s_matrix.SMatrixArray.window_offset
-:type: tuple[float, float]
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.window_offset
-```
-
-````
-
-````{py:method} multislice(potential: abtem.potentials.iam.BasePotential = None) -> abtem.prism.s_matrix.SMatrixArray
-:canonical: abtem.prism.s_matrix.SMatrixArray.multislice
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.multislice
-```
-
-````
-
-````{py:method} reduce(scan: abtem.scan.BaseScan = None, ctf: abtem.transfer.CTF = None, detectors: abtem.detectors.BaseDetector | list[abtem.detectors.BaseDetector] = None, max_batch_reduction: int | str = 'auto', reduction_scheme: str = 'auto') -> abtem.measurements.BaseMeasurements | abtem.waves.Waves | list[abtem.measurements.BaseMeasurements | abtem.waves.Waves]
-:canonical: abtem.prism.s_matrix.SMatrixArray.reduce
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.reduce
-```
-
-````
-
-````{py:method} scan(scan: abtem.scan.BaseScan = None, detectors: abtem.detectors.BaseDetector | list[abtem.detectors.BaseDetector] = None, ctf: abtem.transfer.CTF = None, max_batch_reduction: int | str = 'auto', rechunk: tuple[int, int] | str = 'auto')
-:canonical: abtem.prism.s_matrix.SMatrixArray.scan
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.scan
 ```
 
 ````
@@ -311,18 +155,10 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 
 ````
 
-````{py:property} tilt
-:canonical: abtem.prism.s_matrix.SMatrix.tilt
+````{py:method} build(lazy: bool = None, max_batch: int | str = 'auto', bound: bool = None) -> abtem.prism.s_matrix.SMatrixArray
+:canonical: abtem.prism.s_matrix.SMatrix.build
 
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.tilt
-```
-
-````
-
-````{py:method} round_gpts_to_interpolation() -> abtem.prism.s_matrix.SMatrix
-:canonical: abtem.prism.s_matrix.SMatrix.round_gpts_to_interpolation
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.round_gpts_to_interpolation
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.build
 ```
 
 ````
@@ -336,25 +172,19 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 
 ````
 
-````{py:property} store_on_host
-:canonical: abtem.prism.s_matrix.SMatrix.store_on_host
-:type: bool
+````{py:property} downsampled_gpts
+:canonical: abtem.prism.s_matrix.SMatrix.downsampled_gpts
+:type: tuple[int, int]
 
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.store_on_host
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.downsampled_gpts
 ```
 
 ````
 
-````{py:property} metadata
-:canonical: abtem.prism.s_matrix.SMatrix.metadata
+````{py:property} ensemble_axes_metadata
+:canonical: abtem.prism.s_matrix.SMatrix.ensemble_axes_metadata
 
-````
-
-````{py:property} shape
-:canonical: abtem.prism.s_matrix.SMatrix.shape
-:type: tuple[int, ...]
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.shape
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.ensemble_axes_metadata
 ```
 
 ````
@@ -368,17 +198,22 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 
 ````
 
-````{py:property} ensemble_axes_metadata
-:canonical: abtem.prism.s_matrix.SMatrix.ensemble_axes_metadata
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.ensemble_axes_metadata
-```
+````{py:property} interpolation
+:canonical: abtem.prism.s_matrix.SMatrix.interpolation
+:type: tuple[int, int]
 
 ````
 
-````{py:property} wave_vectors
-:canonical: abtem.prism.s_matrix.SMatrix.wave_vectors
-:type: numpy.ndarray
+````{py:property} metadata
+:canonical: abtem.prism.s_matrix.SMatrix.metadata
+
+````
+
+````{py:method} multislice(potential=None, lazy: bool = None, max_batch: int | str = 'auto')
+:canonical: abtem.prism.s_matrix.SMatrix.multislice
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.multislice
+```
 
 ````
 
@@ -387,6 +222,30 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :type: abtem.potentials.iam.BasePotential
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.potential
+```
+
+````
+
+````{py:method} reduce(scan: numpy.ndarray | abtem.scan.BaseScan = None, detectors: abtem.detectors.BaseDetector | list[abtem.detectors.BaseDetector] = None, ctf: abtem.transfer.CTF | dict = None, reduction_scheme: str = 'auto', max_batch_multislice: str | int = 'auto', max_batch_reduction: str | int = 'auto', disable_s_matrix_chunks: bool = 'auto', lazy: bool = None) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves | list[abtem.measurements.BaseMeasurements | abtem.waves.Waves]
+:canonical: abtem.prism.s_matrix.SMatrix.reduce
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.reduce
+```
+
+````
+
+````{py:method} round_gpts_to_interpolation() -> abtem.prism.s_matrix.SMatrix
+:canonical: abtem.prism.s_matrix.SMatrix.round_gpts_to_interpolation
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.round_gpts_to_interpolation
+```
+
+````
+
+````{py:method} scan(scan: numpy.ndarray | abtem.scan.BaseScan = None, detectors: abtem.detectors.BaseDetector | list[abtem.detectors.BaseDetector] = None, ctf: abtem.transfer.CTF | dict = None, max_batch_multislice: str | int = 'auto', max_batch_reduction: str | int = 'auto', reduction_scheme: str = 'auto', disable_s_matrix_chunks: bool = 'auto', lazy: bool = None) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves | list[abtem.measurements.BaseMeasurements | abtem.waves.Waves]
+:canonical: abtem.prism.s_matrix.SMatrix.scan
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.scan
 ```
 
 ````
@@ -400,23 +259,35 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 
 ````
 
-````{py:property} interpolation
-:canonical: abtem.prism.s_matrix.SMatrix.interpolation
-:type: tuple[int, int]
+````{py:property} shape
+:canonical: abtem.prism.s_matrix.SMatrix.shape
+:type: tuple[int, ...]
 
-````
-
-````{py:property} downsampled_gpts
-:canonical: abtem.prism.s_matrix.SMatrix.downsampled_gpts
-:type: tuple[int, int]
-
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.downsampled_gpts
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.shape
 ```
 
 ````
 
-````{py:property} window_gpts
-:canonical: abtem.prism.s_matrix.SMatrix.window_gpts
+````{py:property} store_on_host
+:canonical: abtem.prism.s_matrix.SMatrix.store_on_host
+:type: bool
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.store_on_host
+```
+
+````
+
+````{py:property} tilt
+:canonical: abtem.prism.s_matrix.SMatrix.tilt
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.tilt
+```
+
+````
+
+````{py:property} wave_vectors
+:canonical: abtem.prism.s_matrix.SMatrix.wave_vectors
+:type: numpy.ndarray
 
 ````
 
@@ -425,34 +296,163 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 
 ````
 
-````{py:method} multislice(potential=None, lazy: bool = None, max_batch: int | str = 'auto')
-:canonical: abtem.prism.s_matrix.SMatrix.multislice
+````{py:property} window_gpts
+:canonical: abtem.prism.s_matrix.SMatrix.window_gpts
 
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.multislice
+````
+
+`````
+
+`````{py:class} SMatrixArray(array: numpy.ndarray, wave_vectors: numpy.ndarray, semiangle_cutoff: float, energy: float = None, interpolation: int | tuple[int, int] = (1, 1), sampling: float | tuple[float, float] = None, extent: float | tuple[float, float] = None, window_gpts: tuple[int, int] = (0, 0), window_offset: tuple[int, int] = (0, 0), periodic: tuple[bool, bool] = (True, True), device: str = None, ensemble_axes_metadata: list[abtem.core.axes.AxisMetadata] = None, metadata: dict = None)
+:canonical: abtem.prism.s_matrix.SMatrixArray
+
+Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.array.ArrayObject`
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.__init__
+```
+
+````{py:method} copy_to_device(device: str) -> abtem.prism.s_matrix.SMatrixArray
+:canonical: abtem.prism.s_matrix.SMatrixArray.copy_to_device
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.copy_to_device
 ```
 
 ````
 
-````{py:method} build(lazy: bool = None, max_batch: int | str = 'auto', bound: bool = None) -> abtem.prism.s_matrix.SMatrixArray
-:canonical: abtem.prism.s_matrix.SMatrix.build
+````{py:property} device
+:canonical: abtem.prism.s_matrix.SMatrixArray.device
 
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.build
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.device
 ```
 
 ````
 
-````{py:method} scan(scan: numpy.ndarray | abtem.scan.BaseScan = None, detectors: abtem.detectors.BaseDetector | list[abtem.detectors.BaseDetector] = None, ctf: abtem.transfer.CTF | dict = None, max_batch_multislice: str | int = 'auto', max_batch_reduction: str | int = 'auto', reduction_scheme: str = 'auto', disable_s_matrix_chunks: bool = 'auto', lazy: bool = None) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves | list[abtem.measurements.BaseMeasurements | abtem.waves.Waves]
-:canonical: abtem.prism.s_matrix.SMatrix.scan
+````{py:property} ensemble_axes_metadata
+:canonical: abtem.prism.s_matrix.SMatrixArray.ensemble_axes_metadata
+:type: list[abtem.core.axes.AxisMetadata]
 
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.scan
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.ensemble_axes_metadata
 ```
 
 ````
 
-````{py:method} reduce(scan: numpy.ndarray | abtem.scan.BaseScan = None, detectors: abtem.detectors.BaseDetector | list[abtem.detectors.BaseDetector] = None, ctf: abtem.transfer.CTF | dict = None, reduction_scheme: str = 'auto', max_batch_multislice: str | int = 'auto', max_batch_reduction: str | int = 'auto', disable_s_matrix_chunks: bool = 'auto', lazy: bool = None) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves | list[abtem.measurements.BaseMeasurements | abtem.waves.Waves]
-:canonical: abtem.prism.s_matrix.SMatrix.reduce
+````{py:property} ensemble_shape
+:canonical: abtem.prism.s_matrix.SMatrixArray.ensemble_shape
+:type: tuple[int, int]
 
-```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.reduce
+````
+
+````{py:method} from_array_and_metadata(axes_metadata, metadata)
+:canonical: abtem.prism.s_matrix.SMatrixArray.from_array_and_metadata
+:abstractmethod:
+
+````
+
+````{py:property} interpolation
+:canonical: abtem.prism.s_matrix.SMatrixArray.interpolation
+:type: tuple[int, int]
+
+````
+
+````{py:property} metadata
+:canonical: abtem.prism.s_matrix.SMatrixArray.metadata
+:type: dict
+
+````
+
+````{py:method} multislice(potential: abtem.potentials.iam.BasePotential = None) -> abtem.prism.s_matrix.SMatrixArray
+:canonical: abtem.prism.s_matrix.SMatrixArray.multislice
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.multislice
+```
+
+````
+
+````{py:property} periodic
+:canonical: abtem.prism.s_matrix.SMatrixArray.periodic
+:type: tuple[bool, bool]
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.periodic
+```
+
+````
+
+````{py:method} rechunk(chunks: abtem.core.chunks.Chunks, in_place: bool = True)
+:canonical: abtem.prism.s_matrix.SMatrixArray.rechunk
+
+````
+
+````{py:method} reduce(scan: abtem.scan.BaseScan = None, ctf: abtem.transfer.CTF = None, detectors: abtem.detectors.BaseDetector | list[abtem.detectors.BaseDetector] = None, max_batch_reduction: int | str = 'auto', reduction_scheme: str = 'auto') -> abtem.measurements.BaseMeasurements | abtem.waves.Waves | list[abtem.measurements.BaseMeasurements | abtem.waves.Waves]
+:canonical: abtem.prism.s_matrix.SMatrixArray.reduce
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.reduce
+```
+
+````
+
+````{py:method} scan(scan: abtem.scan.BaseScan = None, detectors: abtem.detectors.BaseDetector | list[abtem.detectors.BaseDetector] = None, ctf: abtem.transfer.CTF = None, max_batch_reduction: int | str = 'auto', rechunk: tuple[int, int] | str = 'auto')
+:canonical: abtem.prism.s_matrix.SMatrixArray.scan
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.scan
+```
+
+````
+
+````{py:property} semiangle_cutoff
+:canonical: abtem.prism.s_matrix.SMatrixArray.semiangle_cutoff
+:type: float
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.semiangle_cutoff
+```
+
+````
+
+````{py:property} storage_device
+:canonical: abtem.prism.s_matrix.SMatrixArray.storage_device
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.storage_device
+```
+
+````
+
+````{py:property} wave_vectors
+:canonical: abtem.prism.s_matrix.SMatrixArray.wave_vectors
+:type: numpy.ndarray
+
+````
+
+````{py:property} waves
+:canonical: abtem.prism.s_matrix.SMatrixArray.waves
+:type: abtem.waves.Waves
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.waves
+```
+
+````
+
+````{py:property} window_extent
+:canonical: abtem.prism.s_matrix.SMatrixArray.window_extent
+:type: tuple[float, float]
+
+````
+
+````{py:property} window_gpts
+:canonical: abtem.prism.s_matrix.SMatrixArray.window_gpts
+:type: tuple[int, int]
+
+````
+
+````{py:property} window_offset
+:canonical: abtem.prism.s_matrix.SMatrixArray.window_offset
+:type: tuple[float, float]
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.window_offset
 ```
 
 ````

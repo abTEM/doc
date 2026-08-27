@@ -31,24 +31,8 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`validate_gpts <abtem.core.grid.validate_gpts>`
-  - ```{autodoc2-docstring} abtem.core.grid.validate_gpts
-    :summary:
-    ```
 * - {py:obj}`adjusted_gpts <abtem.core.grid.adjusted_gpts>`
   - ```{autodoc2-docstring} abtem.core.grid.adjusted_gpts
-    :summary:
-    ```
-* - {py:obj}`spatial_frequencies <abtem.core.grid.spatial_frequencies>`
-  - ```{autodoc2-docstring} abtem.core.grid.spatial_frequencies
-    :summary:
-    ```
-* - {py:obj}`real_space_grid <abtem.core.grid.real_space_grid>`
-  - ```{autodoc2-docstring} abtem.core.grid.real_space_grid
-    :summary:
-    ```
-* - {py:obj}`polar_spatial_frequencies <abtem.core.grid.polar_spatial_frequencies>`
-  - ```{autodoc2-docstring} abtem.core.grid.polar_spatial_frequencies
     :summary:
     ```
 * - {py:obj}`coordinate_grid <abtem.core.grid.coordinate_grid>`
@@ -57,6 +41,22 @@
     ```
 * - {py:obj}`disk_meshgrid <abtem.core.grid.disk_meshgrid>`
   - ```{autodoc2-docstring} abtem.core.grid.disk_meshgrid
+    :summary:
+    ```
+* - {py:obj}`polar_spatial_frequencies <abtem.core.grid.polar_spatial_frequencies>`
+  - ```{autodoc2-docstring} abtem.core.grid.polar_spatial_frequencies
+    :summary:
+    ```
+* - {py:obj}`real_space_grid <abtem.core.grid.real_space_grid>`
+  - ```{autodoc2-docstring} abtem.core.grid.real_space_grid
+    :summary:
+    ```
+* - {py:obj}`spatial_frequencies <abtem.core.grid.spatial_frequencies>`
+  - ```{autodoc2-docstring} abtem.core.grid.spatial_frequencies
+    :summary:
+    ```
+* - {py:obj}`validate_gpts <abtem.core.grid.validate_gpts>`
+  - ```{autodoc2-docstring} abtem.core.grid.validate_gpts
     :summary:
     ```
 ````
@@ -79,56 +79,6 @@
 
 ### API
 
-````{py:function} validate_gpts(gpts: tuple[int, ...]) -> tuple[int, ...]
-:canonical: abtem.core.grid.validate_gpts
-
-```{autodoc2-docstring} abtem.core.grid.validate_gpts
-```
-````
-
-````{py:function} adjusted_gpts(target_sampling: tuple[float, ...], old_sampling: tuple[float, ...], old_gpts: tuple[int, ...]) -> tuple[tuple[float, ...], tuple[int, ...]]
-:canonical: abtem.core.grid.adjusted_gpts
-
-```{autodoc2-docstring} abtem.core.grid.adjusted_gpts
-```
-````
-
-````{py:exception} GridUndefinedError()
-:canonical: abtem.core.grid.GridUndefinedError
-
-Bases: {py:obj}`Exception`
-
-```{autodoc2-docstring} abtem.core.grid.GridUndefinedError
-```
-
-```{rubric} Initialization
-```
-
-```{autodoc2-docstring} abtem.core.grid.GridUndefinedError.__init__
-```
-
-````
-
-````{py:data} T
-:canonical: abtem.core.grid.T
-:value: >
-   'TypeVar(...)'
-
-```{autodoc2-docstring} abtem.core.grid.T
-```
-
-````
-
-````{py:data} U
-:canonical: abtem.core.grid.U
-:value: >
-   'TypeVar(...)'
-
-```{autodoc2-docstring} abtem.core.grid.U
-```
-
-````
-
 `````{py:class} Grid(extent: typing.Optional[float | typing.Sequence[float]] = None, gpts: typing.Optional[int | typing.Sequence[int]] = None, sampling: typing.Optional[float | typing.Sequence[float]] = None, dimensions: int = 2, endpoint: bool | typing.Sequence[bool] = False, lock_extent: bool = False, lock_gpts: bool = False, lock_sampling: bool = False)
 :canonical: abtem.core.grid.Grid
 
@@ -143,11 +93,18 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 ```{autodoc2-docstring} abtem.core.grid.Grid.__init__
 ```
 
-````{py:property} endpoint
-:canonical: abtem.core.grid.Grid.endpoint
-:type: tuple[bool] | tuple[bool, bool] | tuple[bool, ...]
+````{py:method} check_is_defined(raise_error: bool = True)
+:canonical: abtem.core.grid.Grid.check_is_defined
 
-```{autodoc2-docstring} abtem.core.grid.Grid.endpoint
+```{autodoc2-docstring} abtem.core.grid.Grid.check_is_defined
+```
+
+````
+
+````{py:method} check_match(other: abtem.core.grid.Grid | abtem.core.grid.HasGrid2DMixin)
+:canonical: abtem.core.grid.Grid.check_match
+
+```{autodoc2-docstring} abtem.core.grid.Grid.check_match
 ```
 
 ````
@@ -157,6 +114,15 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 :type: int
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.dimensions
+```
+
+````
+
+````{py:property} endpoint
+:canonical: abtem.core.grid.Grid.endpoint
+:type: tuple[bool] | tuple[bool, bool] | tuple[bool, ...]
+
+```{autodoc2-docstring} abtem.core.grid.Grid.endpoint
 ```
 
 ````
@@ -179,11 +145,10 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 
 ````
 
-````{py:property} sampling
-:canonical: abtem.core.grid.Grid.sampling
-:type: tuple[float, ...] | None
+````{py:method} match(other: abtem.core.grid.Grid | abtem.core.grid.HasGrid2DMixin, check_match: bool = False)
+:canonical: abtem.core.grid.Grid.match
 
-```{autodoc2-docstring} abtem.core.grid.Grid.sampling
+```{autodoc2-docstring} abtem.core.grid.Grid.match
 ```
 
 ````
@@ -197,34 +162,19 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 
 ````
 
-````{py:method} check_is_defined(raise_error: bool = True)
-:canonical: abtem.core.grid.Grid.check_is_defined
-
-```{autodoc2-docstring} abtem.core.grid.Grid.check_is_defined
-```
-
-````
-
-````{py:method} match(other: abtem.core.grid.Grid | abtem.core.grid.HasGrid2DMixin, check_match: bool = False)
-:canonical: abtem.core.grid.Grid.match
-
-```{autodoc2-docstring} abtem.core.grid.Grid.match
-```
-
-````
-
-````{py:method} check_match(other: abtem.core.grid.Grid | abtem.core.grid.HasGrid2DMixin)
-:canonical: abtem.core.grid.Grid.check_match
-
-```{autodoc2-docstring} abtem.core.grid.Grid.check_match
-```
-
-````
-
 ````{py:method} round_to_power(powers: typing.Optional[int | list[int]] = None) -> tuple[int, ...]
 :canonical: abtem.core.grid.Grid.round_to_power
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.round_to_power
+```
+
+````
+
+````{py:property} sampling
+:canonical: abtem.core.grid.Grid.sampling
+:type: tuple[float, ...] | None
+
+```{autodoc2-docstring} abtem.core.grid.Grid.sampling
 ```
 
 ````
@@ -239,28 +189,27 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 
 `````
 
+````{py:exception} GridUndefinedError()
+:canonical: abtem.core.grid.GridUndefinedError
+
+Bases: {py:obj}`Exception`
+
+```{autodoc2-docstring} abtem.core.grid.GridUndefinedError
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.core.grid.GridUndefinedError.__init__
+```
+
+````
+
 `````{py:class} HasGrid2DMixin
 :canonical: abtem.core.grid.HasGrid2DMixin
 
 ```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin
 ```
-
-````{py:method} match_grid(other: abtem.core.grid.HasGrid2DMixin, check_match: bool = False)
-:canonical: abtem.core.grid.HasGrid2DMixin.match_grid
-
-```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin.match_grid
-```
-
-````
-
-````{py:property} grid
-:canonical: abtem.core.grid.HasGrid2DMixin.grid
-:type: abtem.core.grid.Grid
-
-```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin.grid
-```
-
-````
 
 ````{py:property} extent
 :canonical: abtem.core.grid.HasGrid2DMixin.extent
@@ -280,11 +229,19 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 
 ````
 
-````{py:property} sampling
-:canonical: abtem.core.grid.HasGrid2DMixin.sampling
-:type: tuple[float, float] | None
+````{py:property} grid
+:canonical: abtem.core.grid.HasGrid2DMixin.grid
+:type: abtem.core.grid.Grid
 
-```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin.sampling
+```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin.grid
+```
+
+````
+
+````{py:method} match_grid(other: abtem.core.grid.HasGrid2DMixin, check_match: bool = False)
+:canonical: abtem.core.grid.HasGrid2DMixin.match_grid
+
+```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin.match_grid
 ```
 
 ````
@@ -298,26 +255,41 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 
 ````
 
+````{py:property} sampling
+:canonical: abtem.core.grid.HasGrid2DMixin.sampling
+:type: tuple[float, float] | None
+
+```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin.sampling
+```
+
+````
+
 `````
 
-````{py:function} spatial_frequencies(gpts: tuple[int, ...], sampling: tuple[float, ...], return_grid: bool = False, xp: types.ModuleType | numpy.ndarray | dask.array.core.Array | str | None = np)
-:canonical: abtem.core.grid.spatial_frequencies
+````{py:data} T
+:canonical: abtem.core.grid.T
+:value: >
+   'TypeVar(...)'
 
-```{autodoc2-docstring} abtem.core.grid.spatial_frequencies
+```{autodoc2-docstring} abtem.core.grid.T
 ```
+
 ````
 
-````{py:function} real_space_grid(gpts, extent, xp=np)
-:canonical: abtem.core.grid.real_space_grid
+````{py:data} U
+:canonical: abtem.core.grid.U
+:value: >
+   'TypeVar(...)'
 
-```{autodoc2-docstring} abtem.core.grid.real_space_grid
+```{autodoc2-docstring} abtem.core.grid.U
 ```
+
 ````
 
-````{py:function} polar_spatial_frequencies(gpts: tuple[int, ...], sampling: tuple[float, ...], xp: types.ModuleType | numpy.ndarray | dask.array.core.Array | str | None = np) -> tuple[numpy.ndarray, numpy.ndarray]
-:canonical: abtem.core.grid.polar_spatial_frequencies
+````{py:function} adjusted_gpts(target_sampling: tuple[float, ...], old_sampling: tuple[float, ...], old_gpts: tuple[int, ...]) -> tuple[tuple[float, ...], tuple[int, ...]]
+:canonical: abtem.core.grid.adjusted_gpts
 
-```{autodoc2-docstring} abtem.core.grid.polar_spatial_frequencies
+```{autodoc2-docstring} abtem.core.grid.adjusted_gpts
 ```
 ````
 
@@ -332,5 +304,33 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 :canonical: abtem.core.grid.disk_meshgrid
 
 ```{autodoc2-docstring} abtem.core.grid.disk_meshgrid
+```
+````
+
+````{py:function} polar_spatial_frequencies(gpts: tuple[int, ...], sampling: tuple[float, ...], xp: types.ModuleType | numpy.ndarray | dask.array.core.Array | str | None = np) -> tuple[numpy.ndarray, numpy.ndarray]
+:canonical: abtem.core.grid.polar_spatial_frequencies
+
+```{autodoc2-docstring} abtem.core.grid.polar_spatial_frequencies
+```
+````
+
+````{py:function} real_space_grid(gpts, extent, xp=np)
+:canonical: abtem.core.grid.real_space_grid
+
+```{autodoc2-docstring} abtem.core.grid.real_space_grid
+```
+````
+
+````{py:function} spatial_frequencies(gpts: tuple[int, ...], sampling: tuple[float, ...], return_grid: bool = False, xp: types.ModuleType | numpy.ndarray | dask.array.core.Array | str | None = np)
+:canonical: abtem.core.grid.spatial_frequencies
+
+```{autodoc2-docstring} abtem.core.grid.spatial_frequencies
+```
+````
+
+````{py:function} validate_gpts(gpts: tuple[int, ...]) -> tuple[int, ...]
+:canonical: abtem.core.grid.validate_gpts
+
+```{autodoc2-docstring} abtem.core.grid.validate_gpts
 ```
 ````

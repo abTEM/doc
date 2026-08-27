@@ -13,8 +13,8 @@
 :titlesonly:
 :maxdepth: 1
 
-abtem.bloch.utils
-abtem.bloch.matrix_exponential
-abtem.bloch.indexing
 abtem.bloch.dynamical
+abtem.bloch.indexing
+abtem.bloch.matrix_exponential
+abtem.bloch.utils
 ```

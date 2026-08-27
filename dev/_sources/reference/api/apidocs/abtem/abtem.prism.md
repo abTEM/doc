@@ -13,6 +13,6 @@
 :titlesonly:
 :maxdepth: 1
 
-abtem.prism.utils
 abtem.prism.s_matrix
+abtem.prism.utils
 ```

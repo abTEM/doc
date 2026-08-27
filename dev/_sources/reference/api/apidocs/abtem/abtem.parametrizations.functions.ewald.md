@@ -15,12 +15,12 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`gaussian_potential <abtem.parametrizations.functions.ewald.gaussian_potential>`
-  - ```{autodoc2-docstring} abtem.parametrizations.functions.ewald.gaussian_potential
-    :summary:
-    ```
 * - {py:obj}`gaussian_charge <abtem.parametrizations.functions.ewald.gaussian_charge>`
   - ```{autodoc2-docstring} abtem.parametrizations.functions.ewald.gaussian_charge
+    :summary:
+    ```
+* - {py:obj}`gaussian_potential <abtem.parametrizations.functions.ewald.gaussian_potential>`
+  - ```{autodoc2-docstring} abtem.parametrizations.functions.ewald.gaussian_potential
     :summary:
     ```
 * - {py:obj}`point_charge_potential <abtem.parametrizations.functions.ewald.point_charge_potential>`
@@ -35,17 +35,17 @@
 
 ### API
 
-````{py:function} gaussian_potential(r, Z, width)
-:canonical: abtem.parametrizations.functions.ewald.gaussian_potential
-
-```{autodoc2-docstring} abtem.parametrizations.functions.ewald.gaussian_potential
-```
-````
-
 ````{py:function} gaussian_charge(r, Z, width)
 :canonical: abtem.parametrizations.functions.ewald.gaussian_charge
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.ewald.gaussian_charge
+```
+````
+
+````{py:function} gaussian_potential(r, Z, width)
+:canonical: abtem.parametrizations.functions.ewald.gaussian_potential
+
+```{autodoc2-docstring} abtem.parametrizations.functions.ewald.gaussian_potential
 ```
 ````
 

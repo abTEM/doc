@@ -13,7 +13,7 @@
 :titlesonly:
 :maxdepth: 1
 
-abtem.potentials.gpaw
 abtem.potentials.charge_density
+abtem.potentials.gpaw
 abtem.potentials.iam
 ```

@@ -35,6 +35,14 @@
 ```{autodoc2-docstring} abtem.core.diagnostics.TqdmWrapper.__init__
 ```
 
+````{py:method} close_if_exists() -> None
+:canonical: abtem.core.diagnostics.TqdmWrapper.close_if_exists
+
+```{autodoc2-docstring} abtem.core.diagnostics.TqdmWrapper.close_if_exists
+```
+
+````
+
 ````{py:property} pbar
 :canonical: abtem.core.diagnostics.TqdmWrapper.pbar
 
@@ -47,14 +55,6 @@
 :canonical: abtem.core.diagnostics.TqdmWrapper.update_if_exists
 
 ```{autodoc2-docstring} abtem.core.diagnostics.TqdmWrapper.update_if_exists
-```
-
-````
-
-````{py:method} close_if_exists() -> None
-:canonical: abtem.core.diagnostics.TqdmWrapper.close_if_exists
-
-```{autodoc2-docstring} abtem.core.diagnostics.TqdmWrapper.close_if_exists
 ```
 
 ````

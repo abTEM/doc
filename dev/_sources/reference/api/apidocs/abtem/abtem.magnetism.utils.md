@@ -53,16 +53,6 @@
 
 ````
 
-````{py:data} vacuum_permeability
-:canonical: abtem.magnetism.utils.vacuum_permeability
-:value: >
-   None
-
-```{autodoc2-docstring} abtem.magnetism.utils.vacuum_permeability
-```
-
-````
-
 ````{py:function} saturation_magnetization(magnetic_moments, volume)
 :canonical: abtem.magnetism.utils.saturation_magnetization
 
@@ -75,4 +65,14 @@
 
 ```{autodoc2-docstring} abtem.magnetism.utils.set_magnetic_moments
 ```
+````
+
+````{py:data} vacuum_permeability
+:canonical: abtem.magnetism.utils.vacuum_permeability
+:value: >
+   None
+
+```{autodoc2-docstring} abtem.magnetism.utils.vacuum_permeability
+```
+
 ````

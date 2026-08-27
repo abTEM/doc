@@ -15,6 +15,10 @@
 :class: autosummary longtable
 :align: left
 
+* - {py:obj}`AtomsEnsemble <abtem.inelastic.phonons.AtomsEnsemble>`
+  - ```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble
+    :summary:
+    ```
 * - {py:obj}`BaseFrozenPhonons <abtem.inelastic.phonons.BaseFrozenPhonons>`
   - ```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons
     :summary:
@@ -25,10 +29,6 @@
     ```
 * - {py:obj}`FrozenPhonons <abtem.inelastic.phonons.FrozenPhonons>`
   - ```{autodoc2-docstring} abtem.inelastic.phonons.FrozenPhonons
-    :summary:
-    ```
-* - {py:obj}`AtomsEnsemble <abtem.inelastic.phonons.AtomsEnsemble>`
-  - ```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble
     :summary:
     ```
 ````
@@ -59,16 +59,83 @@
 
 ### API
 
-````{py:data} Reader
-:canonical: abtem.inelastic.phonons.Reader
-:type: typing.Optional[typing.Callable]
-:value: >
-   None
+`````{py:class} AtomsEnsemble(trajectory: typing.Sequence[ase.Atoms], ensemble_mean: bool = True, ensemble_axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, cell: typing.Optional[ase.cell.Cell] = None)
+:canonical: abtem.inelastic.phonons.AtomsEnsemble
 
-```{autodoc2-docstring} abtem.inelastic.phonons.Reader
+Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
+
+```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble.__init__
+```
+
+````{py:property} atoms
+:canonical: abtem.inelastic.phonons.AtomsEnsemble.atoms
+:type: ase.Atoms
+
+````
+
+````{py:property} ensemble_axes_metadata
+:canonical: abtem.inelastic.phonons.AtomsEnsemble.ensemble_axes_metadata
+:type: list[abtem.core.axes.AxisMetadata]
+
+````
+
+````{py:property} ensemble_shape
+:canonical: abtem.inelastic.phonons.AtomsEnsemble.ensemble_shape
+:type: tuple[int, ...]
+
+````
+
+````{py:method} mean_squared_deviations() -> numpy.ndarray
+:canonical: abtem.inelastic.phonons.AtomsEnsemble.mean_squared_deviations
+
+```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble.mean_squared_deviations
 ```
 
 ````
+
+````{py:property} num_configs
+:canonical: abtem.inelastic.phonons.AtomsEnsemble.num_configs
+:type: int
+
+````
+
+````{py:property} numbers
+:canonical: abtem.inelastic.phonons.AtomsEnsemble.numbers
+
+```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble.numbers
+```
+
+````
+
+````{py:method} randomize(atoms: ase.Atoms) -> ase.Atoms
+:canonical: abtem.inelastic.phonons.AtomsEnsemble.randomize
+
+````
+
+````{py:method} standard_deviations() -> numpy.ndarray
+:canonical: abtem.inelastic.phonons.AtomsEnsemble.standard_deviations
+
+```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble.standard_deviations
+```
+
+````
+
+````{py:property} trajectory
+:canonical: abtem.inelastic.phonons.AtomsEnsemble.trajectory
+:type: numpy.ndarray | dask.array.core.Array
+
+```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble.trajectory
+```
+
+````
+
+`````
 
 `````{py:class} BaseFrozenPhonons(atomic_numbers: numpy.ndarray, cell: ase.cell.Cell, ensemble_mean: bool = True)
 :canonical: abtem.inelastic.phonons.BaseFrozenPhonons
@@ -84,28 +151,11 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 ```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.__init__
 ```
 
-````{py:property} ensemble_mean
-:canonical: abtem.inelastic.phonons.BaseFrozenPhonons.ensemble_mean
-
-```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.ensemble_mean
-```
-
-````
-
 ````{py:property} atomic_numbers
 :canonical: abtem.inelastic.phonons.BaseFrozenPhonons.atomic_numbers
 :type: numpy.ndarray
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.atomic_numbers
-```
-
-````
-
-````{py:property} cell
-:canonical: abtem.inelastic.phonons.BaseFrozenPhonons.cell
-:type: ase.cell.Cell
-
-```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.cell
 ```
 
 ````
@@ -120,11 +170,19 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} randomize(atoms: ase.Atoms) -> ase.Atoms
-:canonical: abtem.inelastic.phonons.BaseFrozenPhonons.randomize
-:abstractmethod:
+````{py:property} cell
+:canonical: abtem.inelastic.phonons.BaseFrozenPhonons.cell
+:type: ase.cell.Cell
 
-```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.randomize
+```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.cell
+```
+
+````
+
+````{py:property} ensemble_mean
+:canonical: abtem.inelastic.phonons.BaseFrozenPhonons.ensemble_mean
+
+```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.ensemble_mean
 ```
 
 ````
@@ -134,6 +192,15 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.num_configs
+```
+
+````
+
+````{py:method} randomize(atoms: ase.Atoms) -> ase.Atoms
+:canonical: abtem.inelastic.phonons.BaseFrozenPhonons.randomize
+:abstractmethod:
+
+```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.randomize
 ```
 
 ````
@@ -154,13 +221,8 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 ```{autodoc2-docstring} abtem.inelastic.phonons.DummyFrozenPhonons.__init__
 ```
 
-````{py:property} num_configs
-:canonical: abtem.inelastic.phonons.DummyFrozenPhonons.num_configs
-
-````
-
-````{py:property} ensemble_shape
-:canonical: abtem.inelastic.phonons.DummyFrozenPhonons.ensemble_shape
+````{py:property} atoms
+:canonical: abtem.inelastic.phonons.DummyFrozenPhonons.atoms
 
 ````
 
@@ -170,8 +232,13 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 
 ````
 
-````{py:method} randomize(atoms: ase.Atoms) -> ase.Atoms
-:canonical: abtem.inelastic.phonons.DummyFrozenPhonons.randomize
+````{py:property} ensemble_shape
+:canonical: abtem.inelastic.phonons.DummyFrozenPhonons.ensemble_shape
+
+````
+
+````{py:property} num_configs
+:canonical: abtem.inelastic.phonons.DummyFrozenPhonons.num_configs
 
 ````
 
@@ -183,19 +250,12 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 
 ````
 
-````{py:property} atoms
-:canonical: abtem.inelastic.phonons.DummyFrozenPhonons.atoms
+````{py:method} randomize(atoms: ase.Atoms) -> ase.Atoms
+:canonical: abtem.inelastic.phonons.DummyFrozenPhonons.randomize
 
 ````
 
 `````
-
-````{py:function} validate_seeds(seeds: int | tuple[int, ...] | None, num_seeds: typing.Optional[int] = None) -> tuple[int, ...]
-:canonical: abtem.inelastic.phonons.validate_seeds
-
-```{autodoc2-docstring} abtem.inelastic.phonons.validate_seeds
-```
-````
 
 `````{py:class} FrozenPhonons(atoms: ase.Atoms, num_configs: int, sigmas: float | dict[str, float] | dict[str, tuple[float, ...]] | typing.Sequence[float], directions: str = 'xyz', ensemble_mean: bool = True, seed: typing.Optional[int | tuple[int, ...]] = None)
 :canonical: abtem.inelastic.phonons.FrozenPhonons
@@ -211,8 +271,18 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 ```{autodoc2-docstring} abtem.inelastic.phonons.FrozenPhonons.__init__
 ```
 
-````{py:property} ensemble_shape
-:canonical: abtem.inelastic.phonons.FrozenPhonons.ensemble_shape
+````{py:property} atoms
+:canonical: abtem.inelastic.phonons.FrozenPhonons.atoms
+:type: ase.Atoms
+
+````
+
+````{py:property} directions
+:canonical: abtem.inelastic.phonons.FrozenPhonons.directions
+:type: str
+
+```{autodoc2-docstring} abtem.inelastic.phonons.FrozenPhonons.directions
+```
 
 ````
 
@@ -222,9 +292,19 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 
 ````
 
+````{py:property} ensemble_shape
+:canonical: abtem.inelastic.phonons.FrozenPhonons.ensemble_shape
+
+````
+
 ````{py:property} num_configs
 :canonical: abtem.inelastic.phonons.FrozenPhonons.num_configs
 :type: int
+
+````
+
+````{py:method} randomize(atoms: ase.Atoms) -> ase.Atoms
+:canonical: abtem.inelastic.phonons.FrozenPhonons.randomize
 
 ````
 
@@ -246,26 +326,6 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 
 ````
 
-````{py:property} atoms
-:canonical: abtem.inelastic.phonons.FrozenPhonons.atoms
-:type: ase.Atoms
-
-````
-
-````{py:property} directions
-:canonical: abtem.inelastic.phonons.FrozenPhonons.directions
-:type: str
-
-```{autodoc2-docstring} abtem.inelastic.phonons.FrozenPhonons.directions
-```
-
-````
-
-````{py:method} randomize(atoms: ase.Atoms) -> ase.Atoms
-:canonical: abtem.inelastic.phonons.FrozenPhonons.randomize
-
-````
-
 ````{py:method} to_atoms_ensemble()
 :canonical: abtem.inelastic.phonons.FrozenPhonons.to_atoms_ensemble
 
@@ -276,80 +336,20 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 
 `````
 
-`````{py:class} AtomsEnsemble(trajectory: typing.Sequence[ase.Atoms], ensemble_mean: bool = True, ensemble_axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, cell: typing.Optional[ase.cell.Cell] = None)
-:canonical: abtem.inelastic.phonons.AtomsEnsemble
+````{py:data} Reader
+:canonical: abtem.inelastic.phonons.Reader
+:type: typing.Optional[typing.Callable]
+:value: >
+   None
 
-Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
-
-```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble
-```
-
-```{rubric} Initialization
-```
-
-```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble.__init__
-```
-
-````{py:property} trajectory
-:canonical: abtem.inelastic.phonons.AtomsEnsemble.trajectory
-:type: numpy.ndarray | dask.array.core.Array
-
-```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble.trajectory
+```{autodoc2-docstring} abtem.inelastic.phonons.Reader
 ```
 
 ````
 
-````{py:property} numbers
-:canonical: abtem.inelastic.phonons.AtomsEnsemble.numbers
+````{py:function} validate_seeds(seeds: int | tuple[int, ...] | None, num_seeds: typing.Optional[int] = None) -> tuple[int, ...]
+:canonical: abtem.inelastic.phonons.validate_seeds
 
-```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble.numbers
+```{autodoc2-docstring} abtem.inelastic.phonons.validate_seeds
 ```
-
 ````
-
-````{py:property} ensemble_axes_metadata
-:canonical: abtem.inelastic.phonons.AtomsEnsemble.ensemble_axes_metadata
-:type: list[abtem.core.axes.AxisMetadata]
-
-````
-
-````{py:property} num_configs
-:canonical: abtem.inelastic.phonons.AtomsEnsemble.num_configs
-:type: int
-
-````
-
-````{py:property} atoms
-:canonical: abtem.inelastic.phonons.AtomsEnsemble.atoms
-:type: ase.Atoms
-
-````
-
-````{py:property} ensemble_shape
-:canonical: abtem.inelastic.phonons.AtomsEnsemble.ensemble_shape
-:type: tuple[int, ...]
-
-````
-
-````{py:method} randomize(atoms: ase.Atoms) -> ase.Atoms
-:canonical: abtem.inelastic.phonons.AtomsEnsemble.randomize
-
-````
-
-````{py:method} mean_squared_deviations() -> numpy.ndarray
-:canonical: abtem.inelastic.phonons.AtomsEnsemble.mean_squared_deviations
-
-```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble.mean_squared_deviations
-```
-
-````
-
-````{py:method} standard_deviations() -> numpy.ndarray
-:canonical: abtem.inelastic.phonons.AtomsEnsemble.standard_deviations
-
-```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble.standard_deviations
-```
-
-````
-
-`````

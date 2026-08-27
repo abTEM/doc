@@ -26,66 +26,10 @@
 
 Bases: {py:obj}`abtem.transfer.ArrayWaveTransform`, {py:obj}`abtem.core.energy.HasAcceleratorMixin`
 
-````{py:property} semiangle_cutoff
-:canonical: abtem.mcf.DiagonalMCF.semiangle_cutoff
+````{py:method} copy()
+:canonical: abtem.mcf.DiagonalMCF.copy
 
-```{autodoc2-docstring} abtem.mcf.DiagonalMCF.semiangle_cutoff
-```
-
-````
-
-````{py:property} focal_spread
-:canonical: abtem.mcf.DiagonalMCF.focal_spread
-
-```{autodoc2-docstring} abtem.mcf.DiagonalMCF.focal_spread
-```
-
-````
-
-````{py:property} source_size
-:canonical: abtem.mcf.DiagonalMCF.source_size
-
-```{autodoc2-docstring} abtem.mcf.DiagonalMCF.source_size
-```
-
-````
-
-````{py:property} rectangular_offset
-:canonical: abtem.mcf.DiagonalMCF.rectangular_offset
-
-```{autodoc2-docstring} abtem.mcf.DiagonalMCF.rectangular_offset
-```
-
-````
-
-````{py:property} eigenvectors
-:canonical: abtem.mcf.DiagonalMCF.eigenvectors
-
-```{autodoc2-docstring} abtem.mcf.DiagonalMCF.eigenvectors
-```
-
-````
-
-````{py:method} evaluate(waves, return_correlation: bool = False)
-:canonical: abtem.mcf.DiagonalMCF.evaluate
-
-```{autodoc2-docstring} abtem.mcf.DiagonalMCF.evaluate
-```
-
-````
-
-````{py:property} ensemble_axes_metadata
-:canonical: abtem.mcf.DiagonalMCF.ensemble_axes_metadata
-
-```{autodoc2-docstring} abtem.mcf.DiagonalMCF.ensemble_axes_metadata
-```
-
-````
-
-````{py:method} ensemble_partial()
-:canonical: abtem.mcf.DiagonalMCF.ensemble_partial
-
-```{autodoc2-docstring} abtem.mcf.DiagonalMCF.ensemble_partial
+```{autodoc2-docstring} abtem.mcf.DiagonalMCF.copy
 ```
 
 ````
@@ -98,10 +42,34 @@ Bases: {py:obj}`abtem.transfer.ArrayWaveTransform`, {py:obj}`abtem.core.energy.H
 
 ````
 
+````{py:property} eigenvectors
+:canonical: abtem.mcf.DiagonalMCF.eigenvectors
+
+```{autodoc2-docstring} abtem.mcf.DiagonalMCF.eigenvectors
+```
+
+````
+
+````{py:property} ensemble_axes_metadata
+:canonical: abtem.mcf.DiagonalMCF.ensemble_axes_metadata
+
+```{autodoc2-docstring} abtem.mcf.DiagonalMCF.ensemble_axes_metadata
+```
+
+````
+
 ````{py:method} ensemble_blocks(chunks)
 :canonical: abtem.mcf.DiagonalMCF.ensemble_blocks
 
 ```{autodoc2-docstring} abtem.mcf.DiagonalMCF.ensemble_blocks
+```
+
+````
+
+````{py:method} ensemble_partial()
+:canonical: abtem.mcf.DiagonalMCF.ensemble_partial
+
+```{autodoc2-docstring} abtem.mcf.DiagonalMCF.ensemble_partial
 ```
 
 ````
@@ -114,10 +82,42 @@ Bases: {py:obj}`abtem.transfer.ArrayWaveTransform`, {py:obj}`abtem.core.energy.H
 
 ````
 
-````{py:method} copy()
-:canonical: abtem.mcf.DiagonalMCF.copy
+````{py:method} evaluate(waves, return_correlation: bool = False)
+:canonical: abtem.mcf.DiagonalMCF.evaluate
 
-```{autodoc2-docstring} abtem.mcf.DiagonalMCF.copy
+```{autodoc2-docstring} abtem.mcf.DiagonalMCF.evaluate
+```
+
+````
+
+````{py:property} focal_spread
+:canonical: abtem.mcf.DiagonalMCF.focal_spread
+
+```{autodoc2-docstring} abtem.mcf.DiagonalMCF.focal_spread
+```
+
+````
+
+````{py:property} rectangular_offset
+:canonical: abtem.mcf.DiagonalMCF.rectangular_offset
+
+```{autodoc2-docstring} abtem.mcf.DiagonalMCF.rectangular_offset
+```
+
+````
+
+````{py:property} semiangle_cutoff
+:canonical: abtem.mcf.DiagonalMCF.semiangle_cutoff
+
+```{autodoc2-docstring} abtem.mcf.DiagonalMCF.semiangle_cutoff
+```
+
+````
+
+````{py:property} source_size
+:canonical: abtem.mcf.DiagonalMCF.source_size
+
+```{autodoc2-docstring} abtem.mcf.DiagonalMCF.source_size
 ```
 
 ````

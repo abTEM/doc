@@ -15,14 +15,14 @@
 :class: autosummary longtable
 :align: left
 
+* - {py:obj}`AxisAlignedBeamTilt <abtem.tilt.AxisAlignedBeamTilt>`
+  - ```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt
+    :summary:
+    ```
 * - {py:obj}`BaseBeamTilt <abtem.tilt.BaseBeamTilt>`
   -
 * - {py:obj}`BeamTilt <abtem.tilt.BeamTilt>`
   - ```{autodoc2-docstring} abtem.tilt.BeamTilt
-    :summary:
-    ```
-* - {py:obj}`AxisAlignedBeamTilt <abtem.tilt.AxisAlignedBeamTilt>`
-  - ```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt
     :summary:
     ```
 * - {py:obj}`BeamTilt2D <abtem.tilt.BeamTilt2D>`
@@ -37,12 +37,12 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`validate_tilt <abtem.tilt.validate_tilt>`
-  - ```{autodoc2-docstring} abtem.tilt.validate_tilt
-    :summary:
-    ```
 * - {py:obj}`precession_tilts <abtem.tilt.precession_tilts>`
   - ```{autodoc2-docstring} abtem.tilt.precession_tilts
+    :summary:
+    ```
+* - {py:obj}`validate_tilt <abtem.tilt.validate_tilt>`
+  - ```{autodoc2-docstring} abtem.tilt.validate_tilt
     :summary:
     ```
 ````
@@ -65,39 +65,56 @@
 
 ### API
 
-````{py:data} TiltType
-:canonical: abtem.tilt.TiltType
-:value: >
-   None
+`````{py:class} AxisAlignedBeamTilt(tilt: abtem.tilt.TiltType = 0.0, direction: str = 'x')
+:canonical: abtem.tilt.AxisAlignedBeamTilt
 
-```{autodoc2-docstring} abtem.tilt.TiltType
+Bases: {py:obj}`abtem.distributions.DistributionFromValues`
+
+```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt.__init__
+```
+
+````{py:property} direction
+:canonical: abtem.tilt.AxisAlignedBeamTilt.direction
+:type: str
+
+```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt.direction
 ```
 
 ````
 
-````{py:data} TiltType2D
-:canonical: abtem.tilt.TiltType2D
-:value: >
-   None
+````{py:property} ensemble_axes_metadata
+:canonical: abtem.tilt.AxisAlignedBeamTilt.ensemble_axes_metadata
+:type: list[abtem.core.axes.AxisMetadata]
 
-```{autodoc2-docstring} abtem.tilt.TiltType2D
+```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt.ensemble_axes_metadata
 ```
 
 ````
 
-````{py:function} validate_tilt(tilt: abtem.tilt.TiltType2D) -> BeamTilt | BeamTilt2D | AxisAlignedBeamTilt
-:canonical: abtem.tilt.validate_tilt
+````{py:property} metadata
+:canonical: abtem.tilt.AxisAlignedBeamTilt.metadata
 
-```{autodoc2-docstring} abtem.tilt.validate_tilt
+```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt.metadata
 ```
+
 ````
 
-````{py:function} precession_tilts(precession_angle: float, num_samples: int, min_azimuth: float = 0.0, max_azimuth: float = 2 * np.pi, endpoint: bool = False)
-:canonical: abtem.tilt.precession_tilts
+````{py:property} tilt
+:canonical: abtem.tilt.AxisAlignedBeamTilt.tilt
+:type: float | abtem.distributions.BaseDistribution
 
-```{autodoc2-docstring} abtem.tilt.precession_tilts
+```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt.tilt
 ```
+
 ````
+
+`````
 
 `````{py:class} BaseBeamTilt(distributions: tuple[str, ...] = ())
 :canonical: abtem.tilt.BaseBeamTilt
@@ -128,11 +145,11 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 ```{autodoc2-docstring} abtem.tilt.BeamTilt.__init__
 ```
 
-````{py:property} tilt
-:canonical: abtem.tilt.BeamTilt.tilt
-:type: tuple[float, float] | abtem.distributions.BaseDistribution
+````{py:property} ensemble_axes_metadata
+:canonical: abtem.tilt.BeamTilt.ensemble_axes_metadata
+:type: list[abtem.core.axes.AxisMetadata]
 
-```{autodoc2-docstring} abtem.tilt.BeamTilt.tilt
+```{autodoc2-docstring} abtem.tilt.BeamTilt.ensemble_axes_metadata
 ```
 
 ````
@@ -145,62 +162,11 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 
 ````
 
-````{py:property} ensemble_axes_metadata
-:canonical: abtem.tilt.BeamTilt.ensemble_axes_metadata
-:type: list[abtem.core.axes.AxisMetadata]
-
-```{autodoc2-docstring} abtem.tilt.BeamTilt.ensemble_axes_metadata
-```
-
-````
-
-`````
-
-`````{py:class} AxisAlignedBeamTilt(tilt: abtem.tilt.TiltType = 0.0, direction: str = 'x')
-:canonical: abtem.tilt.AxisAlignedBeamTilt
-
-Bases: {py:obj}`abtem.distributions.DistributionFromValues`
-
-```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt
-```
-
-```{rubric} Initialization
-```
-
-```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt.__init__
-```
-
-````{py:property} direction
-:canonical: abtem.tilt.AxisAlignedBeamTilt.direction
-:type: str
-
-```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt.direction
-```
-
-````
-
 ````{py:property} tilt
-:canonical: abtem.tilt.AxisAlignedBeamTilt.tilt
-:type: float | abtem.distributions.BaseDistribution
+:canonical: abtem.tilt.BeamTilt.tilt
+:type: tuple[float, float] | abtem.distributions.BaseDistribution
 
-```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt.tilt
-```
-
-````
-
-````{py:property} metadata
-:canonical: abtem.tilt.AxisAlignedBeamTilt.metadata
-
-```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt.metadata
-```
-
-````
-
-````{py:property} ensemble_axes_metadata
-:canonical: abtem.tilt.AxisAlignedBeamTilt.ensemble_axes_metadata
-:type: list[abtem.core.axes.AxisMetadata]
-
-```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt.ensemble_axes_metadata
+```{autodoc2-docstring} abtem.tilt.BeamTilt.tilt
 ```
 
 ````
@@ -221,9 +187,20 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 ```{autodoc2-docstring} abtem.tilt.BeamTilt2D.__init__
 ```
 
+````{py:property} ensemble_axes_metadata
+:canonical: abtem.tilt.BeamTilt2D.ensemble_axes_metadata
+:type: list[abtem.core.axes.AxisMetadata]
+
+````
+
 ````{py:property} ensemble_shape
 :canonical: abtem.tilt.BeamTilt2D.ensemble_shape
 :type: tuple[int, int]
+
+````
+
+````{py:property} metadata
+:canonical: abtem.tilt.BeamTilt2D.metadata
 
 ````
 
@@ -251,15 +228,38 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 
 ````
 
-````{py:property} metadata
-:canonical: abtem.tilt.BeamTilt2D.metadata
-
-````
-
-````{py:property} ensemble_axes_metadata
-:canonical: abtem.tilt.BeamTilt2D.ensemble_axes_metadata
-:type: list[abtem.core.axes.AxisMetadata]
-
-````
-
 `````
+
+````{py:data} TiltType
+:canonical: abtem.tilt.TiltType
+:value: >
+   None
+
+```{autodoc2-docstring} abtem.tilt.TiltType
+```
+
+````
+
+````{py:data} TiltType2D
+:canonical: abtem.tilt.TiltType2D
+:value: >
+   None
+
+```{autodoc2-docstring} abtem.tilt.TiltType2D
+```
+
+````
+
+````{py:function} precession_tilts(precession_angle: float, num_samples: int, min_azimuth: float = 0.0, max_azimuth: float = 2 * np.pi, endpoint: bool = False)
+:canonical: abtem.tilt.precession_tilts
+
+```{autodoc2-docstring} abtem.tilt.precession_tilts
+```
+````
+
+````{py:function} validate_tilt(tilt: abtem.tilt.TiltType2D) -> BeamTilt | BeamTilt2D | AxisAlignedBeamTilt
+:canonical: abtem.tilt.validate_tilt
+
+```{autodoc2-docstring} abtem.tilt.validate_tilt
+```
+````
