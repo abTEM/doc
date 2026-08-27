@@ -77,6 +77,11 @@ Bugfixes:
   ([PR #318](https://github.com/abTEM/abTEM/pull/318))
 - `numpy` 2.5 test failures caused by an ASE deprecation warning
   ([PR #343](https://github.com/abTEM/abTEM/pull/343))
+- `Probe.transition_potential_scan` raised for a scan split into more than one chunk (for example through
+  `max_batch`) unless the scattering sites were passed explicitly
+  ([PR #353](https://github.com/abTEM/abTEM/pull/353))
+- Colorbars did not span multi-row exploded plots, and neighbouring panels could abut closely enough for
+  their tick labels to collide ([PR #354](https://github.com/abTEM/abTEM/pull/354))
 
 Documentation:
 
