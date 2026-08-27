@@ -1,2 +1,2 @@
 rm -r _build
-rm -r reference/api/_autosummary
+rm -r reference/api/apidocs

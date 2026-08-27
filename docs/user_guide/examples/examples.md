@@ -15,6 +15,7 @@
    notebooks/pacbed_quickstart
    notebooks/4d-stem_quickstart
    notebooks/interactions
+   notebooks/animations
 ```
 
 Welcome to the *ab*TEM gallery. These notebooks demonstrate specific examples of many of the concepts learned in the
@@ -23,10 +24,10 @@ Walkthrough, which you should start with. These examples are currently not very 
 * {bdg-success}`basic` Examples that cover the basics image simulation, these examples are generally appropriate for new
   users. Many of these examples may also be used as a template for performing a specific common type of simulation.
 * {bdg-danger}`specialized` Examples that introduce a less common topic in simulation of electron microscopy. Some of
-  these examples assume that the user have experience *ab*TEM.
+  these examples assume that the user has experience with *ab*TEM.
 
-If you’d like to add your book to this list, simply add an entry to this gallery.yml file and open a Pull Request to add
-it. For more detailed instructions see our guide on contributing to *ab*TEM.
+If you’d like to add your own example to this gallery, see our [guide on contributing to *ab*TEM](library:contributing)
+and open a pull request.
 
 ::::{grid} 3
 :gutter: 2
@@ -196,3 +197,20 @@ it. For more detailed instructions see our guide on contributing to *ab*TEM.
 +++
 {bdg-success}`basic`
 :::
+
+:::{grid-item-card}
+:link: examples:animations
+:link-type: ref
+:class-body: text-center
+:class-header: bg-light text-center
+
+**Animations**
+^^^
+```{image} thumbnails/animations.gif
+:align: center
+```
+
++++
+{bdg-success}`basic`
+:::
+::::
