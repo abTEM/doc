@@ -1,0 +1,59 @@
+# Publishes the development documentation (built from main) under /dev/ on
+# gh-pages. The stable docs at the site root are published by deploy-book.yml
+# on each release and are the default readers see.
+
+name: deploy-dev-docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "scripts/**"
+      - ".github/workflows/deploy-dev.yml"
+  workflow_dispatch: {}
+
+# Only the newest dev build per push burst needs to deploy.
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v6
+      with:
+        python-version: 3.x
+
+    - name: Install Graphviz (for API inheritance diagrams)
+      run: |
+        sudo apt-get update && sudo apt-get install -y graphviz
+
+    - name: Install dependencies
+      run: |
+        pip install -r docs/requirements.txt
+
+    - name: Strip orphaned ipywidgets state
+      run: |
+        python scripts/check_notebook_widgets.py --fix
+
+    - name: Build the book (dev)
+      env:
+        ABTEM_DOCS_VERSION: dev
+      run: |
+        jupyter book build docs
+
+    - name: Deploy to /dev/
+      uses: peaceiris/actions-gh-pages@v4.1.0
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/_build/html
+        # destination_dir makes this deploy replace only /dev/, leaving the
+        # stable site at the root untouched. NEVER add force_orphan here:
+        # combined with destination_dir it would replace the whole branch
+        # with only /dev/, wiping the root site.
+        destination_dir: dev
