@@ -57,6 +57,65 @@ representing physical concepts; for example, a plane wave function is represente
 focused STEM probe wave function is represented by a `Probe` object. This makes the code easy to understand, not only for
 specialists but anyone familiar with transmission electron microscopy.
 
+The diagram below sketches how the core objects connect to form the six simulation modes shown below; see the
+[API reference](reference:api) for the full class hierarchy behind each of them.
+
+<figure style="margin: 1.5rem 0;">
+<svg viewBox="0 0 980 430" role="img" aria-labelledby="object-model-title" style="max-width: 820px; width: 100%; height: auto; display: block; margin: 0 auto;">
+<title id="object-model-title">The abTEM object-composition pipeline</title>
+<defs>
+  <marker id="om-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="var(--pst-color-text-base)" />
+  </marker>
+</defs>
+<!-- Potential feeds into both the multislice(...) and scan(...) arrows below -->
+<line x1="280" y1="60" x2="280" y2="254" fill="none" stroke="var(--pst-color-text-base)" stroke-width="1.5" stroke-dasharray="4,3" />
+<circle cx="280" cy="192" r="3.5" fill="var(--pst-color-text-base)" />
+<circle cx="280" cy="254" r="3.5" fill="var(--pst-color-text-base)" />
+<g fill="none" stroke="var(--pst-color-text-base)" stroke-width="1.5">
+  <line x1="150" y1="40" x2="205" y2="40" marker-end="url(#om-arrow)" />
+  <line x1="190" y1="192" x2="325" y2="192" marker-end="url(#om-arrow)" />
+  <line x1="480" y1="192" x2="695" y2="90" marker-end="url(#om-arrow)" />
+  <line x1="480" y1="228" x2="695" y2="200" marker-end="url(#om-arrow)" />
+  <line x1="190" y1="228" x2="695" y2="375" marker-end="url(#om-arrow)" />
+</g>
+<g font-size="12.5" fill="var(--pst-color-text-base)" text-anchor="middle">
+  <text x="260" y="180">multislice(potential)</text>
+  <text x="590" y="135">apply_ctf(CTF).intensity()</text>
+  <text x="590" y="208">diffraction_patterns()</text>
+  <text x="445" y="296">scan(potential, scan, detectors)</text>
+</g>
+<g stroke="var(--pst-color-border)" stroke-width="1.5" fill="var(--pst-color-surface)">
+  <rect x="20" y="20" width="130" height="40" rx="8" />
+  <rect x="210" y="20" width="140" height="40" rx="8" />
+  <rect x="20" y="160" width="170" height="90" rx="8" />
+  <rect x="330" y="160" width="150" height="90" rx="8" />
+</g>
+<g stroke="var(--pst-color-primary)" stroke-width="1.5" fill="var(--pst-color-primary-bg)">
+  <rect x="700" y="60" width="260" height="60" rx="8" />
+  <rect x="700" y="170" width="260" height="60" rx="8" />
+  <rect x="700" y="350" width="260" height="60" rx="8" />
+</g>
+<g fill="var(--pst-color-on-surface)" text-anchor="middle">
+  <text x="85" y="45" font-size="14">Atoms</text>
+  <text x="280" y="45" font-size="14">Potential</text>
+  <text x="105" y="202" font-size="14" font-weight="600">Wave function</text>
+  <text x="105" y="221" font-size="12">PlaneWave, Probe</text>
+  <text x="405" y="210" font-size="14">Exit wave</text>
+  <text x="830" y="87" font-size="14" font-weight="600">Measurement</text>
+  <text x="830" y="106" font-size="12">HRTEM</text>
+  <text x="830" y="197" font-size="14" font-weight="600">Measurement</text>
+  <text x="830" y="216" font-size="12">SAED, CBED, PED</text>
+  <text x="830" y="377" font-size="14" font-weight="600">Measurement</text>
+  <text x="830" y="396" font-size="12">STEM, 4D-STEM</text>
+</g>
+</svg>
+<figcaption style="text-align: center; font-size: 0.9em; color: var(--pst-color-text-muted);">
+A <code>PlaneWave</code> or <code>Probe</code> propagated through a <code>Potential</code> yields an exit wave (single-shot
+modes) or, via <code>Probe.scan</code>, a scanned measurement directly (STEM modes).
+</figcaption>
+</figure>
+
 To simulate a (basic) high-resolution TEM (HRTEM) image, we need a `PlaneWave` at a given energy (by default in units of
 $\mathrm{eV}$), a `Potential` with a given real-space sampling (in units of $\mathrm{Å}$), and a `CTF` (contrast
 transfer function) representing the objective lens with a given aperture (in $\mathrm{mrad}$) and spherical aberration

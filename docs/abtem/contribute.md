@@ -39,9 +39,11 @@ bug report should:
 
 Contributing an example to the gallery can be done in a few steps without any additional installations:
 
-1. Add a notebook to the `user_guide/examples/notebooks` folder and a thumbnail to the `user_guide/examples/thumbnails` folder.
-2. Update the `user_guide/examples/examples.yml` file with your entry.
-3. Regenerate the `user_guide/examples/examples.md` index file using a script (to be added) and open a pull request.
+1. Add a notebook (with executed outputs saved) to the `user_guide/examples/notebooks` folder and a thumbnail image to
+   the `user_guide/examples/thumbnails` folder.
+2. Add a card for your example to the grid in `user_guide/examples/examples.md`, and add the notebook to the hidden
+   `toctree` at the top of that file, following the pattern of the existing entries.
+3. Open a pull request.
 
 ```{tip}
 Add the code for generating the thumbnail as the last cell of the example notebook. You can use the tags `hide-input`
@@ -56,9 +58,11 @@ docstrings in the code library itself, which become the auto-generated [API refe
 
 The documentation is built using [`jupyter-book`](https://jupyterbook.org/en/stable/intro.html). To generate the docs
 from the source, navigate to the `/docs` folder and run `jb build .` at the command line. The built site will be
-available in your `_build\html` folder.
+available in your `_build/html` folder.
 
-The online documentation is automatically updated when the source is updated. 
+The online documentation is published in two versions: the stable version at the site root is rebuilt when a release
+is published, while the [development version](https://abtem.github.io/doc/dev/) is rebuilt from the `main` branch on
+every documentation change.
 
 ## Getting started with the codebase
 
