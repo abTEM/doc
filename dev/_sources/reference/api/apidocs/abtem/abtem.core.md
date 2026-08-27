@@ -1,0 +1,31 @@
+# {py:mod}`abtem.core`
+
+```{py:module} abtem.core
+```
+
+```{autodoc2-docstring} abtem.core
+:allowtitles:
+```
+
+## Submodules
+
+```{toctree}
+:titlesonly:
+:maxdepth: 1
+
+abtem.core.energy
+abtem.core.utils
+abtem.core.diagnostics
+abtem.core.backend
+abtem.core.chunks
+abtem.core.electron_configurations
+abtem.core.units
+abtem.core.complex
+abtem.core.grid
+abtem.core.config
+abtem.core.axes
+abtem.core.ensemble
+abtem.core.fft
+abtem.core.constants
+abtem.core.colors
+```

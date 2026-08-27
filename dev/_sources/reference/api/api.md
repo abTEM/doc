@@ -5,28 +5,12 @@
 The *ab*TEM API generally follows an object-oriented design with objects representing elements of the underlying 
 physical models. Numpy-style docstrings embedded in the code allow the reference to be automatically generated.
 
-```{eval-rst}
-.. autosummary::
-   :toctree: _autosummary
-   :template: custom-module-template.rst
-   :recursive:
-   
-   abtem.antialias
-   abtem.array
-   abtem.atoms
-   abtem.waves
-   abtem.scan
-   abtem.detectors
-   abtem.measurements
-   abtem.transfer
-   abtem.transform
-   abtem.parametrizations
-   abtem.integrals
-   abtem.inelastic.phonons
-   abtem.distributions
-   abtem.potentials
-   abtem.tilt
-   abtem.visualize
-   abtem.multislice
-   abtem.prism
+See the [class diagrams](reference:api:diagrams) for an overview of how the main user-facing classes in each part
+of the API relate to one another.
+
+```{toctree}
+:titlesonly:
+:maxdepth: 3
+
+apidocs/abtem/abtem
 ```
