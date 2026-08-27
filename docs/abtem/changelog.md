@@ -12,6 +12,14 @@ pseudo-Voigtian (L + G) source-size distributions and filters ([PR #270](https:/
 - Radially variable detector sensitivity ([PR #283](https://github.com/abTEM/abTEM/pull/283))
 - Plasmons: fast `PhaseScramblePlasmons` for multislice and PRISM, and `MonteCarloPlasmons` for Bloch wave
 - CBED patterns for Bloch waves ([PR #254](https://github.com/abTEM/abTEM/pull/254))
+- Opt-in multi-GPU execution: setting `dask.multi-gpu` starts a `dask-cuda` cluster with one worker per GPU and distributes the computation across all visible devices, on both the `compute()` and the `to_zarr()` path ([PR #269](https://github.com/abTEM/abTEM/pull/269), [PR #346](https://github.com/abTEM/abTEM/pull/346))
+- New configuration keys `dask.multi-gpu-rmm-pool` and `dask.multi-gpu-devices` for an RMM memory pool per worker and for restricting the cluster to a subset of GPUs ([PR #346](https://github.com/abTEM/abTEM/pull/346))
+- *ab*TEM now warns instead of silently falling back: multi-GPU requested but declined (with the reason), a missing `if __name__ == "__main__"` guard, a grid size that forces cuFFT's Bluestein fallback (naming the next fast size), and a cuFFT plan too large for the cache bound ([PR #346](https://github.com/abTEM/abTEM/pull/346))
+
+Behavior changes:
+- **The client's configuration now reaches `distributed` workers.** *ab*TEM resolves configuration inside each task, and worker processes previously saw only the defaults from the YAML files — so any distributed computation with non-default configuration silently used the defaults. Most consequentially, `precision: float64` was ignored and distributed runs computed in `float32`. Distributed results from earlier versions that relied on non-default configuration should be repeated ([PR #346](https://github.com/abTEM/abTEM/pull/346))
+- `cupy.fft-cache-size` now defaults to `auto`, bounding the cuFFT plan cache to 25 % of each device's memory (it was previously unlimited). Set `-1` to restore unlimited caching, `0 MB` to disable it, or a size such as `512 MB` for a fixed bound ([PR #346](https://github.com/abTEM/abTEM/pull/346))
+- On GPU grids that force cuFFT's Bluestein fallback, automatically sized scan batches are halved to reflect the larger FFT workspace such grids require ([PR #346](https://github.com/abTEM/abTEM/pull/346))
 
 ## 1.0.10
 

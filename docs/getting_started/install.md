@@ -1,3 +1,4 @@
+(getting_started:install)=
 # Installation
 
 There are many ways to install the *ab*TEM package, for example conda or pip:
@@ -80,6 +81,19 @@ To distribute a calculation across **several GPUs** on a node, also install
 [`dask-cuda`](https://docs.rapids.ai/api/dask-cuda/stable/install/) (NVIDIA GPUs,
 Linux only), matched to your CUDA/RAPIDS version. See
 {ref}`Multiple GPUs <walkthrough:parallelization:multigpu>` in the walkthrough.
+
+```{note}
+`dask-cuda` pins `dask` and `distributed` to the versions of its own RAPIDS
+release, which may not be the versions *ab*TEM was installed with. If pip
+insists on downgrading `dask` (or refuses to resolve the environment at all),
+install `dask-cuda` without its dependencies and keep the versions you already
+have:
+
+    pip install --no-deps dask-cuda
+
+Both packages track `dask` closely, so it is worth checking that a simple
+multi-GPU computation runs after installing this way.
+```
 
 ### Metal on Apple silicon (experimental)
 
