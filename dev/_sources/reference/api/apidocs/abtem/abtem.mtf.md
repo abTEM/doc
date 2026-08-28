@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.mtf
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,6 +18,7 @@
 
 * - {py:obj}`MTF <abtem.mtf.MTF>`
   - ```{autodoc2-docstring} abtem.mtf.MTF
+    :parser: rst
     :summary:
     ```
 ````
@@ -29,6 +31,7 @@
 
 * - {py:obj}`default_mtf_func <abtem.mtf.default_mtf_func>`
   - ```{autodoc2-docstring} abtem.mtf.default_mtf_func
+    :parser: rst
     :summary:
     ```
 ````
@@ -39,12 +42,14 @@
 :canonical: abtem.mtf.MTF
 
 ```{autodoc2-docstring} abtem.mtf.MTF
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.mtf.MTF.__init__
+:parser: rst
 ```
 
 ````
@@ -53,5 +58,6 @@
 :canonical: abtem.mtf.default_mtf_func
 
 ```{autodoc2-docstring} abtem.mtf.default_mtf_func
+:parser: rst
 ```
 ````

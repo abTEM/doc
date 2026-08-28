@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.finite_difference
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,6 +18,7 @@
 
 * - {py:obj}`LaplaceOperator <abtem.finite_difference.LaplaceOperator>`
   - ```{autodoc2-docstring} abtem.finite_difference.LaplaceOperator
+    :parser: rst
     :summary:
     ```
 ````
@@ -29,22 +31,27 @@
 
 * - {py:obj}`conventional_operator <abtem.finite_difference.conventional_operator>`
   - ```{autodoc2-docstring} abtem.finite_difference.conventional_operator
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`finite_difference_coefficients <abtem.finite_difference.finite_difference_coefficients>`
   - ```{autodoc2-docstring} abtem.finite_difference.finite_difference_coefficients
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`full_series <abtem.finite_difference.full_series>`
   - ```{autodoc2-docstring} abtem.finite_difference.full_series
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`multislice_step <abtem.finite_difference.multislice_step>`
   - ```{autodoc2-docstring} abtem.finite_difference.multislice_step
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`propagator_taylor_series <abtem.finite_difference.propagator_taylor_series>`
   - ```{autodoc2-docstring} abtem.finite_difference.propagator_taylor_series
+    :parser: rst
     :summary:
     ```
 ````
@@ -57,6 +64,7 @@
 
 * - {py:obj}`fd_coefficients <abtem.finite_difference.fd_coefficients>`
   - ```{autodoc2-docstring} abtem.finite_difference.fd_coefficients
+    :parser: rst
     :summary:
     ```
 ````
@@ -74,18 +82,21 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.finite_difference.LaplaceOperator
 
 ```{autodoc2-docstring} abtem.finite_difference.LaplaceOperator
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.finite_difference.LaplaceOperator.__init__
+:parser: rst
 ```
 
 ````{py:method} apply(waves)
 :canonical: abtem.finite_difference.LaplaceOperator.apply
 
 ```{autodoc2-docstring} abtem.finite_difference.LaplaceOperator.apply
+:parser: rst
 ```
 
 ````
@@ -94,6 +105,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.finite_difference.LaplaceOperator.get_stencil
 
 ```{autodoc2-docstring} abtem.finite_difference.LaplaceOperator.get_stencil
+:parser: rst
 ```
 
 ````
@@ -111,6 +123,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.finite_difference.conventional_operator
 
 ```{autodoc2-docstring} abtem.finite_difference.conventional_operator
+:parser: rst
 ```
 ````
 
@@ -120,6 +133,7 @@ Bases: {py:obj}`Exception`
    None
 
 ```{autodoc2-docstring} abtem.finite_difference.fd_coefficients
+:parser: rst
 ```
 
 ````
@@ -128,6 +142,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.finite_difference.finite_difference_coefficients
 
 ```{autodoc2-docstring} abtem.finite_difference.finite_difference_coefficients
+:parser: rst
 ```
 ````
 
@@ -135,6 +150,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.finite_difference.full_series
 
 ```{autodoc2-docstring} abtem.finite_difference.full_series
+:parser: rst
 ```
 ````
 
@@ -142,6 +158,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.finite_difference.multislice_step
 
 ```{autodoc2-docstring} abtem.finite_difference.multislice_step
+:parser: rst
 ```
 ````
 
@@ -149,5 +166,6 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.finite_difference.propagator_taylor_series
 
 ```{autodoc2-docstring} abtem.finite_difference.propagator_taylor_series
+:parser: rst
 ```
 ````

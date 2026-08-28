@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.core.constants
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,10 +18,12 @@
 
 * - {py:obj}`eps0 <abtem.core.constants.eps0>`
   - ```{autodoc2-docstring} abtem.core.constants.eps0
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`kappa <abtem.core.constants.kappa>`
   - ```{autodoc2-docstring} abtem.core.constants.kappa
+    :parser: rst
     :summary:
     ```
 ````
@@ -33,6 +36,7 @@
    None
 
 ```{autodoc2-docstring} abtem.core.constants.eps0
+:parser: rst
 ```
 
 ````
@@ -43,6 +47,7 @@
    None
 
 ```{autodoc2-docstring} abtem.core.constants.kappa
+:parser: rst
 ```
 
 ````

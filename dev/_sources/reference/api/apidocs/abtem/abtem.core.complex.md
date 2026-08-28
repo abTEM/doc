@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.core.complex
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,10 +18,12 @@
 
 * - {py:obj}`abs2 <abtem.core.complex.abs2>`
   - ```{autodoc2-docstring} abtem.core.complex.abs2
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`complex_exponential <abtem.core.complex.complex_exponential>`
   - ```{autodoc2-docstring} abtem.core.complex.complex_exponential
+    :parser: rst
     :summary:
     ```
 ````
@@ -31,6 +34,7 @@
 :canonical: abtem.core.complex.abs2
 
 ```{autodoc2-docstring} abtem.core.complex.abs2
+:parser: rst
 ```
 ````
 
@@ -38,5 +42,6 @@
 :canonical: abtem.core.complex.complex_exponential
 
 ```{autodoc2-docstring} abtem.core.complex.complex_exponential
+:parser: rst
 ```
 ````

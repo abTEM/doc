@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.potentials.gpaw
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,10 +18,12 @@
 
 * - {py:obj}`GPAWParametrization <abtem.potentials.gpaw.GPAWParametrization>`
   - ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWParametrization
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`GPAWPotential <abtem.potentials.gpaw.GPAWPotential>`
   - ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWPotential
+    :parser: rst
     :summary:
     ```
 ````
@@ -33,10 +36,12 @@
 
 * - {py:obj}`get_core_correction_interpolators <abtem.potentials.gpaw.get_core_correction_interpolators>`
   - ```{autodoc2-docstring} abtem.potentials.gpaw.get_core_correction_interpolators
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`integrate_slice <abtem.potentials.gpaw.integrate_slice>`
   - ```{autodoc2-docstring} abtem.potentials.gpaw.integrate_slice
+    :parser: rst
     :summary:
     ```
 ````
@@ -47,18 +52,21 @@
 :canonical: abtem.potentials.gpaw.GPAWParametrization
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWParametrization
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWParametrization.__init__
+:parser: rst
 ```
 
 ````{py:method} charge(symbol: str, charge: float = 0.0)
 :canonical: abtem.potentials.gpaw.GPAWParametrization.charge
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWParametrization.charge
+:parser: rst
 ```
 
 ````
@@ -67,6 +75,7 @@
 :canonical: abtem.potentials.gpaw.GPAWParametrization.potential
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWParametrization.potential
+:parser: rst
 ```
 
 ````
@@ -75,6 +84,7 @@
 :canonical: abtem.potentials.gpaw.GPAWParametrization.scattering_factor
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWParametrization.scattering_factor
+:parser: rst
 ```
 
 ````
@@ -83,6 +93,7 @@
 :canonical: abtem.potentials.gpaw.GPAWParametrization.x_ray_scattering_factor
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWParametrization.x_ray_scattering_factor
+:parser: rst
 ```
 
 ````
@@ -95,18 +106,21 @@
 Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWPotential
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWPotential.__init__
+:parser: rst
 ```
 
 ````{py:property} calculators
 :canonical: abtem.potentials.gpaw.GPAWPotential.calculators
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWPotential.calculators
+:parser: rst
 ```
 
 ````
@@ -126,6 +140,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.gpaw.GPAWPotential.frozen_phonons
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWPotential.frozen_phonons
+:parser: rst
 ```
 
 ````
@@ -134,6 +149,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.gpaw.GPAWPotential.generate_slices
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWPotential.generate_slices
+:parser: rst
 ```
 
 ````
@@ -142,6 +158,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.gpaw.GPAWPotential.gridrefinement
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWPotential.gridrefinement
+:parser: rst
 ```
 
 ````
@@ -155,6 +172,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.gpaw.GPAWPotential.num_frozen_phonons
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWPotential.num_frozen_phonons
+:parser: rst
 ```
 
 ````
@@ -163,6 +181,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.gpaw.GPAWPotential.repetitions
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWPotential.repetitions
+:parser: rst
 ```
 
 ````
@@ -173,6 +192,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.gpaw.get_core_correction_interpolators
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.get_core_correction_interpolators
+:parser: rst
 ```
 ````
 
@@ -180,5 +200,6 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.gpaw.integrate_slice
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.integrate_slice
+:parser: rst
 ```
 ````

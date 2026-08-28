@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.core.energy
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,10 +18,12 @@
 
 * - {py:obj}`Accelerator <abtem.core.energy.Accelerator>`
   - ```{autodoc2-docstring} abtem.core.energy.Accelerator
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`HasAcceleratorMixin <abtem.core.energy.HasAcceleratorMixin>`
   - ```{autodoc2-docstring} abtem.core.energy.HasAcceleratorMixin
+    :parser: rst
     :summary:
     ```
 ````
@@ -33,22 +36,27 @@
 
 * - {py:obj}`energy2mass <abtem.core.energy.energy2mass>`
   - ```{autodoc2-docstring} abtem.core.energy.energy2mass
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`energy2sigma <abtem.core.energy.energy2sigma>`
   - ```{autodoc2-docstring} abtem.core.energy.energy2sigma
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`energy2wavelength <abtem.core.energy.energy2wavelength>`
   - ```{autodoc2-docstring} abtem.core.energy.energy2wavelength
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`reciprocal_space_sampling_to_angular_sampling <abtem.core.energy.reciprocal_space_sampling_to_angular_sampling>`
   - ```{autodoc2-docstring} abtem.core.energy.reciprocal_space_sampling_to_angular_sampling
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`relativistic_mass_correction <abtem.core.energy.relativistic_mass_correction>`
   - ```{autodoc2-docstring} abtem.core.energy.relativistic_mass_correction
+    :parser: rst
     :summary:
     ```
 ````
@@ -61,6 +69,7 @@
 
 * - {py:obj}`T <abtem.core.energy.T>`
   - ```{autodoc2-docstring} abtem.core.energy.T
+    :parser: rst
     :summary:
     ```
 ````
@@ -73,18 +82,21 @@
 Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyMixin`
 
 ```{autodoc2-docstring} abtem.core.energy.Accelerator
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.core.energy.Accelerator.__init__
+:parser: rst
 ```
 
 ````{py:method} check_is_defined()
 :canonical: abtem.core.energy.Accelerator.check_is_defined
 
 ```{autodoc2-docstring} abtem.core.energy.Accelerator.check_is_defined
+:parser: rst
 ```
 
 ````
@@ -93,6 +105,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :canonical: abtem.core.energy.Accelerator.check_match
 
 ```{autodoc2-docstring} abtem.core.energy.Accelerator.check_match
+:parser: rst
 ```
 
 ````
@@ -102,6 +115,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :type: float | None
 
 ```{autodoc2-docstring} abtem.core.energy.Accelerator.energy
+:parser: rst
 ```
 
 ````
@@ -110,6 +124,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :canonical: abtem.core.energy.Accelerator.match
 
 ```{autodoc2-docstring} abtem.core.energy.Accelerator.match
+:parser: rst
 ```
 
 ````
@@ -119,6 +134,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :type: float
 
 ```{autodoc2-docstring} abtem.core.energy.Accelerator.sigma
+:parser: rst
 ```
 
 ````
@@ -128,6 +144,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :type: float
 
 ```{autodoc2-docstring} abtem.core.energy.Accelerator.wavelength
+:parser: rst
 ```
 
 ````
@@ -140,12 +157,14 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 Bases: {py:obj}`Exception`
 
 ```{autodoc2-docstring} abtem.core.energy.EnergyUndefinedError
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.core.energy.EnergyUndefinedError.__init__
+:parser: rst
 ```
 
 ````
@@ -154,6 +173,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.energy.HasAcceleratorMixin
 
 ```{autodoc2-docstring} abtem.core.energy.HasAcceleratorMixin
+:parser: rst
 ```
 
 ````{py:property} accelerator
@@ -161,6 +181,7 @@ Bases: {py:obj}`Exception`
 :type: abtem.core.energy.Accelerator
 
 ```{autodoc2-docstring} abtem.core.energy.HasAcceleratorMixin.accelerator
+:parser: rst
 ```
 
 ````
@@ -170,6 +191,7 @@ Bases: {py:obj}`Exception`
 :type: float | None
 
 ```{autodoc2-docstring} abtem.core.energy.HasAcceleratorMixin.energy
+:parser: rst
 ```
 
 ````
@@ -179,6 +201,7 @@ Bases: {py:obj}`Exception`
 :type: float
 
 ```{autodoc2-docstring} abtem.core.energy.HasAcceleratorMixin.wavelength
+:parser: rst
 ```
 
 ````
@@ -191,6 +214,7 @@ Bases: {py:obj}`Exception`
    'TypeVar(...)'
 
 ```{autodoc2-docstring} abtem.core.energy.T
+:parser: rst
 ```
 
 ````
@@ -199,6 +223,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.energy.energy2mass
 
 ```{autodoc2-docstring} abtem.core.energy.energy2mass
+:parser: rst
 ```
 ````
 
@@ -206,6 +231,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.energy.energy2sigma
 
 ```{autodoc2-docstring} abtem.core.energy.energy2sigma
+:parser: rst
 ```
 ````
 
@@ -213,6 +239,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.energy.energy2wavelength
 
 ```{autodoc2-docstring} abtem.core.energy.energy2wavelength
+:parser: rst
 ```
 ````
 
@@ -220,6 +247,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.energy.reciprocal_space_sampling_to_angular_sampling
 
 ```{autodoc2-docstring} abtem.core.energy.reciprocal_space_sampling_to_angular_sampling
+:parser: rst
 ```
 ````
 
@@ -227,5 +255,6 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.energy.relativistic_mass_correction
 
 ```{autodoc2-docstring} abtem.core.energy.relativistic_mass_correction
+:parser: rst
 ```
 ````

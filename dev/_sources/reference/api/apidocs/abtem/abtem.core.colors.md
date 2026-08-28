@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.core.colors
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,18 +18,22 @@
 
 * - {py:obj}`hsl <abtem.core.colors.hsl>`
   - ```{autodoc2-docstring} abtem.core.colors.hsl
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`hsl_cmap <abtem.core.colors.hsl_cmap>`
   - ```{autodoc2-docstring} abtem.core.colors.hsl_cmap
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`hsluv <abtem.core.colors.hsluv>`
   - ```{autodoc2-docstring} abtem.core.colors.hsluv
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`hsluv_cmap <abtem.core.colors.hsluv_cmap>`
   - ```{autodoc2-docstring} abtem.core.colors.hsluv_cmap
+    :parser: rst
     :summary:
     ```
 ````
@@ -41,6 +46,7 @@
    [(0.86, 0.3712, 0.33999999999999997), (0.86, 0.3833875, 0.33999999999999997), (0.86, 0.395575, 0.339...
 
 ```{autodoc2-docstring} abtem.core.colors.hsl
+:parser: rst
 ```
 
 ````
@@ -51,6 +57,7 @@
    'ListedColormap(...)'
 
 ```{autodoc2-docstring} abtem.core.colors.hsl_cmap
+:parser: rst
 ```
 
 ````
@@ -61,6 +68,7 @@
    [(0.9677975592919913, 0.44127456009157356, 0.5358103155058701), (0.9679905686247109, 0.4427086936525...
 
 ```{autodoc2-docstring} abtem.core.colors.hsluv
+:parser: rst
 ```
 
 ````
@@ -71,6 +79,7 @@
    'ListedColormap(...)'
 
 ```{autodoc2-docstring} abtem.core.colors.hsluv_cmap
+:parser: rst
 ```
 
 ````

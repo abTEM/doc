@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.bloch.indexing
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,34 +18,42 @@
 
 * - {py:obj}`antialiased_disk <abtem.bloch.indexing.antialiased_disk>`
   - ```{autodoc2-docstring} abtem.bloch.indexing.antialiased_disk
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`create_ellipse <abtem.bloch.indexing.create_ellipse>`
   - ```{autodoc2-docstring} abtem.bloch.indexing.create_ellipse
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`estimate_necessary_excitation_error <abtem.bloch.indexing.estimate_necessary_excitation_error>`
   - ```{autodoc2-docstring} abtem.bloch.indexing.estimate_necessary_excitation_error
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`index_diffraction_spots <abtem.bloch.indexing.index_diffraction_spots>`
   - ```{autodoc2-docstring} abtem.bloch.indexing.index_diffraction_spots
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`integrate_ellipse_around_pixels <abtem.bloch.indexing.integrate_ellipse_around_pixels>`
   - ```{autodoc2-docstring} abtem.bloch.indexing.integrate_ellipse_around_pixels
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`miller_to_miller_bravais <abtem.bloch.indexing.miller_to_miller_bravais>`
   - ```{autodoc2-docstring} abtem.bloch.indexing.miller_to_miller_bravais
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`overlapping_spots_mask <abtem.bloch.indexing.overlapping_spots_mask>`
   - ```{autodoc2-docstring} abtem.bloch.indexing.overlapping_spots_mask
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_cell <abtem.bloch.indexing.validate_cell>`
   - ```{autodoc2-docstring} abtem.bloch.indexing.validate_cell
+    :parser: rst
     :summary:
     ```
 ````
@@ -55,6 +64,7 @@
 :canonical: abtem.bloch.indexing.antialiased_disk
 
 ```{autodoc2-docstring} abtem.bloch.indexing.antialiased_disk
+:parser: rst
 ```
 ````
 
@@ -62,6 +72,7 @@
 :canonical: abtem.bloch.indexing.create_ellipse
 
 ```{autodoc2-docstring} abtem.bloch.indexing.create_ellipse
+:parser: rst
 ```
 ````
 
@@ -69,6 +80,7 @@
 :canonical: abtem.bloch.indexing.estimate_necessary_excitation_error
 
 ```{autodoc2-docstring} abtem.bloch.indexing.estimate_necessary_excitation_error
+:parser: rst
 ```
 ````
 
@@ -76,6 +88,7 @@
 :canonical: abtem.bloch.indexing.index_diffraction_spots
 
 ```{autodoc2-docstring} abtem.bloch.indexing.index_diffraction_spots
+:parser: rst
 ```
 ````
 
@@ -83,6 +96,7 @@
 :canonical: abtem.bloch.indexing.integrate_ellipse_around_pixels
 
 ```{autodoc2-docstring} abtem.bloch.indexing.integrate_ellipse_around_pixels
+:parser: rst
 ```
 ````
 
@@ -90,6 +104,7 @@
 :canonical: abtem.bloch.indexing.miller_to_miller_bravais
 
 ```{autodoc2-docstring} abtem.bloch.indexing.miller_to_miller_bravais
+:parser: rst
 ```
 ````
 
@@ -97,6 +112,7 @@
 :canonical: abtem.bloch.indexing.overlapping_spots_mask
 
 ```{autodoc2-docstring} abtem.bloch.indexing.overlapping_spots_mask
+:parser: rst
 ```
 ````
 
@@ -104,5 +120,6 @@
 :canonical: abtem.bloch.indexing.validate_cell
 
 ```{autodoc2-docstring} abtem.bloch.indexing.validate_cell
+:parser: rst
 ```
 ````

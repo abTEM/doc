@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.bloch
+:parser: rst
 :allowtitles:
 ```
 

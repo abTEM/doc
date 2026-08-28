@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.visualize.widgets
+:parser: rst
 :allowtitles:
 ```
 
@@ -33,10 +34,12 @@
 
 * - {py:obj}`make_toggle_hkl_button <abtem.visualize.widgets.make_toggle_hkl_button>`
   - ```{autodoc2-docstring} abtem.visualize.widgets.make_toggle_hkl_button
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`slider_from_axes_metadata <abtem.visualize.widgets.slider_from_axes_metadata>`
   - ```{autodoc2-docstring} abtem.visualize.widgets.slider_from_axes_metadata
+    :parser: rst
     :summary:
     ```
 ````
@@ -49,6 +52,7 @@
 
 * - {py:obj}`ipywidgets_not_installed <abtem.visualize.widgets.ipywidgets_not_installed>`
   - ```{autodoc2-docstring} abtem.visualize.widgets.ipywidgets_not_installed
+    :parser: rst
     :summary:
     ```
 ````
@@ -64,6 +68,7 @@ Bases: {py:obj}`ipywidgets.HBox`
 :canonical: abtem.visualize.widgets.BaseGUI.attach_visualization
 
 ```{autodoc2-docstring} abtem.visualize.widgets.BaseGUI.attach_visualization
+:parser: rst
 ```
 
 ````
@@ -72,6 +77,7 @@ Bases: {py:obj}`ipywidgets.HBox`
 :canonical: abtem.visualize.widgets.BaseGUI.autoscale_button
 
 ```{autodoc2-docstring} abtem.visualize.widgets.BaseGUI.autoscale_button
+:parser: rst
 ```
 
 ````
@@ -80,6 +86,7 @@ Bases: {py:obj}`ipywidgets.HBox`
 :canonical: abtem.visualize.widgets.BaseGUI.common_scale_button
 
 ```{autodoc2-docstring} abtem.visualize.widgets.BaseGUI.common_scale_button
+:parser: rst
 ```
 
 ````
@@ -88,6 +95,7 @@ Bases: {py:obj}`ipywidgets.HBox`
 :canonical: abtem.visualize.widgets.BaseGUI.powerscale_slider
 
 ```{autodoc2-docstring} abtem.visualize.widgets.BaseGUI.powerscale_slider
+:parser: rst
 ```
 
 ````
@@ -96,6 +104,7 @@ Bases: {py:obj}`ipywidgets.HBox`
 :canonical: abtem.visualize.widgets.BaseGUI.scale_button
 
 ```{autodoc2-docstring} abtem.visualize.widgets.BaseGUI.scale_button
+:parser: rst
 ```
 
 ````
@@ -104,6 +113,7 @@ Bases: {py:obj}`ipywidgets.HBox`
 :canonical: abtem.visualize.widgets.BaseGUI.sliders
 
 ```{autodoc2-docstring} abtem.visualize.widgets.BaseGUI.sliders
+:parser: rst
 ```
 
 ````
@@ -119,6 +129,7 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 :canonical: abtem.visualize.widgets.ImageGUI.attach_visualization
 
 ```{autodoc2-docstring} abtem.visualize.widgets.ImageGUI.attach_visualization
+:parser: rst
 ```
 
 ````
@@ -127,6 +138,7 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 :canonical: abtem.visualize.widgets.ImageGUI.cmap_dropdown
 
 ```{autodoc2-docstring} abtem.visualize.widgets.ImageGUI.cmap_dropdown
+:parser: rst
 ```
 
 ````
@@ -135,6 +147,7 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 :canonical: abtem.visualize.widgets.ImageGUI.complex_dropdown
 
 ```{autodoc2-docstring} abtem.visualize.widgets.ImageGUI.complex_dropdown
+:parser: rst
 ```
 
 ````
@@ -150,6 +163,7 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 :canonical: abtem.visualize.widgets.LinesGUI.attach_visualization
 
 ```{autodoc2-docstring} abtem.visualize.widgets.LinesGUI.attach_visualization
+:parser: rst
 ```
 
 ````
@@ -158,6 +172,7 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 :canonical: abtem.visualize.widgets.LinesGUI.complex_dropdown
 
 ```{autodoc2-docstring} abtem.visualize.widgets.LinesGUI.complex_dropdown
+:parser: rst
 ```
 
 ````
@@ -173,6 +188,7 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 :canonical: abtem.visualize.widgets.ScatterGUI.annotations_slider
 
 ```{autodoc2-docstring} abtem.visualize.widgets.ScatterGUI.annotations_slider
+:parser: rst
 ```
 
 ````
@@ -181,6 +197,7 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 :canonical: abtem.visualize.widgets.ScatterGUI.attach_visualization
 
 ```{autodoc2-docstring} abtem.visualize.widgets.ScatterGUI.attach_visualization
+:parser: rst
 ```
 
 ````
@@ -189,6 +206,7 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 :canonical: abtem.visualize.widgets.ScatterGUI.cmap_dropdown
 
 ```{autodoc2-docstring} abtem.visualize.widgets.ScatterGUI.cmap_dropdown
+:parser: rst
 ```
 
 ````
@@ -197,6 +215,7 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 :canonical: abtem.visualize.widgets.ScatterGUI.scale_slider
 
 ```{autodoc2-docstring} abtem.visualize.widgets.ScatterGUI.scale_slider
+:parser: rst
 ```
 
 ````
@@ -209,6 +228,7 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
    'RuntimeError(...)'
 
 ```{autodoc2-docstring} abtem.visualize.widgets.ipywidgets_not_installed
+:parser: rst
 ```
 
 ````
@@ -217,6 +237,7 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 :canonical: abtem.visualize.widgets.make_toggle_hkl_button
 
 ```{autodoc2-docstring} abtem.visualize.widgets.make_toggle_hkl_button
+:parser: rst
 ```
 ````
 
@@ -224,5 +245,6 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 :canonical: abtem.visualize.widgets.slider_from_axes_metadata
 
 ```{autodoc2-docstring} abtem.visualize.widgets.slider_from_axes_metadata
+:parser: rst
 ```
 ````

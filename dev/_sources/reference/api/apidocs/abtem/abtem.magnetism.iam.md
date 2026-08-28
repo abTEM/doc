@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.magnetism.iam
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,32 +18,39 @@
 
 * - {py:obj}`BaseMagneticField <abtem.magnetism.iam.BaseMagneticField>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.BaseMagneticField
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`BaseVectorPotential <abtem.magnetism.iam.BaseVectorPotential>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.BaseVectorPotential
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`MagneticField <abtem.magnetism.iam.MagneticField>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.MagneticField
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`MagneticFieldArray <abtem.magnetism.iam.MagneticFieldArray>`
   -
 * - {py:obj}`QuasiDipoleMagneticFieldProjections <abtem.magnetism.iam.QuasiDipoleMagneticFieldProjections>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleMagneticFieldProjections
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`QuasiDipoleProjections <abtem.magnetism.iam.QuasiDipoleProjections>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`QuasiDipoleVectorPotentialProjections <abtem.magnetism.iam.QuasiDipoleVectorPotentialProjections>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleVectorPotentialProjections
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`VectorPotential <abtem.magnetism.iam.VectorPotential>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.VectorPotential
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`VectorPotentialArray <abtem.magnetism.iam.VectorPotentialArray>`
@@ -57,70 +65,87 @@
 
 * - {py:obj}`atomic_magnetic_field_3d <abtem.magnetism.iam.atomic_magnetic_field_3d>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.atomic_magnetic_field_3d
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`atomic_vector_potential_3d <abtem.magnetism.iam.atomic_vector_potential_3d>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.atomic_vector_potential_3d
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`bilinear_weighted_sum <abtem.magnetism.iam.bilinear_weighted_sum>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.bilinear_weighted_sum
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`cartesian2polar_3d <abtem.magnetism.iam.cartesian2polar_3d>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.cartesian2polar_3d
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`index_mask <abtem.magnetism.iam.index_mask>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.index_mask
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`interpolate <abtem.magnetism.iam.interpolate>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.interpolate
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`interpolate_quasi_dipole_field_projections <abtem.magnetism.iam.interpolate_quasi_dipole_field_projections>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.interpolate_quasi_dipole_field_projections
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`interpolate_quasi_dipole_vector_field_projections <abtem.magnetism.iam.interpolate_quasi_dipole_vector_field_projections>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.interpolate_quasi_dipole_vector_field_projections
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`magnetic_field_3d <abtem.magnetism.iam.magnetic_field_3d>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.magnetic_field_3d
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`radial_cutoff <abtem.magnetism.iam.radial_cutoff>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.radial_cutoff
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`radial_prefactor_a <abtem.magnetism.iam.radial_prefactor_a>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.radial_prefactor_a
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`radial_prefactor_b1 <abtem.magnetism.iam.radial_prefactor_b1>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.radial_prefactor_b1
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`radial_prefactor_b2 <abtem.magnetism.iam.radial_prefactor_b2>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.radial_prefactor_b2
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`rotate_points_2d <abtem.magnetism.iam.rotate_points_2d>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.rotate_points_2d
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`symmetric_arange <abtem.magnetism.iam.symmetric_arange>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.symmetric_arange
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`unit_vector_from_angles <abtem.magnetism.iam.unit_vector_from_angles>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.unit_vector_from_angles
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`vector_potential_3d <abtem.magnetism.iam.vector_potential_3d>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.vector_potential_3d
+    :parser: rst
     :summary:
     ```
 ````
@@ -133,6 +158,7 @@
 
 * - {py:obj}`CUTOFF <abtem.magnetism.iam.CUTOFF>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.CUTOFF
+    :parser: rst
     :summary:
     ```
 ````
@@ -145,12 +171,14 @@
 Bases: {py:obj}`abtem.potentials.iam.BaseField`
 
 ```{autodoc2-docstring} abtem.magnetism.iam.BaseMagneticField
+:parser: rst
 ```
 
 ````{py:property} base_axes_metadata
 :canonical: abtem.magnetism.iam.BaseMagneticField.base_axes_metadata
 
 ```{autodoc2-docstring} abtem.magnetism.iam.BaseMagneticField.base_axes_metadata
+:parser: rst
 ```
 
 ````
@@ -159,6 +187,7 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`
 :canonical: abtem.magnetism.iam.BaseMagneticField.base_shape
 
 ```{autodoc2-docstring} abtem.magnetism.iam.BaseMagneticField.base_shape
+:parser: rst
 ```
 
 ````
@@ -171,12 +200,14 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`
 Bases: {py:obj}`abtem.potentials.iam.BaseField`
 
 ```{autodoc2-docstring} abtem.magnetism.iam.BaseVectorPotential
+:parser: rst
 ```
 
 ````{py:property} base_axes_metadata
 :canonical: abtem.magnetism.iam.BaseVectorPotential.base_axes_metadata
 
 ```{autodoc2-docstring} abtem.magnetism.iam.BaseVectorPotential.base_axes_metadata
+:parser: rst
 ```
 
 ````
@@ -185,6 +216,7 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`
 :canonical: abtem.magnetism.iam.BaseVectorPotential.base_shape
 
 ```{autodoc2-docstring} abtem.magnetism.iam.BaseVectorPotential.base_shape
+:parser: rst
 ```
 
 ````
@@ -197,6 +229,7 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`
    4.25
 
 ```{autodoc2-docstring} abtem.magnetism.iam.CUTOFF
+:parser: rst
 ```
 
 ````
@@ -207,12 +240,14 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`
 Bases: {py:obj}`abtem.potentials.iam._FieldBuilderFromAtoms`, {py:obj}`abtem.magnetism.iam.BaseMagneticField`
 
 ```{autodoc2-docstring} abtem.magnetism.iam.MagneticField
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.magnetism.iam.MagneticField.__init__
+:parser: rst
 ```
 
 ````
@@ -237,12 +272,14 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseMagneticField`, {py:obj}`abtem.potential
 Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleMagneticFieldProjections
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleMagneticFieldProjections.__init__
+:parser: rst
 ```
 
 ````
@@ -251,18 +288,21 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.__init__
+:parser: rst
 ```
 
 ````{py:method} cutoff(symbol)
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections.cutoff
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.cutoff
+:parser: rst
 ```
 
 ````
@@ -271,6 +311,7 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections.finite
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.finite
+:parser: rst
 ```
 
 ````
@@ -279,6 +320,7 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections.get_integral_table
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.get_integral_table
+:parser: rst
 ```
 
 ````
@@ -287,6 +329,7 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections.integrate_on_grid
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.integrate_on_grid
+:parser: rst
 ```
 
 ````
@@ -295,6 +338,7 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections.parametrization
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.parametrization
+:parser: rst
 ```
 
 ````
@@ -303,6 +347,7 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections.periodic
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.periodic
+:parser: rst
 ```
 
 ````
@@ -311,6 +356,7 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections.sampling
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.sampling
+:parser: rst
 ```
 
 ````
@@ -319,6 +365,7 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections.slice_thickness
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.slice_thickness
+:parser: rst
 ```
 
 ````
@@ -331,12 +378,14 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleVectorPotentialProjections
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleVectorPotentialProjections.__init__
+:parser: rst
 ```
 
 ````
@@ -347,12 +396,14 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 Bases: {py:obj}`abtem.potentials.iam._FieldBuilderFromAtoms`, {py:obj}`abtem.magnetism.iam.BaseMagneticField`
 
 ```{autodoc2-docstring} abtem.magnetism.iam.VectorPotential
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.magnetism.iam.VectorPotential.__init__
+:parser: rst
 ```
 
 ````
@@ -366,6 +417,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.VectorPotentialArray.adjust_coulomb_potential
 
 ```{autodoc2-docstring} abtem.magnetism.iam.VectorPotentialArray.adjust_coulomb_potential
+:parser: rst
 ```
 
 ````
@@ -383,6 +435,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.atomic_magnetic_field_3d
 
 ```{autodoc2-docstring} abtem.magnetism.iam.atomic_magnetic_field_3d
+:parser: rst
 ```
 ````
 
@@ -390,6 +443,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.atomic_vector_potential_3d
 
 ```{autodoc2-docstring} abtem.magnetism.iam.atomic_vector_potential_3d
+:parser: rst
 ```
 ````
 
@@ -397,6 +451,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.bilinear_weighted_sum
 
 ```{autodoc2-docstring} abtem.magnetism.iam.bilinear_weighted_sum
+:parser: rst
 ```
 ````
 
@@ -404,6 +459,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.cartesian2polar_3d
 
 ```{autodoc2-docstring} abtem.magnetism.iam.cartesian2polar_3d
+:parser: rst
 ```
 ````
 
@@ -411,6 +467,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.index_mask
 
 ```{autodoc2-docstring} abtem.magnetism.iam.index_mask
+:parser: rst
 ```
 ````
 
@@ -418,6 +475,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.interpolate
 
 ```{autodoc2-docstring} abtem.magnetism.iam.interpolate
+:parser: rst
 ```
 ````
 
@@ -425,6 +483,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.interpolate_quasi_dipole_field_projections
 
 ```{autodoc2-docstring} abtem.magnetism.iam.interpolate_quasi_dipole_field_projections
+:parser: rst
 ```
 ````
 
@@ -432,6 +491,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.interpolate_quasi_dipole_vector_field_projections
 
 ```{autodoc2-docstring} abtem.magnetism.iam.interpolate_quasi_dipole_vector_field_projections
+:parser: rst
 ```
 ````
 
@@ -439,6 +499,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.magnetic_field_3d
 
 ```{autodoc2-docstring} abtem.magnetism.iam.magnetic_field_3d
+:parser: rst
 ```
 ````
 
@@ -446,6 +507,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.radial_cutoff
 
 ```{autodoc2-docstring} abtem.magnetism.iam.radial_cutoff
+:parser: rst
 ```
 ````
 
@@ -453,6 +515,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.radial_prefactor_a
 
 ```{autodoc2-docstring} abtem.magnetism.iam.radial_prefactor_a
+:parser: rst
 ```
 ````
 
@@ -460,6 +523,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.radial_prefactor_b1
 
 ```{autodoc2-docstring} abtem.magnetism.iam.radial_prefactor_b1
+:parser: rst
 ```
 ````
 
@@ -467,6 +531,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.radial_prefactor_b2
 
 ```{autodoc2-docstring} abtem.magnetism.iam.radial_prefactor_b2
+:parser: rst
 ```
 ````
 
@@ -474,6 +539,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.rotate_points_2d
 
 ```{autodoc2-docstring} abtem.magnetism.iam.rotate_points_2d
+:parser: rst
 ```
 ````
 
@@ -481,6 +547,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.symmetric_arange
 
 ```{autodoc2-docstring} abtem.magnetism.iam.symmetric_arange
+:parser: rst
 ```
 ````
 
@@ -488,6 +555,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.unit_vector_from_angles
 
 ```{autodoc2-docstring} abtem.magnetism.iam.unit_vector_from_angles
+:parser: rst
 ```
 ````
 
@@ -495,5 +563,6 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 :canonical: abtem.magnetism.iam.vector_potential_3d
 
 ```{autodoc2-docstring} abtem.magnetism.iam.vector_potential_3d
+:parser: rst
 ```
 ````

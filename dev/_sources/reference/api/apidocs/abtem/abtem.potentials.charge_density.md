@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.potentials.charge_density
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,6 +18,7 @@
 
 * - {py:obj}`ChargeDensityPotential <abtem.potentials.charge_density.ChargeDensityPotential>`
   - ```{autodoc2-docstring} abtem.potentials.charge_density.ChargeDensityPotential
+    :parser: rst
     :summary:
     ```
 ````
@@ -29,14 +31,17 @@
 
 * - {py:obj}`add_point_charges_fourier <abtem.potentials.charge_density.add_point_charges_fourier>`
   - ```{autodoc2-docstring} abtem.potentials.charge_density.add_point_charges_fourier
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`curl_fourier <abtem.potentials.charge_density.curl_fourier>`
   - ```{autodoc2-docstring} abtem.potentials.charge_density.curl_fourier
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`integrate_gradient_fourier <abtem.potentials.charge_density.integrate_gradient_fourier>`
   - ```{autodoc2-docstring} abtem.potentials.charge_density.integrate_gradient_fourier
+    :parser: rst
     :summary:
     ```
 ````
@@ -49,18 +54,21 @@
 Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 
 ```{autodoc2-docstring} abtem.potentials.charge_density.ChargeDensityPotential
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.potentials.charge_density.ChargeDensityPotential.__init__
+:parser: rst
 ```
 
 ````{py:property} charge_density
 :canonical: abtem.potentials.charge_density.ChargeDensityPotential.charge_density
 
 ```{autodoc2-docstring} abtem.potentials.charge_density.ChargeDensityPotential.charge_density
+:parser: rst
 ```
 
 ````
@@ -80,6 +88,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.charge_density.ChargeDensityPotential.frozen_phonons
 
 ```{autodoc2-docstring} abtem.potentials.charge_density.ChargeDensityPotential.frozen_phonons
+:parser: rst
 ```
 
 ````
@@ -88,6 +97,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.charge_density.ChargeDensityPotential.generate_slices
 
 ```{autodoc2-docstring} abtem.potentials.charge_density.ChargeDensityPotential.generate_slices
+:parser: rst
 ```
 
 ````
@@ -96,6 +106,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.charge_density.ChargeDensityPotential.is_lazy
 
 ```{autodoc2-docstring} abtem.potentials.charge_density.ChargeDensityPotential.is_lazy
+:parser: rst
 ```
 
 ````
@@ -109,6 +120,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.charge_density.ChargeDensityPotential.num_frozen_phonons
 
 ```{autodoc2-docstring} abtem.potentials.charge_density.ChargeDensityPotential.num_frozen_phonons
+:parser: rst
 ```
 
 ````
@@ -117,6 +129,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.charge_density.ChargeDensityPotential.repetitions
 
 ```{autodoc2-docstring} abtem.potentials.charge_density.ChargeDensityPotential.repetitions
+:parser: rst
 ```
 
 ````
@@ -127,6 +140,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.charge_density.add_point_charges_fourier
 
 ```{autodoc2-docstring} abtem.potentials.charge_density.add_point_charges_fourier
+:parser: rst
 ```
 ````
 
@@ -134,6 +148,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.charge_density.curl_fourier
 
 ```{autodoc2-docstring} abtem.potentials.charge_density.curl_fourier
+:parser: rst
 ```
 ````
 
@@ -141,5 +156,6 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.charge_density.integrate_gradient_fourier
 
 ```{autodoc2-docstring} abtem.potentials.charge_density.integrate_gradient_fourier
+:parser: rst
 ```
 ````

@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,22 +18,27 @@
 
 * - {py:obj}`potential <abtem.parametrizations.functions.kirkland.potential>`
   - ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland.potential
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`potential_derivative <abtem.parametrizations.functions.kirkland.potential_derivative>`
   - ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland.potential_derivative
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`projected_potential <abtem.parametrizations.functions.kirkland.projected_potential>`
   - ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland.projected_potential
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`projected_scattering_factor <abtem.parametrizations.functions.kirkland.projected_scattering_factor>`
   - ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland.projected_scattering_factor
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`scattering_factor <abtem.parametrizations.functions.kirkland.scattering_factor>`
   - ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland.scattering_factor
+    :parser: rst
     :summary:
     ```
 ````
@@ -43,6 +49,7 @@
 :canonical: abtem.parametrizations.functions.kirkland.potential
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland.potential
+:parser: rst
 ```
 ````
 
@@ -50,6 +57,7 @@
 :canonical: abtem.parametrizations.functions.kirkland.potential_derivative
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland.potential_derivative
+:parser: rst
 ```
 ````
 
@@ -57,6 +65,7 @@
 :canonical: abtem.parametrizations.functions.kirkland.projected_potential
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland.projected_potential
+:parser: rst
 ```
 ````
 
@@ -64,6 +73,7 @@
 :canonical: abtem.parametrizations.functions.kirkland.projected_scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland.projected_scattering_factor
+:parser: rst
 ```
 ````
 
@@ -71,5 +81,6 @@
 :canonical: abtem.parametrizations.functions.kirkland.scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland.scattering_factor
+:parser: rst
 ```
 ````

@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,14 +18,17 @@
 
 * - {py:obj}`MonteCarloPlasmons <abtem.inelastic.plasmons.MonteCarloPlasmons>`
   - ```{autodoc2-docstring} abtem.inelastic.plasmons.MonteCarloPlasmons
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`PlasmonAxis <abtem.inelastic.plasmons.PlasmonAxis>`
   - ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonAxis
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`PlasmonScatteringEvents <abtem.inelastic.plasmons.PlasmonScatteringEvents>`
   - ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents
+    :parser: rst
     :summary:
     ```
 ````
@@ -37,22 +41,27 @@
 
 * - {py:obj}`draw_azimuthal_angle <abtem.inelastic.plasmons.draw_azimuthal_angle>`
   - ```{autodoc2-docstring} abtem.inelastic.plasmons.draw_azimuthal_angle
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`draw_radial_scattering_angle <abtem.inelastic.plasmons.draw_radial_scattering_angle>`
   - ```{autodoc2-docstring} abtem.inelastic.plasmons.draw_radial_scattering_angle
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`draw_scattering_depths <abtem.inelastic.plasmons.draw_scattering_depths>`
   - ```{autodoc2-docstring} abtem.inelastic.plasmons.draw_scattering_depths
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`excitations_weights <abtem.inelastic.plasmons.excitations_weights>`
   - ```{autodoc2-docstring} abtem.inelastic.plasmons.excitations_weights
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`reduce_plasmon_axes <abtem.inelastic.plasmons.reduce_plasmon_axes>`
   - ```{autodoc2-docstring} abtem.inelastic.plasmons.reduce_plasmon_axes
+    :parser: rst
     :summary:
     ```
 ````
@@ -65,10 +74,12 @@
 
 * - {py:obj}`nth <abtem.inelastic.plasmons.nth>`
   - ```{autodoc2-docstring} abtem.inelastic.plasmons.nth
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`ntuples <abtem.inelastic.plasmons.ntuples>`
   - ```{autodoc2-docstring} abtem.inelastic.plasmons.ntuples
+    :parser: rst
     :summary:
     ```
 ````
@@ -79,18 +90,21 @@
 :canonical: abtem.inelastic.plasmons.MonteCarloPlasmons
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.MonteCarloPlasmons
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.MonteCarloPlasmons.__init__
+:parser: rst
 ```
 
 ````{py:method} characteristic_angle(energy: float) -> float
 :canonical: abtem.inelastic.plasmons.MonteCarloPlasmons.characteristic_angle
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.MonteCarloPlasmons.characteristic_angle
+:parser: rst
 ```
 
 ````
@@ -99,6 +113,7 @@
 :canonical: abtem.inelastic.plasmons.MonteCarloPlasmons.draw_events
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.MonteCarloPlasmons.draw_events
+:parser: rst
 ```
 
 ````
@@ -108,6 +123,7 @@
 :type: bool
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.MonteCarloPlasmons.ensemble_mean
+:parser: rst
 ```
 
 ````
@@ -117,6 +133,7 @@
 :type: float
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.MonteCarloPlasmons.mean_free_path
+:parser: rst
 ```
 
 ````
@@ -126,6 +143,7 @@
 :type: int
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.MonteCarloPlasmons.num_samples
+:parser: rst
 ```
 
 ````
@@ -135,6 +153,7 @@
 :type: int
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.MonteCarloPlasmons.seed
+:parser: rst
 ```
 
 ````
@@ -147,12 +166,14 @@
 Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonAxis
+:parser: rst
 ```
 
 ````{py:property} azimuthal_angles
 :canonical: abtem.inelastic.plasmons.PlasmonAxis.azimuthal_angles
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonAxis.azimuthal_angles
+:parser: rst
 ```
 
 ````
@@ -161,6 +182,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 :canonical: abtem.inelastic.plasmons.PlasmonAxis.depths
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonAxis.depths
+:parser: rst
 ```
 
 ````
@@ -169,6 +191,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 :canonical: abtem.inelastic.plasmons.PlasmonAxis.excitations
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonAxis.excitations
+:parser: rst
 ```
 
 ````
@@ -180,6 +203,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
    'Plasmons excitations'
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonAxis.label
+:parser: rst
 ```
 
 ````
@@ -188,6 +212,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 :canonical: abtem.inelastic.plasmons.PlasmonAxis.radial_angles
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonAxis.radial_angles
+:parser: rst
 ```
 
 ````
@@ -196,6 +221,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 :canonical: abtem.inelastic.plasmons.PlasmonAxis.tilt
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonAxis.tilt
+:parser: rst
 ```
 
 ````
@@ -206,6 +232,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 :value: <Multiline-String>
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonAxis.units
+:parser: rst
 ```
 
 ````
@@ -214,6 +241,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 :canonical: abtem.inelastic.plasmons.PlasmonAxis.update
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonAxis.update
+:parser: rst
 ```
 
 ````
@@ -226,18 +254,21 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.__init__
+:parser: rst
 ```
 
 ````{py:method} apply(waves: abtem.waves.Waves, in_place: bool = False) -> abtem.waves.Waves
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents.apply
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.apply
+:parser: rst
 ```
 
 ````
@@ -247,6 +278,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :type: typing.Tuple[typing.Tuple[float, ...]]
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.azimuthal_angles
+:parser: rst
 ```
 
 ````
@@ -256,6 +288,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :type: typing.Tuple[typing.Tuple[float, ...]]
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.depths
+:parser: rst
 ```
 
 ````
@@ -270,6 +303,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents.ensemble_mean
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.ensemble_mean
+:parser: rst
 ```
 
 ````
@@ -283,6 +317,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents.get_scattering_event_depths
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.get_scattering_event_depths
+:parser: rst
 ```
 
 ````
@@ -291,6 +326,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents.max_excitations
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.max_excitations
+:parser: rst
 ```
 
 ````
@@ -299,6 +335,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents.num_events
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.num_events
+:parser: rst
 ```
 
 ````
@@ -307,6 +344,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents.num_excitations
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.num_excitations
+:parser: rst
 ```
 
 ````
@@ -316,6 +354,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :type: typing.Tuple[typing.Tuple[float, ...]]
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.radial_angles
+:parser: rst
 ```
 
 ````
@@ -324,6 +363,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents.show_cumulative_scattering_events
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.show_cumulative_scattering_events
+:parser: rst
 ```
 
 ````
@@ -332,6 +372,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents.show_excitations_histogram
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.show_excitations_histogram
+:parser: rst
 ```
 
 ````
@@ -340,6 +381,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents.show_scattering_angle_distribution
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.show_scattering_angle_distribution
+:parser: rst
 ```
 
 ````
@@ -348,6 +390,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents.show_weights
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.show_weights
+:parser: rst
 ```
 
 ````
@@ -357,6 +400,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :type: typing.Tuple[float]
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.weights
+:parser: rst
 ```
 
 ````
@@ -367,6 +411,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :canonical: abtem.inelastic.plasmons.draw_azimuthal_angle
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.draw_azimuthal_angle
+:parser: rst
 ```
 ````
 
@@ -374,6 +419,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :canonical: abtem.inelastic.plasmons.draw_radial_scattering_angle
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.draw_radial_scattering_angle
+:parser: rst
 ```
 ````
 
@@ -381,6 +427,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :canonical: abtem.inelastic.plasmons.draw_scattering_depths
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.draw_scattering_depths
+:parser: rst
 ```
 ````
 
@@ -388,6 +435,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :canonical: abtem.inelastic.plasmons.excitations_weights
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.excitations_weights
+:parser: rst
 ```
 ````
 
@@ -397,6 +445,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
    None
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.nth
+:parser: rst
 ```
 
 ````
@@ -407,6 +456,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
    None
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.ntuples
+:parser: rst
 ```
 
 ````
@@ -415,5 +465,6 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :canonical: abtem.inelastic.plasmons.reduce_plasmon_axes
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.reduce_plasmon_axes
+:parser: rst
 ```
 ````

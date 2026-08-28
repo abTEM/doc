@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.scan
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,18 +18,22 @@
 
 * - {py:obj}`BaseScan <abtem.scan.BaseScan>`
   - ```{autodoc2-docstring} abtem.scan.BaseScan
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`CustomScan <abtem.scan.CustomScan>`
   - ```{autodoc2-docstring} abtem.scan.CustomScan
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`GridScan <abtem.scan.GridScan>`
   - ```{autodoc2-docstring} abtem.scan.GridScan
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`LineScan <abtem.scan.LineScan>`
   - ```{autodoc2-docstring} abtem.scan.LineScan
+    :parser: rst
     :summary:
     ```
 ````
@@ -41,10 +46,12 @@
 
 * - {py:obj}`validate_coordinate <abtem.scan.validate_coordinate>`
   - ```{autodoc2-docstring} abtem.scan.validate_coordinate
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_scan <abtem.scan.validate_scan>`
   - ```{autodoc2-docstring} abtem.scan.validate_scan
+    :parser: rst
     :summary:
     ```
 ````
@@ -57,6 +64,7 @@
 
 * - {py:obj}`ScanWithSampling <abtem.scan.ScanWithSampling>`
   - ```{autodoc2-docstring} abtem.scan.ScanWithSampling
+    :parser: rst
     :summary:
     ```
 ````
@@ -69,12 +77,14 @@
 Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`
 
 ```{autodoc2-docstring} abtem.scan.BaseScan
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.scan.BaseScan.__init__
+:parser: rst
 ```
 
 ````{py:property} ensemble_shape
@@ -88,6 +98,7 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.scan.BaseScan.get_positions
+:parser: rst
 ```
 
 ````
@@ -97,6 +108,7 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.scan.BaseScan.limits
+:parser: rst
 ```
 
 ````
@@ -106,6 +118,7 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.scan.BaseScan.match_probe
+:parser: rst
 ```
 
 ````
@@ -115,6 +128,7 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`
 :type: int
 
 ```{autodoc2-docstring} abtem.scan.BaseScan.num_positions
+:parser: rst
 ```
 
 ````
@@ -125,6 +139,7 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`
 :type: tuple[int, ...]
 
 ```{autodoc2-docstring} abtem.scan.BaseScan.shape
+:parser: rst
 ```
 
 ````
@@ -137,18 +152,21 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`
 Bases: {py:obj}`abtem.scan.BaseScan`
 
 ```{autodoc2-docstring} abtem.scan.CustomScan
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.scan.CustomScan.__init__
+:parser: rst
 ```
 
 ````{py:method} add_to_plot(ax, **kwargs)
 :canonical: abtem.scan.CustomScan.add_to_plot
 
 ```{autodoc2-docstring} abtem.scan.CustomScan.add_to_plot
+:parser: rst
 ```
 
 ````
@@ -172,6 +190,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :canonical: abtem.scan.CustomScan.match_probe
 
 ```{autodoc2-docstring} abtem.scan.CustomScan.match_probe
+:parser: rst
 ```
 
 ````
@@ -180,6 +199,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :canonical: abtem.scan.CustomScan.positions
 
 ```{autodoc2-docstring} abtem.scan.CustomScan.positions
+:parser: rst
 ```
 
 ````
@@ -197,18 +217,21 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.scan.BaseScan`
 
 ```{autodoc2-docstring} abtem.scan.GridScan
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.scan.GridScan.__init__
+:parser: rst
 ```
 
 ````{py:method} add_to_plot(ax, alpha: float = 0.33, facecolor: str = 'r', edgecolor: str = 'r', **kwargs)
 :canonical: abtem.scan.GridScan.add_to_plot
 
 ```{autodoc2-docstring} abtem.scan.GridScan.add_to_plot
+:parser: rst
 ```
 
 ````
@@ -218,6 +241,7 @@ Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.scan.BaseScan`
 :type: tuple[float, float] | None
 
 ```{autodoc2-docstring} abtem.scan.GridScan.end
+:parser: rst
 ```
 
 ````
@@ -227,6 +251,7 @@ Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.scan.BaseScan`
 :type: tuple[bool, bool]
 
 ```{autodoc2-docstring} abtem.scan.GridScan.endpoint
+:parser: rst
 ```
 
 ````
@@ -255,6 +280,7 @@ Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.scan.BaseScan`
 :canonical: abtem.scan.GridScan.match_probe
 
 ```{autodoc2-docstring} abtem.scan.GridScan.match_probe
+:parser: rst
 ```
 
 ````
@@ -270,6 +296,7 @@ Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.scan.BaseScan`
 :type: tuple[float, float] | None
 
 ```{autodoc2-docstring} abtem.scan.GridScan.start
+:parser: rst
 ```
 
 ````
@@ -282,18 +309,21 @@ Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.scan.BaseScan`
 Bases: {py:obj}`abtem.scan.BaseScan`
 
 ```{autodoc2-docstring} abtem.scan.LineScan
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.scan.LineScan.__init__
+:parser: rst
 ```
 
 ````{py:method} add_margin(margin: float | tuple[float, float])
 :canonical: abtem.scan.LineScan.add_margin
 
 ```{autodoc2-docstring} abtem.scan.LineScan.add_margin
+:parser: rst
 ```
 
 ````
@@ -302,6 +332,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :canonical: abtem.scan.LineScan.add_to_axes
 
 ```{autodoc2-docstring} abtem.scan.LineScan.add_to_axes
+:parser: rst
 ```
 
 ````
@@ -310,6 +341,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :canonical: abtem.scan.LineScan.add_to_plot
 
 ```{autodoc2-docstring} abtem.scan.LineScan.add_to_plot
+:parser: rst
 ```
 
 ````
@@ -318,6 +350,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :canonical: abtem.scan.LineScan.angle
 
 ```{autodoc2-docstring} abtem.scan.LineScan.angle
+:parser: rst
 ```
 
 ````
@@ -327,6 +360,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :classmethod:
 
 ```{autodoc2-docstring} abtem.scan.LineScan.at_position
+:parser: rst
 ```
 
 ````
@@ -335,6 +369,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :canonical: abtem.scan.LineScan.direction
 
 ```{autodoc2-docstring} abtem.scan.LineScan.direction
+:parser: rst
 ```
 
 ````
@@ -344,6 +379,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :type: tuple[float, float] | None
 
 ```{autodoc2-docstring} abtem.scan.LineScan.end
+:parser: rst
 ```
 
 ````
@@ -353,6 +389,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :type: bool
 
 ```{autodoc2-docstring} abtem.scan.LineScan.endpoint
+:parser: rst
 ```
 
 ````
@@ -373,6 +410,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :type: float | None
 
 ```{autodoc2-docstring} abtem.scan.LineScan.extent
+:parser: rst
 ```
 
 ````
@@ -387,6 +425,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :type: int | None
 
 ```{autodoc2-docstring} abtem.scan.LineScan.gpts
+:parser: rst
 ```
 
 ````
@@ -401,6 +440,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :canonical: abtem.scan.LineScan.match_probe
 
 ```{autodoc2-docstring} abtem.scan.LineScan.match_probe
+:parser: rst
 ```
 
 ````
@@ -415,6 +455,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :type: float | None
 
 ```{autodoc2-docstring} abtem.scan.LineScan.sampling
+:parser: rst
 ```
 
 ````
@@ -430,6 +471,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :type: tuple[float, float] | None
 
 ```{autodoc2-docstring} abtem.scan.LineScan.start
+:parser: rst
 ```
 
 ````
@@ -442,6 +484,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
    None
 
 ```{autodoc2-docstring} abtem.scan.ScanWithSampling
+:parser: rst
 ```
 
 ````
@@ -450,6 +493,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :canonical: abtem.scan.validate_coordinate
 
 ```{autodoc2-docstring} abtem.scan.validate_coordinate
+:parser: rst
 ```
 ````
 
@@ -457,5 +501,6 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :canonical: abtem.scan.validate_scan
 
 ```{autodoc2-docstring} abtem.scan.validate_scan
+:parser: rst
 ```
 ````

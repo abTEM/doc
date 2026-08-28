@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.magnetism.parametrizations
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,6 +18,7 @@
 
 * - {py:obj}`LyonParametrization <abtem.magnetism.parametrizations.LyonParametrization>`
   - ```{autodoc2-docstring} abtem.magnetism.parametrizations.LyonParametrization
+    :parser: rst
     :summary:
     ```
 ````
@@ -29,6 +31,7 @@
 
 * - {py:obj}`get_parameters <abtem.magnetism.parametrizations.get_parameters>`
   - ```{autodoc2-docstring} abtem.magnetism.parametrizations.get_parameters
+    :parser: rst
     :summary:
     ```
 ````
@@ -39,18 +42,21 @@
 :canonical: abtem.magnetism.parametrizations.LyonParametrization
 
 ```{autodoc2-docstring} abtem.magnetism.parametrizations.LyonParametrization
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.magnetism.parametrizations.LyonParametrization.__init__
+:parser: rst
 ```
 
 ````{py:property} parameters
 :canonical: abtem.magnetism.parametrizations.LyonParametrization.parameters
 
 ```{autodoc2-docstring} abtem.magnetism.parametrizations.LyonParametrization.parameters
+:parser: rst
 ```
 
 ````
@@ -61,5 +67,6 @@
 :canonical: abtem.magnetism.parametrizations.get_parameters
 
 ```{autodoc2-docstring} abtem.magnetism.parametrizations.get_parameters
+:parser: rst
 ```
 ````

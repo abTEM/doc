@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.inelastic.phonons
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,18 +18,22 @@
 
 * - {py:obj}`AtomsEnsemble <abtem.inelastic.phonons.AtomsEnsemble>`
   - ```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`BaseFrozenPhonons <abtem.inelastic.phonons.BaseFrozenPhonons>`
   - ```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`DummyFrozenPhonons <abtem.inelastic.phonons.DummyFrozenPhonons>`
   - ```{autodoc2-docstring} abtem.inelastic.phonons.DummyFrozenPhonons
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`FrozenPhonons <abtem.inelastic.phonons.FrozenPhonons>`
   - ```{autodoc2-docstring} abtem.inelastic.phonons.FrozenPhonons
+    :parser: rst
     :summary:
     ```
 ````
@@ -41,6 +46,7 @@
 
 * - {py:obj}`validate_seeds <abtem.inelastic.phonons.validate_seeds>`
   - ```{autodoc2-docstring} abtem.inelastic.phonons.validate_seeds
+    :parser: rst
     :summary:
     ```
 ````
@@ -53,6 +59,7 @@
 
 * - {py:obj}`Reader <abtem.inelastic.phonons.Reader>`
   - ```{autodoc2-docstring} abtem.inelastic.phonons.Reader
+    :parser: rst
     :summary:
     ```
 ````
@@ -65,12 +72,14 @@
 Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble.__init__
+:parser: rst
 ```
 
 ````{py:property} atoms
@@ -95,6 +104,7 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 :canonical: abtem.inelastic.phonons.AtomsEnsemble.mean_squared_deviations
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble.mean_squared_deviations
+:parser: rst
 ```
 
 ````
@@ -109,6 +119,7 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 :canonical: abtem.inelastic.phonons.AtomsEnsemble.numbers
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble.numbers
+:parser: rst
 ```
 
 ````
@@ -122,6 +133,7 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 :canonical: abtem.inelastic.phonons.AtomsEnsemble.standard_deviations
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble.standard_deviations
+:parser: rst
 ```
 
 ````
@@ -131,6 +143,7 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 :type: numpy.ndarray | dask.array.core.Array
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.AtomsEnsemble.trajectory
+:parser: rst
 ```
 
 ````
@@ -143,12 +156,14 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyMixin`
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.__init__
+:parser: rst
 ```
 
 ````{py:property} atomic_numbers
@@ -156,6 +171,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: numpy.ndarray
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.atomic_numbers
+:parser: rst
 ```
 
 ````
@@ -166,6 +182,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: ase.Atoms
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.atoms
+:parser: rst
 ```
 
 ````
@@ -175,6 +192,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: ase.cell.Cell
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.cell
+:parser: rst
 ```
 
 ````
@@ -183,6 +201,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.inelastic.phonons.BaseFrozenPhonons.ensemble_mean
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.ensemble_mean
+:parser: rst
 ```
 
 ````
@@ -192,6 +211,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.num_configs
+:parser: rst
 ```
 
 ````
@@ -201,6 +221,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.BaseFrozenPhonons.randomize
+:parser: rst
 ```
 
 ````
@@ -213,12 +234,14 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.DummyFrozenPhonons
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.DummyFrozenPhonons.__init__
+:parser: rst
 ```
 
 ````{py:property} atoms
@@ -246,6 +269,7 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 :canonical: abtem.inelastic.phonons.DummyFrozenPhonons.numbers
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.DummyFrozenPhonons.numbers
+:parser: rst
 ```
 
 ````
@@ -263,12 +287,14 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.FrozenPhonons
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.FrozenPhonons.__init__
+:parser: rst
 ```
 
 ````{py:property} atoms
@@ -282,6 +308,7 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 :type: str
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.FrozenPhonons.directions
+:parser: rst
 ```
 
 ````
@@ -313,6 +340,7 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 :type: tuple[int, ...]
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.FrozenPhonons.seed
+:parser: rst
 ```
 
 ````
@@ -322,6 +350,7 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 :type: numpy.ndarray | dict[str, numpy.ndarray]
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.FrozenPhonons.sigmas
+:parser: rst
 ```
 
 ````
@@ -330,6 +359,7 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 :canonical: abtem.inelastic.phonons.FrozenPhonons.to_atoms_ensemble
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.FrozenPhonons.to_atoms_ensemble
+:parser: rst
 ```
 
 ````
@@ -343,6 +373,7 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
    None
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.Reader
+:parser: rst
 ```
 
 ````
@@ -351,5 +382,6 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 :canonical: abtem.inelastic.phonons.validate_seeds
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.validate_seeds
+:parser: rst
 ```
 ````

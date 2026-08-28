@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.bloch.matrix_exponential
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,6 +18,7 @@
 
 * - {py:obj}`expm <abtem.bloch.matrix_exponential.expm>`
   - ```{autodoc2-docstring} abtem.bloch.matrix_exponential.expm
+    :parser: rst
     :summary:
     ```
 ````
@@ -29,10 +31,12 @@
 
 * - {py:obj}`b <abtem.bloch.matrix_exponential.b>`
   - ```{autodoc2-docstring} abtem.bloch.matrix_exponential.b
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`th13 <abtem.bloch.matrix_exponential.th13>`
   - ```{autodoc2-docstring} abtem.bloch.matrix_exponential.th13
+    :parser: rst
     :summary:
     ```
 ````
@@ -45,6 +49,7 @@
    [6.476475253248e+16, 3.238237626624e+16, 7771770303897600.0, 1187353796428800.0, 129060195264000.0, ...
 
 ```{autodoc2-docstring} abtem.bloch.matrix_exponential.b
+:parser: rst
 ```
 
 ````
@@ -53,6 +58,7 @@
 :canonical: abtem.bloch.matrix_exponential.expm
 
 ```{autodoc2-docstring} abtem.bloch.matrix_exponential.expm
+:parser: rst
 ```
 ````
 
@@ -62,6 +68,7 @@
    5.37
 
 ```{autodoc2-docstring} abtem.bloch.matrix_exponential.th13
+:parser: rst
 ```
 
 ````

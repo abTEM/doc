@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.tilt
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,16 +18,19 @@
 
 * - {py:obj}`AxisAlignedBeamTilt <abtem.tilt.AxisAlignedBeamTilt>`
   - ```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`BaseBeamTilt <abtem.tilt.BaseBeamTilt>`
   -
 * - {py:obj}`BeamTilt <abtem.tilt.BeamTilt>`
   - ```{autodoc2-docstring} abtem.tilt.BeamTilt
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`BeamTilt2D <abtem.tilt.BeamTilt2D>`
   - ```{autodoc2-docstring} abtem.tilt.BeamTilt2D
+    :parser: rst
     :summary:
     ```
 ````
@@ -39,10 +43,12 @@
 
 * - {py:obj}`precession_tilts <abtem.tilt.precession_tilts>`
   - ```{autodoc2-docstring} abtem.tilt.precession_tilts
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_tilt <abtem.tilt.validate_tilt>`
   - ```{autodoc2-docstring} abtem.tilt.validate_tilt
+    :parser: rst
     :summary:
     ```
 ````
@@ -55,10 +61,12 @@
 
 * - {py:obj}`TiltType <abtem.tilt.TiltType>`
   - ```{autodoc2-docstring} abtem.tilt.TiltType
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`TiltType2D <abtem.tilt.TiltType2D>`
   - ```{autodoc2-docstring} abtem.tilt.TiltType2D
+    :parser: rst
     :summary:
     ```
 ````
@@ -71,12 +79,14 @@
 Bases: {py:obj}`abtem.distributions.DistributionFromValues`
 
 ```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt.__init__
+:parser: rst
 ```
 
 ````{py:property} direction
@@ -84,6 +94,7 @@ Bases: {py:obj}`abtem.distributions.DistributionFromValues`
 :type: str
 
 ```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt.direction
+:parser: rst
 ```
 
 ````
@@ -93,6 +104,7 @@ Bases: {py:obj}`abtem.distributions.DistributionFromValues`
 :type: list[abtem.core.axes.AxisMetadata]
 
 ```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt.ensemble_axes_metadata
+:parser: rst
 ```
 
 ````
@@ -101,6 +113,7 @@ Bases: {py:obj}`abtem.distributions.DistributionFromValues`
 :canonical: abtem.tilt.AxisAlignedBeamTilt.metadata
 
 ```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt.metadata
+:parser: rst
 ```
 
 ````
@@ -110,6 +123,7 @@ Bases: {py:obj}`abtem.distributions.DistributionFromValues`
 :type: float | abtem.distributions.BaseDistribution
 
 ```{autodoc2-docstring} abtem.tilt.AxisAlignedBeamTilt.tilt
+:parser: rst
 ```
 
 ````
@@ -125,6 +139,7 @@ Bases: {py:obj}`abtem.transform.WavesToWavesTransform`
 :canonical: abtem.tilt.BaseBeamTilt.apply
 
 ```{autodoc2-docstring} abtem.tilt.BaseBeamTilt.apply
+:parser: rst
 ```
 
 ````
@@ -137,12 +152,14 @@ Bases: {py:obj}`abtem.transform.WavesToWavesTransform`
 Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 
 ```{autodoc2-docstring} abtem.tilt.BeamTilt
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.tilt.BeamTilt.__init__
+:parser: rst
 ```
 
 ````{py:property} ensemble_axes_metadata
@@ -150,6 +167,7 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 :type: list[abtem.core.axes.AxisMetadata]
 
 ```{autodoc2-docstring} abtem.tilt.BeamTilt.ensemble_axes_metadata
+:parser: rst
 ```
 
 ````
@@ -158,6 +176,7 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 :canonical: abtem.tilt.BeamTilt.metadata
 
 ```{autodoc2-docstring} abtem.tilt.BeamTilt.metadata
+:parser: rst
 ```
 
 ````
@@ -167,6 +186,7 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 :type: tuple[float, float] | abtem.distributions.BaseDistribution
 
 ```{autodoc2-docstring} abtem.tilt.BeamTilt.tilt
+:parser: rst
 ```
 
 ````
@@ -179,12 +199,14 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 
 ```{autodoc2-docstring} abtem.tilt.BeamTilt2D
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.tilt.BeamTilt2D.__init__
+:parser: rst
 ```
 
 ````{py:property} ensemble_axes_metadata
@@ -215,6 +237,7 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 :type: abtem.distributions.BaseDistribution | float
 
 ```{autodoc2-docstring} abtem.tilt.BeamTilt2D.tilt_x
+:parser: rst
 ```
 
 ````
@@ -224,6 +247,7 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 :type: abtem.distributions.BaseDistribution | float
 
 ```{autodoc2-docstring} abtem.tilt.BeamTilt2D.tilt_y
+:parser: rst
 ```
 
 ````
@@ -236,6 +260,7 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
    None
 
 ```{autodoc2-docstring} abtem.tilt.TiltType
+:parser: rst
 ```
 
 ````
@@ -246,6 +271,7 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
    None
 
 ```{autodoc2-docstring} abtem.tilt.TiltType2D
+:parser: rst
 ```
 
 ````
@@ -254,6 +280,7 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 :canonical: abtem.tilt.precession_tilts
 
 ```{autodoc2-docstring} abtem.tilt.precession_tilts
+:parser: rst
 ```
 ````
 
@@ -261,5 +288,6 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 :canonical: abtem.tilt.validate_tilt
 
 ```{autodoc2-docstring} abtem.tilt.validate_tilt
+:parser: rst
 ```
 ````

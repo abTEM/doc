@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.visualize.visualizations
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,6 +18,7 @@
 
 * - {py:obj}`Visualization <abtem.visualize.visualizations.Visualization>`
   - ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization
+    :parser: rst
     :summary:
     ```
 ````
@@ -29,14 +31,17 @@
 
 * - {py:obj}`convert_complex <abtem.visualize.visualizations.convert_complex>`
   - ```{autodoc2-docstring} abtem.visualize.visualizations.convert_complex
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`discrete_cmap <abtem.visualize.visualizations.discrete_cmap>`
   - ```{autodoc2-docstring} abtem.visualize.visualizations.discrete_cmap
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`show_atoms <abtem.visualize.visualizations.show_atoms>`
   - ```{autodoc2-docstring} abtem.visualize.visualizations.show_atoms
+    :parser: rst
     :summary:
     ```
 ````
@@ -47,18 +52,21 @@
 :canonical: abtem.visualize.visualizations.Visualization
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.__init__
+:parser: rst
 ```
 
 ````{py:method} adjust_coordinate_limits_to_artists(xlim=None, ylim=None)
 :canonical: abtem.visualize.visualizations.Visualization.adjust_coordinate_limits_to_artists
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.adjust_coordinate_limits_to_artists
+:parser: rst
 ```
 
 ````
@@ -67,6 +75,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.artists
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.artists
+:parser: rst
 ```
 
 ````
@@ -75,6 +84,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.autoscale
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.autoscale
+:parser: rst
 ```
 
 ````
@@ -83,6 +93,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.axes
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.axes
+:parser: rst
 ```
 
 ````
@@ -91,6 +102,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.axis
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.axis
+:parser: rst
 ```
 
 ````
@@ -99,6 +111,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.axis_off
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.axis_off
+:parser: rst
 ```
 
 ````
@@ -107,6 +120,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.get_figure
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.get_figure
+:parser: rst
 ```
 
 ````
@@ -115,6 +129,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.indexing_axes
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.indexing_axes
+:parser: rst
 ```
 
 ````
@@ -123,6 +138,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.interact
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.interact
+:parser: rst
 ```
 
 ````
@@ -132,6 +148,7 @@
 :type: abtem.measurements.BaseMeasurements
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.measurement
+:parser: rst
 ```
 
 ````
@@ -140,6 +157,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.remove_artists
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.remove_artists
+:parser: rst
 ```
 
 ````
@@ -148,6 +166,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.set_artists
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_artists
+:parser: rst
 ```
 
 ````
@@ -156,6 +175,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.set_cbars
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_cbars
+:parser: rst
 ```
 
 ````
@@ -164,6 +184,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.set_cmap
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_cmap
+:parser: rst
 ```
 
 ````
@@ -172,6 +193,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.set_column_titles
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_column_titles
+:parser: rst
 ```
 
 ````
@@ -180,6 +202,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.set_common_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_common_value_limits
+:parser: rst
 ```
 
 ````
@@ -189,6 +212,7 @@
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_complex_conversion
+:parser: rst
 ```
 
 ````
@@ -197,6 +221,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.set_legend
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_legend
+:parser: rst
 ```
 
 ````
@@ -205,6 +230,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.set_logscale
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_logscale
+:parser: rst
 ```
 
 ````
@@ -213,6 +239,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.set_power
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_power
+:parser: rst
 ```
 
 ````
@@ -221,6 +248,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.set_row_titles
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_row_titles
+:parser: rst
 ```
 
 ````
@@ -229,6 +257,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.set_scale_bars
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_scale_bars
+:parser: rst
 ```
 
 ````
@@ -237,6 +266,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.set_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_value_limits
+:parser: rst
 ```
 
 ````
@@ -245,6 +275,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.set_xlabel
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_xlabel
+:parser: rst
 ```
 
 ````
@@ -253,6 +284,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.set_xlim
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_xlim
+:parser: rst
 ```
 
 ````
@@ -261,6 +293,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.set_ylabel
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_ylabel
+:parser: rst
 ```
 
 ````
@@ -269,6 +302,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.set_ylim
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_ylim
+:parser: rst
 ```
 
 ````
@@ -277,6 +311,7 @@
 :canonical: abtem.visualize.visualizations.Visualization.update_data_indices
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.update_data_indices
+:parser: rst
 ```
 
 ````
@@ -287,6 +322,7 @@
 :canonical: abtem.visualize.visualizations.convert_complex
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.convert_complex
+:parser: rst
 ```
 ````
 
@@ -294,6 +330,7 @@
 :canonical: abtem.visualize.visualizations.discrete_cmap
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.discrete_cmap
+:parser: rst
 ```
 ````
 
@@ -301,5 +338,6 @@
 :canonical: abtem.visualize.visualizations.show_atoms
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.show_atoms
+:parser: rst
 ```
 ````

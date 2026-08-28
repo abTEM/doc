@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.potentials.iam
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,28 +18,34 @@
 
 * - {py:obj}`BaseField <abtem.potentials.iam.BaseField>`
   - ```{autodoc2-docstring} abtem.potentials.iam.BaseField
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`BasePotential <abtem.potentials.iam.BasePotential>`
   - ```{autodoc2-docstring} abtem.potentials.iam.BasePotential
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`CrystalPotential <abtem.potentials.iam.CrystalPotential>`
   - ```{autodoc2-docstring} abtem.potentials.iam.CrystalPotential
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`FieldArray <abtem.potentials.iam.FieldArray>`
   -
 * - {py:obj}`Potential <abtem.potentials.iam.Potential>`
   - ```{autodoc2-docstring} abtem.potentials.iam.Potential
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`PotentialArray <abtem.potentials.iam.PotentialArray>`
   - ```{autodoc2-docstring} abtem.potentials.iam.PotentialArray
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`TransmissionFunction <abtem.potentials.iam.TransmissionFunction>`
   - ```{autodoc2-docstring} abtem.potentials.iam.TransmissionFunction
+    :parser: rst
     :summary:
     ```
 ````
@@ -51,6 +58,7 @@
 
 * - {py:obj}`validate_potential <abtem.potentials.iam.validate_potential>`
   - ```{autodoc2-docstring} abtem.potentials.iam.validate_potential
+    :parser: rst
     :summary:
     ```
 ````
@@ -63,6 +71,7 @@
 Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyMixin`
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField
+:parser: rst
 ```
 
 ````{py:property} base_axes_metadata
@@ -75,6 +84,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :canonical: abtem.potentials.iam.BaseField.base_shape
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.base_shape
+:parser: rst
 ```
 
 ````
@@ -84,6 +94,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.build
+:parser: rst
 ```
 
 ````
@@ -92,6 +103,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :canonical: abtem.potentials.iam.BaseField.depth_profile
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.depth_profile
+:parser: rst
 ```
 
 ````
@@ -102,6 +114,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :type: tuple[int, ...]
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.exit_planes
+:parser: rst
 ```
 
 ````
@@ -111,6 +124,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :type: tuple[float, ...]
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.exit_thicknesses
+:parser: rst
 ```
 
 ````
@@ -120,6 +134,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.generate_slices
+:parser: rst
 ```
 
 ````
@@ -129,6 +144,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.num_configurations
+:parser: rst
 ```
 
 ````
@@ -138,6 +154,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :type: int
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.num_exit_planes
+:parser: rst
 ```
 
 ````
@@ -147,6 +164,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :type: int
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.num_slices
+:parser: rst
 ```
 
 ````
@@ -155,6 +173,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :canonical: abtem.potentials.iam.BaseField.project
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.project
+:parser: rst
 ```
 
 ````
@@ -163,6 +182,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :canonical: abtem.potentials.iam.BaseField.show
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.show
+:parser: rst
 ```
 
 ````
@@ -171,6 +191,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :canonical: abtem.potentials.iam.BaseField.show_depth_profile
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.show_depth_profile
+:parser: rst
 ```
 
 ````
@@ -180,6 +201,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :type: list[tuple[float, float]]
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.slice_limits
+:parser: rst
 ```
 
 ````
@@ -190,6 +212,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :type: tuple[float, ...]
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.slice_thickness
+:parser: rst
 ```
 
 ````
@@ -199,6 +222,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :type: float
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.thickness
+:parser: rst
 ```
 
 ````
@@ -207,6 +231,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 :canonical: abtem.potentials.iam.BaseField.to_images
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.to_images
+:parser: rst
 ```
 
 ````
@@ -219,12 +244,14 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 Bases: {py:obj}`abtem.potentials.iam.BaseField`
 
 ```{autodoc2-docstring} abtem.potentials.iam.BasePotential
+:parser: rst
 ```
 
 ````{py:property} base_axes_metadata
 :canonical: abtem.potentials.iam.BasePotential.base_axes_metadata
 
 ```{autodoc2-docstring} abtem.potentials.iam.BasePotential.base_axes_metadata
+:parser: rst
 ```
 
 ````
@@ -237,12 +264,14 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`
 Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 
 ```{autodoc2-docstring} abtem.potentials.iam.CrystalPotential
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.potentials.iam.CrystalPotential.__init__
+:parser: rst
 ```
 
 ````{py:property} ensemble_axes_metadata
@@ -256,6 +285,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :type: bool
 
 ```{autodoc2-docstring} abtem.potentials.iam.CrystalPotential.ensemble_mean
+:parser: rst
 ```
 
 ````
@@ -270,6 +300,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.iam.CrystalPotential.generate_slices
 
 ```{autodoc2-docstring} abtem.potentials.iam.CrystalPotential.generate_slices
+:parser: rst
 ```
 
 ````
@@ -278,6 +309,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.iam.CrystalPotential.get_sliced_atoms
 
 ```{autodoc2-docstring} abtem.potentials.iam.CrystalPotential.get_sliced_atoms
+:parser: rst
 ```
 
 ````
@@ -304,6 +336,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :type: abtem.potentials.iam.BasePotential
 
 ```{autodoc2-docstring} abtem.potentials.iam.CrystalPotential.potential_unit
+:parser: rst
 ```
 
 ````
@@ -313,6 +346,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :type: tuple[int, int, int]
 
 ```{autodoc2-docstring} abtem.potentials.iam.CrystalPotential.repetitions
+:parser: rst
 ```
 
 ````
@@ -327,6 +361,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :canonical: abtem.potentials.iam.CrystalPotential.seeds
 
 ```{autodoc2-docstring} abtem.potentials.iam.CrystalPotential.seeds
+:parser: rst
 ```
 
 ````
@@ -342,6 +377,7 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`, {py:obj}`abtem.array.ArrayObjec
 :canonical: abtem.potentials.iam.FieldArray.build
 
 ```{autodoc2-docstring} abtem.potentials.iam.FieldArray.build
+:parser: rst
 ```
 
 ````
@@ -350,6 +386,7 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`, {py:obj}`abtem.array.ArrayObjec
 :canonical: abtem.potentials.iam.FieldArray.depth_profile
 
 ```{autodoc2-docstring} abtem.potentials.iam.FieldArray.depth_profile
+:parser: rst
 ```
 
 ````
@@ -364,6 +401,7 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`, {py:obj}`abtem.array.ArrayObjec
 :canonical: abtem.potentials.iam.FieldArray.generate_slices
 
 ```{autodoc2-docstring} abtem.potentials.iam.FieldArray.generate_slices
+:parser: rst
 ```
 
 ````
@@ -377,6 +415,7 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`, {py:obj}`abtem.array.ArrayObjec
 :canonical: abtem.potentials.iam.FieldArray.project
 
 ```{autodoc2-docstring} abtem.potentials.iam.FieldArray.project
+:parser: rst
 ```
 
 ````
@@ -391,6 +430,7 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`, {py:obj}`abtem.array.ArrayObjec
 :canonical: abtem.potentials.iam.FieldArray.tile
 
 ```{autodoc2-docstring} abtem.potentials.iam.FieldArray.tile
+:parser: rst
 ```
 
 ````
@@ -404,6 +444,7 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`, {py:obj}`abtem.array.ArrayObjec
 :canonical: abtem.potentials.iam.FieldArray.to_images
 
 ```{autodoc2-docstring} abtem.potentials.iam.FieldArray.to_images
+:parser: rst
 ```
 
 ````
@@ -416,12 +457,14 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`, {py:obj}`abtem.array.ArrayObjec
 Bases: {py:obj}`abtem.potentials.iam._FieldBuilderFromAtoms`, {py:obj}`abtem.potentials.iam.BasePotential`
 
 ```{autodoc2-docstring} abtem.potentials.iam.Potential
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.potentials.iam.Potential.__init__
+:parser: rst
 ```
 
 ````
@@ -432,12 +475,14 @@ Bases: {py:obj}`abtem.potentials.iam._FieldBuilderFromAtoms`, {py:obj}`abtem.pot
 Bases: {py:obj}`abtem.potentials.iam.BasePotential`, {py:obj}`abtem.potentials.iam.FieldArray`
 
 ```{autodoc2-docstring} abtem.potentials.iam.PotentialArray
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.potentials.iam.PotentialArray.__init__
+:parser: rst
 ```
 
 ````{py:method} from_array_and_metadata(array: numpy.ndarray | dask.array.core.Array, axes_metadata: list[abtem.core.axes.AxisMetadata], metadata: dict) -> abtem.potentials.iam.PotentialArray
@@ -451,6 +496,7 @@ Bases: {py:obj}`abtem.potentials.iam.BasePotential`, {py:obj}`abtem.potentials.i
 :canonical: abtem.potentials.iam.PotentialArray.transmission_function
 
 ```{autodoc2-docstring} abtem.potentials.iam.PotentialArray.transmission_function
+:parser: rst
 ```
 
 ````
@@ -459,6 +505,7 @@ Bases: {py:obj}`abtem.potentials.iam.BasePotential`, {py:obj}`abtem.potentials.i
 :canonical: abtem.potentials.iam.PotentialArray.transmit
 
 ```{autodoc2-docstring} abtem.potentials.iam.PotentialArray.transmit
+:parser: rst
 ```
 
 ````
@@ -471,18 +518,21 @@ Bases: {py:obj}`abtem.potentials.iam.BasePotential`, {py:obj}`abtem.potentials.i
 Bases: {py:obj}`abtem.potentials.iam.PotentialArray`, {py:obj}`abtem.core.energy.HasAcceleratorMixin`
 
 ```{autodoc2-docstring} abtem.potentials.iam.TransmissionFunction
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.potentials.iam.TransmissionFunction.__init__
+:parser: rst
 ```
 
 ````{py:method} get_chunk(first_slice, last_slice) -> abtem.potentials.iam.TransmissionFunction
 :canonical: abtem.potentials.iam.TransmissionFunction.get_chunk
 
 ```{autodoc2-docstring} abtem.potentials.iam.TransmissionFunction.get_chunk
+:parser: rst
 ```
 
 ````
@@ -491,6 +541,7 @@ Bases: {py:obj}`abtem.potentials.iam.PotentialArray`, {py:obj}`abtem.core.energy
 :canonical: abtem.potentials.iam.TransmissionFunction.transmission_function
 
 ```{autodoc2-docstring} abtem.potentials.iam.TransmissionFunction.transmission_function
+:parser: rst
 ```
 
 ````
@@ -499,6 +550,7 @@ Bases: {py:obj}`abtem.potentials.iam.PotentialArray`, {py:obj}`abtem.core.energy
 :canonical: abtem.potentials.iam.TransmissionFunction.transmit
 
 ```{autodoc2-docstring} abtem.potentials.iam.TransmissionFunction.transmit
+:parser: rst
 ```
 
 ````
@@ -509,5 +561,6 @@ Bases: {py:obj}`abtem.potentials.iam.PotentialArray`, {py:obj}`abtem.core.energy
 :canonical: abtem.potentials.iam.validate_potential
 
 ```{autodoc2-docstring} abtem.potentials.iam.validate_potential
+:parser: rst
 ```
 ````

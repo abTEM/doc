@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.transform
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,20 +18,24 @@
 
 * - {py:obj}`ArrayObjectTransform <abtem.transform.ArrayObjectTransform>`
   - ```{autodoc2-docstring} abtem.transform.ArrayObjectTransform
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`EmptyTransform <abtem.transform.EmptyTransform>`
   - ```{autodoc2-docstring} abtem.transform.EmptyTransform
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`EnsembleTransform <abtem.transform.EnsembleTransform>`
   -
 * - {py:obj}`ReciprocalSpaceMultiplication <abtem.transform.ReciprocalSpaceMultiplication>`
   - ```{autodoc2-docstring} abtem.transform.ReciprocalSpaceMultiplication
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`TransformFromFunc <abtem.transform.TransformFromFunc>`
   - ```{autodoc2-docstring} abtem.transform.TransformFromFunc
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`WavesToMeasurementTransform <abtem.transform.WavesToMeasurementTransform>`
@@ -49,6 +54,7 @@
 
 * - {py:obj}`join_tuples <abtem.transform.join_tuples>`
   - ```{autodoc2-docstring} abtem.transform.join_tuples
+    :parser: rst
     :summary:
     ```
 ````
@@ -61,6 +67,7 @@
 
 * - {py:obj}`WavesType <abtem.transform.WavesType>`
   - ```{autodoc2-docstring} abtem.transform.WavesType
+    :parser: rst
     :summary:
     ```
 ````
@@ -73,6 +80,7 @@
 Bases: {py:obj}`typing.Generic`\[{py:obj}`abtem.array.ArrayObjectType`\, {py:obj}`abtem.array.ArrayObjectTypeAlt`\], {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyMixin`
 
 ```{autodoc2-docstring} abtem.transform.ArrayObjectTransform
+:parser: rst
 ```
 
 ````{py:method} apply(array_object: abtem.array.ArrayObjectType, max_batch: int | str = 'auto') -> abtem.array.ArrayObjectType | abtem.array.ArrayObjectTypeAlt | list[abtem.array.ArrayObjectType | abtem.array.ArrayObjectTypeAlt]
@@ -80,6 +88,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`abtem.array.ArrayObjectType`\, {py:obj
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.transform.ArrayObjectTransform.apply
+:parser: rst
 ```
 
 ````
@@ -89,6 +98,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`abtem.array.ArrayObjectType`\, {py:obj
 :type: list[abtem.core.axes.AxisMetadata]
 
 ```{autodoc2-docstring} abtem.transform.ArrayObjectTransform.ensemble_axes_metadata
+:parser: rst
 ```
 
 ````
@@ -98,6 +108,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`abtem.array.ArrayObjectType`\, {py:obj
 :type: tuple[int, ...]
 
 ```{autodoc2-docstring} abtem.transform.ArrayObjectTransform.ensemble_shape
+:parser: rst
 ```
 
 ````
@@ -107,6 +118,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`abtem.array.ArrayObjectType`\, {py:obj
 :type: dict
 
 ```{autodoc2-docstring} abtem.transform.ArrayObjectTransform.metadata
+:parser: rst
 ```
 
 ````
@@ -119,12 +131,14 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`abtem.array.ArrayObjectType`\, {py:obj
 Bases: {py:obj}`abtem.core.ensemble.EmptyEnsemble`, {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.array.ArrayObject`\, {py:obj}`abtem.array.ArrayObject`\]
 
 ```{autodoc2-docstring} abtem.transform.EmptyTransform
+:parser: rst
 ```
 
 ````{py:method} apply(array_object: abtem.array.ArrayObject, max_batch: int | str = 'auto') -> abtem.array.ArrayObject
 :canonical: abtem.transform.EmptyTransform.apply
 
 ```{autodoc2-docstring} abtem.transform.EmptyTransform.apply
+:parser: rst
 ```
 
 ````
@@ -144,12 +158,14 @@ Bases: {py:obj}`abtem.distributions.EnsembleFromDistributions`, {py:obj}`abtem.t
 Bases: {py:obj}`abtem.transform.WavesToWavesTransform`
 
 ```{autodoc2-docstring} abtem.transform.ReciprocalSpaceMultiplication
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.transform.ReciprocalSpaceMultiplication.__init__
+:parser: rst
 ```
 
 ````{py:property} in_place
@@ -157,6 +173,7 @@ Bases: {py:obj}`abtem.transform.WavesToWavesTransform`
 :type: bool
 
 ```{autodoc2-docstring} abtem.transform.ReciprocalSpaceMultiplication.in_place
+:parser: rst
 ```
 
 ````
@@ -169,18 +186,21 @@ Bases: {py:obj}`abtem.transform.WavesToWavesTransform`
 Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.array.ArrayObject`\, {py:obj}`abtem.array.ArrayObject`\]
 
 ```{autodoc2-docstring} abtem.transform.TransformFromFunc
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.transform.TransformFromFunc.__init__
+:parser: rst
 ```
 
 ````{py:method} apply(array_object: abtem.array.ArrayObjectType, max_batch: int | str = 'auto') -> abtem.array.ArrayObjectType
 :canonical: abtem.transform.TransformFromFunc.apply
 
 ```{autodoc2-docstring} abtem.transform.TransformFromFunc.apply
+:parser: rst
 ```
 
 ````
@@ -195,6 +215,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.array.Arra
 :canonical: abtem.transform.TransformFromFunc.func
 
 ```{autodoc2-docstring} abtem.transform.TransformFromFunc.func
+:parser: rst
 ```
 
 ````
@@ -203,6 +224,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.array.Arra
 :canonical: abtem.transform.TransformFromFunc.func_kwargs
 
 ```{autodoc2-docstring} abtem.transform.TransformFromFunc.func_kwargs
+:parser: rst
 ```
 
 ````
@@ -218,6 +240,7 @@ Bases: {py:obj}`abtem.transform.WavesTransform`\[{py:obj}`abtem.measurements.Bas
 :canonical: abtem.transform.WavesToMeasurementTransform.apply
 
 ```{autodoc2-docstring} abtem.transform.WavesToMeasurementTransform.apply
+:parser: rst
 ```
 
 ````
@@ -233,6 +256,7 @@ Bases: {py:obj}`abtem.transform.WavesTransform`
 :canonical: abtem.transform.WavesToWavesTransform.apply
 
 ```{autodoc2-docstring} abtem.transform.WavesToWavesTransform.apply
+:parser: rst
 ```
 
 ````
@@ -249,6 +273,7 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`\[{py:obj}`abtem.waves.Waves`\
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.transform.WavesTransform.apply
+:parser: rst
 ```
 
 ````
@@ -258,6 +283,7 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`\[{py:obj}`abtem.waves.Waves`\
 :type: tuple[str, ...]
 
 ```{autodoc2-docstring} abtem.transform.WavesTransform.distributions
+:parser: rst
 ```
 
 ````
@@ -270,6 +296,7 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`\[{py:obj}`abtem.waves.Waves`\
    'TypeVar(...)'
 
 ```{autodoc2-docstring} abtem.transform.WavesType
+:parser: rst
 ```
 
 ````
@@ -278,5 +305,6 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`\[{py:obj}`abtem.waves.Waves`\
 :canonical: abtem.transform.join_tuples
 
 ```{autodoc2-docstring} abtem.transform.join_tuples
+:parser: rst
 ```
 ````

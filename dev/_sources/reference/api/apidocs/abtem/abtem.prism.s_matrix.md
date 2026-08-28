@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.prism.s_matrix
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,14 +18,17 @@
 
 * - {py:obj}`BaseSMatrix <abtem.prism.s_matrix.BaseSMatrix>`
   - ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`SMatrix <abtem.prism.s_matrix.SMatrix>`
   - ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`SMatrixArray <abtem.prism.s_matrix.SMatrixArray>`
   - ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray
+    :parser: rst
     :summary:
     ```
 ````
@@ -37,6 +41,7 @@
 Bases: {py:obj}`abtem.waves.BaseWaves`
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix
+:parser: rst
 ```
 
 ````{py:property} base_axes_metadata
@@ -49,6 +54,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`
 :canonical: abtem.prism.s_matrix.BaseSMatrix.device
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.device
+:parser: rst
 ```
 
 ````
@@ -57,6 +63,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`
 :canonical: abtem.prism.s_matrix.BaseSMatrix.dummy_probes
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.dummy_probes
+:parser: rst
 ```
 
 ````
@@ -68,6 +75,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`
    None
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.ensemble_axes_metadata
+:parser: rst
 ```
 
 ````
@@ -79,6 +87,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`
    None
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.ensemble_shape
+:parser: rst
 ```
 
 ````
@@ -88,6 +97,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.interpolation
+:parser: rst
 ```
 
 ````
@@ -98,6 +108,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`
 :type: float
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.semiangle_cutoff
+:parser: rst
 ```
 
 ````
@@ -108,6 +119,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`
 :type: numpy.ndarray
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.wave_vectors
+:parser: rst
 ```
 
 ````
@@ -117,6 +129,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.window_extent
+:parser: rst
 ```
 
 ````
@@ -126,6 +139,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.BaseSMatrix.window_gpts
+:parser: rst
 ```
 
 ````
@@ -138,12 +152,14 @@ Bases: {py:obj}`abtem.waves.BaseWaves`
 Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityMixin`
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.__init__
+:parser: rst
 ```
 
 ````{py:property} base_shape
@@ -151,6 +167,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :type: tuple[int, int, int]
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.base_shape
+:parser: rst
 ```
 
 ````
@@ -159,6 +176,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :canonical: abtem.prism.s_matrix.SMatrix.build
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.build
+:parser: rst
 ```
 
 ````
@@ -168,6 +186,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :type: str | bool
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.downsample
+:parser: rst
 ```
 
 ````
@@ -177,6 +196,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :type: tuple[int, int]
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.downsampled_gpts
+:parser: rst
 ```
 
 ````
@@ -185,6 +205,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :canonical: abtem.prism.s_matrix.SMatrix.ensemble_axes_metadata
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.ensemble_axes_metadata
+:parser: rst
 ```
 
 ````
@@ -194,6 +215,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :type: tuple[int, ...]
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.ensemble_shape
+:parser: rst
 ```
 
 ````
@@ -213,6 +235,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :canonical: abtem.prism.s_matrix.SMatrix.multislice
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.multislice
+:parser: rst
 ```
 
 ````
@@ -222,6 +245,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :type: abtem.potentials.iam.BasePotential
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.potential
+:parser: rst
 ```
 
 ````
@@ -230,6 +254,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :canonical: abtem.prism.s_matrix.SMatrix.reduce
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.reduce
+:parser: rst
 ```
 
 ````
@@ -238,6 +263,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :canonical: abtem.prism.s_matrix.SMatrix.round_gpts_to_interpolation
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.round_gpts_to_interpolation
+:parser: rst
 ```
 
 ````
@@ -246,6 +272,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :canonical: abtem.prism.s_matrix.SMatrix.scan
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.scan
+:parser: rst
 ```
 
 ````
@@ -255,6 +282,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :type: float
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.semiangle_cutoff
+:parser: rst
 ```
 
 ````
@@ -264,6 +292,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :type: tuple[int, ...]
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.shape
+:parser: rst
 ```
 
 ````
@@ -273,6 +302,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :type: bool
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.store_on_host
+:parser: rst
 ```
 
 ````
@@ -281,6 +311,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 :canonical: abtem.prism.s_matrix.SMatrix.tilt
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.tilt
+:parser: rst
 ```
 
 ````
@@ -309,18 +340,21 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.array.ArrayObject`
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.__init__
+:parser: rst
 ```
 
 ````{py:method} copy_to_device(device: str) -> abtem.prism.s_matrix.SMatrixArray
 :canonical: abtem.prism.s_matrix.SMatrixArray.copy_to_device
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.copy_to_device
+:parser: rst
 ```
 
 ````
@@ -329,6 +363,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.array.ArrayObj
 :canonical: abtem.prism.s_matrix.SMatrixArray.device
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.device
+:parser: rst
 ```
 
 ````
@@ -338,6 +373,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.array.ArrayObj
 :type: list[abtem.core.axes.AxisMetadata]
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.ensemble_axes_metadata
+:parser: rst
 ```
 
 ````
@@ -370,6 +406,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.array.ArrayObj
 :canonical: abtem.prism.s_matrix.SMatrixArray.multislice
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.multislice
+:parser: rst
 ```
 
 ````
@@ -379,6 +416,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.array.ArrayObj
 :type: tuple[bool, bool]
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.periodic
+:parser: rst
 ```
 
 ````
@@ -392,6 +430,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.array.ArrayObj
 :canonical: abtem.prism.s_matrix.SMatrixArray.reduce
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.reduce
+:parser: rst
 ```
 
 ````
@@ -400,6 +439,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.array.ArrayObj
 :canonical: abtem.prism.s_matrix.SMatrixArray.scan
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.scan
+:parser: rst
 ```
 
 ````
@@ -409,6 +449,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.array.ArrayObj
 :type: float
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.semiangle_cutoff
+:parser: rst
 ```
 
 ````
@@ -417,6 +458,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.array.ArrayObj
 :canonical: abtem.prism.s_matrix.SMatrixArray.storage_device
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.storage_device
+:parser: rst
 ```
 
 ````
@@ -432,6 +474,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.array.ArrayObj
 :type: abtem.waves.Waves
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.waves
+:parser: rst
 ```
 
 ````
@@ -453,6 +496,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.array.ArrayObj
 :type: tuple[float, float]
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.SMatrixArray.window_offset
+:parser: rst
 ```
 
 ````

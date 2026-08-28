@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.core.chunks
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,54 +18,67 @@
 
 * - {py:obj}`assert_chunks_match_shape <abtem.core.chunks.assert_chunks_match_shape>`
   - ```{autodoc2-docstring} abtem.core.chunks.assert_chunks_match_shape
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`check_chunks_match_shape_length <abtem.core.chunks.check_chunks_match_shape_length>`
   - ```{autodoc2-docstring} abtem.core.chunks.check_chunks_match_shape_length
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`chunk_ranges <abtem.core.chunks.chunk_ranges>`
   - ```{autodoc2-docstring} abtem.core.chunks.chunk_ranges
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`equal_sized_chunks <abtem.core.chunks.equal_sized_chunks>`
   - ```{autodoc2-docstring} abtem.core.chunks.equal_sized_chunks
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`fill_in_chunk_sizes <abtem.core.chunks.fill_in_chunk_sizes>`
   - ```{autodoc2-docstring} abtem.core.chunks.fill_in_chunk_sizes
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`generate_chunks <abtem.core.chunks.generate_chunks>`
   - ```{autodoc2-docstring} abtem.core.chunks.generate_chunks
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`is_tuple_of_ints <abtem.core.chunks.is_tuple_of_ints>`
   - ```{autodoc2-docstring} abtem.core.chunks.is_tuple_of_ints
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`is_tuple_of_ints_or_tuple_of_ints <abtem.core.chunks.is_tuple_of_ints_or_tuple_of_ints>`
   - ```{autodoc2-docstring} abtem.core.chunks.is_tuple_of_ints_or_tuple_of_ints
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`is_tuple_of_ints_or_tuple_of_tuple_of_ints <abtem.core.chunks.is_tuple_of_ints_or_tuple_of_tuple_of_ints>`
   - ```{autodoc2-docstring} abtem.core.chunks.is_tuple_of_ints_or_tuple_of_tuple_of_ints
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`is_tuple_of_tuple_of_ints <abtem.core.chunks.is_tuple_of_tuple_of_ints>`
   - ```{autodoc2-docstring} abtem.core.chunks.is_tuple_of_tuple_of_ints
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`is_validated_chunks <abtem.core.chunks.is_validated_chunks>`
   - ```{autodoc2-docstring} abtem.core.chunks.is_validated_chunks
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`iterate_chunk_ranges <abtem.core.chunks.iterate_chunk_ranges>`
   - ```{autodoc2-docstring} abtem.core.chunks.iterate_chunk_ranges
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_chunks <abtem.core.chunks.validate_chunks>`
   - ```{autodoc2-docstring} abtem.core.chunks.validate_chunks
+    :parser: rst
     :summary:
     ```
 ````
@@ -77,14 +91,17 @@
 
 * - {py:obj}`Chunks <abtem.core.chunks.Chunks>`
   - ```{autodoc2-docstring} abtem.core.chunks.Chunks
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`ChunksTuple <abtem.core.chunks.ChunksTuple>`
   - ```{autodoc2-docstring} abtem.core.chunks.ChunksTuple
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`ValidatedChunks <abtem.core.chunks.ValidatedChunks>`
   - ```{autodoc2-docstring} abtem.core.chunks.ValidatedChunks
+    :parser: rst
     :summary:
     ```
 ````
@@ -97,6 +114,7 @@
    None
 
 ```{autodoc2-docstring} abtem.core.chunks.Chunks
+:parser: rst
 ```
 
 ````
@@ -107,6 +125,7 @@
    None
 
 ```{autodoc2-docstring} abtem.core.chunks.ChunksTuple
+:parser: rst
 ```
 
 ````
@@ -117,6 +136,7 @@
    None
 
 ```{autodoc2-docstring} abtem.core.chunks.ValidatedChunks
+:parser: rst
 ```
 
 ````
@@ -125,6 +145,7 @@
 :canonical: abtem.core.chunks.assert_chunks_match_shape
 
 ```{autodoc2-docstring} abtem.core.chunks.assert_chunks_match_shape
+:parser: rst
 ```
 ````
 
@@ -132,6 +153,7 @@
 :canonical: abtem.core.chunks.check_chunks_match_shape_length
 
 ```{autodoc2-docstring} abtem.core.chunks.check_chunks_match_shape_length
+:parser: rst
 ```
 ````
 
@@ -139,6 +161,7 @@
 :canonical: abtem.core.chunks.chunk_ranges
 
 ```{autodoc2-docstring} abtem.core.chunks.chunk_ranges
+:parser: rst
 ```
 ````
 
@@ -146,6 +169,7 @@
 :canonical: abtem.core.chunks.equal_sized_chunks
 
 ```{autodoc2-docstring} abtem.core.chunks.equal_sized_chunks
+:parser: rst
 ```
 ````
 
@@ -153,6 +177,7 @@
 :canonical: abtem.core.chunks.fill_in_chunk_sizes
 
 ```{autodoc2-docstring} abtem.core.chunks.fill_in_chunk_sizes
+:parser: rst
 ```
 ````
 
@@ -160,6 +185,7 @@
 :canonical: abtem.core.chunks.generate_chunks
 
 ```{autodoc2-docstring} abtem.core.chunks.generate_chunks
+:parser: rst
 ```
 ````
 
@@ -167,6 +193,7 @@
 :canonical: abtem.core.chunks.is_tuple_of_ints
 
 ```{autodoc2-docstring} abtem.core.chunks.is_tuple_of_ints
+:parser: rst
 ```
 ````
 
@@ -174,6 +201,7 @@
 :canonical: abtem.core.chunks.is_tuple_of_ints_or_tuple_of_ints
 
 ```{autodoc2-docstring} abtem.core.chunks.is_tuple_of_ints_or_tuple_of_ints
+:parser: rst
 ```
 ````
 
@@ -181,6 +209,7 @@
 :canonical: abtem.core.chunks.is_tuple_of_ints_or_tuple_of_tuple_of_ints
 
 ```{autodoc2-docstring} abtem.core.chunks.is_tuple_of_ints_or_tuple_of_tuple_of_ints
+:parser: rst
 ```
 ````
 
@@ -188,6 +217,7 @@
 :canonical: abtem.core.chunks.is_tuple_of_tuple_of_ints
 
 ```{autodoc2-docstring} abtem.core.chunks.is_tuple_of_tuple_of_ints
+:parser: rst
 ```
 ````
 
@@ -195,6 +225,7 @@
 :canonical: abtem.core.chunks.is_validated_chunks
 
 ```{autodoc2-docstring} abtem.core.chunks.is_validated_chunks
+:parser: rst
 ```
 ````
 
@@ -202,6 +233,7 @@
 :canonical: abtem.core.chunks.iterate_chunk_ranges
 
 ```{autodoc2-docstring} abtem.core.chunks.iterate_chunk_ranges
+:parser: rst
 ```
 ````
 
@@ -209,5 +241,6 @@
 :canonical: abtem.core.chunks.validate_chunks
 
 ```{autodoc2-docstring} abtem.core.chunks.validate_chunks
+:parser: rst
 ```
 ````

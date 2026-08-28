@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.atoms
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,110 +18,137 @@
 
 * - {py:obj}`B_to_sigma <abtem.atoms.B_to_sigma>`
   - ```{autodoc2-docstring} abtem.atoms.B_to_sigma
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`atom_property_dict_to_atom_property_array <abtem.atoms.atom_property_dict_to_atom_property_array>`
   - ```{autodoc2-docstring} abtem.atoms.atom_property_dict_to_atom_property_array
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`atoms_in_cell <abtem.atoms.atoms_in_cell>`
   - ```{autodoc2-docstring} abtem.atoms.atoms_in_cell
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`best_orthogonal_cell <abtem.atoms.best_orthogonal_cell>`
   - ```{autodoc2-docstring} abtem.atoms.best_orthogonal_cell
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`cut_cell <abtem.atoms.cut_cell>`
   - ```{autodoc2-docstring} abtem.atoms.cut_cell
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`decompose_affine_transform <abtem.atoms.decompose_affine_transform>`
   - ```{autodoc2-docstring} abtem.atoms.decompose_affine_transform
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`euler_sequence <abtem.atoms.euler_sequence>`
   - ```{autodoc2-docstring} abtem.atoms.euler_sequence
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`euler_to_rotation <abtem.atoms.euler_to_rotation>`
   - ```{autodoc2-docstring} abtem.atoms.euler_to_rotation
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`flip_atoms <abtem.atoms.flip_atoms>`
   - ```{autodoc2-docstring} abtem.atoms.flip_atoms
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`is_cell_hexagonal <abtem.atoms.is_cell_hexagonal>`
   - ```{autodoc2-docstring} abtem.atoms.is_cell_hexagonal
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`is_cell_orthogonal <abtem.atoms.is_cell_orthogonal>`
   - ```{autodoc2-docstring} abtem.atoms.is_cell_orthogonal
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`is_cell_valid <abtem.atoms.is_cell_valid>`
   - ```{autodoc2-docstring} abtem.atoms.is_cell_valid
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`merge_close_atoms <abtem.atoms.merge_close_atoms>`
   - ```{autodoc2-docstring} abtem.atoms.merge_close_atoms
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`orthogonalize_cell <abtem.atoms.orthogonalize_cell>`
   - ```{autodoc2-docstring} abtem.atoms.orthogonalize_cell
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`pad_atoms <abtem.atoms.pad_atoms>`
   - ```{autodoc2-docstring} abtem.atoms.pad_atoms
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`plane_to_axes <abtem.atoms.plane_to_axes>`
   - ```{autodoc2-docstring} abtem.atoms.plane_to_axes
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`pretty_print_transform <abtem.atoms.pretty_print_transform>`
   - ```{autodoc2-docstring} abtem.atoms.pretty_print_transform
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`rotate_atoms <abtem.atoms.rotate_atoms>`
   - ```{autodoc2-docstring} abtem.atoms.rotate_atoms
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`rotate_atoms_to_plane <abtem.atoms.rotate_atoms_to_plane>`
   - ```{autodoc2-docstring} abtem.atoms.rotate_atoms_to_plane
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`rotation_matrix_from_plane <abtem.atoms.rotation_matrix_from_plane>`
   - ```{autodoc2-docstring} abtem.atoms.rotation_matrix_from_plane
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`rotation_matrix_to_euler <abtem.atoms.rotation_matrix_to_euler>`
   - ```{autodoc2-docstring} abtem.atoms.rotation_matrix_to_euler
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`shrink_cell <abtem.atoms.shrink_cell>`
   - ```{autodoc2-docstring} abtem.atoms.shrink_cell
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`sigma_to_B <abtem.atoms.sigma_to_B>`
   - ```{autodoc2-docstring} abtem.atoms.sigma_to_B
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`standardize_cell <abtem.atoms.standardize_cell>`
   - ```{autodoc2-docstring} abtem.atoms.standardize_cell
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_per_atom_property <abtem.atoms.validate_per_atom_property>`
   - ```{autodoc2-docstring} abtem.atoms.validate_per_atom_property
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_sigmas <abtem.atoms.validate_sigmas>`
   - ```{autodoc2-docstring} abtem.atoms.validate_sigmas
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`wrap_with_tolerance <abtem.atoms.wrap_with_tolerance>`
   - ```{autodoc2-docstring} abtem.atoms.wrap_with_tolerance
+    :parser: rst
     :summary:
     ```
 ````
@@ -133,10 +161,12 @@
 
 * - {py:obj}`AtomProperties <abtem.atoms.AtomProperties>`
   - ```{autodoc2-docstring} abtem.atoms.AtomProperties
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`axis_mapping <abtem.atoms.axis_mapping>`
   - ```{autodoc2-docstring} abtem.atoms.axis_mapping
+    :parser: rst
     :summary:
     ```
 ````
@@ -149,6 +179,7 @@
    None
 
 ```{autodoc2-docstring} abtem.atoms.AtomProperties
+:parser: rst
 ```
 
 ````
@@ -157,6 +188,7 @@
 :canonical: abtem.atoms.B_to_sigma
 
 ```{autodoc2-docstring} abtem.atoms.B_to_sigma
+:parser: rst
 ```
 ````
 
@@ -164,6 +196,7 @@
 :canonical: abtem.atoms.atom_property_dict_to_atom_property_array
 
 ```{autodoc2-docstring} abtem.atoms.atom_property_dict_to_atom_property_array
+:parser: rst
 ```
 ````
 
@@ -171,6 +204,7 @@
 :canonical: abtem.atoms.atoms_in_cell
 
 ```{autodoc2-docstring} abtem.atoms.atoms_in_cell
+:parser: rst
 ```
 ````
 
@@ -180,6 +214,7 @@
    None
 
 ```{autodoc2-docstring} abtem.atoms.axis_mapping
+:parser: rst
 ```
 
 ````
@@ -188,6 +223,7 @@
 :canonical: abtem.atoms.best_orthogonal_cell
 
 ```{autodoc2-docstring} abtem.atoms.best_orthogonal_cell
+:parser: rst
 ```
 ````
 
@@ -195,6 +231,7 @@
 :canonical: abtem.atoms.cut_cell
 
 ```{autodoc2-docstring} abtem.atoms.cut_cell
+:parser: rst
 ```
 ````
 
@@ -202,6 +239,7 @@
 :canonical: abtem.atoms.decompose_affine_transform
 
 ```{autodoc2-docstring} abtem.atoms.decompose_affine_transform
+:parser: rst
 ```
 ````
 
@@ -209,6 +247,7 @@
 :canonical: abtem.atoms.euler_sequence
 
 ```{autodoc2-docstring} abtem.atoms.euler_sequence
+:parser: rst
 ```
 ````
 
@@ -216,6 +255,7 @@
 :canonical: abtem.atoms.euler_to_rotation
 
 ```{autodoc2-docstring} abtem.atoms.euler_to_rotation
+:parser: rst
 ```
 ````
 
@@ -223,6 +263,7 @@
 :canonical: abtem.atoms.flip_atoms
 
 ```{autodoc2-docstring} abtem.atoms.flip_atoms
+:parser: rst
 ```
 ````
 
@@ -230,6 +271,7 @@
 :canonical: abtem.atoms.is_cell_hexagonal
 
 ```{autodoc2-docstring} abtem.atoms.is_cell_hexagonal
+:parser: rst
 ```
 ````
 
@@ -237,6 +279,7 @@
 :canonical: abtem.atoms.is_cell_orthogonal
 
 ```{autodoc2-docstring} abtem.atoms.is_cell_orthogonal
+:parser: rst
 ```
 ````
 
@@ -244,6 +287,7 @@
 :canonical: abtem.atoms.is_cell_valid
 
 ```{autodoc2-docstring} abtem.atoms.is_cell_valid
+:parser: rst
 ```
 ````
 
@@ -251,6 +295,7 @@
 :canonical: abtem.atoms.merge_close_atoms
 
 ```{autodoc2-docstring} abtem.atoms.merge_close_atoms
+:parser: rst
 ```
 ````
 
@@ -258,6 +303,7 @@
 :canonical: abtem.atoms.orthogonalize_cell
 
 ```{autodoc2-docstring} abtem.atoms.orthogonalize_cell
+:parser: rst
 ```
 ````
 
@@ -265,6 +311,7 @@
 :canonical: abtem.atoms.pad_atoms
 
 ```{autodoc2-docstring} abtem.atoms.pad_atoms
+:parser: rst
 ```
 ````
 
@@ -272,6 +319,7 @@
 :canonical: abtem.atoms.plane_to_axes
 
 ```{autodoc2-docstring} abtem.atoms.plane_to_axes
+:parser: rst
 ```
 ````
 
@@ -279,6 +327,7 @@
 :canonical: abtem.atoms.pretty_print_transform
 
 ```{autodoc2-docstring} abtem.atoms.pretty_print_transform
+:parser: rst
 ```
 ````
 
@@ -286,6 +335,7 @@
 :canonical: abtem.atoms.rotate_atoms
 
 ```{autodoc2-docstring} abtem.atoms.rotate_atoms
+:parser: rst
 ```
 ````
 
@@ -293,6 +343,7 @@
 :canonical: abtem.atoms.rotate_atoms_to_plane
 
 ```{autodoc2-docstring} abtem.atoms.rotate_atoms_to_plane
+:parser: rst
 ```
 ````
 
@@ -300,6 +351,7 @@
 :canonical: abtem.atoms.rotation_matrix_from_plane
 
 ```{autodoc2-docstring} abtem.atoms.rotation_matrix_from_plane
+:parser: rst
 ```
 ````
 
@@ -307,6 +359,7 @@
 :canonical: abtem.atoms.rotation_matrix_to_euler
 
 ```{autodoc2-docstring} abtem.atoms.rotation_matrix_to_euler
+:parser: rst
 ```
 ````
 
@@ -314,6 +367,7 @@
 :canonical: abtem.atoms.shrink_cell
 
 ```{autodoc2-docstring} abtem.atoms.shrink_cell
+:parser: rst
 ```
 ````
 
@@ -321,6 +375,7 @@
 :canonical: abtem.atoms.sigma_to_B
 
 ```{autodoc2-docstring} abtem.atoms.sigma_to_B
+:parser: rst
 ```
 ````
 
@@ -328,6 +383,7 @@
 :canonical: abtem.atoms.standardize_cell
 
 ```{autodoc2-docstring} abtem.atoms.standardize_cell
+:parser: rst
 ```
 ````
 
@@ -335,6 +391,7 @@
 :canonical: abtem.atoms.validate_per_atom_property
 
 ```{autodoc2-docstring} abtem.atoms.validate_per_atom_property
+:parser: rst
 ```
 ````
 
@@ -342,6 +399,7 @@
 :canonical: abtem.atoms.validate_sigmas
 
 ```{autodoc2-docstring} abtem.atoms.validate_sigmas
+:parser: rst
 ```
 ````
 
@@ -349,5 +407,6 @@
 :canonical: abtem.atoms.wrap_with_tolerance
 
 ```{autodoc2-docstring} abtem.atoms.wrap_with_tolerance
+:parser: rst
 ```
 ````

@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.core.units
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,14 +18,17 @@
 
 * - {py:obj}`format_units <abtem.core.units.format_units>`
   - ```{autodoc2-docstring} abtem.core.units.format_units
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`get_conversion_factor <abtem.core.units.get_conversion_factor>`
   - ```{autodoc2-docstring} abtem.core.units.get_conversion_factor
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_units <abtem.core.units.validate_units>`
   - ```{autodoc2-docstring} abtem.core.units.validate_units
+    :parser: rst
     :summary:
     ```
 ````
@@ -37,6 +41,7 @@
 
 * - {py:obj}`units_type <abtem.core.units.units_type>`
   - ```{autodoc2-docstring} abtem.core.units.units_type
+    :parser: rst
     :summary:
     ```
 ````
@@ -47,6 +52,7 @@
 :canonical: abtem.core.units.format_units
 
 ```{autodoc2-docstring} abtem.core.units.format_units
+:parser: rst
 ```
 ````
 
@@ -54,6 +60,7 @@
 :canonical: abtem.core.units.get_conversion_factor
 
 ```{autodoc2-docstring} abtem.core.units.get_conversion_factor
+:parser: rst
 ```
 ````
 
@@ -63,6 +70,7 @@
    None
 
 ```{autodoc2-docstring} abtem.core.units.units_type
+:parser: rst
 ```
 
 ````
@@ -71,5 +79,6 @@
 :canonical: abtem.core.units.validate_units
 
 ```{autodoc2-docstring} abtem.core.units.validate_units
+:parser: rst
 ```
 ````

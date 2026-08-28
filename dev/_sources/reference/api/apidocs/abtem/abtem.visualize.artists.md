@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.visualize.artists
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,50 +18,62 @@
 
 * - {py:obj}`AreaIndicator <abtem.visualize.artists.AreaIndicator>`
   - ```{autodoc2-docstring} abtem.visualize.artists.AreaIndicator
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`Artist <abtem.visualize.artists.Artist>`
   - ```{autodoc2-docstring} abtem.visualize.artists.Artist
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`Artist1D <abtem.visualize.artists.Artist1D>`
   - ```{autodoc2-docstring} abtem.visualize.artists.Artist1D
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`Artist2D <abtem.visualize.artists.Artist2D>`
   - ```{autodoc2-docstring} abtem.visualize.artists.Artist2D
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`CircleAnnotations <abtem.visualize.artists.CircleAnnotations>`
   - ```{autodoc2-docstring} abtem.visualize.artists.CircleAnnotations
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`DomainColoringArtist <abtem.visualize.artists.DomainColoringArtist>`
   - ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`ImageArtist <abtem.visualize.artists.ImageArtist>`
   - ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`LinesArtist <abtem.visualize.artists.LinesArtist>`
   - ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`OverlayImshowArtist <abtem.visualize.artists.OverlayImshowArtist>`
   - ```{autodoc2-docstring} abtem.visualize.artists.OverlayImshowArtist
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`ScaleBar <abtem.visualize.artists.ScaleBar>`
   - ```{autodoc2-docstring} abtem.visualize.artists.ScaleBar
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`ScaledCircleCollection <abtem.visualize.artists.ScaledCircleCollection>`
   - ```{autodoc2-docstring} abtem.visualize.artists.ScaledCircleCollection
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`ScatterArtist <abtem.visualize.artists.ScatterArtist>`
   - ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist
+    :parser: rst
     :summary:
     ```
 ````
@@ -73,14 +86,17 @@
 
 * - {py:obj}`default_cbar_scalar_formatter <abtem.visualize.artists.default_cbar_scalar_formatter>`
   - ```{autodoc2-docstring} abtem.visualize.artists.default_cbar_scalar_formatter
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`get_extent <abtem.visualize.artists.get_extent>`
   - ```{autodoc2-docstring} abtem.visualize.artists.get_extent
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_cmap <abtem.visualize.artists.validate_cmap>`
   - ```{autodoc2-docstring} abtem.visualize.artists.validate_cmap
+    :parser: rst
     :summary:
     ```
 ````
@@ -91,12 +107,14 @@
 :canonical: abtem.visualize.artists.AreaIndicator
 
 ```{autodoc2-docstring} abtem.visualize.artists.AreaIndicator
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.visualize.artists.AreaIndicator.__init__
+:parser: rst
 ```
 
 ````
@@ -105,12 +123,14 @@
 :canonical: abtem.visualize.artists.Artist
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.__init__
+:parser: rst
 ```
 
 ````{py:method} get_power()
@@ -118,6 +138,7 @@
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.get_power
+:parser: rst
 ```
 
 ````
@@ -127,6 +148,7 @@
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.get_xlim
+:parser: rst
 ```
 
 ````
@@ -136,6 +158,7 @@
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.get_ylim
+:parser: rst
 ```
 
 ````
@@ -145,6 +168,7 @@
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.remove
+:parser: rst
 ```
 
 ````
@@ -154,6 +178,7 @@
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.set_data
+:parser: rst
 ```
 
 ````
@@ -162,6 +187,7 @@
 :canonical: abtem.visualize.artists.Artist.set_logscale
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.set_logscale
+:parser: rst
 ```
 
 ````
@@ -171,6 +197,7 @@
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.set_power
+:parser: rst
 ```
 
 ````
@@ -180,6 +207,7 @@
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.set_value_limits
+:parser: rst
 ```
 
 ````
@@ -188,6 +216,7 @@
 :canonical: abtem.visualize.artists.Artist.set_xlabel
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.set_xlabel
+:parser: rst
 ```
 
 ````
@@ -196,6 +225,7 @@
 :canonical: abtem.visualize.artists.Artist.set_xlim
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.set_xlim
+:parser: rst
 ```
 
 ````
@@ -204,6 +234,7 @@
 :canonical: abtem.visualize.artists.Artist.set_ylabel
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.set_ylabel
+:parser: rst
 ```
 
 ````
@@ -212,6 +243,7 @@
 :canonical: abtem.visualize.artists.Artist.set_ylim
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.set_ylim
+:parser: rst
 ```
 
 ````
@@ -224,12 +256,14 @@
 Bases: {py:obj}`abtem.visualize.artists.Artist`
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist1D
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist1D.__init__
+:parser: rst
 ```
 
 ````
@@ -240,12 +274,14 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 Bases: {py:obj}`abtem.visualize.artists.Artist`
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D.__init__
+:parser: rst
 ```
 
 ````{py:method} add_area_indicator(area_indicator, panel='first', **kwargs)
@@ -253,6 +289,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D.add_area_indicator
+:parser: rst
 ```
 
 ````
@@ -262,6 +299,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D.get_value_limits
+:parser: rst
 ```
 
 ````
@@ -271,6 +309,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D.get_xlim
+:parser: rst
 ```
 
 ````
@@ -280,6 +319,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D.get_ylim
+:parser: rst
 ```
 
 ````
@@ -289,6 +329,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D.num_cbars
+:parser: rst
 ```
 
 ````
@@ -298,6 +339,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D.set_cbars
+:parser: rst
 ```
 
 ````
@@ -307,6 +349,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D.set_cmap
+:parser: rst
 ```
 
 ````
@@ -316,6 +359,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D.set_data
+:parser: rst
 ```
 
 ````
@@ -324,6 +368,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :canonical: abtem.visualize.artists.Artist2D.set_logscale
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D.set_logscale
+:parser: rst
 ```
 
 ````
@@ -333,6 +378,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D.set_power
+:parser: rst
 ```
 
 ````
@@ -341,6 +387,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :canonical: abtem.visualize.artists.Artist2D.set_scale_bars
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D.set_scale_bars
+:parser: rst
 ```
 
 ````
@@ -350,6 +397,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D.set_value_limits
+:parser: rst
 ```
 
 ````
@@ -360,18 +408,21 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :canonical: abtem.visualize.artists.CircleAnnotations
 
 ```{autodoc2-docstring} abtem.visualize.artists.CircleAnnotations
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.visualize.artists.CircleAnnotations.__init__
+:parser: rst
 ```
 
 ````{py:method} set_placement(placement)
 :canonical: abtem.visualize.artists.CircleAnnotations.set_placement
 
 ```{autodoc2-docstring} abtem.visualize.artists.CircleAnnotations.set_placement
+:parser: rst
 ```
 
 ````
@@ -380,6 +431,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :canonical: abtem.visualize.artists.CircleAnnotations.set_threshold
 
 ```{autodoc2-docstring} abtem.visualize.artists.CircleAnnotations.set_threshold
+:parser: rst
 ```
 
 ````
@@ -388,6 +440,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :canonical: abtem.visualize.artists.CircleAnnotations.set_visible
 
 ```{autodoc2-docstring} abtem.visualize.artists.CircleAnnotations.set_visible
+:parser: rst
 ```
 
 ````
@@ -396,6 +449,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :canonical: abtem.visualize.artists.CircleAnnotations.threshold
 
 ```{autodoc2-docstring} abtem.visualize.artists.CircleAnnotations.threshold
+:parser: rst
 ```
 
 ````
@@ -408,18 +462,21 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.__init__
+:parser: rst
 ```
 
 ````{py:property} amplitude_axes_image
 :canonical: abtem.visualize.artists.DomainColoringArtist.amplitude_axes_image
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.amplitude_axes_image
+:parser: rst
 ```
 
 ````
@@ -428,6 +485,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.DomainColoringArtist.amplitude_norm
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.amplitude_norm
+:parser: rst
 ```
 
 ````
@@ -436,6 +494,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.DomainColoringArtist.get_power
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.get_power
+:parser: rst
 ```
 
 ````
@@ -444,6 +503,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.DomainColoringArtist.get_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.get_value_limits
+:parser: rst
 ```
 
 ````
@@ -452,6 +512,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.DomainColoringArtist.get_xlim
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.get_xlim
+:parser: rst
 ```
 
 ````
@@ -460,6 +521,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.DomainColoringArtist.get_ylim
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.get_ylim
+:parser: rst
 ```
 
 ````
@@ -470,6 +532,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
    2
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.num_cbars
+:parser: rst
 ```
 
 ````
@@ -478,6 +541,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.DomainColoringArtist.phase_axes_image
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.phase_axes_image
+:parser: rst
 ```
 
 ````
@@ -486,6 +550,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.DomainColoringArtist.remove
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.remove
+:parser: rst
 ```
 
 ````
@@ -494,6 +559,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.DomainColoringArtist.set_cbars
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.set_cbars
+:parser: rst
 ```
 
 ````
@@ -502,6 +568,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.DomainColoringArtist.set_cmap
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.set_cmap
+:parser: rst
 ```
 
 ````
@@ -510,6 +577,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.DomainColoringArtist.set_data
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.set_data
+:parser: rst
 ```
 
 ````
@@ -518,6 +586,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.DomainColoringArtist.set_extent
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.set_extent
+:parser: rst
 ```
 
 ````
@@ -526,6 +595,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.DomainColoringArtist.set_power
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.set_power
+:parser: rst
 ```
 
 ````
@@ -534,6 +604,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.DomainColoringArtist.set_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.set_value_limits
+:parser: rst
 ```
 
 ````
@@ -546,18 +617,21 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.__init__
+:parser: rst
 ```
 
 ````{py:property} axes_image
 :canonical: abtem.visualize.artists.ImageArtist.axes_image
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.axes_image
+:parser: rst
 ```
 
 ````
@@ -566,6 +640,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ImageArtist.get_power
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.get_power
+:parser: rst
 ```
 
 ````
@@ -574,6 +649,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ImageArtist.get_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.get_value_limits
+:parser: rst
 ```
 
 ````
@@ -582,6 +658,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ImageArtist.get_xlim
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.get_xlim
+:parser: rst
 ```
 
 ````
@@ -590,6 +667,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ImageArtist.get_ylim
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.get_ylim
+:parser: rst
 ```
 
 ````
@@ -598,6 +676,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ImageArtist.norm
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.norm
+:parser: rst
 ```
 
 ````
@@ -608,6 +687,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
    1
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.num_cbars
+:parser: rst
 ```
 
 ````
@@ -616,6 +696,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ImageArtist.remove
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.remove
+:parser: rst
 ```
 
 ````
@@ -624,6 +705,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ImageArtist.set_cbars
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.set_cbars
+:parser: rst
 ```
 
 ````
@@ -632,6 +714,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ImageArtist.set_cmap
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.set_cmap
+:parser: rst
 ```
 
 ````
@@ -640,6 +723,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ImageArtist.set_data
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.set_data
+:parser: rst
 ```
 
 ````
@@ -648,6 +732,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ImageArtist.set_extent
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.set_extent
+:parser: rst
 ```
 
 ````
@@ -656,6 +741,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ImageArtist.set_logscale
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.set_logscale
+:parser: rst
 ```
 
 ````
@@ -664,6 +750,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ImageArtist.set_power
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.set_power
+:parser: rst
 ```
 
 ````
@@ -672,6 +759,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ImageArtist.set_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.set_value_limits
+:parser: rst
 ```
 
 ````
@@ -684,18 +772,21 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.__init__
+:parser: rst
 ```
 
 ````{py:method} get_logscale()
 :canonical: abtem.visualize.artists.LinesArtist.get_logscale
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.get_logscale
+:parser: rst
 ```
 
 ````
@@ -704,6 +795,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 :canonical: abtem.visualize.artists.LinesArtist.get_power
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.get_power
+:parser: rst
 ```
 
 ````
@@ -712,6 +804,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 :canonical: abtem.visualize.artists.LinesArtist.get_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.get_value_limits
+:parser: rst
 ```
 
 ````
@@ -720,6 +813,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 :canonical: abtem.visualize.artists.LinesArtist.get_xlim
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.get_xlim
+:parser: rst
 ```
 
 ````
@@ -728,6 +822,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 :canonical: abtem.visualize.artists.LinesArtist.get_ylim
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.get_ylim
+:parser: rst
 ```
 
 ````
@@ -738,6 +833,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
    0
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.num_cbars
+:parser: rst
 ```
 
 ````
@@ -746,6 +842,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 :canonical: abtem.visualize.artists.LinesArtist.remove
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.remove
+:parser: rst
 ```
 
 ````
@@ -754,6 +851,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 :canonical: abtem.visualize.artists.LinesArtist.set_data
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.set_data
+:parser: rst
 ```
 
 ````
@@ -762,6 +860,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 :canonical: abtem.visualize.artists.LinesArtist.set_legend
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.set_legend
+:parser: rst
 ```
 
 ````
@@ -770,6 +869,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 :canonical: abtem.visualize.artists.LinesArtist.set_logscale
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.set_logscale
+:parser: rst
 ```
 
 ````
@@ -779,6 +879,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.set_power
+:parser: rst
 ```
 
 ````
@@ -787,6 +888,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 :canonical: abtem.visualize.artists.LinesArtist.set_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.set_value_limits
+:parser: rst
 ```
 
 ````
@@ -799,12 +901,14 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ```{autodoc2-docstring} abtem.visualize.artists.OverlayImshowArtist
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.visualize.artists.OverlayImshowArtist.__init__
+:parser: rst
 ```
 
 ````
@@ -813,12 +917,14 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScaleBar
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScaleBar
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScaleBar.__init__
+:parser: rst
 ```
 
 ````
@@ -829,12 +935,14 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 Bases: {py:obj}`matplotlib.collections.Collection`
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScaledCircleCollection
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScaledCircleCollection.__init__
+:parser: rst
 ```
 
 ````{py:method} draw(renderer)
@@ -846,6 +954,7 @@ Bases: {py:obj}`matplotlib.collections.Collection`
 :canonical: abtem.visualize.artists.ScaledCircleCollection.get_all_offsets
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScaledCircleCollection.get_all_offsets
+:parser: rst
 ```
 
 ````
@@ -854,6 +963,7 @@ Bases: {py:obj}`matplotlib.collections.Collection`
 :canonical: abtem.visualize.artists.ScaledCircleCollection.get_radii
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScaledCircleCollection.get_radii
+:parser: rst
 ```
 
 ````
@@ -862,6 +972,7 @@ Bases: {py:obj}`matplotlib.collections.Collection`
 :canonical: abtem.visualize.artists.ScaledCircleCollection.get_scale
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScaledCircleCollection.get_scale
+:parser: rst
 ```
 
 ````
@@ -875,6 +986,7 @@ Bases: {py:obj}`matplotlib.collections.Collection`
 :canonical: abtem.visualize.artists.ScaledCircleCollection.set_data
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScaledCircleCollection.set_data
+:parser: rst
 ```
 
 ````
@@ -888,6 +1000,7 @@ Bases: {py:obj}`matplotlib.collections.Collection`
 :canonical: abtem.visualize.artists.ScaledCircleCollection.set_scale
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScaledCircleCollection.set_scale
+:parser: rst
 ```
 
 ````
@@ -896,6 +1009,7 @@ Bases: {py:obj}`matplotlib.collections.Collection`
 :canonical: abtem.visualize.artists.ScaledCircleCollection.set_threshold
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScaledCircleCollection.set_threshold
+:parser: rst
 ```
 
 ````
@@ -904,6 +1018,7 @@ Bases: {py:obj}`matplotlib.collections.Collection`
 :canonical: abtem.visualize.artists.ScaledCircleCollection.threshold
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScaledCircleCollection.threshold
+:parser: rst
 ```
 
 ````
@@ -916,12 +1031,14 @@ Bases: {py:obj}`matplotlib.collections.Collection`
 Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.__init__
+:parser: rst
 ```
 
 ````{py:property} annotations
@@ -929,6 +1046,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :type: list[matplotlib.text.Annotation]
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.annotations
+:parser: rst
 ```
 
 ````
@@ -938,6 +1056,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :type: abtem.visualize.artists.ScaledCircleCollection
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.circle_collection
+:parser: rst
 ```
 
 ````
@@ -946,6 +1065,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScatterArtist.get_offsets
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.get_offsets
+:parser: rst
 ```
 
 ````
@@ -954,6 +1074,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScatterArtist.get_power
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.get_power
+:parser: rst
 ```
 
 ````
@@ -962,6 +1083,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScatterArtist.get_scale
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.get_scale
+:parser: rst
 ```
 
 ````
@@ -970,6 +1092,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScatterArtist.get_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.get_value_limits
+:parser: rst
 ```
 
 ````
@@ -978,6 +1101,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScatterArtist.get_xlim
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.get_xlim
+:parser: rst
 ```
 
 ````
@@ -986,6 +1110,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScatterArtist.get_ylim
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.get_ylim
+:parser: rst
 ```
 
 ````
@@ -996,6 +1121,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
    1
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.num_cbars
+:parser: rst
 ```
 
 ````
@@ -1004,6 +1130,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScatterArtist.remove
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.remove
+:parser: rst
 ```
 
 ````
@@ -1012,6 +1139,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScatterArtist.set_annotation_kwargs
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_annotation_kwargs
+:parser: rst
 ```
 
 ````
@@ -1020,6 +1148,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScatterArtist.set_cbars
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_cbars
+:parser: rst
 ```
 
 ````
@@ -1028,6 +1157,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScatterArtist.set_cmap
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_cmap
+:parser: rst
 ```
 
 ````
@@ -1036,6 +1166,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScatterArtist.set_data
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_data
+:parser: rst
 ```
 
 ````
@@ -1044,6 +1175,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScatterArtist.set_logscale
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_logscale
+:parser: rst
 ```
 
 ````
@@ -1052,6 +1184,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScatterArtist.set_power
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_power
+:parser: rst
 ```
 
 ````
@@ -1060,6 +1193,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScatterArtist.set_scale
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_scale
+:parser: rst
 ```
 
 ````
@@ -1068,6 +1202,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.ScatterArtist.set_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_value_limits
+:parser: rst
 ```
 
 ````
@@ -1078,6 +1213,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.default_cbar_scalar_formatter
 
 ```{autodoc2-docstring} abtem.visualize.artists.default_cbar_scalar_formatter
+:parser: rst
 ```
 ````
 
@@ -1085,6 +1221,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.get_extent
 
 ```{autodoc2-docstring} abtem.visualize.artists.get_extent
+:parser: rst
 ```
 ````
 
@@ -1092,5 +1229,6 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.validate_cmap
 
 ```{autodoc2-docstring} abtem.visualize.artists.validate_cmap
+:parser: rst
 ```
 ````

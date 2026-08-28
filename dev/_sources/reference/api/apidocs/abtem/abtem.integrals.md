@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.integrals
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,22 +18,27 @@
 
 * - {py:obj}`FieldIntegrator <abtem.integrals.FieldIntegrator>`
   - ```{autodoc2-docstring} abtem.integrals.FieldIntegrator
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`GaussianProjectionIntegrals <abtem.integrals.GaussianProjectionIntegrals>`
   - ```{autodoc2-docstring} abtem.integrals.GaussianProjectionIntegrals
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`ProjectionIntegralTable <abtem.integrals.ProjectionIntegralTable>`
   - ```{autodoc2-docstring} abtem.integrals.ProjectionIntegralTable
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`QuadratureProjectionIntegrals <abtem.integrals.QuadratureProjectionIntegrals>`
   - ```{autodoc2-docstring} abtem.integrals.QuadratureProjectionIntegrals
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`ScatteringFactorProjectionIntegrals <abtem.integrals.ScatteringFactorProjectionIntegrals>`
   - ```{autodoc2-docstring} abtem.integrals.ScatteringFactorProjectionIntegrals
+    :parser: rst
     :summary:
     ```
 ````
@@ -45,34 +51,42 @@
 
 * - {py:obj}`correction_projected_scattering_factors <abtem.integrals.correction_projected_scattering_factors>`
   - ```{autodoc2-docstring} abtem.integrals.correction_projected_scattering_factors
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`cutoff_taper <abtem.integrals.cutoff_taper>`
   - ```{autodoc2-docstring} abtem.integrals.cutoff_taper
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`gaussian_projected_scattering_factors <abtem.integrals.gaussian_projected_scattering_factors>`
   - ```{autodoc2-docstring} abtem.integrals.gaussian_projected_scattering_factors
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`gaussian_projection_weights <abtem.integrals.gaussian_projection_weights>`
   - ```{autodoc2-docstring} abtem.integrals.gaussian_projection_weights
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`interpolate_radial_functions <abtem.integrals.interpolate_radial_functions>`
   - ```{autodoc2-docstring} abtem.integrals.interpolate_radial_functions
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`optimize_cutoff <abtem.integrals.optimize_cutoff>`
   - ```{autodoc2-docstring} abtem.integrals.optimize_cutoff
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`sinc <abtem.integrals.sinc>`
   - ```{autodoc2-docstring} abtem.integrals.sinc
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`superpose_deltas <abtem.integrals.superpose_deltas>`
   - ```{autodoc2-docstring} abtem.integrals.superpose_deltas
+    :parser: rst
     :summary:
     ```
 ````
@@ -85,12 +99,14 @@
 Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyMixin`
 
 ```{autodoc2-docstring} abtem.integrals.FieldIntegrator
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.integrals.FieldIntegrator.__init__
+:parser: rst
 ```
 
 ````{py:method} cutoff(symbol: str) -> float
@@ -98,6 +114,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.integrals.FieldIntegrator.cutoff
+:parser: rst
 ```
 
 ````
@@ -107,6 +124,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :type: bool
 
 ```{autodoc2-docstring} abtem.integrals.FieldIntegrator.finite
+:parser: rst
 ```
 
 ````
@@ -116,6 +134,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.integrals.FieldIntegrator.integrate_on_grid
+:parser: rst
 ```
 
 ````
@@ -125,6 +144,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :type: bool
 
 ```{autodoc2-docstring} abtem.integrals.FieldIntegrator.periodic
+:parser: rst
 ```
 
 ````
@@ -137,18 +157,21 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 
 ```{autodoc2-docstring} abtem.integrals.GaussianProjectionIntegrals
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.integrals.GaussianProjectionIntegrals.__init__
+:parser: rst
 ```
 
 ````{py:property} correction_parametrization
 :canonical: abtem.integrals.GaussianProjectionIntegrals.correction_parametrization
 
 ```{autodoc2-docstring} abtem.integrals.GaussianProjectionIntegrals.correction_parametrization
+:parser: rst
 ```
 
 ````
@@ -162,6 +185,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.GaussianProjectionIntegrals.cutoff_tolerance
 
 ```{autodoc2-docstring} abtem.integrals.GaussianProjectionIntegrals.cutoff_tolerance
+:parser: rst
 ```
 
 ````
@@ -170,6 +194,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.GaussianProjectionIntegrals.gaussian_parametrization
 
 ```{autodoc2-docstring} abtem.integrals.GaussianProjectionIntegrals.gaussian_parametrization
+:parser: rst
 ```
 
 ````
@@ -178,6 +203,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.GaussianProjectionIntegrals.get_corrections
 
 ```{autodoc2-docstring} abtem.integrals.GaussianProjectionIntegrals.get_corrections
+:parser: rst
 ```
 
 ````
@@ -186,6 +212,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.GaussianProjectionIntegrals.get_gaussians
 
 ```{autodoc2-docstring} abtem.integrals.GaussianProjectionIntegrals.get_gaussians
+:parser: rst
 ```
 
 ````
@@ -201,18 +228,21 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.ProjectionIntegralTable
 
 ```{autodoc2-docstring} abtem.integrals.ProjectionIntegralTable
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.integrals.ProjectionIntegralTable.__init__
+:parser: rst
 ```
 
 ````{py:method} integrate(a: float | numpy.ndarray, b: float | numpy.ndarray) -> numpy.ndarray
 :canonical: abtem.integrals.ProjectionIntegralTable.integrate
 
 ```{autodoc2-docstring} abtem.integrals.ProjectionIntegralTable.integrate
+:parser: rst
 ```
 
 ````
@@ -222,6 +252,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :type: numpy.ndarray
 
 ```{autodoc2-docstring} abtem.integrals.ProjectionIntegralTable.limits
+:parser: rst
 ```
 
 ````
@@ -231,6 +262,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :type: numpy.ndarray
 
 ```{autodoc2-docstring} abtem.integrals.ProjectionIntegralTable.radial_gpts
+:parser: rst
 ```
 
 ````
@@ -240,6 +272,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :type: numpy.ndarray
 
 ```{autodoc2-docstring} abtem.integrals.ProjectionIntegralTable.values
+:parser: rst
 ```
 
 ````
@@ -252,12 +285,14 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 
 ```{autodoc2-docstring} abtem.integrals.QuadratureProjectionIntegrals
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.integrals.QuadratureProjectionIntegrals.__init__
+:parser: rst
 ```
 
 ````{py:method} cutoff(symbol: str) -> float
@@ -270,6 +305,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :type: float
 
 ```{autodoc2-docstring} abtem.integrals.QuadratureProjectionIntegrals.cutoff_tolerance
+:parser: rst
 ```
 
 ````
@@ -278,6 +314,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.QuadratureProjectionIntegrals.get_integral_table
 
 ```{autodoc2-docstring} abtem.integrals.QuadratureProjectionIntegrals.get_integral_table
+:parser: rst
 ```
 
 ````
@@ -292,6 +329,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :type: float
 
 ```{autodoc2-docstring} abtem.integrals.QuadratureProjectionIntegrals.integration_step
+:parser: rst
 ```
 
 ````
@@ -300,6 +338,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.QuadratureProjectionIntegrals.parametrization
 
 ```{autodoc2-docstring} abtem.integrals.QuadratureProjectionIntegrals.parametrization
+:parser: rst
 ```
 
 ````
@@ -308,6 +347,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.QuadratureProjectionIntegrals.quad_order
 
 ```{autodoc2-docstring} abtem.integrals.QuadratureProjectionIntegrals.quad_order
+:parser: rst
 ```
 
 ````
@@ -316,6 +356,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.QuadratureProjectionIntegrals.tables
 
 ```{autodoc2-docstring} abtem.integrals.QuadratureProjectionIntegrals.tables
+:parser: rst
 ```
 
 ````
@@ -328,12 +369,14 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 
 ```{autodoc2-docstring} abtem.integrals.ScatteringFactorProjectionIntegrals
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.integrals.ScatteringFactorProjectionIntegrals.__init__
+:parser: rst
 ```
 
 ````{py:method} cutoff(symbol: str) -> float
@@ -345,6 +388,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.ScatteringFactorProjectionIntegrals.get_scattering_factor
 
 ```{autodoc2-docstring} abtem.integrals.ScatteringFactorProjectionIntegrals.get_scattering_factor
+:parser: rst
 ```
 
 ````
@@ -359,6 +403,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :type: abtem.parametrizations.Parametrization
 
 ```{autodoc2-docstring} abtem.integrals.ScatteringFactorProjectionIntegrals.parametrization
+:parser: rst
 ```
 
 ````
@@ -368,6 +413,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :type: dict[str, numpy.ndarray]
 
 ```{autodoc2-docstring} abtem.integrals.ScatteringFactorProjectionIntegrals.scattering_factors
+:parser: rst
 ```
 
 ````
@@ -378,6 +424,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.correction_projected_scattering_factors
 
 ```{autodoc2-docstring} abtem.integrals.correction_projected_scattering_factors
+:parser: rst
 ```
 ````
 
@@ -385,6 +432,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.cutoff_taper
 
 ```{autodoc2-docstring} abtem.integrals.cutoff_taper
+:parser: rst
 ```
 ````
 
@@ -392,6 +440,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.gaussian_projected_scattering_factors
 
 ```{autodoc2-docstring} abtem.integrals.gaussian_projected_scattering_factors
+:parser: rst
 ```
 ````
 
@@ -399,6 +448,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.gaussian_projection_weights
 
 ```{autodoc2-docstring} abtem.integrals.gaussian_projection_weights
+:parser: rst
 ```
 ````
 
@@ -406,6 +456,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.interpolate_radial_functions
 
 ```{autodoc2-docstring} abtem.integrals.interpolate_radial_functions
+:parser: rst
 ```
 ````
 
@@ -413,6 +464,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.optimize_cutoff
 
 ```{autodoc2-docstring} abtem.integrals.optimize_cutoff
+:parser: rst
 ```
 ````
 
@@ -420,6 +472,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.sinc
 
 ```{autodoc2-docstring} abtem.integrals.sinc
+:parser: rst
 ```
 ````
 
@@ -427,5 +480,6 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :canonical: abtem.integrals.superpose_deltas
 
 ```{autodoc2-docstring} abtem.integrals.superpose_deltas
+:parser: rst
 ```
 ````

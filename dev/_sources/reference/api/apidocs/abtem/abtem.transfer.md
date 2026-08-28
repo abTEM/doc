@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.transfer
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,48 +18,59 @@
 
 * - {py:obj}`Aberrations <abtem.transfer.Aberrations>`
   - ```{autodoc2-docstring} abtem.transfer.Aberrations
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`AnnularAperture <abtem.transfer.AnnularAperture>`
   - ```{autodoc2-docstring} abtem.transfer.AnnularAperture
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`Aperture <abtem.transfer.Aperture>`
   - ```{autodoc2-docstring} abtem.transfer.Aperture
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`BaseAperture <abtem.transfer.BaseAperture>`
   - ```{autodoc2-docstring} abtem.transfer.BaseAperture
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`BaseTransferFunction <abtem.transfer.BaseTransferFunction>`
   - ```{autodoc2-docstring} abtem.transfer.BaseTransferFunction
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`Bullseye <abtem.transfer.Bullseye>`
   - ```{autodoc2-docstring} abtem.transfer.Bullseye
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`CTF <abtem.transfer.CTF>`
   - ```{autodoc2-docstring} abtem.transfer.CTF
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`RadialPhasePlate <abtem.transfer.RadialPhasePlate>`
   -
 * - {py:obj}`SpatialEnvelope <abtem.transfer.SpatialEnvelope>`
   - ```{autodoc2-docstring} abtem.transfer.SpatialEnvelope
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`TemporalEnvelope <abtem.transfer.TemporalEnvelope>`
   - ```{autodoc2-docstring} abtem.transfer.TemporalEnvelope
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`Vortex <abtem.transfer.Vortex>`
   - ```{autodoc2-docstring} abtem.transfer.Vortex
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`Zernike <abtem.transfer.Zernike>`
   - ```{autodoc2-docstring} abtem.transfer.Zernike
+    :parser: rst
     :summary:
     ```
 ````
@@ -71,34 +83,42 @@
 
 * - {py:obj}`cartesian2polar <abtem.transfer.cartesian2polar>`
   - ```{autodoc2-docstring} abtem.transfer.cartesian2polar
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`hard_aperture <abtem.transfer.hard_aperture>`
   - ```{autodoc2-docstring} abtem.transfer.hard_aperture
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`nyquist_sampling <abtem.transfer.nyquist_sampling>`
   - ```{autodoc2-docstring} abtem.transfer.nyquist_sampling
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`point_resolution <abtem.transfer.point_resolution>`
   - ```{autodoc2-docstring} abtem.transfer.point_resolution
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`polar2cartesian <abtem.transfer.polar2cartesian>`
   - ```{autodoc2-docstring} abtem.transfer.polar2cartesian
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`scherzer_defocus <abtem.transfer.scherzer_defocus>`
   - ```{autodoc2-docstring} abtem.transfer.scherzer_defocus
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`soft_aperture <abtem.transfer.soft_aperture>`
   - ```{autodoc2-docstring} abtem.transfer.soft_aperture
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`symbol_to_tex_symbol <abtem.transfer.symbol_to_tex_symbol>`
   - ```{autodoc2-docstring} abtem.transfer.symbol_to_tex_symbol
+    :parser: rst
     :summary:
     ```
 ````
@@ -111,10 +131,12 @@
 
 * - {py:obj}`polar_aliases <abtem.transfer.polar_aliases>`
   - ```{autodoc2-docstring} abtem.transfer.polar_aliases
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`polar_symbols <abtem.transfer.polar_symbols>`
   - ```{autodoc2-docstring} abtem.transfer.polar_symbols
+    :parser: rst
     :summary:
     ```
 ````
@@ -127,12 +149,14 @@
 Bases: {py:obj}`abtem.transfer.BaseTransferFunction`, {py:obj}`abtem.transfer._HasAberrations`
 
 ```{autodoc2-docstring} abtem.transfer.Aberrations
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.transfer.Aberrations.__init__
+:parser: rst
 ```
 
 ````{py:property} defocus
@@ -140,6 +164,7 @@ Bases: {py:obj}`abtem.transfer.BaseTransferFunction`, {py:obj}`abtem.transfer._H
 :type: float | abtem.distributions.BaseDistribution
 
 ```{autodoc2-docstring} abtem.transfer.Aberrations.defocus
+:parser: rst
 ```
 
 ````
@@ -158,12 +183,14 @@ Bases: {py:obj}`abtem.transfer.BaseTransferFunction`, {py:obj}`abtem.transfer._H
 Bases: {py:obj}`abtem.transfer.BaseAperture`
 
 ```{autodoc2-docstring} abtem.transfer.AnnularAperture
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.transfer.AnnularAperture.__init__
+:parser: rst
 ```
 
 ````{py:property} inner_cutoff
@@ -171,6 +198,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.AnnularAperture.inner_cutoff
+:parser: rst
 ```
 
 ````
@@ -180,6 +208,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: bool
 
 ```{autodoc2-docstring} abtem.transfer.AnnularAperture.soft
+:parser: rst
 ```
 
 ````
@@ -192,12 +221,14 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 Bases: {py:obj}`abtem.transfer.BaseAperture`
 
 ```{autodoc2-docstring} abtem.transfer.Aperture
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.transfer.Aperture.__init__
+:parser: rst
 ```
 
 ````{py:property} ensemble_axes_metadata
@@ -211,6 +242,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: bool
 
 ```{autodoc2-docstring} abtem.transfer.Aperture.soft
+:parser: rst
 ```
 
 ````
@@ -223,12 +255,14 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 Bases: {py:obj}`abtem.transfer.BaseTransferFunction`
 
 ```{autodoc2-docstring} abtem.transfer.BaseAperture
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.transfer.BaseAperture.__init__
+:parser: rst
 ```
 
 ````{py:property} ensemble_axes_metadata
@@ -248,6 +282,7 @@ Bases: {py:obj}`abtem.transfer.BaseTransferFunction`
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.BaseAperture.nyquist_sampling
+:parser: rst
 ```
 
 ````
@@ -257,6 +292,7 @@ Bases: {py:obj}`abtem.transfer.BaseTransferFunction`
 :type: float | abtem.distributions.BaseDistribution
 
 ```{autodoc2-docstring} abtem.transfer.BaseAperture.semiangle_cutoff
+:parser: rst
 ```
 
 ````
@@ -269,12 +305,14 @@ Bases: {py:obj}`abtem.transfer.BaseTransferFunction`
 Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`, {py:obj}`abtem.core.energy.HasAcceleratorMixin`, {py:obj}`abtem.core.grid.HasGrid2DMixin`
 
 ```{autodoc2-docstring} abtem.transfer.BaseTransferFunction
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.transfer.BaseTransferFunction.__init__
+:parser: rst
 ```
 
 ````{py:property} angular_sampling
@@ -282,6 +320,7 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`, {py:obj}`abtem.c
 :type: tuple[float, float]
 
 ```{autodoc2-docstring} abtem.transfer.BaseTransferFunction.angular_sampling
+:parser: rst
 ```
 
 ````
@@ -290,6 +329,7 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`, {py:obj}`abtem.c
 :canonical: abtem.transfer.BaseTransferFunction.show
 
 ```{autodoc2-docstring} abtem.transfer.BaseTransferFunction.show
+:parser: rst
 ```
 
 ````
@@ -298,6 +338,7 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`, {py:obj}`abtem.c
 :canonical: abtem.transfer.BaseTransferFunction.to_diffraction_patterns
 
 ```{autodoc2-docstring} abtem.transfer.BaseTransferFunction.to_diffraction_patterns
+:parser: rst
 ```
 
 ````
@@ -310,12 +351,14 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`, {py:obj}`abtem.c
 Bases: {py:obj}`abtem.transfer.BaseAperture`
 
 ```{autodoc2-docstring} abtem.transfer.Bullseye
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.transfer.Bullseye.__init__
+:parser: rst
 ```
 
 ````{py:property} corner_radius
@@ -323,6 +366,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.Bullseye.corner_radius
+:parser: rst
 ```
 
 ````
@@ -332,6 +376,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.Bullseye.edge_softness
+:parser: rst
 ```
 
 ````
@@ -341,6 +386,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: int
 
 ```{autodoc2-docstring} abtem.transfer.Bullseye.num_rings
+:parser: rst
 ```
 
 ````
@@ -350,6 +396,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: int
 
 ```{autodoc2-docstring} abtem.transfer.Bullseye.num_spokes
+:parser: rst
 ```
 
 ````
@@ -359,6 +406,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.Bullseye.ring_width
+:parser: rst
 ```
 
 ````
@@ -368,6 +416,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: bool
 
 ```{autodoc2-docstring} abtem.transfer.Bullseye.soft
+:parser: rst
 ```
 
 ````
@@ -377,6 +426,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: bool
 
 ```{autodoc2-docstring} abtem.transfer.Bullseye.soft_edges
+:parser: rst
 ```
 
 ````
@@ -386,6 +436,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.Bullseye.spoke_width
+:parser: rst
 ```
 
 ````
@@ -398,12 +449,14 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseAperture`
 
 ```{autodoc2-docstring} abtem.transfer.CTF
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.transfer.CTF.__init__
+:parser: rst
 ```
 
 ````{py:property} angular_spread
@@ -411,6 +464,7 @@ Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseApe
 :type: float | abtem.distributions.BaseDistribution
 
 ```{autodoc2-docstring} abtem.transfer.CTF.angular_spread
+:parser: rst
 ```
 
 ````
@@ -420,6 +474,7 @@ Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseApe
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.CTF.crossover_angle
+:parser: rst
 ```
 
 ````
@@ -435,6 +490,7 @@ Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseApe
 :type: bool
 
 ```{autodoc2-docstring} abtem.transfer.CTF.flip_phase
+:parser: rst
 ```
 
 ````
@@ -444,6 +500,7 @@ Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseApe
 :type: float | abtem.distributions.BaseDistribution
 
 ```{autodoc2-docstring} abtem.transfer.CTF.focal_spread
+:parser: rst
 ```
 
 ````
@@ -453,6 +510,7 @@ Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseApe
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.CTF.point_resolution
+:parser: rst
 ```
 
 ````
@@ -461,6 +519,7 @@ Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseApe
 :canonical: abtem.transfer.CTF.profiles
 
 ```{autodoc2-docstring} abtem.transfer.CTF.profiles
+:parser: rst
 ```
 
 ````
@@ -470,6 +529,7 @@ Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseApe
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.CTF.scherzer_defocus
+:parser: rst
 ```
 
 ````
@@ -479,6 +539,7 @@ Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseApe
 :type: float | abtem.distributions.BaseDistribution
 
 ```{autodoc2-docstring} abtem.transfer.CTF.semiangle_cutoff
+:parser: rst
 ```
 
 ````
@@ -488,6 +549,7 @@ Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseApe
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.CTF.soft
+:parser: rst
 ```
 
 ````
@@ -496,6 +558,7 @@ Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseApe
 :canonical: abtem.transfer.CTF.to_point_spread_functions
 
 ```{autodoc2-docstring} abtem.transfer.CTF.to_point_spread_functions
+:parser: rst
 ```
 
 ````
@@ -505,6 +568,7 @@ Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseApe
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.CTF.wiener_snr
+:parser: rst
 ```
 
 ````
@@ -521,6 +585,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: int
 
 ```{autodoc2-docstring} abtem.transfer.RadialPhasePlate.num_flips
+:parser: rst
 ```
 
 ````
@@ -530,6 +595,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.RadialPhasePlate.phase_shift
+:parser: rst
 ```
 
 ````
@@ -539,6 +605,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.RadialPhasePlate.power_law
+:parser: rst
 ```
 
 ````
@@ -548,6 +615,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.RadialPhasePlate.shift_central_semiangle
+:parser: rst
 ```
 
 ````
@@ -557,6 +625,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: bool
 
 ```{autodoc2-docstring} abtem.transfer.RadialPhasePlate.soft
+:parser: rst
 ```
 
 ````
@@ -569,12 +638,14 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 Bases: {py:obj}`abtem.transfer.BaseTransferFunction`, {py:obj}`abtem.transfer._HasAberrations`
 
 ```{autodoc2-docstring} abtem.transfer.SpatialEnvelope
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.transfer.SpatialEnvelope.__init__
+:parser: rst
 ```
 
 ````{py:property} angular_spread
@@ -582,6 +653,7 @@ Bases: {py:obj}`abtem.transfer.BaseTransferFunction`, {py:obj}`abtem.transfer._H
 :type: float | abtem.distributions.BaseDistribution
 
 ```{autodoc2-docstring} abtem.transfer.SpatialEnvelope.angular_spread
+:parser: rst
 ```
 
 ````
@@ -600,12 +672,14 @@ Bases: {py:obj}`abtem.transfer.BaseTransferFunction`, {py:obj}`abtem.transfer._H
 Bases: {py:obj}`abtem.transfer.BaseTransferFunction`
 
 ```{autodoc2-docstring} abtem.transfer.TemporalEnvelope
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.transfer.TemporalEnvelope.__init__
+:parser: rst
 ```
 
 ````{py:property} ensemble_axes_metadata
@@ -619,6 +693,7 @@ Bases: {py:obj}`abtem.transfer.BaseTransferFunction`
 :type: float | abtem.distributions.BaseDistribution
 
 ```{autodoc2-docstring} abtem.transfer.TemporalEnvelope.focal_spread
+:parser: rst
 ```
 
 ````
@@ -631,12 +706,14 @@ Bases: {py:obj}`abtem.transfer.BaseTransferFunction`
 Bases: {py:obj}`abtem.transfer.BaseAperture`
 
 ```{autodoc2-docstring} abtem.transfer.Vortex
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.transfer.Vortex.__init__
+:parser: rst
 ```
 
 ````{py:property} quantum_number
@@ -644,6 +721,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: int
 
 ```{autodoc2-docstring} abtem.transfer.Vortex.quantum_number
+:parser: rst
 ```
 
 ````
@@ -653,6 +731,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: bool
 
 ```{autodoc2-docstring} abtem.transfer.Vortex.soft
+:parser: rst
 ```
 
 ````
@@ -665,12 +744,14 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 Bases: {py:obj}`abtem.transfer.BaseAperture`
 
 ```{autodoc2-docstring} abtem.transfer.Zernike
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.transfer.Zernike.__init__
+:parser: rst
 ```
 
 ````{py:property} center_hole_cutoff
@@ -678,6 +759,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.Zernike.center_hole_cutoff
+:parser: rst
 ```
 
 ````
@@ -687,6 +769,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: float
 
 ```{autodoc2-docstring} abtem.transfer.Zernike.phase_shift
+:parser: rst
 ```
 
 ````
@@ -696,6 +779,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :type: bool
 
 ```{autodoc2-docstring} abtem.transfer.Zernike.soft
+:parser: rst
 ```
 
 ````
@@ -706,6 +790,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :canonical: abtem.transfer.cartesian2polar
 
 ```{autodoc2-docstring} abtem.transfer.cartesian2polar
+:parser: rst
 ```
 ````
 
@@ -713,6 +798,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :canonical: abtem.transfer.hard_aperture
 
 ```{autodoc2-docstring} abtem.transfer.hard_aperture
+:parser: rst
 ```
 ````
 
@@ -720,6 +806,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :canonical: abtem.transfer.nyquist_sampling
 
 ```{autodoc2-docstring} abtem.transfer.nyquist_sampling
+:parser: rst
 ```
 ````
 
@@ -727,6 +814,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :canonical: abtem.transfer.point_resolution
 
 ```{autodoc2-docstring} abtem.transfer.point_resolution
+:parser: rst
 ```
 ````
 
@@ -734,6 +822,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :canonical: abtem.transfer.polar2cartesian
 
 ```{autodoc2-docstring} abtem.transfer.polar2cartesian
+:parser: rst
 ```
 ````
 
@@ -743,6 +832,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
    None
 
 ```{autodoc2-docstring} abtem.transfer.polar_aliases
+:parser: rst
 ```
 
 ````
@@ -753,6 +843,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
    None
 
 ```{autodoc2-docstring} abtem.transfer.polar_symbols
+:parser: rst
 ```
 
 ````
@@ -761,6 +852,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :canonical: abtem.transfer.scherzer_defocus
 
 ```{autodoc2-docstring} abtem.transfer.scherzer_defocus
+:parser: rst
 ```
 ````
 
@@ -768,6 +860,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :canonical: abtem.transfer.soft_aperture
 
 ```{autodoc2-docstring} abtem.transfer.soft_aperture
+:parser: rst
 ```
 ````
 
@@ -775,5 +868,6 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 :canonical: abtem.transfer.symbol_to_tex_symbol
 
 ```{autodoc2-docstring} abtem.transfer.symbol_to_tex_symbol
+:parser: rst
 ```
 ````

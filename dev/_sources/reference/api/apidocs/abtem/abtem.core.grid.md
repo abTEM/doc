@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.core.grid
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,10 +18,12 @@
 
 * - {py:obj}`Grid <abtem.core.grid.Grid>`
   - ```{autodoc2-docstring} abtem.core.grid.Grid
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`HasGrid2DMixin <abtem.core.grid.HasGrid2DMixin>`
   - ```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin
+    :parser: rst
     :summary:
     ```
 ````
@@ -33,30 +36,37 @@
 
 * - {py:obj}`adjusted_gpts <abtem.core.grid.adjusted_gpts>`
   - ```{autodoc2-docstring} abtem.core.grid.adjusted_gpts
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`coordinate_grid <abtem.core.grid.coordinate_grid>`
   - ```{autodoc2-docstring} abtem.core.grid.coordinate_grid
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`disk_meshgrid <abtem.core.grid.disk_meshgrid>`
   - ```{autodoc2-docstring} abtem.core.grid.disk_meshgrid
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`polar_spatial_frequencies <abtem.core.grid.polar_spatial_frequencies>`
   - ```{autodoc2-docstring} abtem.core.grid.polar_spatial_frequencies
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`real_space_grid <abtem.core.grid.real_space_grid>`
   - ```{autodoc2-docstring} abtem.core.grid.real_space_grid
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`spatial_frequencies <abtem.core.grid.spatial_frequencies>`
   - ```{autodoc2-docstring} abtem.core.grid.spatial_frequencies
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_gpts <abtem.core.grid.validate_gpts>`
   - ```{autodoc2-docstring} abtem.core.grid.validate_gpts
+    :parser: rst
     :summary:
     ```
 ````
@@ -69,10 +79,12 @@
 
 * - {py:obj}`T <abtem.core.grid.T>`
   - ```{autodoc2-docstring} abtem.core.grid.T
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`U <abtem.core.grid.U>`
   - ```{autodoc2-docstring} abtem.core.grid.U
+    :parser: rst
     :summary:
     ```
 ````
@@ -85,18 +97,21 @@
 Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityMixin`
 
 ```{autodoc2-docstring} abtem.core.grid.Grid
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.__init__
+:parser: rst
 ```
 
 ````{py:method} check_is_defined(raise_error: bool = True)
 :canonical: abtem.core.grid.Grid.check_is_defined
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.check_is_defined
+:parser: rst
 ```
 
 ````
@@ -105,6 +120,7 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 :canonical: abtem.core.grid.Grid.check_match
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.check_match
+:parser: rst
 ```
 
 ````
@@ -114,6 +130,7 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 :type: int
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.dimensions
+:parser: rst
 ```
 
 ````
@@ -123,6 +140,7 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 :type: tuple[bool] | tuple[bool, bool] | tuple[bool, ...]
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.endpoint
+:parser: rst
 ```
 
 ````
@@ -132,6 +150,7 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 :type: tuple[float, ...] | None
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.extent
+:parser: rst
 ```
 
 ````
@@ -141,6 +160,7 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 :type: tuple[int, ...] | None
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.gpts
+:parser: rst
 ```
 
 ````
@@ -149,6 +169,7 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 :canonical: abtem.core.grid.Grid.match
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.match
+:parser: rst
 ```
 
 ````
@@ -158,6 +179,7 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 :type: tuple[float, ...]
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.reciprocal_space_sampling
+:parser: rst
 ```
 
 ````
@@ -166,6 +188,7 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 :canonical: abtem.core.grid.Grid.round_to_power
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.round_to_power
+:parser: rst
 ```
 
 ````
@@ -175,6 +198,7 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 :type: tuple[float, ...] | None
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.sampling
+:parser: rst
 ```
 
 ````
@@ -183,6 +207,7 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 :canonical: abtem.core.grid.Grid.spatial_frequencies
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.spatial_frequencies
+:parser: rst
 ```
 
 ````
@@ -195,12 +220,14 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 Bases: {py:obj}`Exception`
 
 ```{autodoc2-docstring} abtem.core.grid.GridUndefinedError
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.core.grid.GridUndefinedError.__init__
+:parser: rst
 ```
 
 ````
@@ -209,6 +236,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.grid.HasGrid2DMixin
 
 ```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin
+:parser: rst
 ```
 
 ````{py:property} extent
@@ -216,6 +244,7 @@ Bases: {py:obj}`Exception`
 :type: tuple[float, float] | None
 
 ```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin.extent
+:parser: rst
 ```
 
 ````
@@ -225,6 +254,7 @@ Bases: {py:obj}`Exception`
 :type: tuple[int, int] | None
 
 ```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin.gpts
+:parser: rst
 ```
 
 ````
@@ -234,6 +264,7 @@ Bases: {py:obj}`Exception`
 :type: abtem.core.grid.Grid
 
 ```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin.grid
+:parser: rst
 ```
 
 ````
@@ -242,6 +273,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.grid.HasGrid2DMixin.match_grid
 
 ```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin.match_grid
+:parser: rst
 ```
 
 ````
@@ -251,6 +283,7 @@ Bases: {py:obj}`Exception`
 :type: tuple[float, float]
 
 ```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin.reciprocal_space_sampling
+:parser: rst
 ```
 
 ````
@@ -260,6 +293,7 @@ Bases: {py:obj}`Exception`
 :type: tuple[float, float] | None
 
 ```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin.sampling
+:parser: rst
 ```
 
 ````
@@ -272,6 +306,7 @@ Bases: {py:obj}`Exception`
    'TypeVar(...)'
 
 ```{autodoc2-docstring} abtem.core.grid.T
+:parser: rst
 ```
 
 ````
@@ -282,6 +317,7 @@ Bases: {py:obj}`Exception`
    'TypeVar(...)'
 
 ```{autodoc2-docstring} abtem.core.grid.U
+:parser: rst
 ```
 
 ````
@@ -290,6 +326,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.grid.adjusted_gpts
 
 ```{autodoc2-docstring} abtem.core.grid.adjusted_gpts
+:parser: rst
 ```
 ````
 
@@ -297,6 +334,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.grid.coordinate_grid
 
 ```{autodoc2-docstring} abtem.core.grid.coordinate_grid
+:parser: rst
 ```
 ````
 
@@ -304,6 +342,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.grid.disk_meshgrid
 
 ```{autodoc2-docstring} abtem.core.grid.disk_meshgrid
+:parser: rst
 ```
 ````
 
@@ -311,6 +350,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.grid.polar_spatial_frequencies
 
 ```{autodoc2-docstring} abtem.core.grid.polar_spatial_frequencies
+:parser: rst
 ```
 ````
 
@@ -318,6 +358,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.grid.real_space_grid
 
 ```{autodoc2-docstring} abtem.core.grid.real_space_grid
+:parser: rst
 ```
 ````
 
@@ -325,6 +366,7 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.grid.spatial_frequencies
 
 ```{autodoc2-docstring} abtem.core.grid.spatial_frequencies
+:parser: rst
 ```
 ````
 
@@ -332,5 +374,6 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.grid.validate_gpts
 
 ```{autodoc2-docstring} abtem.core.grid.validate_gpts
+:parser: rst
 ```
 ````

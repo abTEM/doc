@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.reconstruct
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,26 +18,32 @@
 
 * - {py:obj}`AbstractPtychographicOperator <abtem.reconstruct.AbstractPtychographicOperator>`
   - ```{autodoc2-docstring} abtem.reconstruct.AbstractPtychographicOperator
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`MixedStatePtychographicOperator <abtem.reconstruct.MixedStatePtychographicOperator>`
   - ```{autodoc2-docstring} abtem.reconstruct.MixedStatePtychographicOperator
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`MultislicePtychographicOperator <abtem.reconstruct.MultislicePtychographicOperator>`
   - ```{autodoc2-docstring} abtem.reconstruct.MultislicePtychographicOperator
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`ProgressBar <abtem.reconstruct.ProgressBar>`
   - ```{autodoc2-docstring} abtem.reconstruct.ProgressBar
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`RegularizedPtychographicOperator <abtem.reconstruct.RegularizedPtychographicOperator>`
   - ```{autodoc2-docstring} abtem.reconstruct.RegularizedPtychographicOperator
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`SimultaneousPtychographicOperator <abtem.reconstruct.SimultaneousPtychographicOperator>`
   - ```{autodoc2-docstring} abtem.reconstruct.SimultaneousPtychographicOperator
+    :parser: rst
     :summary:
     ```
 ````
@@ -49,10 +56,12 @@
 
 * - {py:obj}`experimental_symbols <abtem.reconstruct.experimental_symbols>`
   - ```{autodoc2-docstring} abtem.reconstruct.experimental_symbols
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`reconstruction_symbols <abtem.reconstruct.reconstruction_symbols>`
   - ```{autodoc2-docstring} abtem.reconstruct.reconstruction_symbols
+    :parser: rst
     :summary:
     ```
 ````
@@ -63,12 +72,14 @@
 :canonical: abtem.reconstruct.AbstractPtychographicOperator
 
 ```{autodoc2-docstring} abtem.reconstruct.AbstractPtychographicOperator
+:parser: rst
 ```
 
 ````{py:property} angular_sampling
 :canonical: abtem.reconstruct.AbstractPtychographicOperator.angular_sampling
 
 ```{autodoc2-docstring} abtem.reconstruct.AbstractPtychographicOperator.angular_sampling
+:parser: rst
 ```
 
 ````
@@ -78,6 +89,7 @@
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.reconstruct.AbstractPtychographicOperator.preprocess
+:parser: rst
 ```
 
 ````
@@ -87,6 +99,7 @@
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.reconstruct.AbstractPtychographicOperator.reconstruct
+:parser: rst
 ```
 
 ````
@@ -95,6 +108,7 @@
 :canonical: abtem.reconstruct.AbstractPtychographicOperator.sampling
 
 ```{autodoc2-docstring} abtem.reconstruct.AbstractPtychographicOperator.sampling
+:parser: rst
 ```
 
 ````
@@ -107,18 +121,21 @@
 Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 
 ```{autodoc2-docstring} abtem.reconstruct.MixedStatePtychographicOperator
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.reconstruct.MixedStatePtychographicOperator.__init__
+:parser: rst
 ```
 
 ````{py:method} preprocess()
 :canonical: abtem.reconstruct.MixedStatePtychographicOperator.preprocess
 
 ```{autodoc2-docstring} abtem.reconstruct.MixedStatePtychographicOperator.preprocess
+:parser: rst
 ```
 
 ````
@@ -127,6 +144,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 :canonical: abtem.reconstruct.MixedStatePtychographicOperator.reconstruct
 
 ```{autodoc2-docstring} abtem.reconstruct.MixedStatePtychographicOperator.reconstruct
+:parser: rst
 ```
 
 ````
@@ -139,18 +157,21 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 
 ```{autodoc2-docstring} abtem.reconstruct.MultislicePtychographicOperator
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.reconstruct.MultislicePtychographicOperator.__init__
+:parser: rst
 ```
 
 ````{py:method} preprocess()
 :canonical: abtem.reconstruct.MultislicePtychographicOperator.preprocess
 
 ```{autodoc2-docstring} abtem.reconstruct.MultislicePtychographicOperator.preprocess
+:parser: rst
 ```
 
 ````
@@ -159,6 +180,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 :canonical: abtem.reconstruct.MultislicePtychographicOperator.reconstruct
 
 ```{autodoc2-docstring} abtem.reconstruct.MultislicePtychographicOperator.reconstruct
+:parser: rst
 ```
 
 ````
@@ -169,18 +191,21 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 :canonical: abtem.reconstruct.ProgressBar
 
 ```{autodoc2-docstring} abtem.reconstruct.ProgressBar
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.reconstruct.ProgressBar.__init__
+:parser: rst
 ```
 
 ````{py:method} close()
 :canonical: abtem.reconstruct.ProgressBar.close
 
 ```{autodoc2-docstring} abtem.reconstruct.ProgressBar.close
+:parser: rst
 ```
 
 ````
@@ -189,6 +214,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 :canonical: abtem.reconstruct.ProgressBar.disable
 
 ```{autodoc2-docstring} abtem.reconstruct.ProgressBar.disable
+:parser: rst
 ```
 
 ````
@@ -197,6 +223,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 :canonical: abtem.reconstruct.ProgressBar.refresh
 
 ```{autodoc2-docstring} abtem.reconstruct.ProgressBar.refresh
+:parser: rst
 ```
 
 ````
@@ -205,6 +232,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 :canonical: abtem.reconstruct.ProgressBar.reset
 
 ```{autodoc2-docstring} abtem.reconstruct.ProgressBar.reset
+:parser: rst
 ```
 
 ````
@@ -213,6 +241,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 :canonical: abtem.reconstruct.ProgressBar.tqdm
 
 ```{autodoc2-docstring} abtem.reconstruct.ProgressBar.tqdm
+:parser: rst
 ```
 
 ````
@@ -221,6 +250,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 :canonical: abtem.reconstruct.ProgressBar.update
 
 ```{autodoc2-docstring} abtem.reconstruct.ProgressBar.update
+:parser: rst
 ```
 
 ````
@@ -233,18 +263,21 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 
 ```{autodoc2-docstring} abtem.reconstruct.RegularizedPtychographicOperator
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.reconstruct.RegularizedPtychographicOperator.__init__
+:parser: rst
 ```
 
 ````{py:method} preprocess()
 :canonical: abtem.reconstruct.RegularizedPtychographicOperator.preprocess
 
 ```{autodoc2-docstring} abtem.reconstruct.RegularizedPtychographicOperator.preprocess
+:parser: rst
 ```
 
 ````
@@ -253,6 +286,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 :canonical: abtem.reconstruct.RegularizedPtychographicOperator.reconstruct
 
 ```{autodoc2-docstring} abtem.reconstruct.RegularizedPtychographicOperator.reconstruct
+:parser: rst
 ```
 
 ````
@@ -265,18 +299,21 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 
 ```{autodoc2-docstring} abtem.reconstruct.SimultaneousPtychographicOperator
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.reconstruct.SimultaneousPtychographicOperator.__init__
+:parser: rst
 ```
 
 ````{py:method} preprocess()
 :canonical: abtem.reconstruct.SimultaneousPtychographicOperator.preprocess
 
 ```{autodoc2-docstring} abtem.reconstruct.SimultaneousPtychographicOperator.preprocess
+:parser: rst
 ```
 
 ````
@@ -285,6 +322,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 :canonical: abtem.reconstruct.SimultaneousPtychographicOperator.reconstruct
 
 ```{autodoc2-docstring} abtem.reconstruct.SimultaneousPtychographicOperator.reconstruct
+:parser: rst
 ```
 
 ````
@@ -297,6 +335,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
    ('rotation_angle', 'scan_step_sizes', 'angular_sampling', 'background_counts_cutoff', 'counts_scalin...
 
 ```{autodoc2-docstring} abtem.reconstruct.experimental_symbols
+:parser: rst
 ```
 
 ````
@@ -307,6 +346,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
    None
 
 ```{autodoc2-docstring} abtem.reconstruct.reconstruction_symbols
+:parser: rst
 ```
 
 ````

@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.core.config
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,6 +18,7 @@
 
 * - {py:obj}`set <abtem.core.config.set>`
   - ```{autodoc2-docstring} abtem.core.config.set
+    :parser: rst
     :summary:
     ```
 ````
@@ -29,18 +31,22 @@
 
 * - {py:obj}`check_deprecations <abtem.core.config.check_deprecations>`
   - ```{autodoc2-docstring} abtem.core.config.check_deprecations
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`get <abtem.core.config.get>`
   - ```{autodoc2-docstring} abtem.core.config.get
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`refresh <abtem.core.config.refresh>`
   - ```{autodoc2-docstring} abtem.core.config.refresh
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`update_defaults <abtem.core.config.update_defaults>`
   - ```{autodoc2-docstring} abtem.core.config.update_defaults
+    :parser: rst
     :summary:
     ```
 ````
@@ -53,22 +59,27 @@
 
 * - {py:obj}`config <abtem.core.config.config>`
   - ```{autodoc2-docstring} abtem.core.config.config
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`config_lock <abtem.core.config.config_lock>`
   - ```{autodoc2-docstring} abtem.core.config.config_lock
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`defaults <abtem.core.config.defaults>`
   - ```{autodoc2-docstring} abtem.core.config.defaults
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`deprecations <abtem.core.config.deprecations>`
   - ```{autodoc2-docstring} abtem.core.config.deprecations
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`no_default <abtem.core.config.no_default>`
   - ```{autodoc2-docstring} abtem.core.config.no_default
+    :parser: rst
     :summary:
     ```
 ````
@@ -79,6 +90,7 @@
 :canonical: abtem.core.config.check_deprecations
 
 ```{autodoc2-docstring} abtem.core.config.check_deprecations
+:parser: rst
 ```
 ````
 
@@ -89,6 +101,7 @@
    None
 
 ```{autodoc2-docstring} abtem.core.config.config
+:parser: rst
 ```
 
 ````
@@ -99,6 +112,7 @@
    'Lock(...)'
 
 ```{autodoc2-docstring} abtem.core.config.config_lock
+:parser: rst
 ```
 
 ````
@@ -110,6 +124,7 @@
    []
 
 ```{autodoc2-docstring} abtem.core.config.defaults
+:parser: rst
 ```
 
 ````
@@ -121,6 +136,7 @@
    None
 
 ```{autodoc2-docstring} abtem.core.config.deprecations
+:parser: rst
 ```
 
 ````
@@ -129,6 +145,7 @@
 :canonical: abtem.core.config.get
 
 ```{autodoc2-docstring} abtem.core.config.get
+:parser: rst
 ```
 ````
 
@@ -138,6 +155,7 @@
    '__no_default__'
 
 ```{autodoc2-docstring} abtem.core.config.no_default
+:parser: rst
 ```
 
 ````
@@ -146,6 +164,7 @@
 :canonical: abtem.core.config.refresh
 
 ```{autodoc2-docstring} abtem.core.config.refresh
+:parser: rst
 ```
 ````
 
@@ -153,12 +172,14 @@
 :canonical: abtem.core.config.set
 
 ```{autodoc2-docstring} abtem.core.config.set
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.core.config.set.__init__
+:parser: rst
 ```
 
 ````{py:attribute} config
@@ -168,6 +189,7 @@
    None
 
 ```{autodoc2-docstring} abtem.core.config.set.config
+:parser: rst
 ```
 
 ````
@@ -178,5 +200,6 @@
 :canonical: abtem.core.config.update_defaults
 
 ```{autodoc2-docstring} abtem.core.config.update_defaults
+:parser: rst
 ```
 ````

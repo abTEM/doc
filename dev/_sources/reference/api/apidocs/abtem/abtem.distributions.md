@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.distributions
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,18 +18,22 @@
 
 * - {py:obj}`BaseDistribution <abtem.distributions.BaseDistribution>`
   - ```{autodoc2-docstring} abtem.distributions.BaseDistribution
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`DistributionFromValues <abtem.distributions.DistributionFromValues>`
   - ```{autodoc2-docstring} abtem.distributions.DistributionFromValues
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`EnsembleFromDistributions <abtem.distributions.EnsembleFromDistributions>`
   - ```{autodoc2-docstring} abtem.distributions.EnsembleFromDistributions
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`MultidimensionalDistribution <abtem.distributions.MultidimensionalDistribution>`
   - ```{autodoc2-docstring} abtem.distributions.MultidimensionalDistribution
+    :parser: rst
     :summary:
     ```
 ````
@@ -41,22 +46,27 @@
 
 * - {py:obj}`from_values <abtem.distributions.from_values>`
   - ```{autodoc2-docstring} abtem.distributions.from_values
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`gaussian <abtem.distributions.gaussian>`
   - ```{autodoc2-docstring} abtem.distributions.gaussian
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`tuple_range_except <abtem.distributions.tuple_range_except>`
   - ```{autodoc2-docstring} abtem.distributions.tuple_range_except
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`uniform <abtem.distributions.uniform>`
   - ```{autodoc2-docstring} abtem.distributions.uniform
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_distribution <abtem.distributions.validate_distribution>`
   - ```{autodoc2-docstring} abtem.distributions.validate_distribution
+    :parser: rst
     :summary:
     ```
 ````
@@ -69,6 +79,7 @@
 Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyMixin`
 
 ```{autodoc2-docstring} abtem.distributions.BaseDistribution
+:parser: rst
 ```
 
 ````{py:property} dimensions
@@ -77,6 +88,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :type: int
 
 ```{autodoc2-docstring} abtem.distributions.BaseDistribution.dimensions
+:parser: rst
 ```
 
 ````
@@ -86,6 +98,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.distributions.BaseDistribution.divide
+:parser: rst
 ```
 
 ````
@@ -96,6 +109,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :type: bool
 
 ```{autodoc2-docstring} abtem.distributions.BaseDistribution.ensemble_mean
+:parser: rst
 ```
 
 ````
@@ -106,6 +120,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :type: tuple[int, ...]
 
 ```{autodoc2-docstring} abtem.distributions.BaseDistribution.shape
+:parser: rst
 ```
 
 ````
@@ -116,6 +131,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :type: numpy.ndarray
 
 ```{autodoc2-docstring} abtem.distributions.BaseDistribution.values
+:parser: rst
 ```
 
 ````
@@ -126,6 +142,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :type: numpy.ndarray
 
 ```{autodoc2-docstring} abtem.distributions.BaseDistribution.weights
+:parser: rst
 ```
 
 ````
@@ -138,18 +155,21 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 Bases: {py:obj}`abtem.distributions.BaseDistribution`
 
 ```{autodoc2-docstring} abtem.distributions.DistributionFromValues
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.distributions.DistributionFromValues.__init__
+:parser: rst
 ```
 
 ````{py:method} combine(other: abtem.distributions.DistributionFromValues) -> abtem.distributions.MultidimensionalDistribution
 :canonical: abtem.distributions.DistributionFromValues.combine
 
 ```{autodoc2-docstring} abtem.distributions.DistributionFromValues.combine
+:parser: rst
 ```
 
 ````
@@ -197,12 +217,14 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyMixin`
 
 ```{autodoc2-docstring} abtem.distributions.EnsembleFromDistributions
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.distributions.EnsembleFromDistributions.__init__
+:parser: rst
 ```
 
 ````{py:property} ensemble_shape
@@ -219,12 +241,14 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 Bases: {py:obj}`abtem.distributions.BaseDistribution`
 
 ```{autodoc2-docstring} abtem.distributions.MultidimensionalDistribution
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.distributions.MultidimensionalDistribution.__init__
+:parser: rst
 ```
 
 ````{py:property} dimensions
@@ -237,6 +261,7 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 :canonical: abtem.distributions.MultidimensionalDistribution.distributions
 
 ```{autodoc2-docstring} abtem.distributions.MultidimensionalDistribution.distributions
+:parser: rst
 ```
 
 ````
@@ -276,6 +301,7 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 :canonical: abtem.distributions.from_values
 
 ```{autodoc2-docstring} abtem.distributions.from_values
+:parser: rst
 ```
 ````
 
@@ -283,6 +309,7 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 :canonical: abtem.distributions.gaussian
 
 ```{autodoc2-docstring} abtem.distributions.gaussian
+:parser: rst
 ```
 ````
 
@@ -290,6 +317,7 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 :canonical: abtem.distributions.tuple_range_except
 
 ```{autodoc2-docstring} abtem.distributions.tuple_range_except
+:parser: rst
 ```
 ````
 
@@ -297,6 +325,7 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 :canonical: abtem.distributions.uniform
 
 ```{autodoc2-docstring} abtem.distributions.uniform
+:parser: rst
 ```
 ````
 
@@ -304,5 +333,6 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 :canonical: abtem.distributions.validate_distribution
 
 ```{autodoc2-docstring} abtem.distributions.validate_distribution
+:parser: rst
 ```
 ````

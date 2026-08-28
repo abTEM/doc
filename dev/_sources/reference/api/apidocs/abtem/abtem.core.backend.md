@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.core.backend
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,34 +18,42 @@
 
 * - {py:obj}`asnumpy <abtem.core.backend.asnumpy>`
   - ```{autodoc2-docstring} abtem.core.backend.asnumpy
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`check_cupy_is_installed <abtem.core.backend.check_cupy_is_installed>`
   - ```{autodoc2-docstring} abtem.core.backend.check_cupy_is_installed
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`copy_to_device <abtem.core.backend.copy_to_device>`
   - ```{autodoc2-docstring} abtem.core.backend.copy_to_device
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`device_name_from_array_module <abtem.core.backend.device_name_from_array_module>`
   - ```{autodoc2-docstring} abtem.core.backend.device_name_from_array_module
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`get_array_module <abtem.core.backend.get_array_module>`
   - ```{autodoc2-docstring} abtem.core.backend.get_array_module
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`get_ndimage_module <abtem.core.backend.get_ndimage_module>`
   - ```{autodoc2-docstring} abtem.core.backend.get_ndimage_module
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`get_scipy_module <abtem.core.backend.get_scipy_module>`
   - ```{autodoc2-docstring} abtem.core.backend.get_scipy_module
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_device <abtem.core.backend.validate_device>`
   - ```{autodoc2-docstring} abtem.core.backend.validate_device
+    :parser: rst
     :summary:
     ```
 ````
@@ -57,6 +66,7 @@
 
 * - {py:obj}`ArrayModule <abtem.core.backend.ArrayModule>`
   - ```{autodoc2-docstring} abtem.core.backend.ArrayModule
+    :parser: rst
     :summary:
     ```
 ````
@@ -69,6 +79,7 @@
    None
 
 ```{autodoc2-docstring} abtem.core.backend.ArrayModule
+:parser: rst
 ```
 
 ````
@@ -77,6 +88,7 @@
 :canonical: abtem.core.backend.asnumpy
 
 ```{autodoc2-docstring} abtem.core.backend.asnumpy
+:parser: rst
 ```
 ````
 
@@ -84,6 +96,7 @@
 :canonical: abtem.core.backend.check_cupy_is_installed
 
 ```{autodoc2-docstring} abtem.core.backend.check_cupy_is_installed
+:parser: rst
 ```
 ````
 
@@ -91,6 +104,7 @@
 :canonical: abtem.core.backend.copy_to_device
 
 ```{autodoc2-docstring} abtem.core.backend.copy_to_device
+:parser: rst
 ```
 ````
 
@@ -98,6 +112,7 @@
 :canonical: abtem.core.backend.device_name_from_array_module
 
 ```{autodoc2-docstring} abtem.core.backend.device_name_from_array_module
+:parser: rst
 ```
 ````
 
@@ -105,6 +120,7 @@
 :canonical: abtem.core.backend.get_array_module
 
 ```{autodoc2-docstring} abtem.core.backend.get_array_module
+:parser: rst
 ```
 ````
 
@@ -112,6 +128,7 @@
 :canonical: abtem.core.backend.get_ndimage_module
 
 ```{autodoc2-docstring} abtem.core.backend.get_ndimage_module
+:parser: rst
 ```
 ````
 
@@ -119,6 +136,7 @@
 :canonical: abtem.core.backend.get_scipy_module
 
 ```{autodoc2-docstring} abtem.core.backend.get_scipy_module
+:parser: rst
 ```
 ````
 
@@ -126,5 +144,6 @@
 :canonical: abtem.core.backend.validate_device
 
 ```{autodoc2-docstring} abtem.core.backend.validate_device
+:parser: rst
 ```
 ````

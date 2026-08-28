@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.core.diagnostics
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,6 +18,7 @@
 
 * - {py:obj}`TqdmWrapper <abtem.core.diagnostics.TqdmWrapper>`
   - ```{autodoc2-docstring} abtem.core.diagnostics.TqdmWrapper
+    :parser: rst
     :summary:
     ```
 ````
@@ -27,18 +29,21 @@
 :canonical: abtem.core.diagnostics.TqdmWrapper
 
 ```{autodoc2-docstring} abtem.core.diagnostics.TqdmWrapper
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.core.diagnostics.TqdmWrapper.__init__
+:parser: rst
 ```
 
 ````{py:method} close_if_exists() -> None
 :canonical: abtem.core.diagnostics.TqdmWrapper.close_if_exists
 
 ```{autodoc2-docstring} abtem.core.diagnostics.TqdmWrapper.close_if_exists
+:parser: rst
 ```
 
 ````
@@ -47,6 +52,7 @@
 :canonical: abtem.core.diagnostics.TqdmWrapper.pbar
 
 ```{autodoc2-docstring} abtem.core.diagnostics.TqdmWrapper.pbar
+:parser: rst
 ```
 
 ````
@@ -55,6 +61,7 @@
 :canonical: abtem.core.diagnostics.TqdmWrapper.update_if_exists
 
 ```{autodoc2-docstring} abtem.core.diagnostics.TqdmWrapper.update_if_exists
+:parser: rst
 ```
 
 ````

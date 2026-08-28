@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.parametrizations
+:parser: rst
 :allowtitles:
 ```
 
@@ -28,18 +29,22 @@ abtem.parametrizations.functions
   -
 * - {py:obj}`KirklandParametrization <abtem.parametrizations.KirklandParametrization>`
   - ```{autodoc2-docstring} abtem.parametrizations.KirklandParametrization
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`LobatoParametrization <abtem.parametrizations.LobatoParametrization>`
   - ```{autodoc2-docstring} abtem.parametrizations.LobatoParametrization
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`Parametrization <abtem.parametrizations.Parametrization>`
   - ```{autodoc2-docstring} abtem.parametrizations.Parametrization
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`PengParametrization <abtem.parametrizations.PengParametrization>`
   - ```{autodoc2-docstring} abtem.parametrizations.PengParametrization
+    :parser: rst
     :summary:
     ```
 ````
@@ -52,14 +57,17 @@ abtem.parametrizations.functions
 
 * - {py:obj}`validate_parameters <abtem.parametrizations.validate_parameters>`
   - ```{autodoc2-docstring} abtem.parametrizations.validate_parameters
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_parametrization <abtem.parametrizations.validate_parametrization>`
   - ```{autodoc2-docstring} abtem.parametrizations.validate_parametrization
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_sigmas <abtem.parametrizations.validate_sigmas>`
   - ```{autodoc2-docstring} abtem.parametrizations.validate_sigmas
+    :parser: rst
     :summary:
     ```
 ````
@@ -80,6 +88,7 @@ Bases: {py:obj}`abtem.parametrizations.Parametrization`
 :canonical: abtem.parametrizations.EwaldParametrization.width
 
 ```{autodoc2-docstring} abtem.parametrizations.EwaldParametrization.width
+:parser: rst
 ```
 
 ````
@@ -92,18 +101,21 @@ Bases: {py:obj}`abtem.parametrizations.Parametrization`
 Bases: {py:obj}`abtem.parametrizations.Parametrization`
 
 ```{autodoc2-docstring} abtem.parametrizations.KirklandParametrization
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.parametrizations.KirklandParametrization.__init__
+:parser: rst
 ```
 
 ````{py:method} fit(Z, k, f, guess=None)
 :canonical: abtem.parametrizations.KirklandParametrization.fit
 
 ```{autodoc2-docstring} abtem.parametrizations.KirklandParametrization.fit
+:parser: rst
 ```
 
 ````
@@ -121,18 +133,21 @@ Bases: {py:obj}`abtem.parametrizations.Parametrization`
 Bases: {py:obj}`abtem.parametrizations.Parametrization`
 
 ```{autodoc2-docstring} abtem.parametrizations.LobatoParametrization
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.parametrizations.LobatoParametrization.__init__
+:parser: rst
 ```
 
 ````{py:method} fit(Z, k, f, guess=None)
 :canonical: abtem.parametrizations.LobatoParametrization.fit
 
 ```{autodoc2-docstring} abtem.parametrizations.LobatoParametrization.fit
+:parser: rst
 ```
 
 ````
@@ -150,18 +165,21 @@ Bases: {py:obj}`abtem.parametrizations.Parametrization`
 Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.__init__
+:parser: rst
 ```
 
 ````{py:method} charge(symbol: str, charge: float = 0.0) -> callable
 :canonical: abtem.parametrizations.Parametrization.charge
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.charge
+:parser: rst
 ```
 
 ````
@@ -170,6 +188,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :canonical: abtem.parametrizations.Parametrization.finite_projected_potential
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.finite_projected_potential
+:parser: rst
 ```
 
 ````
@@ -178,6 +197,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :canonical: abtem.parametrizations.Parametrization.finite_projected_scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.finite_projected_scattering_factor
+:parser: rst
 ```
 
 ````
@@ -186,6 +206,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :canonical: abtem.parametrizations.Parametrization.from_json
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.from_json
+:parser: rst
 ```
 
 ````
@@ -194,6 +215,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :canonical: abtem.parametrizations.Parametrization.get_function
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.get_function
+:parser: rst
 ```
 
 ````
@@ -202,6 +224,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :canonical: abtem.parametrizations.Parametrization.line_profiles
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.line_profiles
+:parser: rst
 ```
 
 ````
@@ -211,6 +234,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :type: dict[str, numpy.ndarray]
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.parameters
+:parser: rst
 ```
 
 ````
@@ -219,6 +243,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :canonical: abtem.parametrizations.Parametrization.potential
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.potential
+:parser: rst
 ```
 
 ````
@@ -227,6 +252,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :canonical: abtem.parametrizations.Parametrization.projected_potential
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.projected_potential
+:parser: rst
 ```
 
 ````
@@ -235,6 +261,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :canonical: abtem.parametrizations.Parametrization.projected_scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.projected_scattering_factor
+:parser: rst
 ```
 
 ````
@@ -244,6 +271,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.scaled_parameters
+:parser: rst
 ```
 
 ````
@@ -252,6 +280,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :canonical: abtem.parametrizations.Parametrization.scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.scattering_factor
+:parser: rst
 ```
 
 ````
@@ -260,6 +289,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :canonical: abtem.parametrizations.Parametrization.sigmas
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.sigmas
+:parser: rst
 ```
 
 ````
@@ -268,6 +298,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :canonical: abtem.parametrizations.Parametrization.to_json
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.to_json
+:parser: rst
 ```
 
 ````
@@ -276,6 +307,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :canonical: abtem.parametrizations.Parametrization.x_ray_scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.x_ray_scattering_factor
+:parser: rst
 ```
 
 ````
@@ -288,12 +320,14 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 Bases: {py:obj}`abtem.parametrizations.Parametrization`
 
 ```{autodoc2-docstring} abtem.parametrizations.PengParametrization
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.parametrizations.PengParametrization.__init__
+:parser: rst
 ```
 
 ````{py:method} scaled_parameters(symbol: str, name: str) -> numpy.ndarray
@@ -307,6 +341,7 @@ Bases: {py:obj}`abtem.parametrizations.Parametrization`
 :canonical: abtem.parametrizations.validate_parameters
 
 ```{autodoc2-docstring} abtem.parametrizations.validate_parameters
+:parser: rst
 ```
 ````
 
@@ -314,6 +349,7 @@ Bases: {py:obj}`abtem.parametrizations.Parametrization`
 :canonical: abtem.parametrizations.validate_parametrization
 
 ```{autodoc2-docstring} abtem.parametrizations.validate_parametrization
+:parser: rst
 ```
 ````
 
@@ -321,5 +357,6 @@ Bases: {py:obj}`abtem.parametrizations.Parametrization`
 :canonical: abtem.parametrizations.validate_sigmas
 
 ```{autodoc2-docstring} abtem.parametrizations.validate_sigmas
+:parser: rst
 ```
 ````

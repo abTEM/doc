@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.core.utils
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,10 +18,12 @@
 
 * - {py:obj}`CopyMixin <abtem.core.utils.CopyMixin>`
   - ```{autodoc2-docstring} abtem.core.utils.CopyMixin
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`EqualityMixin <abtem.core.utils.EqualityMixin>`
   - ```{autodoc2-docstring} abtem.core.utils.EqualityMixin
+    :parser: rst
     :summary:
     ```
 ````
@@ -33,74 +36,92 @@
 
 * - {py:obj}`array_row_intersection <abtem.core.utils.array_row_intersection>`
   - ```{autodoc2-docstring} abtem.core.utils.array_row_intersection
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`ensure_list <abtem.core.utils.ensure_list>`
   - ```{autodoc2-docstring} abtem.core.utils.ensure_list
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`expand_dims_to_broadcast <abtem.core.utils.expand_dims_to_broadcast>`
   - ```{autodoc2-docstring} abtem.core.utils.expand_dims_to_broadcast
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`flatten_list_of_lists <abtem.core.utils.flatten_list_of_lists>`
   - ```{autodoc2-docstring} abtem.core.utils.flatten_list_of_lists
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`get_data_path <abtem.core.utils.get_data_path>`
   - ```{autodoc2-docstring} abtem.core.utils.get_data_path
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`get_dtype <abtem.core.utils.get_dtype>`
   - ```{autodoc2-docstring} abtem.core.utils.get_dtype
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`insert_empty_axis <abtem.core.utils.insert_empty_axis>`
   - ```{autodoc2-docstring} abtem.core.utils.insert_empty_axis
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`interleave <abtem.core.utils.interleave>`
   - ```{autodoc2-docstring} abtem.core.utils.interleave
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`is_broadcastable <abtem.core.utils.is_broadcastable>`
   - ```{autodoc2-docstring} abtem.core.utils.is_broadcastable
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`is_scalar <abtem.core.utils.is_scalar>`
   - ```{autodoc2-docstring} abtem.core.utils.is_scalar
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`itemset <abtem.core.utils.itemset>`
   - ```{autodoc2-docstring} abtem.core.utils.itemset
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`label_to_index <abtem.core.utils.label_to_index>`
   - ```{autodoc2-docstring} abtem.core.utils.label_to_index
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`normalize_axes <abtem.core.utils.normalize_axes>`
   - ```{autodoc2-docstring} abtem.core.utils.normalize_axes
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`number_to_tuple <abtem.core.utils.number_to_tuple>`
   - ```{autodoc2-docstring} abtem.core.utils.number_to_tuple
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`safe_ceiling_int <abtem.core.utils.safe_ceiling_int>`
   - ```{autodoc2-docstring} abtem.core.utils.safe_ceiling_int
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`safe_equality <abtem.core.utils.safe_equality>`
   - ```{autodoc2-docstring} abtem.core.utils.safe_equality
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`safe_floor_int <abtem.core.utils.safe_floor_int>`
   - ```{autodoc2-docstring} abtem.core.utils.safe_floor_int
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`tuple_range <abtem.core.utils.tuple_range>`
   - ```{autodoc2-docstring} abtem.core.utils.tuple_range
+    :parser: rst
     :summary:
     ```
 ````
@@ -113,6 +134,7 @@
 
 * - {py:obj}`T <abtem.core.utils.T>`
   - ```{autodoc2-docstring} abtem.core.utils.T
+    :parser: rst
     :summary:
     ```
 ````
@@ -123,12 +145,14 @@
 :canonical: abtem.core.utils.CopyMixin
 
 ```{autodoc2-docstring} abtem.core.utils.CopyMixin
+:parser: rst
 ```
 
 ````{py:method} copy() -> typing.Self
 :canonical: abtem.core.utils.CopyMixin.copy
 
 ```{autodoc2-docstring} abtem.core.utils.CopyMixin.copy
+:parser: rst
 ```
 
 ````
@@ -139,6 +163,7 @@
 :canonical: abtem.core.utils.EqualityMixin
 
 ```{autodoc2-docstring} abtem.core.utils.EqualityMixin
+:parser: rst
 ```
 
 ````
@@ -149,6 +174,7 @@
    'TypeVar(...)'
 
 ```{autodoc2-docstring} abtem.core.utils.T
+:parser: rst
 ```
 
 ````
@@ -157,6 +183,7 @@
 :canonical: abtem.core.utils.array_row_intersection
 
 ```{autodoc2-docstring} abtem.core.utils.array_row_intersection
+:parser: rst
 ```
 ````
 
@@ -164,6 +191,7 @@
 :canonical: abtem.core.utils.ensure_list
 
 ```{autodoc2-docstring} abtem.core.utils.ensure_list
+:parser: rst
 ```
 ````
 
@@ -171,6 +199,7 @@
 :canonical: abtem.core.utils.expand_dims_to_broadcast
 
 ```{autodoc2-docstring} abtem.core.utils.expand_dims_to_broadcast
+:parser: rst
 ```
 ````
 
@@ -178,6 +207,7 @@
 :canonical: abtem.core.utils.flatten_list_of_lists
 
 ```{autodoc2-docstring} abtem.core.utils.flatten_list_of_lists
+:parser: rst
 ```
 ````
 
@@ -185,6 +215,7 @@
 :canonical: abtem.core.utils.get_data_path
 
 ```{autodoc2-docstring} abtem.core.utils.get_data_path
+:parser: rst
 ```
 ````
 
@@ -192,6 +223,7 @@
 :canonical: abtem.core.utils.get_dtype
 
 ```{autodoc2-docstring} abtem.core.utils.get_dtype
+:parser: rst
 ```
 ````
 
@@ -199,6 +231,7 @@
 :canonical: abtem.core.utils.insert_empty_axis
 
 ```{autodoc2-docstring} abtem.core.utils.insert_empty_axis
+:parser: rst
 ```
 ````
 
@@ -206,6 +239,7 @@
 :canonical: abtem.core.utils.interleave
 
 ```{autodoc2-docstring} abtem.core.utils.interleave
+:parser: rst
 ```
 ````
 
@@ -213,6 +247,7 @@
 :canonical: abtem.core.utils.is_broadcastable
 
 ```{autodoc2-docstring} abtem.core.utils.is_broadcastable
+:parser: rst
 ```
 ````
 
@@ -220,6 +255,7 @@
 :canonical: abtem.core.utils.is_scalar
 
 ```{autodoc2-docstring} abtem.core.utils.is_scalar
+:parser: rst
 ```
 ````
 
@@ -227,6 +263,7 @@
 :canonical: abtem.core.utils.itemset
 
 ```{autodoc2-docstring} abtem.core.utils.itemset
+:parser: rst
 ```
 ````
 
@@ -234,6 +271,7 @@
 :canonical: abtem.core.utils.label_to_index
 
 ```{autodoc2-docstring} abtem.core.utils.label_to_index
+:parser: rst
 ```
 ````
 
@@ -241,6 +279,7 @@
 :canonical: abtem.core.utils.normalize_axes
 
 ```{autodoc2-docstring} abtem.core.utils.normalize_axes
+:parser: rst
 ```
 ````
 
@@ -248,6 +287,7 @@
 :canonical: abtem.core.utils.number_to_tuple
 
 ```{autodoc2-docstring} abtem.core.utils.number_to_tuple
+:parser: rst
 ```
 ````
 
@@ -255,6 +295,7 @@
 :canonical: abtem.core.utils.safe_ceiling_int
 
 ```{autodoc2-docstring} abtem.core.utils.safe_ceiling_int
+:parser: rst
 ```
 ````
 
@@ -262,6 +303,7 @@
 :canonical: abtem.core.utils.safe_equality
 
 ```{autodoc2-docstring} abtem.core.utils.safe_equality
+:parser: rst
 ```
 ````
 
@@ -269,6 +311,7 @@
 :canonical: abtem.core.utils.safe_floor_int
 
 ```{autodoc2-docstring} abtem.core.utils.safe_floor_int
+:parser: rst
 ```
 ````
 
@@ -276,5 +319,6 @@
 :canonical: abtem.core.utils.tuple_range
 
 ```{autodoc2-docstring} abtem.core.utils.tuple_range
+:parser: rst
 ```
 ````

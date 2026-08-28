@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.core.electron_configurations
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,18 +18,22 @@
 
 * - {py:obj}`aufbau <abtem.core.electron_configurations.aufbau>`
   - ```{autodoc2-docstring} abtem.core.electron_configurations.aufbau
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`config_str_to_config_tuples <abtem.core.electron_configurations.config_str_to_config_tuples>`
   - ```{autodoc2-docstring} abtem.core.electron_configurations.config_str_to_config_tuples
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`config_tuples_to_config_str <abtem.core.electron_configurations.config_tuples_to_config_str>`
   - ```{autodoc2-docstring} abtem.core.electron_configurations.config_tuples_to_config_str
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`remove_electron_from_config_str <abtem.core.electron_configurations.remove_electron_from_config_str>`
   - ```{autodoc2-docstring} abtem.core.electron_configurations.remove_electron_from_config_str
+    :parser: rst
     :summary:
     ```
 ````
@@ -41,14 +46,17 @@
 
 * - {py:obj}`azimuthal_letter <abtem.core.electron_configurations.azimuthal_letter>`
   - ```{autodoc2-docstring} abtem.core.electron_configurations.azimuthal_letter
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`azimuthal_number <abtem.core.electron_configurations.azimuthal_number>`
   - ```{autodoc2-docstring} abtem.core.electron_configurations.azimuthal_number
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`electron_configurations <abtem.core.electron_configurations.electron_configurations>`
   - ```{autodoc2-docstring} abtem.core.electron_configurations.electron_configurations
+    :parser: rst
     :summary:
     ```
 ````
@@ -59,6 +67,7 @@
 :canonical: abtem.core.electron_configurations.aufbau
 
 ```{autodoc2-docstring} abtem.core.electron_configurations.aufbau
+:parser: rst
 ```
 ````
 
@@ -68,6 +77,7 @@
    None
 
 ```{autodoc2-docstring} abtem.core.electron_configurations.azimuthal_letter
+:parser: rst
 ```
 
 ````
@@ -78,6 +88,7 @@
    None
 
 ```{autodoc2-docstring} abtem.core.electron_configurations.azimuthal_number
+:parser: rst
 ```
 
 ````
@@ -86,6 +97,7 @@
 :canonical: abtem.core.electron_configurations.config_str_to_config_tuples
 
 ```{autodoc2-docstring} abtem.core.electron_configurations.config_str_to_config_tuples
+:parser: rst
 ```
 ````
 
@@ -93,6 +105,7 @@
 :canonical: abtem.core.electron_configurations.config_tuples_to_config_str
 
 ```{autodoc2-docstring} abtem.core.electron_configurations.config_tuples_to_config_str
+:parser: rst
 ```
 ````
 
@@ -102,6 +115,7 @@
    None
 
 ```{autodoc2-docstring} abtem.core.electron_configurations.electron_configurations
+:parser: rst
 ```
 
 ````
@@ -110,5 +124,6 @@
 :canonical: abtem.core.electron_configurations.remove_electron_from_config_str
 
 ```{autodoc2-docstring} abtem.core.electron_configurations.remove_electron_from_config_str
+:parser: rst
 ```
 ````

@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.array
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,10 +18,12 @@
 
 * - {py:obj}`ArrayObject <abtem.array.ArrayObject>`
   - ```{autodoc2-docstring} abtem.array.ArrayObject
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`ComputableList <abtem.array.ComputableList>`
   - ```{autodoc2-docstring} abtem.array.ComputableList
+    :parser: rst
     :summary:
     ```
 ````
@@ -33,34 +36,42 @@
 
 * - {py:obj}`concatenate <abtem.array.concatenate>`
   - ```{autodoc2-docstring} abtem.array.concatenate
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`from_zarr <abtem.array.from_zarr>`
   - ```{autodoc2-docstring} abtem.array.from_zarr
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`moveaxis <abtem.array.moveaxis>`
   - ```{autodoc2-docstring} abtem.array.moveaxis
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`multi_output_blockwise <abtem.array.multi_output_blockwise>`
   - ```{autodoc2-docstring} abtem.array.multi_output_blockwise
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`stack <abtem.array.stack>`
   - ```{autodoc2-docstring} abtem.array.stack
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`swapaxes <abtem.array.swapaxes>`
   - ```{autodoc2-docstring} abtem.array.swapaxes
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_axis_metadata <abtem.array.validate_axis_metadata>`
   - ```{autodoc2-docstring} abtem.array.validate_axis_metadata
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_lazy <abtem.array.validate_lazy>`
   - ```{autodoc2-docstring} abtem.array.validate_lazy
+    :parser: rst
     :summary:
     ```
 ````
@@ -73,30 +84,37 @@
 
 * - {py:obj}`ArrayItemType <abtem.array.ArrayItemType>`
   - ```{autodoc2-docstring} abtem.array.ArrayItemType
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`ArrayObjectType <abtem.array.ArrayObjectType>`
   - ```{autodoc2-docstring} abtem.array.ArrayObjectType
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`ArrayObjectTypeAlt <abtem.array.ArrayObjectTypeAlt>`
   - ```{autodoc2-docstring} abtem.array.ArrayObjectTypeAlt
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`em <abtem.array.em>`
   - ```{autodoc2-docstring} abtem.array.em
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`hs <abtem.array.hs>`
   - ```{autodoc2-docstring} abtem.array.hs
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`tifffile <abtem.array.tifffile>`
   - ```{autodoc2-docstring} abtem.array.tifffile
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`xr <abtem.array.xr>`
   - ```{autodoc2-docstring} abtem.array.xr
+    :parser: rst
     :summary:
     ```
 ````
@@ -109,6 +127,7 @@
    None
 
 ```{autodoc2-docstring} abtem.array.ArrayItemType
+:parser: rst
 ```
 
 ````
@@ -119,18 +138,21 @@
 Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyMixin`
 
 ```{autodoc2-docstring} abtem.array.ArrayObject
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.__init__
+:parser: rst
 ```
 
 ````{py:method} apply_func(func: typing.Callable, **kwargs) -> typing.Self
 :canonical: abtem.array.ArrayObject.apply_func
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.apply_func
+:parser: rst
 ```
 
 ````
@@ -139,6 +161,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.apply_transform
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.apply_transform
+:parser: rst
 ```
 
 ````
@@ -148,6 +171,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: numpy.ndarray | dask.array.core.Array
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.array
+:parser: rst
 ```
 
 ````
@@ -157,6 +181,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: abtem.core.axes.AxesMetadataList
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.axes_metadata
+:parser: rst
 ```
 
 ````
@@ -172,6 +197,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: int
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.base_dims
+:parser: rst
 ```
 
 ````
@@ -181,6 +207,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: tuple[int, ...]
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.base_shape
+:parser: rst
 ```
 
 ````
@@ -189,6 +216,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.compute
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.compute
+:parser: rst
 ```
 
 ````
@@ -197,6 +225,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.copy_to_device
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.copy_to_device
+:parser: rst
 ```
 
 ````
@@ -206,6 +235,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: str
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.device
+:parser: rst
 ```
 
 ````
@@ -215,6 +245,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: numpy.dtype
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.dtype
+:parser: rst
 ```
 
 ````
@@ -224,6 +255,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: list[abtem.core.axes.AxisMetadata]
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.ensemble_axes_metadata
+:parser: rst
 ```
 
 ````
@@ -233,6 +265,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: int
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.ensemble_dims
+:parser: rst
 ```
 
 ````
@@ -242,6 +275,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: tuple[int, ...]
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.ensemble_shape
+:parser: rst
 ```
 
 ````
@@ -250,6 +284,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.ensure_lazy
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.ensure_lazy
+:parser: rst
 ```
 
 ````
@@ -258,6 +293,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.expand_dims
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.expand_dims
+:parser: rst
 ```
 
 ````
@@ -268,6 +304,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :classmethod:
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.from_array_and_metadata
+:parser: rst
 ```
 
 ````
@@ -277,6 +314,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :classmethod:
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.from_zarr
+:parser: rst
 ```
 
 ````
@@ -285,6 +323,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.get_from_metadata
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.get_from_metadata
+:parser: rst
 ```
 
 ````
@@ -293,6 +332,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.get_items
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.get_items
+:parser: rst
 ```
 
 ````
@@ -302,6 +342,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: bool
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.is_complex
+:parser: rst
 ```
 
 ````
@@ -311,6 +352,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: bool
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.is_lazy
+:parser: rst
 ```
 
 ````
@@ -319,6 +361,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.lazy
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.lazy
+:parser: rst
 ```
 
 ````
@@ -327,6 +370,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.max
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.max
+:parser: rst
 ```
 
 ````
@@ -335,6 +379,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.mean
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.mean
+:parser: rst
 ```
 
 ````
@@ -344,6 +389,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: dict
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.metadata
+:parser: rst
 ```
 
 ````
@@ -352,6 +398,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.min
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.min
+:parser: rst
 ```
 
 ````
@@ -360,6 +407,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.no_base_chunks
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.no_base_chunks
+:parser: rst
 ```
 
 ````
@@ -368,6 +416,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.rechunk
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.rechunk
+:parser: rst
 ```
 
 ````
@@ -376,6 +425,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.set_ensemble_axes_metadata
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.set_ensemble_axes_metadata
+:parser: rst
 ```
 
 ````
@@ -385,6 +435,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :type: tuple[int, ...]
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.shape
+:parser: rst
 ```
 
 ````
@@ -393,6 +444,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.squeeze
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.squeeze
+:parser: rst
 ```
 
 ````
@@ -401,6 +453,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.std
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.std
+:parser: rst
 ```
 
 ````
@@ -409,6 +462,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.sum
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.sum
+:parser: rst
 ```
 
 ````
@@ -417,6 +471,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.to_cpu
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.to_cpu
+:parser: rst
 ```
 
 ````
@@ -425,6 +480,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.to_data_array
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.to_data_array
+:parser: rst
 ```
 
 ````
@@ -433,6 +489,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.to_gpu
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.to_gpu
+:parser: rst
 ```
 
 ````
@@ -441,6 +498,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.to_hyperspy
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.to_hyperspy
+:parser: rst
 ```
 
 ````
@@ -449,6 +507,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.to_quantem
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.to_quantem
+:parser: rst
 ```
 
 ````
@@ -457,6 +516,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.to_tiff
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.to_tiff
+:parser: rst
 ```
 
 ````
@@ -465,6 +525,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :canonical: abtem.array.ArrayObject.to_zarr
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.to_zarr
+:parser: rst
 ```
 
 ````
@@ -477,6 +538,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
    'TypeVar(...)'
 
 ```{autodoc2-docstring} abtem.array.ArrayObjectType
+:parser: rst
 ```
 
 ````
@@ -487,6 +549,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
    'TypeVar(...)'
 
 ```{autodoc2-docstring} abtem.array.ArrayObjectTypeAlt
+:parser: rst
 ```
 
 ````
@@ -497,18 +560,21 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 Bases: {py:obj}`list`
 
 ```{autodoc2-docstring} abtem.array.ComputableList
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.array.ComputableList.__init__
+:parser: rst
 ```
 
 ````{py:method} compute(**kwargs) -> list[abtem.array.ArrayObject] | tuple[list[abtem.array.ArrayObject], tuple]
 :canonical: abtem.array.ComputableList.compute
 
 ```{autodoc2-docstring} abtem.array.ComputableList.compute
+:parser: rst
 ```
 
 ````
@@ -517,6 +583,7 @@ Bases: {py:obj}`list`
 :canonical: abtem.array.ComputableList.to_zarr
 
 ```{autodoc2-docstring} abtem.array.ComputableList.to_zarr
+:parser: rst
 ```
 
 ````
@@ -527,6 +594,7 @@ Bases: {py:obj}`list`
 :canonical: abtem.array.concatenate
 
 ```{autodoc2-docstring} abtem.array.concatenate
+:parser: rst
 ```
 ````
 
@@ -537,6 +605,7 @@ Bases: {py:obj}`list`
    None
 
 ```{autodoc2-docstring} abtem.array.em
+:parser: rst
 ```
 
 ````
@@ -545,6 +614,7 @@ Bases: {py:obj}`list`
 :canonical: abtem.array.from_zarr
 
 ```{autodoc2-docstring} abtem.array.from_zarr
+:parser: rst
 ```
 ````
 
@@ -555,6 +625,7 @@ Bases: {py:obj}`list`
    None
 
 ```{autodoc2-docstring} abtem.array.hs
+:parser: rst
 ```
 
 ````
@@ -563,6 +634,7 @@ Bases: {py:obj}`list`
 :canonical: abtem.array.moveaxis
 
 ```{autodoc2-docstring} abtem.array.moveaxis
+:parser: rst
 ```
 ````
 
@@ -570,6 +642,7 @@ Bases: {py:obj}`list`
 :canonical: abtem.array.multi_output_blockwise
 
 ```{autodoc2-docstring} abtem.array.multi_output_blockwise
+:parser: rst
 ```
 ````
 
@@ -577,6 +650,7 @@ Bases: {py:obj}`list`
 :canonical: abtem.array.stack
 
 ```{autodoc2-docstring} abtem.array.stack
+:parser: rst
 ```
 ````
 
@@ -584,6 +658,7 @@ Bases: {py:obj}`list`
 :canonical: abtem.array.swapaxes
 
 ```{autodoc2-docstring} abtem.array.swapaxes
+:parser: rst
 ```
 ````
 
@@ -594,6 +669,7 @@ Bases: {py:obj}`list`
    None
 
 ```{autodoc2-docstring} abtem.array.tifffile
+:parser: rst
 ```
 
 ````
@@ -602,6 +678,7 @@ Bases: {py:obj}`list`
 :canonical: abtem.array.validate_axis_metadata
 
 ```{autodoc2-docstring} abtem.array.validate_axis_metadata
+:parser: rst
 ```
 ````
 
@@ -609,6 +686,7 @@ Bases: {py:obj}`list`
 :canonical: abtem.array.validate_lazy
 
 ```{autodoc2-docstring} abtem.array.validate_lazy
+:parser: rst
 ```
 ````
 
@@ -619,6 +697,7 @@ Bases: {py:obj}`list`
    None
 
 ```{autodoc2-docstring} abtem.array.xr
+:parser: rst
 ```
 
 ````

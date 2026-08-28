@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.bloch.dynamical
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,22 +18,27 @@
 
 * - {py:obj}`BaseStructureFactor <abtem.bloch.dynamical.BaseStructureFactor>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.BaseStructureFactor
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`BlochWaves <abtem.bloch.dynamical.BlochWaves>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`BlochwaveEnsemble <abtem.bloch.dynamical.BlochwaveEnsemble>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`StructureFactor <abtem.bloch.dynamical.StructureFactor>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactor
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`StructureFactorArray <abtem.bloch.dynamical.StructureFactorArray>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactorArray
+    :parser: rst
     :summary:
     ```
 ````
@@ -45,94 +51,117 @@
 
 * - {py:obj}`allowed_chars <abtem.bloch.dynamical.allowed_chars>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.allowed_chars
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`calculate_M_matrix <abtem.bloch.dynamical.calculate_M_matrix>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_M_matrix
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`calculate_dynamical_scattering <abtem.bloch.dynamical.calculate_dynamical_scattering>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_dynamical_scattering
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`calculate_scattering_factors <abtem.bloch.dynamical.calculate_scattering_factors>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_scattering_factors
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`calculate_scattering_matrix <abtem.bloch.dynamical.calculate_scattering_matrix>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_scattering_matrix
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`calculate_structure_factors <abtem.bloch.dynamical.calculate_structure_factors>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_structure_factors
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`calculate_structure_matrix <abtem.bloch.dynamical.calculate_structure_matrix>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_structure_matrix
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`calculate_wave_functions <abtem.bloch.dynamical.calculate_wave_functions>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_wave_functions
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`equal_slice_thicknesses <abtem.bloch.dynamical.equal_slice_thicknesses>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.equal_slice_thicknesses
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`exctinction_distances <abtem.bloch.dynamical.exctinction_distances>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.exctinction_distances
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`expm <abtem.bloch.dynamical.expm>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.expm
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`is_base_distribution_tuple <abtem.bloch.dynamical.is_base_distribution_tuple>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.is_base_distribution_tuple
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`is_rotations_ensemble <abtem.bloch.dynamical.is_rotations_ensemble>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.is_rotations_ensemble
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`is_valid_rotation_axes <abtem.bloch.dynamical.is_valid_rotation_axes>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.is_valid_rotation_axes
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`is_valid_rotations <abtem.bloch.dynamical.is_valid_rotations>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.is_valid_rotations
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`plane_wave_basis <abtem.bloch.dynamical.plane_wave_basis>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.plane_wave_basis
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`plane_wave_coefficients <abtem.bloch.dynamical.plane_wave_coefficients>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.plane_wave_coefficients
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`reduce_plane_wave_expansion <abtem.bloch.dynamical.reduce_plane_wave_expansion>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.reduce_plane_wave_expansion
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`slice_potential <abtem.bloch.dynamical.slice_potential>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.slice_potential
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`structure_factor_1d_to_3d <abtem.bloch.dynamical.structure_factor_1d_to_3d>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.structure_factor_1d_to_3d
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`structure_factor_to_potential <abtem.bloch.dynamical.structure_factor_to_potential>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.structure_factor_to_potential
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_g_max <abtem.bloch.dynamical.validate_g_max>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.validate_g_max
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`validate_rotations <abtem.bloch.dynamical.validate_rotations>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.validate_rotations
+    :parser: rst
     :summary:
     ```
 ````
@@ -145,6 +174,7 @@
 
 * - {py:obj}`AllowedRotations <abtem.bloch.dynamical.AllowedRotations>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.AllowedRotations
+    :parser: rst
     :summary:
     ```
 ````
@@ -157,6 +187,7 @@
    None
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.AllowedRotations
+:parser: rst
 ```
 
 ````
@@ -165,12 +196,14 @@
 :canonical: abtem.bloch.dynamical.BaseStructureFactor
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BaseStructureFactor
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BaseStructureFactor.__init__
+:parser: rst
 ```
 
 ````{py:property} cell
@@ -179,6 +212,7 @@
 :type: ase.cell.Cell
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BaseStructureFactor.cell
+:parser: rst
 ```
 
 ````
@@ -188,6 +222,7 @@
 :type: str
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BaseStructureFactor.centering
+:parser: rst
 ```
 
 ````
@@ -198,6 +233,7 @@
 :type: str
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BaseStructureFactor.device
+:parser: rst
 ```
 
 ````
@@ -207,6 +243,7 @@
 :type: float
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BaseStructureFactor.g_max
+:parser: rst
 ```
 
 ````
@@ -216,6 +253,7 @@
 :type: numpy.ndarray
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BaseStructureFactor.g_vec
+:parser: rst
 ```
 
 ````
@@ -225,6 +263,7 @@
 :type: numpy.ndarray
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BaseStructureFactor.g_vec_length
+:parser: rst
 ```
 
 ````
@@ -234,6 +273,7 @@
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BaseStructureFactor.get_potential_3d
+:parser: rst
 ```
 
 ````
@@ -243,6 +283,7 @@
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BaseStructureFactor.get_projected_potential
+:parser: rst
 ```
 
 ````
@@ -252,6 +293,7 @@
 :type: tuple[int, int, int]
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BaseStructureFactor.gpts
+:parser: rst
 ```
 
 ````
@@ -261,6 +303,7 @@
 :type: numpy.ndarray
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BaseStructureFactor.hkl
+:parser: rst
 ```
 
 ````
@@ -271,18 +314,21 @@
 :canonical: abtem.bloch.dynamical.BlochWaves
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.__init__
+:parser: rst
 ```
 
 ````{py:method} calculate_diffraction_patterns(thicknesses: float | typing.Sequence[float] | numpy.ndarray, return_complex: bool = False, lazy: bool = True) -> abtem.measurements.IndexedDiffractionPatterns
 :canonical: abtem.bloch.dynamical.BlochWaves.calculate_diffraction_patterns
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.calculate_diffraction_patterns
+:parser: rst
 ```
 
 ````
@@ -291,6 +337,7 @@
 :canonical: abtem.bloch.dynamical.BlochWaves.calculate_exit_waves
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.calculate_exit_waves
+:parser: rst
 ```
 
 ````
@@ -299,6 +346,7 @@
 :canonical: abtem.bloch.dynamical.BlochWaves.calculate_scattering_matrix
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.calculate_scattering_matrix
+:parser: rst
 ```
 
 ````
@@ -307,6 +355,7 @@
 :canonical: abtem.bloch.dynamical.BlochWaves.calculate_structure_matrix
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.calculate_structure_matrix
+:parser: rst
 ```
 
 ````
@@ -316,6 +365,7 @@
 :type: ase.cell.Cell
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.cell
+:parser: rst
 ```
 
 ````
@@ -325,6 +375,7 @@
 :type: str
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.device
+:parser: rst
 ```
 
 ````
@@ -334,6 +385,7 @@
 :type: float
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.energy
+:parser: rst
 ```
 
 ````
@@ -342,6 +394,7 @@
 :canonical: abtem.bloch.dynamical.BlochWaves.excitation_errors
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.excitation_errors
+:parser: rst
 ```
 
 ````
@@ -351,6 +404,7 @@
 :type: float
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.g_max
+:parser: rst
 ```
 
 ````
@@ -360,6 +414,7 @@
 :type: numpy.ndarray
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.g_vec
+:parser: rst
 ```
 
 ````
@@ -369,6 +424,7 @@
 :type: numpy.ndarray
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.g_vec_length
+:parser: rst
 ```
 
 ````
@@ -377,6 +433,7 @@
 :canonical: abtem.bloch.dynamical.BlochWaves.get_kinematical_diffraction_pattern
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.get_kinematical_diffraction_pattern
+:parser: rst
 ```
 
 ````
@@ -386,6 +443,7 @@
 :type: numpy.ndarray
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.hkl
+:parser: rst
 ```
 
 ````
@@ -395,6 +453,7 @@
 :type: numpy.ndarray
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.hkl_mask
+:parser: rst
 ```
 
 ````
@@ -404,6 +463,7 @@
 :type: int
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.num_bloch_waves
+:parser: rst
 ```
 
 ````
@@ -412,6 +472,7 @@
 :canonical: abtem.bloch.dynamical.BlochWaves.rotate
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.rotate
+:parser: rst
 ```
 
 ````
@@ -421,6 +482,7 @@
 :type: float
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.sg_max
+:parser: rst
 ```
 
 ````
@@ -430,6 +492,7 @@
 :type: abtem.bloch.dynamical.BaseStructureFactor
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.structure_factor
+:parser: rst
 ```
 
 ````
@@ -439,6 +502,7 @@
 :type: int
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.structure_matrix_nbytes
+:parser: rst
 ```
 
 ````
@@ -448,6 +512,7 @@
 :type: bool
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.use_wave_eq
+:parser: rst
 ```
 
 ````
@@ -457,6 +522,7 @@
 :type: float
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.wavelength
+:parser: rst
 ```
 
 ````
@@ -469,12 +535,14 @@
 Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMixin`
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.__init__
+:parser: rst
 ```
 
 ````{py:property} axes
@@ -482,6 +550,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 :type: typing.Sequence[str]
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.axes
+:parser: rst
 ```
 
 ````
@@ -490,6 +559,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 :canonical: abtem.bloch.dynamical.BlochwaveEnsemble.calculate_diffraction_patterns
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.calculate_diffraction_patterns
+:parser: rst
 ```
 
 ````
@@ -498,6 +568,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 :canonical: abtem.bloch.dynamical.BlochwaveEnsemble.calculate_exit_waves
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.calculate_exit_waves
+:parser: rst
 ```
 
 ````
@@ -507,6 +578,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 :type: str
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.centering
+:parser: rst
 ```
 
 ````
@@ -516,6 +588,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 :type: str
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.device
+:parser: rst
 ```
 
 ````
@@ -525,6 +598,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 :type: float
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.energy
+:parser: rst
 ```
 
 ````
@@ -546,6 +620,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 :type: float
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.g_max
+:parser: rst
 ```
 
 ````
@@ -554,6 +629,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 :canonical: abtem.bloch.dynamical.BlochwaveEnsemble.get_ensemble_hkl_mask
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.get_ensemble_hkl_mask
+:parser: rst
 ```
 
 ````
@@ -562,6 +638,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 :canonical: abtem.bloch.dynamical.BlochwaveEnsemble.get_orientation_matrices
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.get_orientation_matrices
+:parser: rst
 ```
 
 ````
@@ -571,6 +648,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 :type: tuple[abtem.distributions.BaseDistribution | numbers.Number, ...]
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.rotations
+:parser: rst
 ```
 
 ````
@@ -580,6 +658,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 :type: float
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.sg_max
+:parser: rst
 ```
 
 ````
@@ -589,6 +668,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 :type: abtem.bloch.dynamical.BaseStructureFactor
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.structure_factor
+:parser: rst
 ```
 
 ````
@@ -598,6 +678,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 :type: bool
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.use_degrees
+:parser: rst
 ```
 
 ````
@@ -607,6 +688,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 :type: bool
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.use_wave_eq
+:parser: rst
 ```
 
 ````
@@ -619,12 +701,14 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.utils.CopyMixin`
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactor
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactor.__init__
+:parser: rst
 ```
 
 ````{py:property} atoms
@@ -632,6 +716,7 @@ Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.
 :type: ase.Atoms
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactor.atoms
+:parser: rst
 ```
 
 ````
@@ -640,6 +725,7 @@ Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.
 :canonical: abtem.bloch.dynamical.StructureFactor.build
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactor.build
+:parser: rst
 ```
 
 ````
@@ -648,6 +734,7 @@ Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.
 :canonical: abtem.bloch.dynamical.StructureFactor.calculate_scattering_factors
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactor.calculate_scattering_factors
+:parser: rst
 ```
 
 ````
@@ -663,6 +750,7 @@ Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.
 :type: str
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactor.device
+:parser: rst
 ```
 
 ````
@@ -677,6 +765,7 @@ Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.
 :canonical: abtem.bloch.dynamical.StructureFactor.get_potential_3d
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactor.get_potential_3d
+:parser: rst
 ```
 
 ````
@@ -685,6 +774,7 @@ Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.
 :canonical: abtem.bloch.dynamical.StructureFactor.get_projected_potential
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactor.get_projected_potential
+:parser: rst
 ```
 
 ````
@@ -694,6 +784,7 @@ Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.
 :type: numpy.ndarray | dict[str, numpy.ndarray]
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactor.occupancy
+:parser: rst
 ```
 
 ````
@@ -703,6 +794,7 @@ Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.
 :type: abtem.parametrizations.Parametrization
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactor.parametrization
+:parser: rst
 ```
 
 ````
@@ -712,6 +804,7 @@ Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.
 :type: numpy.ndarray | dict[str, numpy.ndarray]
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactor.thermal_sigma
+:parser: rst
 ```
 
 ````
@@ -724,12 +817,14 @@ Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.
 Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactorArray
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactorArray.__init__
+:parser: rst
 ```
 
 ````{py:property} cell
@@ -749,6 +844,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.StructureFactorArray.get_potential_3d
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactorArray.get_potential_3d
+:parser: rst
 ```
 
 ````
@@ -757,6 +853,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.StructureFactorArray.get_projected_potential
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactorArray.get_projected_potential
+:parser: rst
 ```
 
 ````
@@ -766,6 +863,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :type: tuple[int, int, int]
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactorArray.gpts
+:parser: rst
 ```
 
 ````
@@ -774,6 +872,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.StructureFactorArray.to_3d_array
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactorArray.to_3d_array
+:parser: rst
 ```
 
 ````
@@ -782,6 +881,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.StructureFactorArray.to_dict
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactorArray.to_dict
+:parser: rst
 ```
 
 ````
@@ -792,6 +892,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.allowed_chars
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.allowed_chars
+:parser: rst
 ```
 ````
 
@@ -799,6 +900,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.calculate_M_matrix
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_M_matrix
+:parser: rst
 ```
 ````
 
@@ -806,6 +908,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.calculate_dynamical_scattering
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_dynamical_scattering
+:parser: rst
 ```
 ````
 
@@ -813,6 +916,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.calculate_scattering_factors
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_scattering_factors
+:parser: rst
 ```
 ````
 
@@ -820,6 +924,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.calculate_scattering_matrix
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_scattering_matrix
+:parser: rst
 ```
 ````
 
@@ -827,6 +932,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.calculate_structure_factors
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_structure_factors
+:parser: rst
 ```
 ````
 
@@ -834,6 +940,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.calculate_structure_matrix
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_structure_matrix
+:parser: rst
 ```
 ````
 
@@ -841,6 +948,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.calculate_wave_functions
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_wave_functions
+:parser: rst
 ```
 ````
 
@@ -848,6 +956,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.equal_slice_thicknesses
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.equal_slice_thicknesses
+:parser: rst
 ```
 ````
 
@@ -855,6 +964,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.exctinction_distances
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.exctinction_distances
+:parser: rst
 ```
 ````
 
@@ -862,6 +972,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.expm
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.expm
+:parser: rst
 ```
 ````
 
@@ -869,6 +980,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.is_base_distribution_tuple
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.is_base_distribution_tuple
+:parser: rst
 ```
 ````
 
@@ -876,6 +988,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.is_rotations_ensemble
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.is_rotations_ensemble
+:parser: rst
 ```
 ````
 
@@ -883,6 +996,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.is_valid_rotation_axes
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.is_valid_rotation_axes
+:parser: rst
 ```
 ````
 
@@ -890,6 +1004,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.is_valid_rotations
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.is_valid_rotations
+:parser: rst
 ```
 ````
 
@@ -897,6 +1012,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.plane_wave_basis
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.plane_wave_basis
+:parser: rst
 ```
 ````
 
@@ -904,6 +1020,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.plane_wave_coefficients
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.plane_wave_coefficients
+:parser: rst
 ```
 ````
 
@@ -911,6 +1028,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.reduce_plane_wave_expansion
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.reduce_plane_wave_expansion
+:parser: rst
 ```
 ````
 
@@ -918,6 +1036,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.slice_potential
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.slice_potential
+:parser: rst
 ```
 ````
 
@@ -925,6 +1044,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.structure_factor_1d_to_3d
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.structure_factor_1d_to_3d
+:parser: rst
 ```
 ````
 
@@ -932,6 +1052,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.structure_factor_to_potential
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.structure_factor_to_potential
+:parser: rst
 ```
 ````
 
@@ -939,6 +1060,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.validate_g_max
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.validate_g_max
+:parser: rst
 ```
 ````
 
@@ -946,5 +1068,6 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 :canonical: abtem.bloch.dynamical.validate_rotations
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.validate_rotations
+:parser: rst
 ```
 ````

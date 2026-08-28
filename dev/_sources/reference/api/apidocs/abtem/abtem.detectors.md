@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.detectors
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,26 +18,32 @@
 
 * - {py:obj}`AnnularDetector <abtem.detectors.AnnularDetector>`
   - ```{autodoc2-docstring} abtem.detectors.AnnularDetector
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`BaseDetector <abtem.detectors.BaseDetector>`
   - ```{autodoc2-docstring} abtem.detectors.BaseDetector
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`FlexibleAnnularDetector <abtem.detectors.FlexibleAnnularDetector>`
   - ```{autodoc2-docstring} abtem.detectors.FlexibleAnnularDetector
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`PixelatedDetector <abtem.detectors.PixelatedDetector>`
   - ```{autodoc2-docstring} abtem.detectors.PixelatedDetector
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`SegmentedDetector <abtem.detectors.SegmentedDetector>`
   - ```{autodoc2-docstring} abtem.detectors.SegmentedDetector
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`WavesDetector <abtem.detectors.WavesDetector>`
   - ```{autodoc2-docstring} abtem.detectors.WavesDetector
+    :parser: rst
     :summary:
     ```
 ````
@@ -49,6 +56,7 @@
 
 * - {py:obj}`validate_detectors <abtem.detectors.validate_detectors>`
   - ```{autodoc2-docstring} abtem.detectors.validate_detectors
+    :parser: rst
     :summary:
     ```
 ````
@@ -61,12 +69,14 @@
 Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 
 ```{autodoc2-docstring} abtem.detectors.AnnularDetector
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.detectors.AnnularDetector.__init__
+:parser: rst
 ```
 
 ````{py:method} angular_limits(waves: abtem.waves.BaseWaves) -> tuple[float, float]
@@ -84,6 +94,7 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 :canonical: abtem.detectors.AnnularDetector.detect
 
 ```{autodoc2-docstring} abtem.detectors.AnnularDetector.detect
+:parser: rst
 ```
 
 ````
@@ -92,6 +103,7 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 :canonical: abtem.detectors.AnnularDetector.get_detector_region
 
 ```{autodoc2-docstring} abtem.detectors.AnnularDetector.get_detector_region
+:parser: rst
 ```
 
 ````
@@ -101,6 +113,7 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 :type: float
 
 ```{autodoc2-docstring} abtem.detectors.AnnularDetector.inner
+:parser: rst
 ```
 
 ````
@@ -120,6 +133,7 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 :type: tuple[float, float]
 
 ```{autodoc2-docstring} abtem.detectors.AnnularDetector.offset
+:parser: rst
 ```
 
 ````
@@ -129,6 +143,7 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 :type: float | None
 
 ```{autodoc2-docstring} abtem.detectors.AnnularDetector.outer
+:parser: rst
 ```
 
 ````
@@ -147,12 +162,14 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.waves.Waves`\, {py:obj}`abtem.measurements.BaseMeasurements | abtem.waves.Waves`\]
 
 ```{autodoc2-docstring} abtem.detectors.BaseDetector
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.detectors.BaseDetector.__init__
+:parser: rst
 ```
 
 ````{py:method} angular_limits(waves: abtem.waves.Waves) -> tuple[float, float]
@@ -160,6 +177,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.waves.Wave
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.detectors.BaseDetector.angular_limits
+:parser: rst
 ```
 
 ````
@@ -168,6 +186,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.waves.Wave
 :canonical: abtem.detectors.BaseDetector.apply
 
 ```{autodoc2-docstring} abtem.detectors.BaseDetector.apply
+:parser: rst
 ```
 
 ````
@@ -176,6 +195,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.waves.Wave
 :canonical: abtem.detectors.BaseDetector.detect
 
 ```{autodoc2-docstring} abtem.detectors.BaseDetector.detect
+:parser: rst
 ```
 
 ````
@@ -185,6 +205,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.waves.Wave
 :type: bool
 
 ```{autodoc2-docstring} abtem.detectors.BaseDetector.to_cpu
+:parser: rst
 ```
 
 ````
@@ -194,6 +215,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.waves.Wave
 :type: typing.Optional[str]
 
 ```{autodoc2-docstring} abtem.detectors.BaseDetector.url
+:parser: rst
 ```
 
 ````
@@ -206,12 +228,14 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.waves.Wave
 Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 
 ```{autodoc2-docstring} abtem.detectors.FlexibleAnnularDetector
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.detectors.FlexibleAnnularDetector.__init__
+:parser: rst
 ```
 
 ````{py:property} azimuthal_sampling
@@ -246,6 +270,7 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 :type: float
 
 ```{autodoc2-docstring} abtem.detectors.FlexibleAnnularDetector.step_size
+:parser: rst
 ```
 
 ````
@@ -258,12 +283,14 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 Bases: {py:obj}`abtem.detectors.BaseDetector`
 
 ```{autodoc2-docstring} abtem.detectors.PixelatedDetector
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.detectors.PixelatedDetector.__init__
+:parser: rst
 ```
 
 ````{py:method} angular_limits(waves: abtem.waves.Waves) -> tuple[float, float]
@@ -275,6 +302,7 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 :canonical: abtem.detectors.PixelatedDetector.detect
 
 ```{autodoc2-docstring} abtem.detectors.PixelatedDetector.detect
+:parser: rst
 ```
 
 ````
@@ -284,6 +312,7 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 :type: str | float
 
 ```{autodoc2-docstring} abtem.detectors.PixelatedDetector.max_angle
+:parser: rst
 ```
 
 ````
@@ -293,6 +322,7 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 :type: bool
 
 ```{autodoc2-docstring} abtem.detectors.PixelatedDetector.reciprocal_space
+:parser: rst
 ```
 
 ````
@@ -302,6 +332,7 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 :type: str | bool | tuple[float, float]
 
 ```{autodoc2-docstring} abtem.detectors.PixelatedDetector.resample
+:parser: rst
 ```
 
 ````
@@ -314,12 +345,14 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 
 ```{autodoc2-docstring} abtem.detectors.SegmentedDetector
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.detectors.SegmentedDetector.__init__
+:parser: rst
 ```
 
 ````{py:property} azimuthal_sampling
@@ -332,6 +365,7 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 :type: int
 
 ```{autodoc2-docstring} abtem.detectors.SegmentedDetector.nbins_azimuthal
+:parser: rst
 ```
 
 ````
@@ -341,6 +375,7 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 :type: int
 
 ```{autodoc2-docstring} abtem.detectors.SegmentedDetector.nbins_radial
+:parser: rst
 ```
 
 ````
@@ -363,12 +398,14 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 Bases: {py:obj}`abtem.detectors.BaseDetector`
 
 ```{autodoc2-docstring} abtem.detectors.WavesDetector
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.detectors.WavesDetector.__init__
+:parser: rst
 ```
 
 ````{py:method} angular_limits(waves: abtem.waves.BaseWaves) -> tuple[float, float]
@@ -380,6 +417,7 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 :canonical: abtem.detectors.WavesDetector.detect
 
 ```{autodoc2-docstring} abtem.detectors.WavesDetector.detect
+:parser: rst
 ```
 
 ````
@@ -390,5 +428,6 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 :canonical: abtem.detectors.validate_detectors
 
 ```{autodoc2-docstring} abtem.detectors.validate_detectors
+:parser: rst
 ```
 ````

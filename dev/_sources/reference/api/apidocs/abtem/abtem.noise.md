@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.noise
+:parser: rst
 :allowtitles:
 ```
 
@@ -32,6 +33,7 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 :canonical: abtem.noise.NoiseTransform.apply
 
 ```{autodoc2-docstring} abtem.noise.NoiseTransform.apply
+:parser: rst
 ```
 
 ````
@@ -41,6 +43,7 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 :type: float | numpy.ndarray | abtem.distributions.BaseDistribution
 
 ```{autodoc2-docstring} abtem.noise.NoiseTransform.dose
+:parser: rst
 ```
 
 ````
@@ -62,6 +65,7 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 :type: int
 
 ```{autodoc2-docstring} abtem.noise.NoiseTransform.samples
+:parser: rst
 ```
 
 ````
@@ -71,6 +75,7 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 :type: typing.Optional[abtem.distributions.BaseDistribution | int]
 
 ```{autodoc2-docstring} abtem.noise.NoiseTransform.seeds
+:parser: rst
 ```
 
 ````
@@ -87,6 +92,7 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 :type: float
 
 ```{autodoc2-docstring} abtem.noise.ScanNoiseTransform.dwell_time
+:parser: rst
 ```
 
 ````
@@ -102,6 +108,7 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 :type: float
 
 ```{autodoc2-docstring} abtem.noise.ScanNoiseTransform.flyback_time
+:parser: rst
 ```
 
 ````
@@ -111,6 +118,7 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 :type: float
 
 ```{autodoc2-docstring} abtem.noise.ScanNoiseTransform.max_frequency
+:parser: rst
 ```
 
 ````
@@ -126,6 +134,7 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 :type: int
 
 ```{autodoc2-docstring} abtem.noise.ScanNoiseTransform.num_components
+:parser: rst
 ```
 
 ````
@@ -135,6 +144,7 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 :type: float | numpy.ndarray | abtem.distributions.BaseDistribution
 
 ```{autodoc2-docstring} abtem.noise.ScanNoiseTransform.rms_power
+:parser: rst
 ```
 
 ````
@@ -144,6 +154,7 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 :type: int
 
 ```{autodoc2-docstring} abtem.noise.ScanNoiseTransform.samples
+:parser: rst
 ```
 
 ````
@@ -153,6 +164,7 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 :type: typing.Optional[abtem.distributions.BaseDistribution]
 
 ```{autodoc2-docstring} abtem.noise.ScanNoiseTransform.seeds
+:parser: rst
 ```
 
 ````

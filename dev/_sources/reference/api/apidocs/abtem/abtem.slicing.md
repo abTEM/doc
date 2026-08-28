@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.slicing
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,14 +18,17 @@
 
 * - {py:obj}`BaseSlicedAtoms <abtem.slicing.BaseSlicedAtoms>`
   - ```{autodoc2-docstring} abtem.slicing.BaseSlicedAtoms
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`SliceIndexedAtoms <abtem.slicing.SliceIndexedAtoms>`
   - ```{autodoc2-docstring} abtem.slicing.SliceIndexedAtoms
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`SlicedAtoms <abtem.slicing.SlicedAtoms>`
   - ```{autodoc2-docstring} abtem.slicing.SlicedAtoms
+    :parser: rst
     :summary:
     ```
 ````
@@ -37,14 +41,17 @@
 
 * - {py:obj}`crystal_slice_thicknesses <abtem.slicing.crystal_slice_thicknesses>`
   - ```{autodoc2-docstring} abtem.slicing.crystal_slice_thicknesses
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`is_number <abtem.slicing.is_number>`
   - ```{autodoc2-docstring} abtem.slicing.is_number
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`slice_limits <abtem.slicing.slice_limits>`
   - ```{autodoc2-docstring} abtem.slicing.slice_limits
+    :parser: rst
     :summary:
     ```
 ````
@@ -57,12 +64,14 @@
 Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ```{autodoc2-docstring} abtem.slicing.BaseSlicedAtoms
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.slicing.BaseSlicedAtoms.__init__
+:parser: rst
 ```
 
 ````{py:property} atoms
@@ -70,6 +79,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :type: ase.Atoms
 
 ```{autodoc2-docstring} abtem.slicing.BaseSlicedAtoms.atoms
+:parser: rst
 ```
 
 ````
@@ -79,6 +89,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :type: tuple[float, float, float]
 
 ```{autodoc2-docstring} abtem.slicing.BaseSlicedAtoms.box
+:parser: rst
 ```
 
 ````
@@ -87,6 +98,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :canonical: abtem.slicing.BaseSlicedAtoms.check_slice_idx
 
 ```{autodoc2-docstring} abtem.slicing.BaseSlicedAtoms.check_slice_idx
+:parser: rst
 ```
 
 ````
@@ -95,6 +107,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :canonical: abtem.slicing.BaseSlicedAtoms.generate_atoms_in_slices
 
 ```{autodoc2-docstring} abtem.slicing.BaseSlicedAtoms.generate_atoms_in_slices
+:parser: rst
 ```
 
 ````
@@ -104,6 +117,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :abstractmethod:
 
 ```{autodoc2-docstring} abtem.slicing.BaseSlicedAtoms.get_atoms_in_slices
+:parser: rst
 ```
 
 ````
@@ -113,6 +127,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :type: int
 
 ```{autodoc2-docstring} abtem.slicing.BaseSlicedAtoms.num_slices
+:parser: rst
 ```
 
 ````
@@ -122,6 +137,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :type: list[tuple[float, float]]
 
 ```{autodoc2-docstring} abtem.slicing.BaseSlicedAtoms.slice_limits
+:parser: rst
 ```
 
 ````
@@ -131,6 +147,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :type: tuple[float, ...]
 
 ```{autodoc2-docstring} abtem.slicing.BaseSlicedAtoms.slice_thickness
+:parser: rst
 ```
 
 ````
@@ -143,12 +160,14 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 Bases: {py:obj}`abtem.slicing.BaseSlicedAtoms`
 
 ```{autodoc2-docstring} abtem.slicing.SliceIndexedAtoms
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.slicing.SliceIndexedAtoms.__init__
+:parser: rst
 ```
 
 ````{py:method} get_atoms_in_slices(first_slice: int, last_slice: typing.Optional[int] = None, atomic_number: typing.Optional[int] = None) -> ase.Atoms
@@ -164,12 +183,14 @@ Bases: {py:obj}`abtem.slicing.BaseSlicedAtoms`
 Bases: {py:obj}`abtem.slicing.BaseSlicedAtoms`
 
 ```{autodoc2-docstring} abtem.slicing.SlicedAtoms
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.slicing.SlicedAtoms.__init__
+:parser: rst
 ```
 
 ````{py:method} get_atoms_in_slices(first_slice: int, last_slice: typing.Optional[int] = None, atomic_number: typing.Optional[int] = None) -> ase.Atoms
@@ -183,6 +204,7 @@ Bases: {py:obj}`abtem.slicing.BaseSlicedAtoms`
 :canonical: abtem.slicing.crystal_slice_thicknesses
 
 ```{autodoc2-docstring} abtem.slicing.crystal_slice_thicknesses
+:parser: rst
 ```
 ````
 
@@ -190,6 +212,7 @@ Bases: {py:obj}`abtem.slicing.BaseSlicedAtoms`
 :canonical: abtem.slicing.is_number
 
 ```{autodoc2-docstring} abtem.slicing.is_number
+:parser: rst
 ```
 ````
 
@@ -197,5 +220,6 @@ Bases: {py:obj}`abtem.slicing.BaseSlicedAtoms`
 :canonical: abtem.slicing.slice_limits
 
 ```{autodoc2-docstring} abtem.slicing.slice_limits
+:parser: rst
 ```
 ````

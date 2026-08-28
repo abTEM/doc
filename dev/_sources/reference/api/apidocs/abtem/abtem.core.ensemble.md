@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.core.ensemble
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,10 +18,12 @@
 
 * - {py:obj}`EmptyEnsemble <abtem.core.ensemble.EmptyEnsemble>`
   - ```{autodoc2-docstring} abtem.core.ensemble.EmptyEnsemble
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`Ensemble <abtem.core.ensemble.Ensemble>`
   - ```{autodoc2-docstring} abtem.core.ensemble.Ensemble
+    :parser: rst
     :summary:
     ```
 ````
@@ -33,10 +36,12 @@
 
 * - {py:obj}`concatenate_array_blocks <abtem.core.ensemble.concatenate_array_blocks>`
   - ```{autodoc2-docstring} abtem.core.ensemble.concatenate_array_blocks
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`unpack_blockwise_args <abtem.core.ensemble.unpack_blockwise_args>`
   - ```{autodoc2-docstring} abtem.core.ensemble.unpack_blockwise_args
+    :parser: rst
     :summary:
     ```
 ````
@@ -49,6 +54,7 @@
 Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 
 ```{autodoc2-docstring} abtem.core.ensemble.EmptyEnsemble
+:parser: rst
 ```
 
 ````{py:property} ensemble_axes_metadata
@@ -69,6 +75,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 :canonical: abtem.core.ensemble.Ensemble
 
 ```{autodoc2-docstring} abtem.core.ensemble.Ensemble
+:parser: rst
 ```
 
 ````{py:property} axes_metadata
@@ -76,6 +83,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 :type: abtem.core.axes.AxesMetadataList
 
 ```{autodoc2-docstring} abtem.core.ensemble.Ensemble.axes_metadata
+:parser: rst
 ```
 
 ````
@@ -85,6 +93,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 :type: list[abtem.core.axes.AxisMetadata]
 
 ```{autodoc2-docstring} abtem.core.ensemble.Ensemble.base_axes_metadata
+:parser: rst
 ```
 
 ````
@@ -94,6 +103,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 :type: tuple[int, ...]
 
 ```{autodoc2-docstring} abtem.core.ensemble.Ensemble.base_shape
+:parser: rst
 ```
 
 ````
@@ -103,6 +113,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 :type: list[abtem.core.axes.AxisMetadata]
 
 ```{autodoc2-docstring} abtem.core.ensemble.Ensemble.ensemble_axes_metadata
+:parser: rst
 ```
 
 ````
@@ -111,6 +122,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 :canonical: abtem.core.ensemble.Ensemble.ensemble_blocks
 
 ```{autodoc2-docstring} abtem.core.ensemble.Ensemble.ensemble_blocks
+:parser: rst
 ```
 
 ````
@@ -120,6 +132,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 :type: tuple[int, ...]
 
 ```{autodoc2-docstring} abtem.core.ensemble.Ensemble.ensemble_shape
+:parser: rst
 ```
 
 ````
@@ -128,6 +141,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 :canonical: abtem.core.ensemble.Ensemble.generate_blocks
 
 ```{autodoc2-docstring} abtem.core.ensemble.Ensemble.generate_blocks
+:parser: rst
 ```
 
 ````
@@ -137,6 +151,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 :type: tuple[int, ...]
 
 ```{autodoc2-docstring} abtem.core.ensemble.Ensemble.shape
+:parser: rst
 ```
 
 ````
@@ -147,6 +162,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 :canonical: abtem.core.ensemble.concatenate_array_blocks
 
 ```{autodoc2-docstring} abtem.core.ensemble.concatenate_array_blocks
+:parser: rst
 ```
 ````
 
@@ -154,5 +170,6 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 :canonical: abtem.core.ensemble.unpack_blockwise_args
 
 ```{autodoc2-docstring} abtem.core.ensemble.unpack_blockwise_args
+:parser: rst
 ```
 ````

@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,10 +18,12 @@
 
 * - {py:obj}`AxesCollection <abtem.visualize.axes_grid.AxesCollection>`
   - ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesCollection
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`AxesGrid <abtem.visualize.axes_grid.AxesGrid>`
   - ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid
+    :parser: rst
     :summary:
     ```
 ````
@@ -31,18 +34,21 @@
 :canonical: abtem.visualize.axes_grid.AxesCollection
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesCollection
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesCollection.__init__
+:parser: rst
 ```
 
 ````{py:property} axes
 :canonical: abtem.visualize.axes_grid.AxesCollection.axes
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesCollection.axes
+:parser: rst
 ```
 
 ````
@@ -51,6 +57,7 @@
 :canonical: abtem.visualize.axes_grid.AxesCollection.fig
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesCollection.fig
+:parser: rst
 ```
 
 ````
@@ -60,6 +67,7 @@
 :type: int
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesCollection.ncols
+:parser: rst
 ```
 
 ````
@@ -69,6 +77,7 @@
 :type: int
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesCollection.nrows
+:parser: rst
 ```
 
 ````
@@ -78,6 +87,7 @@
 :type: tuple[int, int]
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesCollection.shape
+:parser: rst
 ```
 
 ````
@@ -88,18 +98,21 @@
 :canonical: abtem.visualize.axes_grid.AxesGrid
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.__init__
+:parser: rst
 ```
 
 ````{py:method} adjust_figure_to_bbox()
 :canonical: abtem.visualize.axes_grid.AxesGrid.adjust_figure_to_bbox
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.adjust_figure_to_bbox
+:parser: rst
 ```
 
 ````
@@ -108,6 +121,7 @@
 :canonical: abtem.visualize.axes_grid.AxesGrid.axes
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.axes
+:parser: rst
 ```
 
 ````
@@ -116,6 +130,7 @@
 :canonical: abtem.visualize.axes_grid.AxesGrid.axis_location_to_indices
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.axis_location_to_indices
+:parser: rst
 ```
 
 ````
@@ -124,6 +139,7 @@
 :canonical: abtem.visualize.axes_grid.AxesGrid.fig
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.fig
+:parser: rst
 ```
 
 ````
@@ -133,6 +149,7 @@
 :type: int
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.ncols
+:parser: rst
 ```
 
 ````
@@ -142,6 +159,7 @@
 :type: int
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.nrows
+:parser: rst
 ```
 
 ````
@@ -150,6 +168,7 @@
 :canonical: abtem.visualize.axes_grid.AxesGrid.set_cbar_layout
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.set_cbar_layout
+:parser: rst
 ```
 
 ````
@@ -158,6 +177,7 @@
 :canonical: abtem.visualize.axes_grid.AxesGrid.set_sizes
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.set_sizes
+:parser: rst
 ```
 
 ````
@@ -167,6 +187,7 @@
 :type: tuple[int, int]
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.shape
+:parser: rst
 ```
 
 ````

@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw
+:parser: rst
 :allowtitles:
 ```
 
@@ -19,14 +20,17 @@
   -
 * - {py:obj}`GPAWMagneticField <abtem.magnetism.gpaw.GPAWMagneticField>`
   - ```{autodoc2-docstring} abtem.magnetism.gpaw.GPAWMagneticField
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`GPAWVectorPotential <abtem.magnetism.gpaw.GPAWVectorPotential>`
   - ```{autodoc2-docstring} abtem.magnetism.gpaw.GPAWVectorPotential
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`SpinDensityMagneticField <abtem.magnetism.gpaw.SpinDensityMagneticField>`
   - ```{autodoc2-docstring} abtem.magnetism.gpaw.SpinDensityMagneticField
+    :parser: rst
     :summary:
     ```
 ````
@@ -39,22 +43,27 @@
 
 * - {py:obj}`calculate_constant_magnetic_field <abtem.magnetism.gpaw.calculate_constant_magnetic_field>`
   - ```{autodoc2-docstring} abtem.magnetism.gpaw.calculate_constant_magnetic_field
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`calculate_magnetic_vector_potential <abtem.magnetism.gpaw.calculate_magnetic_vector_potential>`
   - ```{autodoc2-docstring} abtem.magnetism.gpaw.calculate_magnetic_vector_potential
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`get_magnetic_field_from_gpaw <abtem.magnetism.gpaw.get_magnetic_field_from_gpaw>`
   - ```{autodoc2-docstring} abtem.magnetism.gpaw.get_magnetic_field_from_gpaw
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`get_vector_potential_from_gpaw <abtem.magnetism.gpaw.get_vector_potential_from_gpaw>`
   - ```{autodoc2-docstring} abtem.magnetism.gpaw.get_vector_potential_from_gpaw
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`rotate_vector_field <abtem.magnetism.gpaw.rotate_vector_field>`
   - ```{autodoc2-docstring} abtem.magnetism.gpaw.rotate_vector_field
+    :parser: rst
     :summary:
     ```
 ````
@@ -71,6 +80,7 @@ Bases: {py:obj}`typing.Protocol`
 :type: ase.Atoms
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.GPAW.atoms
+:parser: rst
 ```
 
 ````
@@ -79,6 +89,7 @@ Bases: {py:obj}`typing.Protocol`
 :canonical: abtem.magnetism.gpaw.GPAW.get_number_of_grid_points
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.GPAW.get_number_of_grid_points
+:parser: rst
 ```
 
 ````
@@ -91,12 +102,14 @@ Bases: {py:obj}`typing.Protocol`
 Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.iam.BaseMagneticField`
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.GPAWMagneticField
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.GPAWMagneticField.__init__
+:parser: rst
 ```
 
 ````
@@ -107,12 +120,14 @@ Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.i
 Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.iam.BaseVectorPotential`
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.GPAWVectorPotential
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.GPAWVectorPotential.__init__
+:parser: rst
 ```
 
 ````
@@ -121,12 +136,14 @@ Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.i
 :canonical: abtem.magnetism.gpaw.SpinDensityMagneticField
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.SpinDensityMagneticField
+:parser: rst
 ```
 
 ```{rubric} Initialization
 ```
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.SpinDensityMagneticField.__init__
+:parser: rst
 ```
 
 ````
@@ -135,6 +152,7 @@ Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.i
 :canonical: abtem.magnetism.gpaw.calculate_constant_magnetic_field
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.calculate_constant_magnetic_field
+:parser: rst
 ```
 ````
 
@@ -142,6 +160,7 @@ Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.i
 :canonical: abtem.magnetism.gpaw.calculate_magnetic_vector_potential
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.calculate_magnetic_vector_potential
+:parser: rst
 ```
 ````
 
@@ -149,6 +168,7 @@ Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.i
 :canonical: abtem.magnetism.gpaw.get_magnetic_field_from_gpaw
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.get_magnetic_field_from_gpaw
+:parser: rst
 ```
 ````
 
@@ -156,6 +176,7 @@ Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.i
 :canonical: abtem.magnetism.gpaw.get_vector_potential_from_gpaw
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.get_vector_potential_from_gpaw
+:parser: rst
 ```
 ````
 
@@ -163,5 +184,6 @@ Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.i
 :canonical: abtem.magnetism.gpaw.rotate_vector_field
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.rotate_vector_field
+:parser: rst
 ```
 ````

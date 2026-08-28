@@ -4,6 +4,7 @@
 ```
 
 ```{autodoc2-docstring} abtem.magnetism.utils
+:parser: rst
 :allowtitles:
 ```
 
@@ -17,10 +18,12 @@
 
 * - {py:obj}`saturation_magnetization <abtem.magnetism.utils.saturation_magnetization>`
   - ```{autodoc2-docstring} abtem.magnetism.utils.saturation_magnetization
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`set_magnetic_moments <abtem.magnetism.utils.set_magnetic_moments>`
   - ```{autodoc2-docstring} abtem.magnetism.utils.set_magnetic_moments
+    :parser: rst
     :summary:
     ```
 ````
@@ -33,10 +36,12 @@
 
 * - {py:obj}`bohr_magneton <abtem.magnetism.utils.bohr_magneton>`
   - ```{autodoc2-docstring} abtem.magnetism.utils.bohr_magneton
+    :parser: rst
     :summary:
     ```
 * - {py:obj}`vacuum_permeability <abtem.magnetism.utils.vacuum_permeability>`
   - ```{autodoc2-docstring} abtem.magnetism.utils.vacuum_permeability
+    :parser: rst
     :summary:
     ```
 ````
@@ -49,6 +54,7 @@
    None
 
 ```{autodoc2-docstring} abtem.magnetism.utils.bohr_magneton
+:parser: rst
 ```
 
 ````
@@ -57,6 +63,7 @@
 :canonical: abtem.magnetism.utils.saturation_magnetization
 
 ```{autodoc2-docstring} abtem.magnetism.utils.saturation_magnetization
+:parser: rst
 ```
 ````
 
@@ -64,6 +71,7 @@
 :canonical: abtem.magnetism.utils.set_magnetic_moments
 
 ```{autodoc2-docstring} abtem.magnetism.utils.set_magnetic_moments
+:parser: rst
 ```
 ````
 
@@ -73,6 +81,7 @@
    None
 
 ```{autodoc2-docstring} abtem.magnetism.utils.vacuum_permeability
+:parser: rst
 ```
 
 ````
