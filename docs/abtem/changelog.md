@@ -1,25 +1,128 @@
 # Changelog
 
-## Upcoming: major features
+## Upcoming: 1.1.0
+
+The `dev` branch is at version `1.1.0`. The entries below are merged into `dev` but not yet released.
 
 Features:
-- Energy ensemble support across the codebase (PlaneWave, Probe, SMatrix, Bloch) ([PR #257](https://github.com/abTEM/abTEM/pull/257))
-- Significant improvements on simulating large potentials on GPU, alongside minor performance improvements ([PR #269](https://github.com/abTEM/abTEM/pull/269))
-- In addition to the Gaussian (G) distribution, now also implemented Lorentzian (L), Voigtian (convolution L * G) and 
-pseudo-Voigtian (L + G) source-size distributions and filters ([PR #270](https://github.com/abTEM/abTEM/pull/270))
+
+- Energy ensemble support across the codebase: `PlaneWave`, `Probe`, `SMatrix`, `BlochWaves` and `CTF`
+  accept a list of energies, and the resulting `EnergyAxis` propagates through indexing, angular sampling,
+  unit conversion and diffraction-spot indexing ([PR #257](https://github.com/abTEM/abTEM/pull/257))
+- C-PRISM: `SMatrix(upsample=True)` reduces every probe from the complete plane-wave expansion of the
+  aperture, so the interpolation factor only sets the number of multislice runs. Adds
+  `CompressedSMatrixArray` and `GridScan.commensurate` ([PR #318](https://github.com/abTEM/abTEM/pull/318))
+- Phonon-loss (thermal diffuse scattering) energy-loss workflow: `EnergyResolvedAtomsEnsemble`,
+  `phonon_loss_diffraction_patterns`, `momentum_resolved_spectrum` and `MomentumResolvedSpectrum`,
+  the `SpectralAnnularDetector` and `SpectralSlitDetector`, and detailed-balance thermal weighting that
+  splits the classical TDS signal into loss and gain sides
+  ([PR #324](https://github.com/abTEM/abTEM/pull/324), [PR #351](https://github.com/abTEM/abTEM/pull/351))
+- Linear-scaling PRISM-EELS for core-loss simulations: `SMatrix.transition_potential_scan`, with
+  single- and double-channel scattering and an optional windowed inelastic crop
+  ([PR #289](https://github.com/abTEM/abTEM/pull/289))
+- In addition to the Gaussian (G) distribution, now also implemented Lorentzian (L), Voigtian (convolution L * G) and
+  pseudo-Voigtian (L + G) source-size distributions and filters ([PR #270](https://github.com/abTEM/abTEM/pull/270))
+- The exact free-space propagator is now the default for Fourier multislice,
+  `FourierMultislice(order="exact")`, replacing the paraxial approximation. Spatial frequencies beyond
+  `k > 1 / lambda` are treated as evanescent rather than propagating; the paraxial propagator remains
+  available as `order=1` ([PR #298](https://github.com/abTEM/abTEM/pull/298))
+- Magnetic potentials and fields from collinear GPAW calculations: `gpaw_magnetic_fields` builds the
+  electrostatic potential, vector potential and magnetic field from the same calculator(s) in one call,
+  returning a `GPAWMagneticFields` bundle with `.tile()`, `.combined_potential()` and `.show()`;
+  `rotate_field` now defaults to `"auto"` ([PR #326](https://github.com/abTEM/abTEM/pull/326))
+- `GPAWParametrization` is now usable: it fits a Lobato-form IAM potential to the X-ray scattering factor
+  of an all-electron GPAW calculation, with working ionization support and a regularized fit
+  ([PR #329](https://github.com/abTEM/abTEM/pull/329))
+- Significant improvements on simulating large potentials on GPU, alongside minor performance improvements
+  ([PR #269](https://github.com/abTEM/abTEM/pull/269))
+    - The potential is now built in chunks of contiguous slices instead of all at once, keeping peak VRAM
+      bounded; new config key `potential.slice-chunk-size` (default `"auto"`)
+    - Opt-in multi-GPU via the new config key `dask.multi-gpu` (requires `dask-cuda`)
+    - `cupy.fft-cache-size` now defaults to `-1` (unlimited, the CuPy default); the previous `0 MB` default
+      silently disabled the cuFFT plan cache
+
+Performance:
+
+- The projection integrator is shared by reference across ensemble members instead of being deep-copied
+  (and re-uploaded to the GPU) for each ([PR #350](https://github.com/abTEM/abTEM/pull/350))
+- Removed a redundant potential rebuild on every scan chunk ([PR #340](https://github.com/abTEM/abTEM/pull/340))
+
+Dependencies:
+
+- The `core-loss` extra is merged into a single `gpaw = ["hankel", "sympy"]` extra, and a new `all` extra
+  installs every optional runtime dependency ([PR #329](https://github.com/abTEM/abTEM/pull/329))
+
+Bugfixes:
+
+- `GPAWPotential` for the new-style GPAW calculator API (GPAW 26+), and `GPAWPotential.from_file` on
+  old-style restarted calculators ([PR #325](https://github.com/abTEM/abTEM/pull/325))
+- `GPAWPotential` single-calculator `frozen_phonons` ensemble building
+  ([PR #327](https://github.com/abTEM/abTEM/pull/327)), plus removal of dead and broken code from
+  `GPAWPotential` and `GPAWParametrization` ([PR #328](https://github.com/abTEM/abTEM/pull/328))
+- `FieldArray.tile()` for vector-valued fields, and unsupported `frozen_phonons`/`repetitions` on magnetic
+  fields now raise instead of being silently ignored ([PR #326](https://github.com/abTEM/abTEM/pull/326))
+- Silent corruption in eager multislice for potentials with two or more ensemble axes
+  ([PR #333](https://github.com/abTEM/abTEM/pull/333))
+- `numba` `TypingError` in quasi-dipole interpolation on some numba/numpy pairings
+  ([PR #332](https://github.com/abTEM/abTEM/pull/332))
+- Single-point `GridScan` failing when built lazily ([PR #342](https://github.com/abTEM/abTEM/pull/342))
+- `LinearAxis` losing its offset under dask ensemble chunk partitioning
+  ([PR #344](https://github.com/abTEM/abTEM/pull/344))
+- Nondeterministic atom loss in `orthogonalize_cell`, and a hardened Gram-Schmidt fallback
+  ([PR #345](https://github.com/abTEM/abTEM/pull/345))
+- Repeated axis labels and colorbar overlap in exploded spectrum panels, and silently returned zeros for
+  single-configuration TDS ([PR #351](https://github.com/abTEM/abTEM/pull/351))
+- Azimuthal convention in `prism_coefficients`, which reflected azimuthally dependent aberrations in a PRISM
+  reduction with a `CTF`, and exit planes not being remapped when slicing a `PotentialArray`
+  ([PR #318](https://github.com/abTEM/abTEM/pull/318))
+- `numpy` 2.5 test failures caused by an ASE deprecation warning
+  ([PR #343](https://github.com/abTEM/abTEM/pull/343))
+- `Probe.transition_potential_scan` raised for a scan split into more than one chunk (for example through
+  `max_batch`) unless the scattering sites were passed explicitly
+  ([PR #353](https://github.com/abTEM/abTEM/pull/353))
+- Colorbars did not span multi-row exploded plots, and neighbouring panels could abut closely enough for
+  their tick labels to collide ([PR #354](https://github.com/abTEM/abTEM/pull/354))
+
+Documentation:
+
+- New tutorial on phonon-loss spectroscopy: energy-resolved frozen phonons, the TDS decomposition, the
+  momentum-resolved spectrum $S(q, E)$, the spectral detectors and detailed-balance thermal weighting
+- Energy ensembles documented in the wave-function walkthrough, with an energy series added to the
+  multislice walkthrough
+- PRISM-EELS added to the core-loss tutorial, compared against the equivalent multislice scan
+- The exact free-space propagator is documented in the multislice walkthrough and the real-space multislice
+  tutorial, which now selects the paraxial propagator explicitly where it compares algorithms at equal order
+- The installation page documents the optional pip extras (`gpaw`, `extra`, `all`) and why the GPU packages
+  are not among them
+- The configuration reference is synchronized with the new and changed config keys
+
+Planned for this release (not yet merged):
+
 - Support for skewed pixels (non-orthogonal x,y,z cell axes) ([PR #282](https://github.com/abTEM/abTEM/pull/282))
-- Linear-scaling PRISM-EELS for core-loss simulations ([PR #289](https://github.com/abTEM/abTEM/pull/289))
 - Radially variable detector sensitivity ([PR #283](https://github.com/abTEM/abTEM/pull/283))
 - Plasmons: fast `PhaseScramblePlasmons` for multislice and PRISM, and `MonteCarloPlasmons` for Bloch wave
 - CBED patterns for Bloch waves ([PR #254](https://github.com/abTEM/abTEM/pull/254))
-- Opt-in multi-GPU execution: setting `dask.multi-gpu` starts a `dask-cuda` cluster with one worker per GPU and distributes the computation across all visible devices, on both the `compute()` and the `to_zarr()` path ([PR #269](https://github.com/abTEM/abTEM/pull/269), [PR #346](https://github.com/abTEM/abTEM/pull/346))
-- New configuration keys `dask.multi-gpu-rmm-pool` and `dask.multi-gpu-devices` for an RMM memory pool per worker and for restricting the cluster to a subset of GPUs ([PR #346](https://github.com/abTEM/abTEM/pull/346))
-- *ab*TEM now warns instead of silently falling back: multi-GPU requested but declined (with the reason), a missing `if __name__ == "__main__"` guard, a grid size that forces cuFFT's Bluestein fallback (naming the next fast size), and a cuFFT plan too large for the cache bound ([PR #346](https://github.com/abTEM/abTEM/pull/346))
-
-Behavior changes:
-- **The client's configuration now reaches `distributed` workers.** *ab*TEM resolves configuration inside each task, and worker processes previously saw only the defaults from the YAML files — so any distributed computation with non-default configuration silently used the defaults. Most consequentially, `precision: float64` was ignored and distributed runs computed in `float32`. Distributed results from earlier versions that relied on non-default configuration should be repeated ([PR #346](https://github.com/abTEM/abTEM/pull/346))
-- `cupy.fft-cache-size` now defaults to `auto`, bounding the cuFFT plan cache to 25 % of each device's memory (it was previously unlimited). Set `-1` to restore unlimited caching, `0 MB` to disable it, or a size such as `512 MB` for a fixed bound ([PR #346](https://github.com/abTEM/abTEM/pull/346))
-- On GPU grids that force cuFFT's Bluestein fallback, automatically sized scan batches are halved to reflect the larger FFT workspace such grids require ([PR #346](https://github.com/abTEM/abTEM/pull/346))
+- Multi-GPU hardening, and the configuration fix found while chasing it
+  ([PR #346](https://github.com/abTEM/abTEM/pull/346))
+    - **The client's configuration now reaches `distributed` workers.** *ab*TEM resolves configuration
+      inside each task, and worker processes start fresh and previously saw only the YAML defaults, so
+      any distributed computation with a non-default configuration silently used the defaults instead —
+      most consequentially `precision`, which meant `float64` runs were computed in `float32`.
+      Distributed results obtained with a non-default configuration are worth repeating. Applies to any
+      distributed client, CPU clusters included
+    - `to_zarr()` on a lazy result honours `dask.multi-gpu`; it previously ignored the flag and ran the
+      whole computation on a single device
+    - `cupy.fft-cache-size` defaults to `auto` — 25 % of each device's memory, resolved per device —
+      rather than unlimited. `-1` restores unlimited, `0 MB` disables the cache, and a size such as
+      `512 MB` sets a fixed bound. A single plan larger than the bound runs uncached with a warning
+      instead of raising
+    - New config keys `dask.multi-gpu-rmm-pool` and `dask.multi-gpu-devices`, for an RMM memory pool per
+      worker and for restricting the cluster to a subset of GPUs
+    - Automatically sized scan batches are halved on grid sizes that force cuFFT's Bluestein fallback,
+      which needs a much larger FFT workspace
+    - Warnings replace silent fallbacks: multi-GPU requested but declined (with the reason), a missing
+      `if __name__ == "__main__"` guard, and a grid size that forces the Bluestein fallback (naming the
+      next fast size)
 
 ## 1.0.10
 

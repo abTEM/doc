@@ -27,6 +27,28 @@ pip install git+https://github.com/abTEM/abTEM
 
 ## Optional dependencies
 
+A few optional Python packages are bundled as pip *extras*, so they can be installed together with *ab*TEM:
+
+- `abtem[gpaw]` installs [hankel](https://hankel.readthedocs.io/) and [sympy](https://www.sympy.org/), the Python-side requirements of the DFT-based features — the form factors for core-loss EELS, and the potential parametrization fitted to an all-electron calculation. GPAW itself is *not* installed by this extra, see below.
+- `abtem[extra]` installs [bokeh](https://bokeh.org/), [ipycytoscape](https://ipycytoscape.readthedocs.io/) and the [Dask labextension](https://github.com/dask/dask-labextension), used for the task-graph visualizations and the diagnostics dashboard shown in the [parallelization walkthrough](walkthrough:parallelization).
+- `abtem[all]` installs both of the above.
+
+```{code-block}
+pip install abtem[all]
+```
+
+With conda, install the packages by name instead, for example:
+
+```{code-block}
+conda install -c conda-forge hankel sympy bokeh ipycytoscape
+```
+
+```{note}
+Before version `1.1.0`, the `gpaw` extra was called `core-loss` and installed only `sympy`.
+```
+
+The GPU packages ([CuPy](https://cupy.dev/) and, for several GPUs, `dask-cuda`) are deliberately left out of the extras: their wheels are specific to a CUDA version and have to match the toolkit installed on your machine, so they are installed separately as described below.
+
 ### GPAW (not available on Windows)
 
 Some features of *ab*TEM, such as calculating potentials from DFT, require a working installation
@@ -52,6 +74,8 @@ gpaw install-data <dir>
 ```
 ````
 `````
+
+The `hankel` and `sympy` packages that the DFT-based features need on top of GPAW itself come from the `abtem[gpaw]` extra above.
 
 ### GPU (only NVIDIA) 
 
