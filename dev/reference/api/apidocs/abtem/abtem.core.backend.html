@@ -116,7 +116,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -580,9 +580,11 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.check_cupy_is_installed"><code class="docutils literal notranslate"><span class="pre">check_cupy_is_installed()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.copy_to_device"><code class="docutils literal notranslate"><span class="pre">copy_to_device()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.device_name_from_array_module"><code class="docutils literal notranslate"><span class="pre">device_name_from_array_module()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.ensure_cuda_cluster"><code class="docutils literal notranslate"><span class="pre">ensure_cuda_cluster()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.get_array_module"><code class="docutils literal notranslate"><span class="pre">get_array_module()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.get_ndimage_module"><code class="docutils literal notranslate"><span class="pre">get_ndimage_module()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.get_scipy_module"><code class="docutils literal notranslate"><span class="pre">get_scipy_module()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.is_gpu_dask_client"><code class="docutils literal notranslate"><span class="pre">is_gpu_dask_client()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.validate_device"><code class="docutils literal notranslate"><span class="pre">validate_device()</span></code></a></li>
 </ul>
 </li>
@@ -621,14 +623,20 @@
 <td><p>Get the device string from the array module. The array module must be either NumPy
 or CuPy.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#abtem.core.backend.get_array_module" title="abtem.core.backend.get_array_module"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_array_module</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#abtem.core.backend.ensure_cuda_cluster" title="abtem.core.backend.ensure_cuda_cluster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_cuda_cluster</span></code></a></p></td>
+<td><p>Start a dask-cuda cluster spanning all visible GPUs and return its client.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#abtem.core.backend.get_array_module" title="abtem.core.backend.get_array_module"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_array_module</span></code></a></p></td>
 <td><p>Get the array module (NumPy or CuPy) for a given array or string.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#abtem.core.backend.get_ndimage_module" title="abtem.core.backend.get_ndimage_module"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_ndimage_module</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#abtem.core.backend.get_ndimage_module" title="abtem.core.backend.get_ndimage_module"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_ndimage_module</span></code></a></p></td>
 <td><p>Get the ndimage module for a given array or device string.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#abtem.core.backend.get_scipy_module" title="abtem.core.backend.get_scipy_module"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_scipy_module</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#abtem.core.backend.get_scipy_module" title="abtem.core.backend.get_scipy_module"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_scipy_module</span></code></a></p></td>
 <td><p>Get the SciPy module for a given array or device string.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#abtem.core.backend.is_gpu_dask_client" title="abtem.core.backend.is_gpu_dask_client"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_gpu_dask_client</span></code></a></p></td>
+<td><p>Check whether a distributed client can safely execute CuPy computations.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#abtem.core.backend.validate_device" title="abtem.core.backend.validate_device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_device</span></code></a></p></td>
 <td><p>Validate the device string.</p></td>
@@ -658,17 +666,17 @@ or CuPy.</p></td>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.core.backend.asnumpy">
-<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">asnumpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dask.array.Array</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#asnumpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.asnumpy" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">asnumpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#asnumpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.asnumpy" title="Link to this definition">#</a></dt>
 <dd><p>Convert an array to NumPy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>array</strong> (<em>numpy.ndarray</em><em>, </em><em>dask.array.Array</em>) – The array to convert.</p>
+<dd class="field-odd"><p><strong>array</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em>, </em><em>dask.array.Array</em>) – The array to convert.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The array converted to NumPy.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>numpy.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -681,27 +689,27 @@ or CuPy.</p></td>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.core.backend.copy_to_device">
-<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">copy_to_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dask.array.core.Array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">types.ModuleType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dask.array.core.Array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#copy_to_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.copy_to_device" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">copy_to_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#copy_to_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.copy_to_device" title="Link to this definition">#</a></dt>
 <dd><p>Copy an array to a different device (CPU or GPU) using CuPy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>array</strong> (<em>numpy.ndarray</em>) – The array to copy.</p></li>
-<li><p><strong>device</strong> (<em>str</em>) – The device to copy to. Either ‘cpu’ or ‘gpu’.</p></li>
+<li><p><strong>array</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The array to copy.</p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The device to copy to. Either ‘cpu’ or ‘gpu’.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The array copied to the specified device.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>numpy.ndarray or cupy.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a> or cupy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.core.backend.device_name_from_array_module">
-<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">device_name_from_array_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">abtem.core.backend.ArrayModule</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#device_name_from_array_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.device_name_from_array_module" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">device_name_from_array_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#device_name_from_array_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.device_name_from_array_module" title="Link to this definition">#</a></dt>
 <dd><p>Get the device string from the array module. The array module must be either NumPy
 or CuPy.</p>
 <dl class="field-list simple">
@@ -712,18 +720,35 @@ or CuPy.</p>
 <dd class="field-even"><p>The device string.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="abtem.core.backend.ensure_cuda_cluster">
+<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">ensure_cuda_cluster</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#ensure_cuda_cluster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.ensure_cuda_cluster" title="Link to this definition">#</a></dt>
+<dd><p>Start a dask-cuda cluster spanning all visible GPUs and return its client.</p>
+<p>The cluster assigns one worker process to each GPU, allowing dask to distribute
+computations across all of them. It is created once per process and reused on
+subsequent calls. Requires the optional dask-cuda package.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The client connected to the dask-cuda cluster.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>distributed.Client</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.core.backend.get_array_module">
-<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">get_array_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">types.ModuleType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dask.array.core.Array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">types.ModuleType</span></span></span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#get_array_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.get_array_module" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">get_array_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/types.html#types.ModuleType" title="(in Python v3.14)"><span class="pre">ModuleType</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#get_array_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.get_array_module" title="Link to this definition">#</a></dt>
 <dd><p>Get the array module (NumPy or CuPy) for a given array or string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em><em>, </em><em>cupy.ndarray</em><em>, </em><em>dask.array.Array</em><em>, </em><em>str</em><em>, </em><em>None</em>) – The array or string to get the array module for. If None, the default device is
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em>, </em><em>cupy.ndarray</em><em>, </em><em>dask.array.Array</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>None</em>) – The array or string to get the array module for. If None, the default device is
 used.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -737,11 +762,11 @@ used.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.core.backend.get_ndimage_module">
-<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">get_ndimage_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">types.ModuleType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dask.array.core.Array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">types.ModuleType</span></span></span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#get_ndimage_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.get_ndimage_module" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">get_ndimage_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/types.html#types.ModuleType" title="(in Python v3.14)"><span class="pre">ModuleType</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#get_ndimage_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.get_ndimage_module" title="Link to this definition">#</a></dt>
 <dd><p>Get the ndimage module for a given array or device string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em><em>, </em><em>cupy.ndarray</em><em>, </em><em>dask.array.Array</em><em>, </em><em>str</em><em>, </em><em>None</em>) – The array or string to get the ndimage module for. If None, the default device
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em>, </em><em>cupy.ndarray</em><em>, </em><em>dask.array.Array</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>None</em>) – The array or string to get the ndimage module for. If None, the default device
 is used.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -755,11 +780,11 @@ is used.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.core.backend.get_scipy_module">
-<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">get_scipy_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">types.ModuleType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dask.array.core.Array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#get_scipy_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.get_scipy_module" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">get_scipy_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#get_scipy_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.get_scipy_module" title="Link to this definition">#</a></dt>
 <dd><p>Get the SciPy module for a given array or device string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em><em>, </em><em>cupy.ndarray</em><em>, </em><em>dask.array.Array</em><em>, </em><em>str</em><em>, </em><em>None</em>) – The array or string to get the SciPy module for. If None, the default device is
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em>, </em><em>cupy.ndarray</em><em>, </em><em>dask.array.Array</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>None</em>) – The array or string to get the SciPy module for. If None, the default device is
 used.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -772,19 +797,40 @@ used.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="abtem.core.backend.is_gpu_dask_client">
+<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">is_gpu_dask_client</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#is_gpu_dask_client"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.is_gpu_dask_client" title="Link to this definition">#</a></dt>
+<dd><p>Check whether a distributed client can safely execute CuPy computations.</p>
+<p>Only a client whose workers are each single-threaded — as produced by
+<code class="docutils literal notranslate"><span class="pre">dask_cuda.LocalCUDACluster</span></code>, which additionally pins one GPU per worker — is
+considered suitable. The threaded scheduler and multi-threaded workers share a
+single CUDA context per process, which cannot be used with CuPy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>client</strong> (<em>distributed.Client</em><em> or </em><em>None</em>) – The client to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the client is running and all of its workers are single-threaded.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="abtem.core.backend.validate_device">
-<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">validate_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#validate_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.validate_device" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.core.backend.</span></span><span class="sig-name descname"><span class="pre">validate_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/core/backend.html#validate_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.backend.validate_device" title="Link to this definition">#</a></dt>
 <dd><p>Validate the device string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>device</strong> (<em>str</em><em>, </em><em>None</em>) – The device string to validate. Must be either ‘cpu’ or ‘gpu’. If None, the
+<dd class="field-odd"><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>None</em>) – The device string to validate. Must be either ‘cpu’ or ‘gpu’. If None, the
 device from the configuration is used.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The validated device string.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -868,9 +914,11 @@ device from the configuration is used.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.check_cupy_is_installed"><code class="docutils literal notranslate"><span class="pre">check_cupy_is_installed()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.copy_to_device"><code class="docutils literal notranslate"><span class="pre">copy_to_device()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.device_name_from_array_module"><code class="docutils literal notranslate"><span class="pre">device_name_from_array_module()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.ensure_cuda_cluster"><code class="docutils literal notranslate"><span class="pre">ensure_cuda_cluster()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.get_array_module"><code class="docutils literal notranslate"><span class="pre">get_array_module()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.get_ndimage_module"><code class="docutils literal notranslate"><span class="pre">get_ndimage_module()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.get_scipy_module"><code class="docutils literal notranslate"><span class="pre">get_scipy_module()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.is_gpu_dask_client"><code class="docutils literal notranslate"><span class="pre">is_gpu_dask_client()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.backend.validate_device"><code class="docutils literal notranslate"><span class="pre">validate_device()</span></code></a></li>
 </ul>
 </li>
@@ -903,7 +951,7 @@ device from the configuration is used.</p>
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

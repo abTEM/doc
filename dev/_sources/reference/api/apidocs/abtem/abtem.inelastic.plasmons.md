@@ -86,7 +86,7 @@
 
 ### API
 
-`````{py:class} MonteCarloPlasmons(mean_free_path: float, excitation_energy: float, critical_angle: float, num_excitations: typing.Union[int, typing.Tuple[int, ...]] = None, num_samples: int = None, weights: typing.Union[bool] = True, ensemble_mean: bool = False, seed: typing.Union[int, typing.Tuple[int, ...]] = None)
+`````{py:class} MonteCarloPlasmons(...)
 :canonical: abtem.inelastic.plasmons.MonteCarloPlasmons
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.MonteCarloPlasmons
@@ -100,7 +100,7 @@
 :parser: rst
 ```
 
-````{py:method} characteristic_angle(energy: float) -> float
+````{py:method} characteristic_angle(...) -> float
 :canonical: abtem.inelastic.plasmons.MonteCarloPlasmons.characteristic_angle
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.MonteCarloPlasmons.characteristic_angle
@@ -109,7 +109,7 @@
 
 ````
 
-````{py:method} draw_events(waves: abtem.waves.Waves, potential: abtem.potentials.BasePotential) -> abtem.inelastic.plasmons.PlasmonScatteringEvents
+````{py:method} draw_events(...) -> abtem.inelastic.plasmons.PlasmonScatteringEvents
 :canonical: abtem.inelastic.plasmons.MonteCarloPlasmons.draw_events
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.MonteCarloPlasmons.draw_events
@@ -237,7 +237,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 
 ````
 
-````{py:method} update(depth)
+````{py:method} update(...)
 :canonical: abtem.inelastic.plasmons.PlasmonAxis.update
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonAxis.update
@@ -248,7 +248,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 
 `````
 
-`````{py:class} PlasmonScatteringEvents(depths: typing.Tuple[typing.Tuple[float, ...]], radial_angles: typing.Tuple[typing.Tuple[float, ...]], azimuthal_angles: typing.Tuple[typing.Tuple[float, ...]], weights: typing.Tuple[float], ensemble_mean: bool)
+`````{py:class} PlasmonScatteringEvents(...)
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents
 
 Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
@@ -264,7 +264,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 :parser: rst
 ```
 
-````{py:method} apply(waves: abtem.waves.Waves, in_place: bool = False) -> abtem.waves.Waves
+````{py:method} apply(...) -> abtem.waves.Waves
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents.apply
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.apply
@@ -313,7 +313,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 
 ````
 
-````{py:method} get_scattering_event_depths(num_excitations: int = 1)
+````{py:method} get_scattering_event_depths(...)
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents.get_scattering_event_depths
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.get_scattering_event_depths
@@ -359,7 +359,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 
 ````
 
-````{py:method} show_cumulative_scattering_events(ax=None, num_excitations: typing.Union[int, typing.List[int]] = 1, **kwargs)
+````{py:method} show_cumulative_scattering_events(...)
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents.show_cumulative_scattering_events
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.show_cumulative_scattering_events
@@ -368,7 +368,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 
 ````
 
-````{py:method} show_excitations_histogram(ax: matplotlib.axes.Axes = None)
+````{py:method} show_excitations_histogram(...)
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents.show_excitations_histogram
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.show_excitations_histogram
@@ -377,7 +377,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 
 ````
 
-````{py:method} show_scattering_angle_distribution(ax=None, **kwargs)
+````{py:method} show_scattering_angle_distribution(...)
 :canonical: abtem.inelastic.plasmons.PlasmonScatteringEvents.show_scattering_angle_distribution
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents.show_scattering_angle_distribution
@@ -407,7 +407,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 
 `````
 
-````{py:function} draw_azimuthal_angle(num_samples, num_depths, rng=None) -> typing.Tuple[float]
+````{py:function} draw_azimuthal_angle(...) -> typing.Tuple[float]
 :canonical: abtem.inelastic.plasmons.draw_azimuthal_angle
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.draw_azimuthal_angle
@@ -415,7 +415,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 ```
 ````
 
-````{py:function} draw_radial_scattering_angle(critical_angle: float, characteristic_angle: float, num_samples, num_depths, rng=None) -> typing.Tuple[typing.Tuple[float]]
+````{py:function} draw_radial_scattering_angle(...) -> typing.Tuple[typing.Tuple[float]]
 :canonical: abtem.inelastic.plasmons.draw_radial_scattering_angle
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.draw_radial_scattering_angle
@@ -423,7 +423,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 ```
 ````
 
-````{py:function} draw_scattering_depths(num_depths: int, num_samples: int, mean_free_path: float, max_depth: float, max_batch: int = 10000, max_attempts: int = 50000000, rng=None) -> typing.Tuple[typing.Tuple]
+````{py:function} draw_scattering_depths(...) -> typing.Tuple[typing.Tuple]
 :canonical: abtem.inelastic.plasmons.draw_scattering_depths
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.draw_scattering_depths
@@ -431,7 +431,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 ```
 ````
 
-````{py:function} excitations_weights(n: int, thickness: float, mean_free_path: float) -> float
+````{py:function} excitations_weights(...) -> float
 :canonical: abtem.inelastic.plasmons.excitations_weights
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.excitations_weights
@@ -461,7 +461,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`
 
 ````
 
-````{py:function} reduce_plasmon_axes(measurement)
+````{py:function} reduce_plasmon_axes(...)
 :canonical: abtem.inelastic.plasmons.reduce_plasmon_axes
 
 ```{autodoc2-docstring} abtem.inelastic.plasmons.reduce_plasmon_axes

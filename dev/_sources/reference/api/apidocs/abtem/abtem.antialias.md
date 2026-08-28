@@ -54,7 +54,7 @@ Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.core.utils.CopyM
 :parser: rst
 ```
 
-````{py:method} bandlimit(x: abtem.antialias.U, in_place: bool = False) -> abtem.antialias.U
+````{py:method} bandlimit(...) -> abtem.antialias.U
 :canonical: abtem.antialias.AntialiasAperture.bandlimit
 
 ```{autodoc2-docstring} abtem.antialias.AntialiasAperture.bandlimit
@@ -63,7 +63,7 @@ Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.core.utils.CopyM
 
 ````
 
-````{py:method} get_array(x: abtem.antialias.U)
+````{py:method} get_array(...)
 :canonical: abtem.antialias.AntialiasAperture.get_array
 
 ```{autodoc2-docstring} abtem.antialias.AntialiasAperture.get_array
@@ -74,7 +74,7 @@ Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.core.utils.CopyM
 
 `````
 
-````{py:function} antialias_aperture(gpts: tuple[int, int], sampling: tuple[float, float], xp=None) -> numpy.ndarray
+````{py:function} antialias_aperture(...) -> numpy.ndarray
 :canonical: abtem.antialias.antialias_aperture
 
 ```{autodoc2-docstring} abtem.antialias.antialias_aperture

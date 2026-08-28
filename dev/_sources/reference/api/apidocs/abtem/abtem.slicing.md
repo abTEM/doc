@@ -58,7 +58,7 @@
 
 ### API
 
-`````{py:class} BaseSlicedAtoms(atoms: ase.Atoms, slice_thickness: float | typing.Sequence[float] | str)
+`````{py:class} BaseSlicedAtoms(...)
 :canonical: abtem.slicing.BaseSlicedAtoms
 
 Bases: {py:obj}`abtem.core.utils.EqualityMixin`
@@ -94,7 +94,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ````
 
-````{py:method} check_slice_idx(index: int)
+````{py:method} check_slice_idx(...)
 :canonical: abtem.slicing.BaseSlicedAtoms.check_slice_idx
 
 ```{autodoc2-docstring} abtem.slicing.BaseSlicedAtoms.check_slice_idx
@@ -103,7 +103,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ````
 
-````{py:method} generate_atoms_in_slices(first_slice: int = 0, last_slice: typing.Optional[int] = None, atomic_number: typing.Optional[int] = None)
+````{py:method} generate_atoms_in_slices(...)
 :canonical: abtem.slicing.BaseSlicedAtoms.generate_atoms_in_slices
 
 ```{autodoc2-docstring} abtem.slicing.BaseSlicedAtoms.generate_atoms_in_slices
@@ -112,7 +112,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ````
 
-````{py:method} get_atoms_in_slices(first_slice: int, last_slice: typing.Optional[int] = None, atomic_number: typing.Optional[int] = None) -> ase.Atoms
+````{py:method} get_atoms_in_slices(...) -> ase.Atoms
 :canonical: abtem.slicing.BaseSlicedAtoms.get_atoms_in_slices
 :abstractmethod:
 
@@ -154,7 +154,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 `````
 
-`````{py:class} SliceIndexedAtoms(atoms: ase.Atoms, slice_thickness: float | typing.Sequence[float])
+`````{py:class} SliceIndexedAtoms(...)
 :canonical: abtem.slicing.SliceIndexedAtoms
 
 Bases: {py:obj}`abtem.slicing.BaseSlicedAtoms`
@@ -170,14 +170,14 @@ Bases: {py:obj}`abtem.slicing.BaseSlicedAtoms`
 :parser: rst
 ```
 
-````{py:method} get_atoms_in_slices(first_slice: int, last_slice: typing.Optional[int] = None, atomic_number: typing.Optional[int] = None) -> ase.Atoms
+````{py:method} get_atoms_in_slices(...) -> ase.Atoms
 :canonical: abtem.slicing.SliceIndexedAtoms.get_atoms_in_slices
 
 ````
 
 `````
 
-`````{py:class} SlicedAtoms(atoms: ase.Atoms, slice_thickness: float | typing.Sequence[float], xy_padding: float = 0.0, z_padding: float = 0.0)
+`````{py:class} SlicedAtoms(...)
 :canonical: abtem.slicing.SlicedAtoms
 
 Bases: {py:obj}`abtem.slicing.BaseSlicedAtoms`
@@ -193,14 +193,14 @@ Bases: {py:obj}`abtem.slicing.BaseSlicedAtoms`
 :parser: rst
 ```
 
-````{py:method} get_atoms_in_slices(first_slice: int, last_slice: typing.Optional[int] = None, atomic_number: typing.Optional[int] = None) -> ase.Atoms
+````{py:method} get_atoms_in_slices(...) -> ase.Atoms
 :canonical: abtem.slicing.SlicedAtoms.get_atoms_in_slices
 
 ````
 
 `````
 
-````{py:function} crystal_slice_thicknesses(atoms: ase.Atoms, tolerance: float = 0.2) -> numpy.ndarray
+````{py:function} crystal_slice_thicknesses(...) -> numpy.ndarray
 :canonical: abtem.slicing.crystal_slice_thicknesses
 
 ```{autodoc2-docstring} abtem.slicing.crystal_slice_thicknesses
@@ -208,7 +208,7 @@ Bases: {py:obj}`abtem.slicing.BaseSlicedAtoms`
 ```
 ````
 
-````{py:function} is_number(value: typing.Any) -> typing.TypeGuard[int | float | numpy.ndarray]
+````{py:function} is_number(...) -> typing.TypeGuard[int | float | numpy.ndarray]
 :canonical: abtem.slicing.is_number
 
 ```{autodoc2-docstring} abtem.slicing.is_number
@@ -216,7 +216,7 @@ Bases: {py:obj}`abtem.slicing.BaseSlicedAtoms`
 ```
 ````
 
-````{py:function} slice_limits(slice_thickness) -> list[tuple[float, float]]
+````{py:function} slice_limits(...) -> list[tuple[float, float]]
 :canonical: abtem.slicing.slice_limits
 
 ```{autodoc2-docstring} abtem.slicing.slice_limits

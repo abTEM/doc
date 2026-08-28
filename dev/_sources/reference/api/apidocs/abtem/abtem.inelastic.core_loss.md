@@ -80,13 +80,18 @@
     :parser: rst
     :summary:
     ```
-* - {py:obj}`linear_scaling_transition_multislice <abtem.inelastic.core_loss.linear_scaling_transition_multislice>`
-  - ```{autodoc2-docstring} abtem.inelastic.core_loss.linear_scaling_transition_multislice
+* - {py:obj}`numerov <abtem.inelastic.core_loss.numerov>`
+  - ```{autodoc2-docstring} abtem.inelastic.core_loss.numerov
     :parser: rst
     :summary:
     ```
-* - {py:obj}`numerov <abtem.inelastic.core_loss.numerov>`
-  - ```{autodoc2-docstring} abtem.inelastic.core_loss.numerov
+* - {py:obj}`prism_transition_potential_scan <abtem.inelastic.core_loss.prism_transition_potential_scan>`
+  - ```{autodoc2-docstring} abtem.inelastic.core_loss.prism_transition_potential_scan
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`prism_transition_potential_scan_beam_basis <abtem.inelastic.core_loss.prism_transition_potential_scan_beam_basis>`
+  - ```{autodoc2-docstring} abtem.inelastic.core_loss.prism_transition_potential_scan_beam_basis
     :parser: rst
     :summary:
     ```
@@ -122,7 +127,7 @@
 
 ### API
 
-`````{py:class} AtomicWaveFunction(radial_wavefunction, ml)
+`````{py:class} AtomicWaveFunction(...)
 :canonical: abtem.inelastic.core_loss.AtomicWaveFunction
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.AtomicWaveFunction
@@ -201,7 +206,7 @@
 
 `````
 
-`````{py:class} BaseTransitionCollection(Z)
+`````{py:class} BaseTransitionCollection(...)
 :canonical: abtem.inelastic.core_loss.BaseTransitionCollection
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.BaseTransitionCollection
@@ -236,7 +241,7 @@
 
 `````
 
-`````{py:class} BaseTransitionPotential(Z: int, extent: float | tuple[float, float], gpts: int | tuple[int, int], sampling: float | tuple[float, float], energy: float, double_channel: bool = True, **kwargs)
+`````{py:class} BaseTransitionPotential(...)
 :canonical: abtem.inelastic.core_loss.BaseTransitionPotential
 
 Bases: {py:obj}`abtem.core.energy.HasAcceleratorMixin`, {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.core.utils.CopyMixin`
@@ -274,7 +279,7 @@ Bases: {py:obj}`abtem.core.energy.HasAcceleratorMixin`, {py:obj}`abtem.core.grid
 
 `````
 
-`````{py:class} RadialWavefunction(n: int | None, l: int, energy: float, radial_grid: numpy.ndarray, radial_values: numpy.ndarray)
+`````{py:class} RadialWavefunction(...)
 :canonical: abtem.inelastic.core_loss.RadialWavefunction
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.RadialWavefunction
@@ -333,7 +338,7 @@ Bases: {py:obj}`abtem.core.energy.HasAcceleratorMixin`, {py:obj}`abtem.core.grid
 
 ````
 
-````{py:method} show(**kwargs)
+````{py:method} show(...)
 :canonical: abtem.inelastic.core_loss.RadialWavefunction.show
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.RadialWavefunction.show
@@ -342,7 +347,7 @@ Bases: {py:obj}`abtem.core.energy.HasAcceleratorMixin`, {py:obj}`abtem.core.grid
 
 ````
 
-````{py:method} to_lineprofiles(sampling=0.01)
+````{py:method} to_lineprofiles(...)
 :canonical: abtem.inelastic.core_loss.RadialWavefunction.to_lineprofiles
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.RadialWavefunction.to_lineprofiles
@@ -353,7 +358,7 @@ Bases: {py:obj}`abtem.core.energy.HasAcceleratorMixin`, {py:obj}`abtem.core.grid
 
 `````
 
-`````{py:class} SubshellTransitions(Z: int, n: int, l: int, order: int = 1, min_contrast: float = 1.0, epsilon: float = 1.0, xc: str = 'PBE')
+`````{py:class} SubshellTransitions(...)
 :canonical: abtem.inelastic.core_loss.SubshellTransitions
 
 Bases: {py:obj}`abtem.inelastic.core_loss.BaseTransitionCollection`
@@ -414,7 +419,7 @@ Bases: {py:obj}`abtem.inelastic.core_loss.BaseTransitionCollection`
 
 ````
 
-````{py:method} get_transition_potentials(extent: float | tuple[float, float] = None, gpts: float | tuple[int, int] = None, sampling: float | tuple[float, float] = None, energy: float = None, double_channel: bool = True)
+````{py:method} get_transition_potentials(...)
 :canonical: abtem.inelastic.core_loss.SubshellTransitions.get_transition_potentials
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.SubshellTransitions.get_transition_potentials
@@ -497,7 +502,7 @@ Bases: {py:obj}`abtem.inelastic.core_loss.BaseTransitionCollection`
 
 `````
 
-`````{py:class} TransitionPotential(Z: int, transitions, orbital_filling_factor: bool = True, extent: float | tuple[float, float] = None, gpts: int | tuple[int, int] = None, sampling: float | tuple[float, float] = None, energy: float = None, double_channel: bool = True)
+`````{py:class} TransitionPotential(...)
 :canonical: abtem.inelastic.core_loss.TransitionPotential
 
 Bases: {py:obj}`abtem.inelastic.core_loss.BaseTransitionPotential`
@@ -551,7 +556,7 @@ Bases: {py:obj}`abtem.inelastic.core_loss.BaseTransitionPotential`
 
 ````
 
-````{py:method} filter_by_intensity(threshold: float) -> abtem.inelastic.core_loss.TransitionPotential
+````{py:method} filter_by_intensity(...) -> abtem.inelastic.core_loss.TransitionPotential
 :canonical: abtem.inelastic.core_loss.TransitionPotential.filter_by_intensity
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.TransitionPotential.filter_by_intensity
@@ -589,7 +594,7 @@ Bases: {py:obj}`abtem.inelastic.core_loss.BaseTransitionPotential`
 
 ````
 
-````{py:method} scatter(waves: abtem.waves.Waves, sites: ase.Atoms | ase.Atom | numpy.ndarray) -> abtem.waves.Waves
+````{py:method} scatter(...) -> abtem.waves.Waves
 :canonical: abtem.inelastic.core_loss.TransitionPotential.scatter
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.TransitionPotential.scatter
@@ -598,7 +603,7 @@ Bases: {py:obj}`abtem.inelastic.core_loss.BaseTransitionPotential`
 
 ````
 
-````{py:method} show(**kwargs)
+````{py:method} show(...)
 :canonical: abtem.inelastic.core_loss.TransitionPotential.show
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.TransitionPotential.show
@@ -627,12 +632,12 @@ Bases: {py:obj}`abtem.inelastic.core_loss.BaseTransitionPotential`
 
 `````
 
-`````{py:class} TransitionPotentialArray(Z: int, array: numpy.ndarray, energy: float = None, extent: float | tuple[float, float] = None, sampling: float | tuple[float, float] = None, ensemble_axes_metadata: list[abtem.core.axes.AxisMetadata] = None, metadata: dict = None)
+`````{py:class} TransitionPotentialArray(...)
 :canonical: abtem.inelastic.core_loss.TransitionPotentialArray
 
 Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.BaseTransitionPotential`
 
-````{py:method} absolute_threshold(waves: abtem.waves.Waves, threshold: float = 1.0)
+````{py:method} absolute_threshold(...)
 :canonical: abtem.inelastic.core_loss.TransitionPotentialArray.absolute_threshold
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.TransitionPotentialArray.absolute_threshold
@@ -641,7 +646,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 
 ````
 
-````{py:method} filter_by_intensity(threshold: float, max_angle: float) -> abtem.inelastic.core_loss.TransitionPotential
+````{py:method} filter_by_intensity(...) -> abtem.inelastic.core_loss.TransitionPotential
 :canonical: abtem.inelastic.core_loss.TransitionPotentialArray.filter_by_intensity
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.TransitionPotentialArray.filter_by_intensity
@@ -650,7 +655,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 
 ````
 
-````{py:method} filter_sites(waves, sites, threshold)
+````{py:method} filter_sites(...)
 :canonical: abtem.inelastic.core_loss.TransitionPotentialArray.filter_sites
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.TransitionPotentialArray.filter_sites
@@ -659,13 +664,13 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 
 ````
 
-````{py:method} from_array_and_metadata(array, metadata)
+````{py:method} from_array_and_metadata(...)
 :canonical: abtem.inelastic.core_loss.TransitionPotentialArray.from_array_and_metadata
 :abstractmethod:
 
 ````
 
-````{py:method} generate_scattered_waves(waves: abtem.waves.Waves, sites: ase.Atoms | ase.Atom | numpy.ndarray, max_batch: int = 'auto', threshold=None)
+````{py:method} generate_scattered_waves(...)
 :canonical: abtem.inelastic.core_loss.TransitionPotentialArray.generate_scattered_waves
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.TransitionPotentialArray.generate_scattered_waves
@@ -674,7 +679,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 
 ````
 
-````{py:method} integrated_intensities(max_angle: float, space: str = 'reciprocal')
+````{py:method} integrated_intensities(...)
 :canonical: abtem.inelastic.core_loss.TransitionPotentialArray.integrated_intensities
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.TransitionPotentialArray.integrated_intensities
@@ -683,7 +688,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 
 ````
 
-````{py:method} local_potential(max_angle=None, space='reciprocal')
+````{py:method} local_potential(...)
 :canonical: abtem.inelastic.core_loss.TransitionPotentialArray.local_potential
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.TransitionPotentialArray.local_potential
@@ -692,7 +697,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 
 ````
 
-````{py:method} scatter(waves: abtem.waves.Waves, sites: ase.Atoms | ase.Atom | numpy.ndarray, threshold: float = None) -> abtem.waves.Waves
+````{py:method} scatter(...) -> abtem.waves.Waves
 :canonical: abtem.inelastic.core_loss.TransitionPotentialArray.scatter
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.TransitionPotentialArray.scatter
@@ -701,7 +706,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 
 ````
 
-````{py:method} set_threshold(wave, threshold)
+````{py:method} set_threshold(...)
 :canonical: abtem.inelastic.core_loss.TransitionPotentialArray.set_threshold
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.TransitionPotentialArray.set_threshold
@@ -710,7 +715,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 
 ````
 
-````{py:method} show(**kwargs)
+````{py:method} show(...)
 :canonical: abtem.inelastic.core_loss.TransitionPotentialArray.show
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.TransitionPotentialArray.show
@@ -728,7 +733,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 
 ````
 
-````{py:method} validate_sites(sites: ase.Atoms | ase.Atom) -> numpy.ndarray
+````{py:method} validate_sites(...) -> numpy.ndarray
 :canonical: abtem.inelastic.core_loss.TransitionPotentialArray.validate_sites
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.TransitionPotentialArray.validate_sites
@@ -761,7 +766,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 
 ````
 
-````{py:function} calculate_bound_radial_wavefunction(Z, n, l, xc='PBE')
+````{py:function} calculate_bound_radial_wavefunction(...)
 :canonical: abtem.inelastic.core_loss.calculate_bound_radial_wavefunction
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.calculate_bound_radial_wavefunction
@@ -769,7 +774,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 ```
 ````
 
-````{py:function} calculate_continuum_radial_wavefunction(Z, n, l, lprime, epsilon, xc='PBE')
+````{py:function} calculate_continuum_radial_wavefunction(...)
 :canonical: abtem.inelastic.core_loss.calculate_continuum_radial_wavefunction
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.calculate_continuum_radial_wavefunction
@@ -777,7 +782,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 ```
 ````
 
-````{py:function} check_valid_quantum_number(Z, n, ell)
+````{py:function} check_valid_quantum_number(...)
 :canonical: abtem.inelastic.core_loss.check_valid_quantum_number
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.check_valid_quantum_number
@@ -785,7 +790,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 ```
 ````
 
-````{py:function} config_str_to_config_tuples(config_str)
+````{py:function} config_str_to_config_tuples(...)
 :canonical: abtem.inelastic.core_loss.config_str_to_config_tuples
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.config_str_to_config_tuples
@@ -793,7 +798,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 ```
 ````
 
-````{py:function} config_tuples_to_config_str(config_tuples)
+````{py:function} config_tuples_to_config_str(...)
 :canonical: abtem.inelastic.core_loss.config_tuples_to_config_str
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.config_tuples_to_config_str
@@ -801,7 +806,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 ```
 ````
 
-````{py:function} fast_roll(array, shifts)
+````{py:function} fast_roll(...)
 :canonical: abtem.inelastic.core_loss.fast_roll
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.fast_roll
@@ -809,15 +814,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 ```
 ````
 
-````{py:function} linear_scaling_transition_multislice(S1: abtem.prism.s_matrix.SMatrix, S2: abtem.prism.s_matrix.SMatrix, scan, transition_potentials, reverse_multislice=False)
-:canonical: abtem.inelastic.core_loss.linear_scaling_transition_multislice
-
-```{autodoc2-docstring} abtem.inelastic.core_loss.linear_scaling_transition_multislice
-:parser: rst
-```
-````
-
-````{py:function} numerov(f, x0, dx, dh)
+````{py:function} numerov(...)
 :canonical: abtem.inelastic.core_loss.numerov
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.numerov
@@ -825,7 +822,23 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 ```
 ````
 
-````{py:function} radial_schroedinger_equation(ef, l, r, vr)
+````{py:function} prism_transition_potential_scan(...)
+:canonical: abtem.inelastic.core_loss.prism_transition_potential_scan
+
+```{autodoc2-docstring} abtem.inelastic.core_loss.prism_transition_potential_scan
+:parser: rst
+```
+````
+
+````{py:function} prism_transition_potential_scan_beam_basis(...)
+:canonical: abtem.inelastic.core_loss.prism_transition_potential_scan_beam_basis
+
+```{autodoc2-docstring} abtem.inelastic.core_loss.prism_transition_potential_scan_beam_basis
+:parser: rst
+```
+````
+
+````{py:function} radial_schroedinger_equation(...)
 :canonical: abtem.inelastic.core_loss.radial_schroedinger_equation
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.radial_schroedinger_equation
@@ -833,7 +846,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 ```
 ````
 
-````{py:function} remove_electron_from_config_str(config_str, n, ell)
+````{py:function} remove_electron_from_config_str(...)
 :canonical: abtem.inelastic.core_loss.remove_electron_from_config_str
 
 ```{autodoc2-docstring} abtem.inelastic.core_loss.remove_electron_from_config_str

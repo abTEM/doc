@@ -74,12 +74,12 @@ abtem.parametrizations.functions
 
 ### API
 
-`````{py:class} EwaldParametrization(width: float = 1.0)
+`````{py:class} EwaldParametrization(...)
 :canonical: abtem.parametrizations.EwaldParametrization
 
 Bases: {py:obj}`abtem.parametrizations.Parametrization`
 
-````{py:method} scaled_parameters(symbol: str, name: str) -> numpy.ndarray
+````{py:method} scaled_parameters(...) -> numpy.ndarray
 :canonical: abtem.parametrizations.EwaldParametrization.scaled_parameters
 
 ````
@@ -95,7 +95,7 @@ Bases: {py:obj}`abtem.parametrizations.Parametrization`
 
 `````
 
-`````{py:class} KirklandParametrization(parameters: str | dict = 'kirkland.json', sigmas: dict[str, float] = None)
+`````{py:class} KirklandParametrization(...)
 :canonical: abtem.parametrizations.KirklandParametrization
 
 Bases: {py:obj}`abtem.parametrizations.Parametrization`
@@ -111,7 +111,7 @@ Bases: {py:obj}`abtem.parametrizations.Parametrization`
 :parser: rst
 ```
 
-````{py:method} fit(Z, k, f, guess=None)
+````{py:method} fit(...)
 :canonical: abtem.parametrizations.KirklandParametrization.fit
 
 ```{autodoc2-docstring} abtem.parametrizations.KirklandParametrization.fit
@@ -120,14 +120,14 @@ Bases: {py:obj}`abtem.parametrizations.Parametrization`
 
 ````
 
-````{py:method} scaled_parameters(symbol: str, name: str) -> numpy.ndarray
+````{py:method} scaled_parameters(...) -> numpy.ndarray
 :canonical: abtem.parametrizations.KirklandParametrization.scaled_parameters
 
 ````
 
 `````
 
-`````{py:class} LobatoParametrization(parameters: str | dict = 'lobato.json', sigmas: dict[str, float] = None)
+`````{py:class} LobatoParametrization(...)
 :canonical: abtem.parametrizations.LobatoParametrization
 
 Bases: {py:obj}`abtem.parametrizations.Parametrization`
@@ -143,7 +143,7 @@ Bases: {py:obj}`abtem.parametrizations.Parametrization`
 :parser: rst
 ```
 
-````{py:method} fit(Z, k, f, guess=None)
+````{py:method} fit(...)
 :canonical: abtem.parametrizations.LobatoParametrization.fit
 
 ```{autodoc2-docstring} abtem.parametrizations.LobatoParametrization.fit
@@ -152,14 +152,14 @@ Bases: {py:obj}`abtem.parametrizations.Parametrization`
 
 ````
 
-````{py:method} scaled_parameters(symbol: str, name: str) -> numpy.ndarray
+````{py:method} scaled_parameters(...) -> numpy.ndarray
 :canonical: abtem.parametrizations.LobatoParametrization.scaled_parameters
 
 ````
 
 `````
 
-`````{py:class} Parametrization(parameters: dict[str, numpy.ndarray] | str, sigmas: dict[str, float] = None)
+`````{py:class} Parametrization(...)
 :canonical: abtem.parametrizations.Parametrization
 
 Bases: {py:obj}`abtem.core.utils.EqualityMixin`
@@ -175,7 +175,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 :parser: rst
 ```
 
-````{py:method} charge(symbol: str, charge: float = 0.0) -> callable
+````{py:method} charge(...) -> callable
 :canonical: abtem.parametrizations.Parametrization.charge
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.charge
@@ -184,7 +184,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ````
 
-````{py:method} finite_projected_potential(symbol: str, charge: float = 0.0) -> callable
+````{py:method} finite_projected_potential(...) -> callable
 :canonical: abtem.parametrizations.Parametrization.finite_projected_potential
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.finite_projected_potential
@@ -193,7 +193,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ````
 
-````{py:method} finite_projected_scattering_factor(symbol: str, charge: float = 0.0) -> callable
+````{py:method} finite_projected_scattering_factor(...) -> callable
 :canonical: abtem.parametrizations.Parametrization.finite_projected_scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.finite_projected_scattering_factor
@@ -202,7 +202,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ````
 
-````{py:method} from_json(file: str)
+````{py:method} from_json(...)
 :canonical: abtem.parametrizations.Parametrization.from_json
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.from_json
@@ -211,7 +211,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ````
 
-````{py:method} get_function(name: str, symbol: str, charge: float = 0.0) -> callable
+````{py:method} get_function(...) -> callable
 :canonical: abtem.parametrizations.Parametrization.get_function
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.get_function
@@ -220,7 +220,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ````
 
-````{py:method} line_profiles(symbol: str | typing.Sequence[str], cutoff: float, sampling: float = 0.001, name: str = 'potential') -> abtem.measurements.RealSpaceLineProfiles | abtem.measurements.ReciprocalSpaceLineProfiles
+````{py:method} line_profiles(...) -> abtem.measurements.RealSpaceLineProfiles | abtem.measurements.ReciprocalSpaceLineProfiles
 :canonical: abtem.parametrizations.Parametrization.line_profiles
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.line_profiles
@@ -239,7 +239,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ````
 
-````{py:method} potential(symbol: str, charge: float = 0.0) -> callable
+````{py:method} potential(...) -> callable
 :canonical: abtem.parametrizations.Parametrization.potential
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.potential
@@ -248,7 +248,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ````
 
-````{py:method} projected_potential(symbol: str, charge: float = 0.0) -> typing.Callable
+````{py:method} projected_potential(...) -> typing.Callable
 :canonical: abtem.parametrizations.Parametrization.projected_potential
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.projected_potential
@@ -257,7 +257,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ````
 
-````{py:method} projected_scattering_factor(symbol: str, charge: float = 0.0) -> callable
+````{py:method} projected_scattering_factor(...) -> callable
 :canonical: abtem.parametrizations.Parametrization.projected_scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.projected_scattering_factor
@@ -266,7 +266,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ````
 
-````{py:method} scaled_parameters(symbol: str, name: str) -> numpy.ndarray
+````{py:method} scaled_parameters(...) -> numpy.ndarray
 :canonical: abtem.parametrizations.Parametrization.scaled_parameters
 :abstractmethod:
 
@@ -276,7 +276,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ````
 
-````{py:method} scattering_factor(symbol: str, charge: float = 0.0) -> typing.Callable
+````{py:method} scattering_factor(...) -> typing.Callable
 :canonical: abtem.parametrizations.Parametrization.scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.scattering_factor
@@ -294,7 +294,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ````
 
-````{py:method} to_json(file: str)
+````{py:method} to_json(...)
 :canonical: abtem.parametrizations.Parametrization.to_json
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.to_json
@@ -303,7 +303,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 ````
 
-````{py:method} x_ray_scattering_factor(symbol: str, charge: float = 0.0) -> callable
+````{py:method} x_ray_scattering_factor(...) -> callable
 :canonical: abtem.parametrizations.Parametrization.x_ray_scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.Parametrization.x_ray_scattering_factor
@@ -314,7 +314,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 
 `````
 
-`````{py:class} PengParametrization(parameters: str | dict = 'peng_high.json', sigmas: dict[str, float] = None)
+`````{py:class} PengParametrization(...)
 :canonical: abtem.parametrizations.PengParametrization
 
 Bases: {py:obj}`abtem.parametrizations.Parametrization`
@@ -330,14 +330,14 @@ Bases: {py:obj}`abtem.parametrizations.Parametrization`
 :parser: rst
 ```
 
-````{py:method} scaled_parameters(symbol: str, name: str) -> numpy.ndarray
+````{py:method} scaled_parameters(...) -> numpy.ndarray
 :canonical: abtem.parametrizations.PengParametrization.scaled_parameters
 
 ````
 
 `````
 
-````{py:function} validate_parameters(parameters: str | dict) -> dict
+````{py:function} validate_parameters(...) -> dict
 :canonical: abtem.parametrizations.validate_parameters
 
 ```{autodoc2-docstring} abtem.parametrizations.validate_parameters
@@ -345,7 +345,7 @@ Bases: {py:obj}`abtem.parametrizations.Parametrization`
 ```
 ````
 
-````{py:function} validate_parametrization(parametrization: str | abtem.parametrizations.Parametrization) -> abtem.parametrizations.Parametrization
+````{py:function} validate_parametrization(...) -> abtem.parametrizations.Parametrization
 :canonical: abtem.parametrizations.validate_parametrization
 
 ```{autodoc2-docstring} abtem.parametrizations.validate_parametrization
@@ -353,7 +353,7 @@ Bases: {py:obj}`abtem.parametrizations.Parametrization`
 ```
 ````
 
-````{py:function} validate_sigmas(sigmas: float | dict) -> dict
+````{py:function} validate_sigmas(...) -> dict
 :canonical: abtem.parametrizations.validate_sigmas
 
 ```{autodoc2-docstring} abtem.parametrizations.validate_sigmas

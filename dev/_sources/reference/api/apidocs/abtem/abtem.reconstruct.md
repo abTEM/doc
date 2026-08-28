@@ -94,7 +94,7 @@
 
 ````
 
-````{py:method} reconstruct(max_iterations, return_iterations, fix_com, random_seed, verbose, functions_queue, parameters, **kwargs)
+````{py:method} reconstruct(...)
 :canonical: abtem.reconstruct.AbstractPtychographicOperator.reconstruct
 :abstractmethod:
 
@@ -115,7 +115,7 @@
 
 `````
 
-`````{py:class} MixedStatePtychographicOperator(diffraction_patterns: typing.Union[numpy.ndarray, abtem.measurements.DiffractionPatterns], energy: float, num_probes: int, region_of_interest_shape: typing.Sequence[int] = None, objects: numpy.ndarray = None, probes: typing.Union[numpy.ndarray, abtem.waves.Probe] = None, positions: numpy.ndarray = None, semiangle_cutoff: float = None, preprocess: bool = False, device: str = 'cpu', parameters: typing.Mapping[str, float] = None, **kwargs)
+`````{py:class} MixedStatePtychographicOperator(...)
 :canonical: abtem.reconstruct.MixedStatePtychographicOperator
 
 Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
@@ -140,7 +140,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 
 ````
 
-````{py:method} reconstruct(max_iterations: int = 5, return_iterations: bool = False, probe_orthogonalization_frequency: int = None, warmup_update_steps: int = 0, fix_com: bool = True, random_seed=None, verbose: bool = False, parameters: typing.Mapping[str, float] = None, functions_queue: typing.Iterable = None, **kwargs)
+````{py:method} reconstruct(...)
 :canonical: abtem.reconstruct.MixedStatePtychographicOperator.reconstruct
 
 ```{autodoc2-docstring} abtem.reconstruct.MixedStatePtychographicOperator.reconstruct
@@ -151,7 +151,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 
 `````
 
-`````{py:class} MultislicePtychographicOperator(diffraction_patterns: typing.Union[numpy.ndarray, abtem.measurements.DiffractionPatterns], energy: float, num_slices: int, slice_thicknesses: typing.Union[float, typing.Sequence[float]], region_of_interest_shape: typing.Sequence[int] = None, objects: numpy.ndarray = None, probes: typing.Union[numpy.ndarray, abtem.waves.Probe] = None, positions: numpy.ndarray = None, semiangle_cutoff: float = None, preprocess: bool = False, device: str = 'cpu', parameters: typing.Mapping[str, float] = None, **kwargs)
+`````{py:class} MultislicePtychographicOperator(...)
 :canonical: abtem.reconstruct.MultislicePtychographicOperator
 
 Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
@@ -176,7 +176,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 
 ````
 
-````{py:method} reconstruct(max_iterations: int = 5, return_iterations: bool = False, fix_com: bool = True, random_seed=None, verbose: bool = False, parameters: typing.Mapping[str, float] = None, measurement_output_view: str = 'padded', functions_queue: typing.Iterable = None, **kwargs)
+````{py:method} reconstruct(...)
 :canonical: abtem.reconstruct.MultislicePtychographicOperator.reconstruct
 
 ```{autodoc2-docstring} abtem.reconstruct.MultislicePtychographicOperator.reconstruct
@@ -187,7 +187,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 
 `````
 
-`````{py:class} ProgressBar(**kwargs)
+`````{py:class} ProgressBar(...)
 :canonical: abtem.reconstruct.ProgressBar
 
 ```{autodoc2-docstring} abtem.reconstruct.ProgressBar
@@ -246,7 +246,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 
 ````
 
-````{py:method} update(n)
+````{py:method} update(...)
 :canonical: abtem.reconstruct.ProgressBar.update
 
 ```{autodoc2-docstring} abtem.reconstruct.ProgressBar.update
@@ -257,7 +257,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 
 `````
 
-`````{py:class} RegularizedPtychographicOperator(diffraction_patterns: typing.Union[numpy.ndarray, abtem.measurements.DiffractionPatterns], energy: float = None, region_of_interest_shape: typing.Sequence[int] = None, objects: numpy.ndarray = None, probes: typing.Union[numpy.ndarray, abtem.waves.Probe] = None, positions: numpy.ndarray = None, semiangle_cutoff: float = None, preprocess: bool = False, device: str = 'cpu', parameters: typing.Mapping[str, float] = None, **kwargs)
+`````{py:class} RegularizedPtychographicOperator(...)
 :canonical: abtem.reconstruct.RegularizedPtychographicOperator
 
 Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
@@ -282,7 +282,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 
 ````
 
-````{py:method} reconstruct(max_iterations: int = 5, return_iterations: bool = False, fix_com: bool = True, random_seed=None, verbose: bool = False, functions_queue: typing.Iterable = None, parameters: typing.Mapping[str, float] = None, **kwargs)
+````{py:method} reconstruct(...)
 :canonical: abtem.reconstruct.RegularizedPtychographicOperator.reconstruct
 
 ```{autodoc2-docstring} abtem.reconstruct.RegularizedPtychographicOperator.reconstruct
@@ -293,7 +293,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 
 `````
 
-`````{py:class} SimultaneousPtychographicOperator(diffraction_patterns: typing.Union[typing.Sequence[numpy.ndarray], typing.Sequence[abtem.measurements.DiffractionPatterns]], energy: float, region_of_interest_shape: typing.Sequence[int] = None, objects: numpy.ndarray = None, probes: typing.Union[numpy.ndarray, abtem.waves.Probe] = None, positions: numpy.ndarray = None, semiangle_cutoff: float = None, preprocess: bool = False, device: str = 'cpu', parameters: typing.Mapping[str, float] = None, **kwargs)
+`````{py:class} SimultaneousPtychographicOperator(...)
 :canonical: abtem.reconstruct.SimultaneousPtychographicOperator
 
 Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
@@ -318,7 +318,7 @@ Bases: {py:obj}`abtem.reconstruct.AbstractPtychographicOperator`
 
 ````
 
-````{py:method} reconstruct(max_iterations: int = 5, return_iterations: bool = False, warmup_update_steps: int = 0, common_probe: bool = False, fix_com: bool = True, random_seed=None, verbose: bool = False, functions_queue: typing.Iterable = None, parameters: typing.Mapping[str, float] = None, **kwargs)
+````{py:method} reconstruct(...)
 :canonical: abtem.reconstruct.SimultaneousPtychographicOperator.reconstruct
 
 ```{autodoc2-docstring} abtem.reconstruct.SimultaneousPtychographicOperator.reconstruct

@@ -49,6 +49,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`disk_meshgrid_iter <abtem.core.grid.disk_meshgrid_iter>`
+  - ```{autodoc2-docstring} abtem.core.grid.disk_meshgrid_iter
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`polar_spatial_frequencies <abtem.core.grid.polar_spatial_frequencies>`
   - ```{autodoc2-docstring} abtem.core.grid.polar_spatial_frequencies
     :parser: rst
@@ -91,7 +96,7 @@
 
 ### API
 
-`````{py:class} Grid(extent: typing.Optional[float | typing.Sequence[float]] = None, gpts: typing.Optional[int | typing.Sequence[int]] = None, sampling: typing.Optional[float | typing.Sequence[float]] = None, dimensions: int = 2, endpoint: bool | typing.Sequence[bool] = False, lock_extent: bool = False, lock_gpts: bool = False, lock_sampling: bool = False)
+`````{py:class} Grid(...)
 :canonical: abtem.core.grid.Grid
 
 Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityMixin`
@@ -107,7 +112,7 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 :parser: rst
 ```
 
-````{py:method} check_is_defined(raise_error: bool = True)
+````{py:method} check_is_defined(...)
 :canonical: abtem.core.grid.Grid.check_is_defined
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.check_is_defined
@@ -116,7 +121,7 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 
 ````
 
-````{py:method} check_match(other: abtem.core.grid.Grid | abtem.core.grid.HasGrid2DMixin)
+````{py:method} check_match(...)
 :canonical: abtem.core.grid.Grid.check_match
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.check_match
@@ -165,7 +170,7 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 
 ````
 
-````{py:method} match(other: abtem.core.grid.Grid | abtem.core.grid.HasGrid2DMixin, check_match: bool = False)
+````{py:method} match(...)
 :canonical: abtem.core.grid.Grid.match
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.match
@@ -184,7 +189,7 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 
 ````
 
-````{py:method} round_to_power(powers: typing.Optional[int | list[int]] = None) -> tuple[int, ...]
+````{py:method} round_to_power(...) -> tuple[int, ...]
 :canonical: abtem.core.grid.Grid.round_to_power
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.round_to_power
@@ -269,7 +274,7 @@ Bases: {py:obj}`Exception`
 
 ````
 
-````{py:method} match_grid(other: abtem.core.grid.HasGrid2DMixin, check_match: bool = False)
+````{py:method} match_grid(...)
 :canonical: abtem.core.grid.HasGrid2DMixin.match_grid
 
 ```{autodoc2-docstring} abtem.core.grid.HasGrid2DMixin.match_grid
@@ -322,7 +327,7 @@ Bases: {py:obj}`Exception`
 
 ````
 
-````{py:function} adjusted_gpts(target_sampling: tuple[float, ...], old_sampling: tuple[float, ...], old_gpts: tuple[int, ...]) -> tuple[tuple[float, ...], tuple[int, ...]]
+````{py:function} adjusted_gpts(...) -> tuple[tuple[float, ...], tuple[int, ...]]
 :canonical: abtem.core.grid.adjusted_gpts
 
 ```{autodoc2-docstring} abtem.core.grid.adjusted_gpts
@@ -330,7 +335,7 @@ Bases: {py:obj}`Exception`
 ```
 ````
 
-````{py:function} coordinate_grid(extent: tuple[float, ...], gpts: tuple[int, ...], origin: tuple[float, ...], endpoint: bool = True) -> tuple[numpy.ndarray, ...]
+````{py:function} coordinate_grid(...) -> tuple[numpy.ndarray, ...]
 :canonical: abtem.core.grid.coordinate_grid
 
 ```{autodoc2-docstring} abtem.core.grid.coordinate_grid
@@ -338,7 +343,7 @@ Bases: {py:obj}`Exception`
 ```
 ````
 
-````{py:function} disk_meshgrid(r: int) -> numpy.ndarray
+````{py:function} disk_meshgrid(...) -> numpy.ndarray
 :canonical: abtem.core.grid.disk_meshgrid
 
 ```{autodoc2-docstring} abtem.core.grid.disk_meshgrid
@@ -346,7 +351,15 @@ Bases: {py:obj}`Exception`
 ```
 ````
 
-````{py:function} polar_spatial_frequencies(gpts: tuple[int, ...], sampling: tuple[float, ...], xp: types.ModuleType | numpy.ndarray | dask.array.core.Array | str | None = np) -> tuple[numpy.ndarray, numpy.ndarray]
+````{py:function} disk_meshgrid_iter(...)
+:canonical: abtem.core.grid.disk_meshgrid_iter
+
+```{autodoc2-docstring} abtem.core.grid.disk_meshgrid_iter
+:parser: rst
+```
+````
+
+````{py:function} polar_spatial_frequencies(...) -> tuple[numpy.ndarray, numpy.ndarray]
 :canonical: abtem.core.grid.polar_spatial_frequencies
 
 ```{autodoc2-docstring} abtem.core.grid.polar_spatial_frequencies
@@ -354,7 +367,7 @@ Bases: {py:obj}`Exception`
 ```
 ````
 
-````{py:function} real_space_grid(gpts, extent, xp=np)
+````{py:function} real_space_grid(...)
 :canonical: abtem.core.grid.real_space_grid
 
 ```{autodoc2-docstring} abtem.core.grid.real_space_grid
@@ -362,7 +375,7 @@ Bases: {py:obj}`Exception`
 ```
 ````
 
-````{py:function} spatial_frequencies(gpts: tuple[int, ...], sampling: tuple[float, ...], return_grid: bool = False, xp: types.ModuleType | numpy.ndarray | dask.array.core.Array | str | None = np)
+````{py:function} spatial_frequencies(...)
 :canonical: abtem.core.grid.spatial_frequencies
 
 ```{autodoc2-docstring} abtem.core.grid.spatial_frequencies
@@ -370,7 +383,7 @@ Bases: {py:obj}`Exception`
 ```
 ````
 
-````{py:function} validate_gpts(gpts: tuple[int, ...]) -> tuple[int, ...]
+````{py:function} validate_gpts(...) -> tuple[int, ...]
 :canonical: abtem.core.grid.validate_gpts
 
 ```{autodoc2-docstring} abtem.core.grid.validate_gpts

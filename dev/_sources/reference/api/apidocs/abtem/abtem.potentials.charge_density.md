@@ -48,7 +48,7 @@
 
 ### API
 
-`````{py:class} ChargeDensityPotential(atoms: typing.Union[ase.Atoms, abtem.inelastic.phonons.AtomsEnsemble], charge_density: numpy.ndarray = None, gpts: typing.Union[int, typing.Tuple[int, int]] = None, sampling: typing.Union[float, typing.Tuple[float, float]] = None, slice_thickness: typing.Union[float, typing.Tuple[float]] = 1.0, plane: str = 'xy', box: typing.Tuple[float, float, float] = None, origin: typing.Tuple[float, float, float] = (0.0, 0.0, 0.0), periodic: bool = True, exit_planes: int = None, repetitions: typing.Tuple[int, int, int] = (1, 1, 1), device: str = None)
+`````{py:class} ChargeDensityPotential(...)
 :canonical: abtem.potentials.charge_density.ChargeDensityPotential
 
 Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
@@ -93,7 +93,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 
 ````
 
-````{py:method} generate_slices(first_slice: int = 0, last_slice: int = None)
+````{py:method} generate_slices(...)
 :canonical: abtem.potentials.charge_density.ChargeDensityPotential.generate_slices
 
 ```{autodoc2-docstring} abtem.potentials.charge_density.ChargeDensityPotential.generate_slices
@@ -136,7 +136,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 
 `````
 
-````{py:function} add_point_charges_fourier(array: numpy.ndarray, atoms: ase.Atoms, broadening: float = 0.05) -> numpy.ndarray
+````{py:function} add_point_charges_fourier(...) -> numpy.ndarray
 :canonical: abtem.potentials.charge_density.add_point_charges_fourier
 
 ```{autodoc2-docstring} abtem.potentials.charge_density.add_point_charges_fourier
@@ -144,7 +144,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 ```
 ````
 
-````{py:function} curl_fourier(vector_field: numpy.ndarray, cell: ase.cell.Cell) -> numpy.ndarray
+````{py:function} curl_fourier(...) -> numpy.ndarray
 :canonical: abtem.potentials.charge_density.curl_fourier
 
 ```{autodoc2-docstring} abtem.potentials.charge_density.curl_fourier
@@ -152,7 +152,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 ```
 ````
 
-````{py:function} integrate_gradient_fourier(array: numpy.ndarray, cell: ase.cell.Cell, in_space: str = 'real', out_space: str = 'real') -> numpy.ndarray
+````{py:function} integrate_gradient_fourier(...) -> numpy.ndarray
 :canonical: abtem.potentials.charge_density.integrate_gradient_fourier
 
 ```{autodoc2-docstring} abtem.potentials.charge_density.integrate_gradient_fourier

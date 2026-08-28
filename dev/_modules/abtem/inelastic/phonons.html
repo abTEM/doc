@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -545,8 +545,13 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase.io.trajectory</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_atoms</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dask.delayed</span><span class="w"> </span><span class="kn">import</span> <span class="n">Delayed</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">AxisMetadata</span><span class="p">,</span> <span class="n">FrozenPhononsAxis</span><span class="p">,</span> <span class="n">UnknownAxis</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chunks</span><span class="p">,</span> <span class="n">chunk_ranges</span><span class="p">,</span> <span class="n">validate_chunks</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AxisMetadata</span><span class="p">,</span>
+    <span class="n">EnergyLossAxis</span><span class="p">,</span>
+    <span class="n">FrozenPhononsAxis</span><span class="p">,</span>
+    <span class="n">UnknownAxis</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chunks</span><span class="p">,</span> <span class="n">chunk_ranges</span><span class="p">,</span> <span class="n">iterate_chunk_ranges</span><span class="p">,</span> <span class="n">validate_chunks</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ensemble</span><span class="p">,</span> <span class="n">_wrap_with_array</span><span class="p">,</span> <span class="n">unpack_blockwise_args</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">CopyMixin</span><span class="p">,</span> <span class="n">EqualityMixin</span><span class="p">,</span> <span class="n">itemset</span>
 
@@ -1203,6 +1208,220 @@
         <span class="k">return</span> <span class="p">(</span><span class="n">positions</span> <span class="o">-</span> <span class="n">positions</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">std</span><span class="p">()</span></div>
 </div>
 
+
+
+<div class="viewcode-block" id="EnergyResolvedAtomsEnsemble">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.phonons.html#abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EnergyResolvedAtomsEnsemble</span><span class="p">(</span><span class="n">BaseFrozenPhonons</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Energy-resolved ensemble of frozen-phonon configurations.</span>
+
+<span class="sd">    Wraps a 2D array of Atoms objects ``(n_energies, n_configs)`` with an</span>
+<span class="sd">    :class:`~abtem.core.axes.EnergyLossAxis` and</span>
+<span class="sd">    :class:`~abtem.core.axes.FrozenPhononsAxis` as ensemble axes.  The energy</span>
+<span class="sd">    values typically come from external phonon calculations.</span>
+
+<span class="sd">    All inner configuration lists must have the same length.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    When running a multi-slice :class:`~abtem.potentials.iam.Potential`</span>
+<span class="sd">    (more than one slice) over this ensemble, prefer ``projection="finite"``</span>
+<span class="sd">    over the default ``projection="infinite"``. The default assigns each</span>
+<span class="sd">    atom to exactly one slice with a hard cutoff and no padding</span>
+<span class="sd">    (:class:`~abtem.slicing.SliceIndexedAtoms`); if the configurations</span>
+<span class="sd">    include out-of-plane (z) displacement, an atom sitting near a slice</span>
+<span class="sd">    boundary can flip its entire potential contribution between slices</span>
+<span class="sd">    across otherwise near-identical configurations, producing spurious</span>
+<span class="sd">    discontinuities in the resulting spectra. ``projection="finite"`` uses</span>
+<span class="sd">    padded slicing (:class:`~abtem.slicing.SlicedAtoms`) where such atoms</span>
+<span class="sd">    blend gradually into the neighbouring slice instead. With a single</span>
+<span class="sd">    slice there is no boundary to cross, so this does not arise regardless</span>
+<span class="sd">    of projection method.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    energy_resolved_snapshots : list of lists of ASE Atoms, or 2D np.ndarray</span>
+<span class="sd">        Outer index is energy, inner index is configuration.</span>
+<span class="sd">    energies : array-like</span>
+<span class="sd">        Energy values [eV] corresponding to each outer entry.</span>
+<span class="sd">    ensemble_mean : bool, optional</span>
+<span class="sd">        If True (default), average over frozen-phonon configurations.</span>
+<span class="sd">    cell : Cell, optional</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">energy_resolved_snapshots</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="n">Atoms</span><span class="p">]]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">energies</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">ensemble_mean</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cell</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Cell</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">energies</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">energy_resolved_snapshots</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">snapshots</span> <span class="o">=</span> <span class="n">energy_resolved_snapshots</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">energy_resolved_snapshots</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">energies</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"Number of snapshot groups must match the number of energies "</span>
+                    <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">energy_resolved_snapshots</span><span class="p">)</span><span class="si">}</span><span class="s2"> != </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">energies</span><span class="p">)</span><span class="si">}</span><span class="s2">)"</span>
+                <span class="p">)</span>
+            <span class="n">n_configs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">energy_resolved_snapshots</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">trajectory</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">energy_resolved_snapshots</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">trajectory</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n_configs</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"All configuration lists must have the same length; "</span>
+                        <span class="sa">f</span><span class="s2">"entry 0 has </span><span class="si">{</span><span class="n">n_configs</span><span class="si">}</span><span class="s2">, entry </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">trajectory</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+                    <span class="p">)</span>
+
+            <span class="n">snapshots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">energies</span><span class="p">),</span> <span class="n">n_configs</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">trajectory</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">energy_resolved_snapshots</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">atoms</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trajectory</span><span class="p">):</span>
+                    <span class="n">itemset</span><span class="p">(</span><span class="n">snapshots</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">),</span> <span class="n">atoms</span><span class="p">)</span>
+
+        <span class="n">atoms</span> <span class="o">=</span> <span class="n">snapshots</span><span class="o">.</span><span class="n">ravel</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">atomic_numbers</span><span class="p">,</span> <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_atomic_numbers_and_cell</span><span class="p">(</span>
+            <span class="n">atoms</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cell</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_snapshots</span> <span class="o">=</span> <span class="n">snapshots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_energies</span> <span class="o">=</span> <span class="n">energies</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">atomic_numbers</span><span class="o">=</span><span class="n">atomic_numbers</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="n">cell</span><span class="p">,</span> <span class="n">ensemble_mean</span><span class="o">=</span><span class="n">ensemble_mean</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ensemble_axes_metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ensemble_axes_metadata</span> <span class="o">=</span> <span class="n">ensemble_axes_metadata</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ensemble_axes_metadata</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">EnergyLossAxis</span><span class="p">(</span>
+                    <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">energies</span><span class="p">),</span>
+                    <span class="n">units</span><span class="o">=</span><span class="s2">"eV"</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">FrozenPhononsAxis</span><span class="p">(</span><span class="n">_ensemble_mean</span><span class="o">=</span><span class="n">ensemble_mean</span><span class="p">),</span>
+            <span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">snapshots</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""2D object array of Atoms ``(n_energies, n_configs)``."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_snapshots</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">energies</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Energy values [eV] for each snapshot group."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energies</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ensemble_axes_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensemble_axes_metadata</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ensemble_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_snapshots</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_snapshots</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span>
+        <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_snapshots</span><span class="o">.</span><span class="n">ravel</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">atoms</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energies</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="n">new_snapshots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_snapshots</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+        <span class="n">new_energies</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_energies</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energies</span><span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">new_snapshots</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">new_snapshots</span> <span class="o">=</span> <span class="n">new_snapshots</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">new_energies</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">new_energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">new_energies</span><span class="p">)</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span>
+            <span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"energy_resolved_snapshots"</span><span class="p">,</span> <span class="s2">"energies"</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">EnergyResolvedAtomsEnsemble</span><span class="p">(</span>
+            <span class="n">new_snapshots</span><span class="p">,</span> <span class="n">new_energies</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="EnergyResolvedAtomsEnsemble.randomize">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.phonons.html#abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble.randomize">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">randomize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">atoms</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_default_ensemble_chunks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_partition_args</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">chunks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Chunks</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">lazy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">chunks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">chunks</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">chunks</span> <span class="o">=</span> <span class="n">validate_chunks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">,</span> <span class="n">chunks</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">lazy</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">slic</span> <span class="ow">in</span> <span class="n">iterate_chunk_ranges</span><span class="p">(</span><span class="n">chunks</span><span class="p">):</span>
+                <span class="n">snapshots_chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_snapshots</span><span class="p">[</span><span class="n">slic</span><span class="p">]</span>
+                <span class="n">energies_chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energies</span><span class="p">[</span><span class="n">slic</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                <span class="n">lazy_args</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">_wrap_with_array</span><span class="p">)(</span>
+                    <span class="p">(</span><span class="n">snapshots_chunk</span><span class="p">,</span> <span class="n">energies_chunk</span><span class="p">),</span> <span class="n">ndims</span><span class="o">=</span><span class="mi">1</span>
+                <span class="p">)</span>
+                <span class="n">lazy_array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">from_delayed</span><span class="p">(</span>
+                    <span class="n">lazy_args</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span>
+                <span class="p">)</span>
+                <span class="n">itemset</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">lazy_array</span><span class="p">)</span>
+
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">snapshots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_snapshots</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">snapshots</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">):</span>
+                <span class="n">snapshots</span> <span class="o">=</span> <span class="n">snapshots</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+
+            <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">slic</span> <span class="ow">in</span> <span class="n">iterate_chunk_ranges</span><span class="p">(</span><span class="n">chunks</span><span class="p">):</span>
+                <span class="n">snapshots_chunk</span> <span class="o">=</span> <span class="n">snapshots</span><span class="p">[</span><span class="n">slic</span><span class="p">]</span>
+                <span class="n">energies_chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energies</span><span class="p">[</span><span class="n">slic</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                <span class="n">itemset</span><span class="p">(</span>
+                    <span class="n">array</span><span class="p">,</span>
+                    <span class="n">index</span><span class="p">,</span>
+                    <span class="n">_wrap_with_array</span><span class="p">((</span><span class="n">snapshots_chunk</span><span class="p">,</span> <span class="n">energies_chunk</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">array</span><span class="p">,)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_partition_args_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">unpack_blockwise_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">snapshots_chunk</span><span class="p">,</span> <span class="n">energies_chunk</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ensemble</span> <span class="o">=</span> <span class="n">EnergyResolvedAtomsEnsemble</span><span class="p">(</span>
+            <span class="n">snapshots_chunk</span><span class="p">,</span> <span class="n">energies_chunk</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">_wrap_with_array</span><span class="p">(</span><span class="n">ensemble</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_partitioned_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span>
+            <span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"energy_resolved_snapshots"</span><span class="p">,</span> <span class="s2">"energies"</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"cell"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">array</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"ensemble_axes_metadata"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">UnknownAxis</span><span class="p">()]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_from_partition_args_func</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
 </pre></div>
 
                 </article>
@@ -1244,7 +1463,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

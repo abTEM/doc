@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -1239,6 +1239,54 @@
     <span class="n">inside</span> <span class="o">=</span> <span class="p">(</span><span class="n">rows</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">cols</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">r</span><span class="o">**</span><span class="mi">2</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">rows</span><span class="p">[</span><span class="n">inside</span><span class="p">],</span> <span class="n">cols</span><span class="p">[</span><span class="n">inside</span><span class="p">]))</span><span class="o">.</span><span class="n">T</span></div>
 
+
+
+<div class="viewcode-block" id="disk_meshgrid_iter">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.grid.html#abtem.core.grid.disk_meshgrid_iter">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">disk_meshgrid_iter</span><span class="p">(</span><span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2_000_000</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Yield chunks of disk indices without building the full (2r+1)² array.</span>
+
+<span class="sd">    For large radii the standard :func:`disk_meshgrid` allocates two</span>
+<span class="sd">    ``(2r+1, 2r+1)`` intermediate arrays on the CPU and a single output</span>
+<span class="sd">    that can each be many gigabytes.  This generator builds the result</span>
+<span class="sd">    row-by-row and yields it in manageable chunks of at most</span>
+<span class="sd">    *chunk_size* ``(row, col)`` pairs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    r : int</span>
+<span class="sd">        Disk radius in pixels.</span>
+<span class="sd">    chunk_size : int, optional</span>
+<span class="sd">        Maximum number of ``(row, col)`` pairs per yielded chunk.</span>
+
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        ``(N, 2)`` int32 array of ``(row_offset, col_offset)`` pairs</span>
+<span class="sd">        where ``row_offset² + col_offset² &lt;= r²``.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_math</span>
+
+    <span class="n">r_sq</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">r</span>
+    <span class="n">buffer</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">buffer_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">r</span><span class="p">,</span> <span class="n">r</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">max_col</span> <span class="o">=</span> <span class="n">_math</span><span class="o">.</span><span class="n">isqrt</span><span class="p">(</span><span class="n">r_sq</span> <span class="o">-</span> <span class="n">row</span> <span class="o">*</span> <span class="n">row</span><span class="p">)</span>
+        <span class="n">n_cols</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">max_col</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">max_col</span><span class="p">,</span> <span class="n">max_col</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n_cols</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">buffer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">buffer_count</span> <span class="o">+=</span> <span class="n">n_cols</span>
+
+        <span class="k">if</span> <span class="n">buffer_count</span> <span class="o">&gt;=</span> <span class="n">chunk_size</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span>
+            <span class="n">buffer</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">buffer_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">if</span> <span class="n">buffer</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span></div>
+
 </pre></div>
 
                 </article>
@@ -1280,7 +1328,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

@@ -86,7 +86,7 @@
 
 ### API
 
-````{py:function} check_deprecations(key: str, deprecations: dict = deprecations) -> str
+````{py:function} check_deprecations(...) -> str
 :canonical: abtem.core.config.check_deprecations
 
 ```{autodoc2-docstring} abtem.core.config.check_deprecations
@@ -141,7 +141,7 @@
 
 ````
 
-````{py:function} get(key: str, default: typing.Any = no_default, config: dict = config, override_with: typing.Any = None) -> typing.Any
+````{py:function} get(...) -> typing.Any
 :canonical: abtem.core.config.get
 
 ```{autodoc2-docstring} abtem.core.config.get
@@ -160,7 +160,7 @@
 
 ````
 
-````{py:function} refresh(config: dict = config, defaults: list[collections.abc.Mapping] = defaults, **kwargs) -> None
+````{py:function} refresh(...) -> None
 :canonical: abtem.core.config.refresh
 
 ```{autodoc2-docstring} abtem.core.config.refresh
@@ -168,7 +168,7 @@
 ```
 ````
 
-`````{py:class} set(arg: typing.Union[collections.abc.Mapping, None] = None, config: dict = config, lock: threading.Lock = config_lock, **kwargs)
+`````{py:class} set(...)
 :canonical: abtem.core.config.set
 
 ```{autodoc2-docstring} abtem.core.config.set
@@ -196,7 +196,7 @@
 
 `````
 
-````{py:function} update_defaults(new: collections.abc.Mapping, config: dict = config, defaults: list[collections.abc.Mapping] = defaults) -> None
+````{py:function} update_defaults(...) -> None
 :canonical: abtem.core.config.update_defaults
 
 ```{autodoc2-docstring} abtem.core.config.update_defaults

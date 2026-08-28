@@ -60,7 +60,7 @@
 
 ### API
 
-````{py:function} antialiased_disk(r: float, sampling: tuple[float, float]) -> numpy.ndarray
+````{py:function} antialiased_disk(...) -> numpy.ndarray
 :canonical: abtem.bloch.indexing.antialiased_disk
 
 ```{autodoc2-docstring} abtem.bloch.indexing.antialiased_disk
@@ -68,7 +68,7 @@
 ```
 ````
 
-````{py:function} create_ellipse(a: int, b: int) -> numpy.ndarray
+````{py:function} create_ellipse(...) -> numpy.ndarray
 :canonical: abtem.bloch.indexing.create_ellipse
 
 ```{autodoc2-docstring} abtem.bloch.indexing.create_ellipse
@@ -76,7 +76,7 @@
 ```
 ````
 
-````{py:function} estimate_necessary_excitation_error(energy: float, k_max: float) -> float
+````{py:function} estimate_necessary_excitation_error(...) -> float
 :canonical: abtem.bloch.indexing.estimate_necessary_excitation_error
 
 ```{autodoc2-docstring} abtem.bloch.indexing.estimate_necessary_excitation_error
@@ -84,7 +84,7 @@
 ```
 ````
 
-````{py:function} index_diffraction_spots(array: numpy.ndarray, hkl: numpy.ndarray, sampling: tuple[float, float], cell: ase.cell.Cell | numpy.ndarray, energy: float, orientation_matrices: typing.Optional[numpy.ndarray] = None, radius: typing.Optional[float] = None) -> numpy.ndarray
+````{py:function} index_diffraction_spots(...) -> numpy.ndarray
 :canonical: abtem.bloch.indexing.index_diffraction_spots
 
 ```{autodoc2-docstring} abtem.bloch.indexing.index_diffraction_spots
@@ -92,7 +92,7 @@
 ```
 ````
 
-````{py:function} integrate_ellipse_around_pixels(array: numpy.ndarray, nm: numpy.ndarray, r: float, sampling: tuple[float, float], priority: typing.Optional[numpy.ndarray] = None) -> numpy.ndarray
+````{py:function} integrate_ellipse_around_pixels(...) -> numpy.ndarray
 :canonical: abtem.bloch.indexing.integrate_ellipse_around_pixels
 
 ```{autodoc2-docstring} abtem.bloch.indexing.integrate_ellipse_around_pixels
@@ -100,7 +100,7 @@
 ```
 ````
 
-````{py:function} miller_to_miller_bravais(hkl: tuple[int, int, int]) -> tuple[int, int, int, int]
+````{py:function} miller_to_miller_bravais(...) -> tuple[int, int, int, int]
 :canonical: abtem.bloch.indexing.miller_to_miller_bravais
 
 ```{autodoc2-docstring} abtem.bloch.indexing.miller_to_miller_bravais
@@ -108,7 +108,7 @@
 ```
 ````
 
-````{py:function} overlapping_spots_mask(nm: numpy.ndarray, sg: numpy.ndarray) -> numpy.ndarray
+````{py:function} overlapping_spots_mask(...) -> numpy.ndarray
 :canonical: abtem.bloch.indexing.overlapping_spots_mask
 
 ```{autodoc2-docstring} abtem.bloch.indexing.overlapping_spots_mask
@@ -116,7 +116,7 @@
 ```
 ````
 
-````{py:function} validate_cell(cell: ase.Atoms | ase.cell.Cell | numpy.ndarray | float | tuple[float, float, float]) -> ase.cell.Cell
+````{py:function} validate_cell(...) -> ase.cell.Cell
 :canonical: abtem.bloch.indexing.validate_cell
 
 ```{autodoc2-docstring} abtem.bloch.indexing.validate_cell

@@ -38,6 +38,11 @@
     ```
 * - {py:obj}`MeasurementsEnsemble <abtem.measurements.MeasurementsEnsemble>`
   -
+* - {py:obj}`MomentumResolvedSpectrum <abtem.measurements.MomentumResolvedSpectrum>`
+  - ```{autodoc2-docstring} abtem.measurements.MomentumResolvedSpectrum
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`PolarMeasurements <abtem.measurements.PolarMeasurements>`
   - ```{autodoc2-docstring} abtem.measurements.PolarMeasurements
     :parser: rst
@@ -71,8 +76,18 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`momentum_resolved_spectrum <abtem.measurements.momentum_resolved_spectrum>`
+  - ```{autodoc2-docstring} abtem.measurements.momentum_resolved_spectrum
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`periodic_crop <abtem.measurements.periodic_crop>`
   - ```{autodoc2-docstring} abtem.measurements.periodic_crop
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`phonon_loss_diffraction_patterns <abtem.measurements.phonon_loss_diffraction_patterns>`
+  - ```{autodoc2-docstring} abtem.measurements.phonon_loss_diffraction_patterns
     :parser: rst
     :summary:
     ```
@@ -123,7 +138,7 @@
 
 ### API
 
-`````{py:class} BaseMeasurements(array: numpy.ndarray | dask.array.core.Array, ensemble_axes_metadata: list[abtem.core.axes.AxisMetadata], metadata: dict)
+`````{py:class} BaseMeasurements(...)
 :canonical: abtem.measurements.BaseMeasurements
 
 Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyMixin`
@@ -159,7 +174,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.core.utils.EqualityMixi
 
 ````
 
-````{py:method} from_array_and_metadata(array: numpy.ndarray | dask.array.core.Array, axes_metadata: list[abtem.core.axes.AxisMetadata], metadata: typing.Optional[dict] = None) -> typing.Self
+````{py:method} from_array_and_metadata(...) -> typing.Self
 :canonical: abtem.measurements.BaseMeasurements.from_array_and_metadata
 :abstractmethod:
 :classmethod:
@@ -194,7 +209,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.core.utils.EqualityMixi
 
 ````
 
-````{py:method} normalize_ensemble(scale: str = 'max', shift: str = 'mean')
+````{py:method} normalize_ensemble(...)
 :canonical: abtem.measurements.BaseMeasurements.normalize_ensemble
 
 ```{autodoc2-docstring} abtem.measurements.BaseMeasurements.normalize_ensemble
@@ -212,7 +227,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.core.utils.EqualityMixi
 
 ````
 
-````{py:method} poisson_noise(dose_per_area: typing.SupportsFloat | typing.Sequence[typing.SupportsFloat] | None = None, total_dose: typing.SupportsFloat | typing.Sequence[typing.SupportsFloat] | None = None, samples: int = 1, seed: typing.Optional[int] = None) -> typing.Self
+````{py:method} poisson_noise(...) -> typing.Self
 :canonical: abtem.measurements.BaseMeasurements.poisson_noise
 
 ```{autodoc2-docstring} abtem.measurements.BaseMeasurements.poisson_noise
@@ -239,7 +254,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.core.utils.EqualityMixi
 
 ````
 
-````{py:method} relative_difference(other: abtem.measurements.BaseMeasurements, min_relative_tol: float = 0.0) -> typing.Self
+````{py:method} relative_difference(...) -> typing.Self
 :canonical: abtem.measurements.BaseMeasurements.relative_difference
 
 ```{autodoc2-docstring} abtem.measurements.BaseMeasurements.relative_difference
@@ -248,7 +263,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.core.utils.EqualityMixi
 
 ````
 
-````{py:method} show(*args, **kwargs)
+````{py:method} show(...)
 :canonical: abtem.measurements.BaseMeasurements.show
 :abstractmethod:
 
@@ -280,7 +295,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.core.utils.EqualityMixi
 
 ````
 
-`````{py:class} DiffractionPatterns(array: numpy.ndarray | dask.array.core.Array, sampling: float | tuple[float, float], fftshift: bool = False, ensemble_axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, metadata: typing.Optional[dict] = None)
+`````{py:class} DiffractionPatterns(...)
 :canonical: abtem.measurements.DiffractionPatterns
 
 Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
@@ -326,7 +341,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} azimuthal_average(max_angle: typing.Optional[float] = None, radial_sampling: float = 1.0, weighting_function: str = 'step', width: float = 1.0) -> abtem.measurements.ReciprocalSpaceLineProfiles
+````{py:method} azimuthal_average(...) -> abtem.measurements.ReciprocalSpaceLineProfiles
 :canonical: abtem.measurements.DiffractionPatterns.azimuthal_average
 
 ```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.azimuthal_average
@@ -335,7 +350,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} bandlimit(inner: float = 0.0, outer: float = np.inf) -> abtem.measurements.DiffractionPatterns
+````{py:method} bandlimit(...) -> abtem.measurements.DiffractionPatterns
 :canonical: abtem.measurements.DiffractionPatterns.bandlimit
 
 ```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.bandlimit
@@ -349,7 +364,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} block_direct(radius: typing.Optional[float] = None, margin: typing.Optional[bool] = None) -> abtem.measurements.DiffractionPatterns
+````{py:method} block_direct(...) -> abtem.measurements.DiffractionPatterns
 :canonical: abtem.measurements.DiffractionPatterns.block_direct
 
 ```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.block_direct
@@ -358,7 +373,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} center_of_mass(units: str = '1/Å') -> abtem.measurements.Images | abtem.measurements.RealSpaceLineProfiles
+````{py:method} center_of_mass(...) -> abtem.measurements.Images | abtem.measurements.RealSpaceLineProfiles
 :canonical: abtem.measurements.DiffractionPatterns.center_of_mass
 
 ```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.center_of_mass
@@ -377,7 +392,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} crop(max_angle: typing.Optional[float] = None, max_frequency: typing.Optional[float] = None, gpts: typing.Optional[tuple[int, int]] = None) -> abtem.measurements.DiffractionPatterns
+````{py:method} crop(...) -> abtem.measurements.DiffractionPatterns
 :canonical: abtem.measurements.DiffractionPatterns.crop
 
 ```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.crop
@@ -402,7 +417,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} from_array_and_metadata(array: numpy.ndarray, axes_metadata: list[abtem.core.axes.AxisMetadata], metadata: typing.Optional[dict] = None) -> typing.Self
+````{py:method} from_array_and_metadata(...) -> typing.Self
 :canonical: abtem.measurements.DiffractionPatterns.from_array_and_metadata
 :classmethod:
 
@@ -412,7 +427,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} gaussian_source_size(sigma: float | tuple[float, float]) -> abtem.measurements.DiffractionPatterns
+````{py:method} gaussian_source_size(...) -> abtem.measurements.DiffractionPatterns
 :canonical: abtem.measurements.DiffractionPatterns.gaussian_source_size
 
 ```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.gaussian_source_size
@@ -421,7 +436,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} index_diffraction_spots(cell: ase.cell.Cell | float | tuple[float, float, float], sg_max: typing.Optional[float] = None, g_max: typing.Optional[float] = None, orientation_matrices: typing.Optional[numpy.ndarray] = None, radius: typing.Optional[float] = None, centering: str = 'P', energy: typing.Optional[float] = None) -> abtem.measurements.IndexedDiffractionPatterns
+````{py:method} index_diffraction_spots(...) -> abtem.measurements.IndexedDiffractionPatterns
 :canonical: abtem.measurements.DiffractionPatterns.index_diffraction_spots
 
 ```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.index_diffraction_spots
@@ -430,7 +445,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} integrate_radial(inner: float, outer: float = None, offset: tuple[float, float] = (0.0, 0.0)) -> abtem.measurements.Images
+````{py:method} integrate_radial(...) -> abtem.measurements.Images
 :canonical: abtem.measurements.DiffractionPatterns.integrate_radial
 
 ```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.integrate_radial
@@ -448,7 +463,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} interpolate(sampling: typing.Optional[str | float | tuple[float, float]] = None, gpts: typing.Optional[tuple[int, int]] = None)
+````{py:method} interpolate(...)
 :canonical: abtem.measurements.DiffractionPatterns.interpolate
 
 ```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.interpolate
@@ -462,6 +477,15 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 :type: list[tuple[float, float]]
 
 ```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.limits
+:parser: rst
+```
+
+````
+
+````{py:method} lorentzian_source_size(...) -> abtem.measurements.DiffractionPatterns
+:canonical: abtem.measurements.DiffractionPatterns.lorentzian_source_size
+
+```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.lorentzian_source_size
 :parser: rst
 ```
 
@@ -492,7 +516,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} poisson_noise(dose_per_area: typing.Optional[float] = None, total_dose: typing.Optional[float] = None, samples: int = 1, seed: typing.Optional[int] = None)
+````{py:method} poisson_noise(...)
 :canonical: abtem.measurements.DiffractionPatterns.poisson_noise
 
 ```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.poisson_noise
@@ -501,7 +525,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} polar_binning(nbins_radial: int, nbins_azimuthal: int, inner: float = 0.0, outer: typing.Optional[float] = None, rotation: float = 0.0, offset: tuple[float, float] = (0.0, 0.0))
+````{py:method} polar_binning(...)
 :canonical: abtem.measurements.DiffractionPatterns.polar_binning
 
 ```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.polar_binning
@@ -510,7 +534,16 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} radial_binning(step_size: float = 1.0, inner: float = 0.0, outer: typing.Optional[float] = None) -> abtem.measurements.PolarMeasurements
+````{py:method} pseudo_voigtian_source_size(...) -> abtem.measurements.DiffractionPatterns
+:canonical: abtem.measurements.DiffractionPatterns.pseudo_voigtian_source_size
+
+```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.pseudo_voigtian_source_size
+:parser: rst
+```
+
+````
+
+````{py:method} radial_binning(...) -> abtem.measurements.PolarMeasurements
 :canonical: abtem.measurements.DiffractionPatterns.radial_binning
 
 ```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.radial_binning
@@ -529,7 +562,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} tile_scan(repetitions: tuple[int, int]) -> abtem.measurements.DiffractionPatterns
+````{py:method} tile_scan(...) -> abtem.measurements.DiffractionPatterns
 :canonical: abtem.measurements.DiffractionPatterns.tile_scan
 
 ```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.tile_scan
@@ -538,9 +571,18 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
+````{py:method} voigtian_source_size(...) -> abtem.measurements.DiffractionPatterns
+:canonical: abtem.measurements.DiffractionPatterns.voigtian_source_size
+
+```{autodoc2-docstring} abtem.measurements.DiffractionPatterns.voigtian_source_size
+:parser: rst
+```
+
+````
+
 `````
 
-`````{py:class} Images(array: dask.array.core.Array | numpy.array, sampling: float | tuple[float, float], ensemble_axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, metadata: typing.Optional[typing.Dict] = None)
+`````{py:class} Images(...)
 :canonical: abtem.measurements.Images
 
 Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
@@ -572,7 +614,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} crop(extent: tuple[float, float], offset: tuple[float, float] = (0.0, 0.0), centered: bool = False)
+````{py:method} crop(...)
 :canonical: abtem.measurements.Images.crop
 
 ```{autodoc2-docstring} abtem.measurements.Images.crop
@@ -596,7 +638,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} from_array_and_metadata(array: numpy.ndarray | dask.array.core.Array, axes_metadata: list[abtem.core.axes.AxisMetadata], metadata: typing.Optional[dict] = None) -> abtem.measurements.Images
+````{py:method} from_array_and_metadata(...) -> abtem.measurements.Images
 :canonical: abtem.measurements.Images.from_array_and_metadata
 :classmethod:
 
@@ -606,7 +648,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} integrate_disc(position: numpy.ndarray, radius: float) -> float
+````{py:method} integrate_disc(...) -> float
 :canonical: abtem.measurements.Images.integrate_disc
 
 ```{autodoc2-docstring} abtem.measurements.Images.integrate_disc
@@ -624,7 +666,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} interpolate(sampling: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, method: str = 'fft', boundary: str = 'periodic', order: int = 3, normalization: str = 'values', cval: float = 0.0) -> abtem.measurements.Images
+````{py:method} interpolate(...) -> abtem.measurements.Images
 :canonical: abtem.measurements.Images.interpolate
 
 ```{autodoc2-docstring} abtem.measurements.Images.interpolate
@@ -645,7 +687,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} scan_noise(dwell_time: float, flyback_time: float, rms_power: float, max_frequency: float = 500.0, num_components: int = 200, seed: typing.Optional[int] = None)
+````{py:method} scan_noise(...)
 :canonical: abtem.measurements.Images.scan_noise
 
 ```{autodoc2-docstring} abtem.measurements.Images.scan_noise
@@ -654,7 +696,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
-````{py:method} tile(repetitions: tuple[int, int]) -> abtem.measurements.Images
+````{py:method} tile(...) -> abtem.measurements.Images
 :canonical: abtem.measurements.Images.tile
 
 ```{autodoc2-docstring} abtem.measurements.Images.tile
@@ -665,7 +707,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 `````
 
-`````{py:class} IndexedDiffractionPatterns(array: dask.array.core.Array | numpy.ndarray, miller_indices: numpy.ndarray, reciprocal_lattice_vectors: numpy.ndarray, ensemble_axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, metadata: typing.Optional[dict] = None)
+`````{py:class} IndexedDiffractionPatterns(...)
 :canonical: abtem.measurements.IndexedDiffractionPatterns
 
 Bases: {py:obj}`abtem.measurements.BaseMeasurements`
@@ -715,7 +757,7 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
-````{py:method} crop(max_angle: typing.Optional[float] = None, k_max: typing.Optional[float] = None)
+````{py:method} crop(...)
 :canonical: abtem.measurements.IndexedDiffractionPatterns.crop
 
 ```{autodoc2-docstring} abtem.measurements.IndexedDiffractionPatterns.crop
@@ -730,7 +772,7 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
-````{py:method} from_array_and_metadata(array: numpy.ndarray, axes_metadata: list[abtem.core.axes.AxisMetadata], metadata: dict) -> abtem.measurements.BaseMeasurements
+````{py:method} from_array_and_metadata(...) -> abtem.measurements.BaseMeasurements
 :canonical: abtem.measurements.IndexedDiffractionPatterns.from_array_and_metadata
 :abstractmethod:
 
@@ -775,7 +817,7 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
-````{py:method} normalize_to_spot(spot: typing.Optional[tuple[int, int, int]] = None)
+````{py:method} normalize_to_spot(...)
 :canonical: abtem.measurements.IndexedDiffractionPatterns.normalize_to_spot
 
 ```{autodoc2-docstring} abtem.measurements.IndexedDiffractionPatterns.normalize_to_spot
@@ -814,7 +856,7 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
-````{py:method} remove_low_intensity(threshold: float = 0.001)
+````{py:method} remove_low_intensity(...)
 :canonical: abtem.measurements.IndexedDiffractionPatterns.remove_low_intensity
 
 ```{autodoc2-docstring} abtem.measurements.IndexedDiffractionPatterns.remove_low_intensity
@@ -823,7 +865,7 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
-````{py:method} show(ax: typing.Optional[matplotlib.axes.Axes] = None, cbar: bool = False, cmap: typing.Optional[str] = None, vmin: typing.Optional[float] = None, vmax: typing.Optional[float] = None, power: float = 1.0, logscale: bool = False, common_color_scale: bool = False, scale: float = 0.5, explode: bool | typing.Sequence[bool] = (), overlay: bool | typing.Sequence[bool] = (), figsize: typing.Optional[tuple[int, int]] = None, title: bool | str = True, units: typing.Optional[str] = None, interact: bool = False, display: bool = True, **kwargs)
+````{py:method} show(...)
 :canonical: abtem.measurements.IndexedDiffractionPatterns.show
 
 ```{autodoc2-docstring} abtem.measurements.IndexedDiffractionPatterns.show
@@ -832,7 +874,7 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
-````{py:method} sort(criterion: str = 'distance')
+````{py:method} sort(...)
 :canonical: abtem.measurements.IndexedDiffractionPatterns.sort
 
 ```{autodoc2-docstring} abtem.measurements.IndexedDiffractionPatterns.sort
@@ -861,7 +903,7 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 `````
 
-`````{py:class} MeasurementsEnsemble(array: numpy.ndarray, ensemble_axes_metadata: list[abtem.core.axes.AxisMetadata], metadata: dict | None = None)
+`````{py:class} MeasurementsEnsemble(...)
 :canonical: abtem.measurements.MeasurementsEnsemble
 
 Bases: {py:obj}`abtem.measurements.BaseMeasurements`
@@ -871,13 +913,13 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
-````{py:method} from_array_and_metadata(array: numpy.ndarray, axes_metadata: list[abtem.core.axes.AxisMetadata], metadata: dict) -> abtem.measurements.BaseMeasurementsSubclass
+````{py:method} from_array_and_metadata(...) -> abtem.measurements.BaseMeasurementsSubclass
 :canonical: abtem.measurements.MeasurementsEnsemble.from_array_and_metadata
 :classmethod:
 
 ````
 
-````{py:method} show(type: str = 'lines', ax: typing.Optional[matplotlib.axes.Axes] = None, power: float = 1.0, common_scale: bool = False, explode: bool | typing.Sequence[int] = (), overlay: bool | typing.Sequence[int] = (), figsize: typing.Optional[tuple[int, int]] = None, title: bool | str = True, units: typing.Optional[str] = None, interact: bool = False, display: bool = True, **kwargs) -> abtem.visualize.visualizations.Visualization
+````{py:method} show(...) -> abtem.visualize.visualizations.Visualization
 :canonical: abtem.measurements.MeasurementsEnsemble.show
 
 ```{autodoc2-docstring} abtem.measurements.MeasurementsEnsemble.show
@@ -888,7 +930,75 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 `````
 
-`````{py:class} PolarMeasurements(array: numpy.ndarray | dask.array.core.Array, radial_sampling: float, azimuthal_sampling: float, radial_offset: float = 0.0, azimuthal_offset: float = 0.0, ensemble_axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, metadata: typing.Optional[dict] = None)
+`````{py:class} MomentumResolvedSpectrum(...)
+:canonical: abtem.measurements.MomentumResolvedSpectrum
+
+Bases: {py:obj}`abtem.measurements.BaseMeasurements`
+
+```{autodoc2-docstring} abtem.measurements.MomentumResolvedSpectrum
+:parser: rst
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.measurements.MomentumResolvedSpectrum.__init__
+:parser: rst
+```
+
+````{py:property} base_axes_metadata
+:canonical: abtem.measurements.MomentumResolvedSpectrum.base_axes_metadata
+:type: list[abtem.core.axes.AxisMetadata]
+
+````
+
+````{py:method} crop(...) -> abtem.measurements.MomentumResolvedSpectrum
+:canonical: abtem.measurements.MomentumResolvedSpectrum.crop
+
+```{autodoc2-docstring} abtem.measurements.MomentumResolvedSpectrum.crop
+:parser: rst
+```
+
+````
+
+````{py:property} e_values
+:canonical: abtem.measurements.MomentumResolvedSpectrum.e_values
+:type: tuple[float, ...]
+
+```{autodoc2-docstring} abtem.measurements.MomentumResolvedSpectrum.e_values
+:parser: rst
+```
+
+````
+
+````{py:method} from_array_and_metadata(...) -> abtem.measurements.MomentumResolvedSpectrum
+:canonical: abtem.measurements.MomentumResolvedSpectrum.from_array_and_metadata
+:classmethod:
+
+````
+
+````{py:property} q_values
+:canonical: abtem.measurements.MomentumResolvedSpectrum.q_values
+:type: tuple[float, ...]
+
+```{autodoc2-docstring} abtem.measurements.MomentumResolvedSpectrum.q_values
+:parser: rst
+```
+
+````
+
+````{py:method} show(...) -> tuple
+:canonical: abtem.measurements.MomentumResolvedSpectrum.show
+
+```{autodoc2-docstring} abtem.measurements.MomentumResolvedSpectrum.show
+:parser: rst
+```
+
+````
+
+`````
+
+`````{py:class} PolarMeasurements(...)
 :canonical: abtem.measurements.PolarMeasurements
 
 Bases: {py:obj}`abtem.measurements.BaseMeasurements`
@@ -930,7 +1040,7 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
-````{py:method} differentials(direction_1: tuple[int | tuple[int, ...], int | tuple[int, ...]], direction_2: tuple[int | tuple[int, ...], int | tuple[int, ...]], return_complex: bool = True) -> abtem.measurements.Images
+````{py:method} differentials(...) -> abtem.measurements.Images
 :canonical: abtem.measurements.PolarMeasurements.differentials
 
 ```{autodoc2-docstring} abtem.measurements.PolarMeasurements.differentials
@@ -948,7 +1058,7 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
-````{py:method} from_array_and_metadata(array: numpy.ndarray, axes_metadata: list[abtem.core.axes.AxisMetadata], metadata: typing.Optional[dict] = None) -> abtem.measurements.PolarMeasurements
+````{py:method} from_array_and_metadata(...) -> abtem.measurements.PolarMeasurements
 :canonical: abtem.measurements.PolarMeasurements.from_array_and_metadata
 :classmethod:
 
@@ -958,7 +1068,7 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
-````{py:method} gaussian_source_size(sigma: float | tuple[float, float]) -> abtem.measurements.PolarMeasurements
+````{py:method} gaussian_source_size(...) -> abtem.measurements.PolarMeasurements
 :canonical: abtem.measurements.PolarMeasurements.gaussian_source_size
 
 ```{autodoc2-docstring} abtem.measurements.PolarMeasurements.gaussian_source_size
@@ -967,7 +1077,7 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
-````{py:method} integrate(radial_limits: typing.Optional[tuple[float, float]] = None, azimuthal_limits: typing.Optional[tuple[float, float]] = None, detector_regions: typing.Optional[int | typing.Sequence[int]] = None) -> abtem.measurements.Images | abtem.measurements.RealSpaceLineProfiles
+````{py:method} integrate(...) -> abtem.measurements.Images | abtem.measurements.RealSpaceLineProfiles
 :canonical: abtem.measurements.PolarMeasurements.integrate
 
 ```{autodoc2-docstring} abtem.measurements.PolarMeasurements.integrate
@@ -976,10 +1086,19 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
-````{py:method} integrate_radial(inner: float, outer: float) -> abtem.measurements.Images | abtem.measurements.RealSpaceLineProfiles
+````{py:method} integrate_radial(...) -> abtem.measurements.Images | abtem.measurements.RealSpaceLineProfiles
 :canonical: abtem.measurements.PolarMeasurements.integrate_radial
 
 ```{autodoc2-docstring} abtem.measurements.PolarMeasurements.integrate_radial
+:parser: rst
+```
+
+````
+
+````{py:method} lorentzian_source_size(...) -> abtem.measurements.PolarMeasurements
+:canonical: abtem.measurements.PolarMeasurements.lorentzian_source_size
+
+```{autodoc2-docstring} abtem.measurements.PolarMeasurements.lorentzian_source_size
 :parser: rst
 ```
 
@@ -1004,10 +1123,19 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
-````{py:method} poisson_noise(dose_per_area: typing.Optional[float] = None, total_dose: typing.Optional[float] = None, samples: int = 1, seed: typing.Optional[int] = None)
+````{py:method} poisson_noise(...)
 :canonical: abtem.measurements.PolarMeasurements.poisson_noise
 
 ```{autodoc2-docstring} abtem.measurements.PolarMeasurements.poisson_noise
+:parser: rst
+```
+
+````
+
+````{py:method} pseudo_voigtian_source_size(...) -> abtem.measurements.PolarMeasurements
+:canonical: abtem.measurements.PolarMeasurements.pseudo_voigtian_source_size
+
+```{autodoc2-docstring} abtem.measurements.PolarMeasurements.pseudo_voigtian_source_size
 :parser: rst
 ```
 
@@ -1042,7 +1170,7 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
-````{py:method} show(ax: typing.Optional[matplotlib.axes.Axes] = None, gpts: int | tuple[int, int] = (512, 512), cbar: bool = False, cmap: typing.Optional[str] = None, vmin: typing.Optional[float] = None, vmax: typing.Optional[float] = None, power: float = 1.0, logscale: bool = False, common_color_scale: bool = False, explode: bool | typing.Sequence[bool] = (), overlay: bool | typing.Sequence[int] = (), figsize: typing.Optional[tuple[int, int]] = None, title: bool | str = True, units: typing.Optional[str] = None, interact: bool = False, display: bool = True) -> abtem.visualize.visualizations.Visualization
+````{py:method} show(...) -> abtem.visualize.visualizations.Visualization
 :canonical: abtem.measurements.PolarMeasurements.show
 
 ```{autodoc2-docstring} abtem.measurements.PolarMeasurements.show
@@ -1051,7 +1179,7 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
-````{py:method} to_diffraction_patterns(gpts: int | tuple[int, int], margin: float | tuple[float, float] = 0.1)
+````{py:method} to_diffraction_patterns(...)
 :canonical: abtem.measurements.PolarMeasurements.to_diffraction_patterns
 
 ```{autodoc2-docstring} abtem.measurements.PolarMeasurements.to_diffraction_patterns
@@ -1069,9 +1197,18 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 
 ````
 
+````{py:method} voigtian_source_size(...) -> abtem.measurements.PolarMeasurements
+:canonical: abtem.measurements.PolarMeasurements.voigtian_source_size
+
+```{autodoc2-docstring} abtem.measurements.PolarMeasurements.voigtian_source_size
+:parser: rst
+```
+
+````
+
 `````
 
-`````{py:class} RealSpaceLineProfiles(array: numpy.ndarray, sampling: typing.Optional[float] = None, ensemble_axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, metadata: typing.Optional[dict] = None)
+`````{py:class} RealSpaceLineProfiles(...)
 :canonical: abtem.measurements.RealSpaceLineProfiles
 
 Bases: {py:obj}`abtem.measurements._BaseMeasurement1D`
@@ -1093,7 +1230,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement1D`
 
 ````
 
-````{py:method} tile(repetitions: int) -> abtem.measurements.RealSpaceLineProfiles
+````{py:method} tile(...) -> abtem.measurements.RealSpaceLineProfiles
 :canonical: abtem.measurements.RealSpaceLineProfiles.tile
 
 ```{autodoc2-docstring} abtem.measurements.RealSpaceLineProfiles.tile
@@ -1104,7 +1241,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement1D`
 
 `````
 
-`````{py:class} ReciprocalSpaceLineProfiles(array: numpy.ndarray, sampling: typing.Optional[float] = None, ensemble_axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, metadata: typing.Optional[dict] = None)
+`````{py:class} ReciprocalSpaceLineProfiles(...)
 :canonical: abtem.measurements.ReciprocalSpaceLineProfiles
 
 Bases: {py:obj}`abtem.measurements._BaseMeasurement1D`
@@ -1137,7 +1274,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement1D`
 
 `````
 
-````{py:function} calculate_max_reciprocal_space_vector(hkl, reciprocal_lattice_vectors)
+````{py:function} calculate_max_reciprocal_space_vector(...)
 :canonical: abtem.measurements.calculate_max_reciprocal_space_vector
 
 ```{autodoc2-docstring} abtem.measurements.calculate_max_reciprocal_space_vector
@@ -1145,7 +1282,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement1D`
 ```
 ````
 
-````{py:function} integrate_disc(measurement: Images | DiffractionPatterns, position: numpy.ndarray, radius: float, return_mean: bool = False, border: str = 'wrap', interpolate: typing.Optional[tuple[float, bool]] = None) -> float
+````{py:function} integrate_disc(...) -> float
 :canonical: abtem.measurements.integrate_disc
 
 ```{autodoc2-docstring} abtem.measurements.integrate_disc
@@ -1165,6 +1302,14 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement1D`
 
 ````
 
+````{py:function} momentum_resolved_spectrum(...) -> abtem.measurements.MomentumResolvedSpectrum
+:canonical: abtem.measurements.momentum_resolved_spectrum
+
+```{autodoc2-docstring} abtem.measurements.momentum_resolved_spectrum
+:parser: rst
+```
+````
+
 ````{py:data} pd
 :canonical: abtem.measurements.pd
 :type: typing.Optional[types.ModuleType]
@@ -1177,7 +1322,7 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement1D`
 
 ````
 
-````{py:function} periodic_crop(array: numpy.ndarray, corner: tuple[float, float], new_shape: tuple[int, int]) -> numpy.ndarray
+````{py:function} periodic_crop(...) -> numpy.ndarray
 :canonical: abtem.measurements.periodic_crop
 
 ```{autodoc2-docstring} abtem.measurements.periodic_crop
@@ -1185,7 +1330,15 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement1D`
 ```
 ````
 
-````{py:function} reciprocal_lattice_vector_lengths(hkl, reciprocal_lattice_vectors)
+````{py:function} phonon_loss_diffraction_patterns(...) -> abtem.measurements.DiffractionPatterns
+:canonical: abtem.measurements.phonon_loss_diffraction_patterns
+
+```{autodoc2-docstring} abtem.measurements.phonon_loss_diffraction_patterns
+:parser: rst
+```
+````
+
+````{py:function} reciprocal_lattice_vector_lengths(...)
 :canonical: abtem.measurements.reciprocal_lattice_vector_lengths
 
 ```{autodoc2-docstring} abtem.measurements.reciprocal_lattice_vector_lengths

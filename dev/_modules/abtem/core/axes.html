@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -718,9 +718,20 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_to_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunks</span><span class="p">):</span>
+        <span class="c1"># Mirrors `ArrayObject._partition_ensemble_axes_metadata`'s</span>
+        <span class="c1"># `axis[slic] if hasattr(axis, "__getitem__") else axis.copy()`</span>
+        <span class="c1"># fallback. Any axis whose metadata depends on WHICH range of the</span>
+        <span class="c1"># array it covers (e.g. LinearAxis's offset) must define</span>
+        <span class="c1"># __getitem__ to shift that dependent state per block -- without it,</span>
+        <span class="c1"># every block silently gets an identical copy of the GLOBAL axis,</span>
+        <span class="c1"># including state that is only valid for the first block.</span>
+        <span class="c1"># `OrdinalAxis` overrides this method directly rather than relying</span>
+        <span class="c1"># on the fallback, since its `values` tuple needs no per-block</span>
+        <span class="c1"># adjustment beyond slicing, which `__getitem__` already does.</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="mi">0</span><span class="p">]),),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+        <span class="n">has_getitem</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"__getitem__"</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">slic</span> <span class="ow">in</span> <span class="n">iterate_chunk_ranges</span><span class="p">(</span><span class="n">chunks</span><span class="p">):</span>
-            <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">slic</span><span class="p">]</span> <span class="k">if</span> <span class="n">has_getitem</span> <span class="k">else</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">arr</span>
 
@@ -823,6 +834,70 @@
             <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span> <span class="o">*</span> <span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="p">)</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Return the axis restricted to a contiguous sub-range, with `offset`</span>
+<span class="sd">        shifted to match.</span>
+
+<span class="sd">        Without this, `_partition_ensemble_axes_metadata` (dask ensemble</span>
+<span class="sd">        partitioning) falls back to `hasattr(axis, "__getitem__")` being</span>
+<span class="sd">        False and uses `axis.copy()` instead: every chunk gets an identical</span>
+<span class="sd">        copy of the GLOBAL axis, including its global `offset`, regardless</span>
+<span class="sd">        of which chunk it actually is. A `LinearAxis` (offset + sampling)</span>
+<span class="sd">        does not store its own length, so unlike `OrdinalAxis.__getitem__`</span>
+<span class="sd">        (which slices an explicit `values` tuple), only `offset` needs to</span>
+<span class="sd">        change here -- the number of points continues to come from the</span>
+<span class="sd">        array's own shape wherever this axis is used.</span>
+
+<span class="sd">        Only simple, positive-step, non-empty slices/indices -- which is all</span>
+<span class="sd">        `iterate_chunk_ranges` chunk partitioning ever produces -- are</span>
+<span class="sd">        represented exactly; anything else raises TypeError rather than</span>
+<span class="sd">        silently returning an axis with the wrong offset. TypeError</span>
+<span class="sd">        specifically: `ArrayObject._get_ensemble_axes_metadata_items`</span>
+<span class="sd">        (general user-facing indexing, e.g. `waves[::-1]`) already wraps</span>
+<span class="sd">        `axis[item]` in `try/except TypeError` and falls back to a plain</span>
+<span class="sd">        copy for whatever an axis can't represent exactly -- the same</span>
+<span class="sd">        fallback this axis relied on before it had a `__getitem__` at all.</span>
+<span class="sd">        Chunk partitioning is unaffected either way, since it never</span>
+<span class="sd">        constructs a slice this doesn't support.</span>
+<span class="sd">        """</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># `iterate_chunk_ranges` always yields a tuple of slices, one per</span>
+        <span class="c1"># axis, even when partitioning a single axis on its own (as</span>
+        <span class="c1"># `_to_blocks` does) -- numpy's indexing unwraps a length-1 tuple to</span>
+        <span class="c1"># its element automatically, which is what makes this transparent</span>
+        <span class="c1"># for `OrdinalAxis` (a plain array index); do the same here.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> indices must be a single "</span>
+                    <span class="sa">f</span><span class="s2">"int/slice or a length-1 tuple of one, got </span><span class="si">{</span><span class="n">item</span><span class="si">!r}</span><span class="s2">"</span>
+                <span class="p">)</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Number</span><span class="p">):</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">item</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">step</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not support a strided "</span>
+                    <span class="sa">f</span><span class="s2">"slice, got step=</span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">step</span><span class="si">}</span><span class="s2">"</span>
+                <span class="p">)</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">start</span> <span class="ow">or</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">start</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">stop</span> <span class="o">&lt;=</span> <span class="n">start</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not support a negative "</span>
+                    <span class="sa">f</span><span class="s2">"or empty slice, got </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">"</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> indices must be an int or a simple "</span>
+                <span class="sa">f</span><span class="s2">"positive-step slice, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
+
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"offset"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">start</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LinearAxis.to_ordinal_axis">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.axes.html#abtem.core.axes.LinearAxis.to_ordinal_axis">[docs]</a>
@@ -1071,6 +1146,24 @@
 
 
 
+<div class="viewcode-block" id="SpinAxis">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.axes.html#abtem.core.axes.SpinAxis">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unsafe_hash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SpinAxis</span><span class="p">(</span><span class="n">OrdinalAxis</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Labeled axis holding the two components of a spinor wave function.</span>
+
+<span class="sd">    The two components are mixed by the Pauli multislice solver, unlike</span>
+<span class="sd">    ordinary ensemble axes whose members evolve independently, so this</span>
+<span class="sd">    axis must never be split across dask chunks. Locate it by isinstance,</span>
+<span class="sd">    never by position.</span>
+<span class="sd">    """</span>
+
+    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"spin"</span>
+    <span class="n">values</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"up"</span><span class="p">,</span> <span class="s2">"down"</span><span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="ThicknessAxis">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.axes.html#abtem.core.axes.ThicknessAxis">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unsafe_hash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1085,6 +1178,77 @@
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unsafe_hash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ParameterAxis</span><span class="p">(</span><span class="n">NonLinearAxis</span><span class="p">):</span>
     <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span></div>
+
+
+
+<div class="viewcode-block" id="EnergyAxis">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.axes.html#abtem.core.axes.EnergyAxis">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unsafe_hash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">EnergyAxis</span><span class="p">(</span><span class="n">NonLinearAxis</span><span class="p">):</span>
+    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"Energy"</span>
+    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"eV"</span>
+
+<div class="viewcode-block" id="EnergyAxis.item_metadata">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.axes.html#abtem.core.axes.EnergyAxis.item_metadata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">item_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Use the lowercase "energy" key to match the metadata convention used</span>
+        <span class="c1"># everywhere else in the codebase (metadata["energy"]).  The inherited</span>
+        <span class="c1"># OrdinalAxis implementation would use self.label ("Energy") which would</span>
+        <span class="c1"># silently miss all lookups that check for "energy".</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"energy"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">item</span><span class="p">]}</span></div>
+
+
+<div class="viewcode-block" id="EnergyAxis.format_title">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.axes.html#abtem.core.axes.EnergyAxis.format_title">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_title</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">formatting</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">include_label</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Format title displaying energy in keV regardless of stored eV units."""</span>
+        <span class="k">if</span> <span class="n">formatting</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">formatting</span> <span class="o">=</span> <span class="s2">".3g"</span>
+        <span class="n">value_kev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1000.0</span>
+        <span class="n">formatted</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">value_kev</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">formatting</span><span class="si">}}</span><span class="s2">"</span>
+        <span class="k">if</span> <span class="n">include_label</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">formatted</span><span class="si">}</span><span class="s2"> keV"</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">formatted</span><span class="si">}</span><span class="s2"> keV"</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="EnergyLossAxis">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.axes.html#abtem.core.axes.EnergyLossAxis">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unsafe_hash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">EnergyLossAxis</span><span class="p">(</span><span class="n">NonLinearAxis</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Ensemble axis for energy loss (e.g. phonon/TDS or EELS), distinct from</span>
+<span class="sd">    the accelerating beam :class:`.EnergyAxis` so the two never collide in</span>
+<span class="sd">    metadata or in code that pattern-matches on ``isinstance(ax, EnergyAxis)``.</span>
+<span class="sd">    """</span>
+
+    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"energy loss"</span>
+    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"eV"</span>
+
+<div class="viewcode-block" id="EnergyLossAxis.item_metadata">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.axes.html#abtem.core.axes.EnergyLossAxis.item_metadata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">item_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"energy_loss"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">item</span><span class="p">]}</span></div>
+
+
+<div class="viewcode-block" id="EnergyLossAxis.format_title">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.axes.html#abtem.core.axes.EnergyLossAxis.format_title">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_title</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">formatting</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">include_label</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Format title displaying energy loss in meV."""</span>
+        <span class="k">if</span> <span class="n">formatting</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">formatting</span> <span class="o">=</span> <span class="s2">".3g"</span>
+        <span class="n">value_meV</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1000.0</span>
+        <span class="n">formatted</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">value_meV</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">formatting</span><span class="si">}}</span><span class="s2">"</span>
+        <span class="k">if</span> <span class="n">include_label</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">formatted</span><span class="si">}</span><span class="s2"> meV"</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">formatted</span><span class="si">}</span><span class="s2"> meV"</span></div>
+</div>
 
 
 
@@ -1266,7 +1430,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

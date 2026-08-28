@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -533,6 +533,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.antialias</span><span class="w"> </span><span class="kn">import</span> <span class="n">AntialiasAperture</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_array_module</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">energy2sigma</span><span class="p">,</span> <span class="n">energy2wavelength</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.iam</span><span class="w"> </span><span class="kn">import</span> <span class="n">PotentialArray</span>
@@ -717,8 +718,10 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_laplace_operator_stencil</span><span class="p">(</span>
-    <span class="n">accuracy</span><span class="p">,</span> <span class="n">prefactor</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"wrap"</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex64</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span>
+    <span class="n">accuracy</span><span class="p">,</span> <span class="n">prefactor</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"wrap"</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span>
 <span class="p">):</span>
+    <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">finite_difference_coefficients</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">)</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">c</span> <span class="o">*</span> <span class="n">prefactor</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
@@ -853,7 +856,8 @@
         <span class="n">wavelength</span><span class="p">,</span> <span class="n">sampling</span> <span class="o">=</span> <span class="n">key</span>
         <span class="n">prefactor</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">_laplace_operator_stencil</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_accuracy</span><span class="p">,</span> <span class="n">prefactor</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"wrap"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_accuracy</span><span class="p">,</span> <span class="n">prefactor</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"wrap"</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="LaplaceOperator.get_stencil">
@@ -876,7 +880,7 @@
 <span class="sd">            Cached stencil function with waves prefactor, on specified device</span>
 <span class="sd">        """</span>
         <span class="n">key</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">waves</span><span class="o">.</span><span class="n">wavelength</span><span class="p">,</span>
+            <span class="n">energy2wavelength</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">_valid_energy</span><span class="p">),</span>
             <span class="n">waves</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -1262,7 +1266,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

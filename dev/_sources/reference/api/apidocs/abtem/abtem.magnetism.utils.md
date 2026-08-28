@@ -59,7 +59,7 @@
 
 ````
 
-````{py:function} saturation_magnetization(magnetic_moments, volume)
+````{py:function} saturation_magnetization(...)
 :canonical: abtem.magnetism.utils.saturation_magnetization
 
 ```{autodoc2-docstring} abtem.magnetism.utils.saturation_magnetization
@@ -67,7 +67,7 @@
 ```
 ````
 
-````{py:function} set_magnetic_moments(atoms, magnetic_moments)
+````{py:function} set_magnetic_moments(...)
 :canonical: abtem.magnetism.utils.set_magnetic_moments
 
 ```{autodoc2-docstring} abtem.magnetism.utils.set_magnetic_moments

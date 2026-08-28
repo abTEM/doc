@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -537,20 +537,29 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_SyncedCbarLocator</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Locator that keeps a colorbar aligned with a reference axes."""</span>
+<span class="w">    </span><span class="sd">"""Locator that keeps a colorbar aligned with the union of a set of</span>
+<span class="sd">    reference axes, so a colorbar spans the full height (``sync_axis="y"``)</span>
+<span class="sd">    or width (``sync_axis="x"``) of every panel it is meant to cover -- e.g.</span>
+<span class="sd">    a single shared colorbar spanning every row of a multi-row exploded</span>
+<span class="sd">    grid, or a per-panel colorbar matching just its own panel.</span>
+<span class="sd">    """</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original_locator</span><span class="p">,</span> <span class="n">ref_ax</span><span class="p">,</span> <span class="n">sync_axis</span><span class="o">=</span><span class="s2">"y"</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original_locator</span><span class="p">,</span> <span class="n">ref_axes</span><span class="p">,</span> <span class="n">sync_axis</span><span class="o">=</span><span class="s2">"y"</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_original</span> <span class="o">=</span> <span class="n">original_locator</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ref_ax</span> <span class="o">=</span> <span class="n">ref_ax</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ref_axes</span> <span class="o">=</span> <span class="n">ref_axes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sync_axis</span> <span class="o">=</span> <span class="n">sync_axis</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">renderer</span><span class="p">):</span>
         <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">renderer</span><span class="p">)</span>
-        <span class="n">ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_ax</span><span class="o">.</span><span class="n">get_position</span><span class="p">(</span><span class="n">original</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="p">[</span><span class="n">ax</span><span class="o">.</span><span class="n">get_position</span><span class="p">(</span><span class="n">original</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_axes</span><span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sync_axis</span> <span class="o">==</span> <span class="s2">"y"</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">Bbox</span><span class="o">.</span><span class="n">from_bounds</span><span class="p">(</span><span class="n">pos</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="n">ref</span><span class="o">.</span><span class="n">y0</span><span class="p">,</span> <span class="n">pos</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">ref</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+            <span class="n">y0</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">y0</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">positions</span><span class="p">)</span>
+            <span class="n">y1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">y1</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">positions</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Bbox</span><span class="o">.</span><span class="n">from_bounds</span><span class="p">(</span><span class="n">pos</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">pos</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">Bbox</span><span class="o">.</span><span class="n">from_bounds</span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="n">pos</span><span class="o">.</span><span class="n">y0</span><span class="p">,</span> <span class="n">ref</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">pos</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">x0</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">positions</span><span class="p">)</span>
+            <span class="n">x1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">x1</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">positions</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Bbox</span><span class="o">.</span><span class="n">from_bounds</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">pos</span><span class="o">.</span><span class="n">y0</span><span class="p">,</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">,</span> <span class="n">pos</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_cbar_orientation</span><span class="p">(</span><span class="n">cbar_loc</span><span class="p">):</span>
@@ -635,7 +644,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_sizes</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">"cbar_spacing"</span><span class="p">:</span> <span class="n">Size</span><span class="o">.</span><span class="n">Fixed</span><span class="p">(</span><span class="mf">1.1</span><span class="p">),</span>
-            <span class="s2">"padding"</span><span class="p">:</span> <span class="n">Size</span><span class="o">.</span><span class="n">Fixed</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span>
+            <span class="c1"># Wide enough to fit a ~3-4 character tick label (e.g. the</span>
+            <span class="c1"># "-100"/"100" pair at a shared panel boundary) without the</span>
+            <span class="c1"># two neighbouring panels' edge labels visually colliding.</span>
+            <span class="s2">"padding"</span><span class="p">:</span> <span class="n">Size</span><span class="o">.</span><span class="n">Fixed</span><span class="p">(</span><span class="mf">0.25</span><span class="p">),</span>
             <span class="s2">"cbar_shift"</span><span class="p">:</span> <span class="n">Size</span><span class="o">.</span><span class="n">Fixed</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
             <span class="s2">"cbar_width"</span><span class="p">:</span> <span class="n">Size</span><span class="o">.</span><span class="n">Fixed</span><span class="p">(</span><span class="mf">0.15</span><span class="p">),</span>
             <span class="s2">"left"</span><span class="p">:</span> <span class="n">Size</span><span class="o">.</span><span class="n">Fixed</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
@@ -849,16 +861,29 @@
         <span class="k">return</span> <span class="n">line_types</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_connect_cbar_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">ref_ax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axes</span><span class="o">.</span><span class="n">ravel</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">sync_axis</span> <span class="o">=</span> <span class="s2">"y"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cbar_loc</span> <span class="o">==</span> <span class="s2">"right"</span> <span class="k">else</span> <span class="s2">"x"</span>
-        <span class="k">for</span> <span class="n">cax</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_caxes</span><span class="o">.</span><span class="n">ravel</span><span class="p">():</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">sync</span><span class="p">(</span><span class="n">cax</span><span class="p">,</span> <span class="n">ref_axes</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">cax</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">cax</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">continue</span>
+                <span class="k">return</span>
             <span class="n">original_locator</span> <span class="o">=</span> <span class="n">cax</span><span class="o">.</span><span class="n">get_axes_locator</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">original_locator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">cax</span><span class="o">.</span><span class="n">set_axes_locator</span><span class="p">(</span>
-                    <span class="n">_SyncedCbarLocator</span><span class="p">(</span><span class="n">original_locator</span><span class="p">,</span> <span class="n">ref_ax</span><span class="p">,</span> <span class="n">sync_axis</span><span class="p">)</span>
+                    <span class="n">_SyncedCbarLocator</span><span class="p">(</span><span class="n">original_locator</span><span class="p">,</span> <span class="n">ref_axes</span><span class="p">,</span> <span class="n">sync_axis</span><span class="p">)</span>
                 <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cbar_mode</span> <span class="o">==</span> <span class="s2">"each"</span><span class="p">:</span>
+            <span class="c1"># Each panel has its own colorbar(s): match only that panel.</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ncols</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nrows</span><span class="p">):</span>
+                    <span class="n">ref_axes</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_axes</span><span class="p">[</span><span class="n">col</span><span class="p">,</span> <span class="n">row</span><span class="p">]]</span>
+                    <span class="k">for</span> <span class="n">cax</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_caxes</span><span class="p">[</span><span class="n">col</span><span class="p">,</span> <span class="n">row</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">():</span>
+                        <span class="n">sync</span><span class="p">(</span><span class="n">cax</span><span class="p">,</span> <span class="n">ref_axes</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># One shared colorbar: span every panel it is shared across.</span>
+            <span class="n">ref_axes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_axes</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+            <span class="k">for</span> <span class="n">cax</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_caxes</span><span class="o">.</span><span class="n">ravel</span><span class="p">():</span>
+                <span class="n">sync</span><span class="p">(</span><span class="n">cax</span><span class="p">,</span> <span class="n">ref_axes</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AxesGrid.set_sizes">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.visualize.axes_grid.html#abtem.visualize.axes_grid.AxesGrid.set_sizes">[docs]</a>
@@ -971,7 +996,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

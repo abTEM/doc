@@ -54,6 +54,16 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`lorentzian <abtem.distributions.lorentzian>`
+  - ```{autodoc2-docstring} abtem.distributions.lorentzian
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`pseudo_voigtian <abtem.distributions.pseudo_voigtian>`
+  - ```{autodoc2-docstring} abtem.distributions.pseudo_voigtian
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`tuple_range_except <abtem.distributions.tuple_range_except>`
   - ```{autodoc2-docstring} abtem.distributions.tuple_range_except
     :parser: rst
@@ -66,6 +76,11 @@
     ```
 * - {py:obj}`validate_distribution <abtem.distributions.validate_distribution>`
   - ```{autodoc2-docstring} abtem.distributions.validate_distribution
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`voigtian <abtem.distributions.voigtian>`
+  - ```{autodoc2-docstring} abtem.distributions.voigtian
     :parser: rst
     :summary:
     ```
@@ -93,7 +108,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 
 ````
 
-````{py:method} divide(chunks: int | tuple[int, ...] = 1, lazy: bool = True) -> numpy.ndarray | dask.array.Array
+````{py:method} divide(...) -> numpy.ndarray | dask.array.Array
 :canonical: abtem.distributions.BaseDistribution.divide
 :abstractmethod:
 
@@ -149,7 +164,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 
 `````
 
-`````{py:class} DistributionFromValues(values: numpy.ndarray, weights: numpy.ndarray | None = None, ensemble_mean: bool = False)
+`````{py:class} DistributionFromValues(...)
 :canonical: abtem.distributions.DistributionFromValues
 
 Bases: {py:obj}`abtem.distributions.BaseDistribution`
@@ -165,7 +180,7 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 :parser: rst
 ```
 
-````{py:method} combine(other: abtem.distributions.DistributionFromValues) -> abtem.distributions.MultidimensionalDistribution
+````{py:method} combine(...) -> abtem.distributions.MultidimensionalDistribution
 :canonical: abtem.distributions.DistributionFromValues.combine
 
 ```{autodoc2-docstring} abtem.distributions.DistributionFromValues.combine
@@ -180,7 +195,7 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 
 ````
 
-````{py:method} divide(chunks: int | tuple[int, ...] = 1, lazy: bool = True) -> numpy.ndarray | dask.array.Array
+````{py:method} divide(...) -> numpy.ndarray | dask.array.Array
 :canonical: abtem.distributions.DistributionFromValues.divide
 
 ````
@@ -211,7 +226,7 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 
 `````
 
-`````{py:class} EnsembleFromDistributions(distributions: tuple[str, ...] = (), **kwargs)
+`````{py:class} EnsembleFromDistributions(...)
 :canonical: abtem.distributions.EnsembleFromDistributions
 
 Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyMixin`
@@ -235,7 +250,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 `````
 
-`````{py:class} MultidimensionalDistribution(distributions: typing.Sequence[abtem.distributions.BaseDistribution])
+`````{py:class} MultidimensionalDistribution(...)
 :canonical: abtem.distributions.MultidimensionalDistribution
 
 Bases: {py:obj}`abtem.distributions.BaseDistribution`
@@ -266,7 +281,7 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 
 ````
 
-````{py:method} divide(chunks: int | tuple[int, ...] = 1, lazy: bool = True) -> numpy.ndarray | dask.array.Array
+````{py:method} divide(...) -> numpy.ndarray | dask.array.Array
 :canonical: abtem.distributions.MultidimensionalDistribution.divide
 
 ````
@@ -297,7 +312,7 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 
 `````
 
-````{py:function} from_values(values: typing.Sequence[typing.SupportsFloat] | numpy.ndarray, weights: numpy.ndarray | None = None, ensemble_mean: bool = False) -> abtem.distributions.DistributionFromValues
+````{py:function} from_values(...) -> abtem.distributions.DistributionFromValues
 :canonical: abtem.distributions.from_values
 
 ```{autodoc2-docstring} abtem.distributions.from_values
@@ -305,7 +320,7 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 ```
 ````
 
-````{py:function} gaussian(standard_deviation: float | tuple[float, ...], num_samples: int | tuple[int, ...], dimension: int = 1, center: float | tuple[float, ...] = 0.0, ensemble_mean: bool | tuple[bool, ...] = True, sampling_limit: float | tuple[float, ...] = 3.0, normalize: str = 'intensity') -> abtem.distributions.MultidimensionalDistribution
+````{py:function} gaussian(...) -> abtem.distributions.MultidimensionalDistribution
 :canonical: abtem.distributions.gaussian
 
 ```{autodoc2-docstring} abtem.distributions.gaussian
@@ -313,7 +328,23 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 ```
 ````
 
-````{py:function} tuple_range_except(n, i)
+````{py:function} lorentzian(...) -> abtem.distributions.MultidimensionalDistribution
+:canonical: abtem.distributions.lorentzian
+
+```{autodoc2-docstring} abtem.distributions.lorentzian
+:parser: rst
+```
+````
+
+````{py:function} pseudo_voigtian(...) -> abtem.distributions.MultidimensionalDistribution
+:canonical: abtem.distributions.pseudo_voigtian
+
+```{autodoc2-docstring} abtem.distributions.pseudo_voigtian
+:parser: rst
+```
+````
+
+````{py:function} tuple_range_except(...)
 :canonical: abtem.distributions.tuple_range_except
 
 ```{autodoc2-docstring} abtem.distributions.tuple_range_except
@@ -321,7 +352,7 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 ```
 ````
 
-````{py:function} uniform(low: float, high: float, num_samples: int, endpoint: bool = True, ensemble_mean: bool = False) -> abtem.distributions.DistributionFromValues
+````{py:function} uniform(...) -> abtem.distributions.DistributionFromValues
 :canonical: abtem.distributions.uniform
 
 ```{autodoc2-docstring} abtem.distributions.uniform
@@ -329,10 +360,18 @@ Bases: {py:obj}`abtem.distributions.BaseDistribution`
 ```
 ````
 
-````{py:function} validate_distribution(distribution: abtem.distributions.BaseDistribution | tuple | list | numpy.ndarray | typing.SupportsFloat) -> abtem.distributions.BaseDistribution | float | int
+````{py:function} validate_distribution(...) -> abtem.distributions.BaseDistribution | float | int
 :canonical: abtem.distributions.validate_distribution
 
 ```{autodoc2-docstring} abtem.distributions.validate_distribution
+:parser: rst
+```
+````
+
+````{py:function} voigtian(...) -> abtem.distributions.MultidimensionalDistribution
+:canonical: abtem.distributions.voigtian
+
+```{autodoc2-docstring} abtem.distributions.voigtian
 :parser: rst
 ```
 ````

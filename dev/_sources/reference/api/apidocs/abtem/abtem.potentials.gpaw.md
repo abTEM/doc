@@ -48,7 +48,7 @@
 
 ### API
 
-`````{py:class} GPAWParametrization(nodes=None, integration_step=0.002)
+`````{py:class} GPAWParametrization(...)
 :canonical: abtem.potentials.gpaw.GPAWParametrization
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWParametrization
@@ -62,7 +62,7 @@
 :parser: rst
 ```
 
-````{py:method} charge(symbol: str, charge: float = 0.0)
+````{py:method} charge(...)
 :canonical: abtem.potentials.gpaw.GPAWParametrization.charge
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWParametrization.charge
@@ -71,7 +71,7 @@
 
 ````
 
-````{py:method} potential(symbol: str, charge: float = 0.0)
+````{py:method} potential(...)
 :canonical: abtem.potentials.gpaw.GPAWParametrization.potential
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWParametrization.potential
@@ -80,7 +80,7 @@
 
 ````
 
-````{py:method} scattering_factor(symbol, charge: float = 0.0)
+````{py:method} scattering_factor(...)
 :canonical: abtem.potentials.gpaw.GPAWParametrization.scattering_factor
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWParametrization.scattering_factor
@@ -89,7 +89,7 @@
 
 ````
 
-````{py:method} x_ray_scattering_factor(symbol: str, charge: float = 0.0)
+````{py:method} x_ray_scattering_factor(...)
 :canonical: abtem.potentials.gpaw.GPAWParametrization.x_ray_scattering_factor
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWParametrization.x_ray_scattering_factor
@@ -100,7 +100,7 @@
 
 `````
 
-`````{py:class} GPAWPotential(calculators: typing.Union[gpaw.GPAW, typing.List[gpaw.GPAW], typing.List[str], str], gpts: typing.Union[int, typing.Tuple[int, int]] = None, sampling: typing.Union[float, typing.Tuple[float, float]] = None, slice_thickness: float = 1.0, exit_planes: int = None, plane: str = 'xy', origin: typing.Tuple[float, float, float] = (0.0, 0.0, 0.0), box: typing.Tuple[float, float, float] = None, periodic: bool = True, frozen_phonons: abtem.inelastic.phonons.BaseFrozenPhonons = None, repetitions: typing.Tuple[int, int, int] = (1, 1, 1), gridrefinement: int = 4, device: str = None)
+`````{py:class} GPAWPotential(...)
 :canonical: abtem.potentials.gpaw.GPAWPotential
 
 Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
@@ -145,7 +145,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 
 ````
 
-````{py:method} generate_slices(first_slice: int = 0, last_slice: int = None)
+````{py:method} generate_slices(...)
 :canonical: abtem.potentials.gpaw.GPAWPotential.generate_slices
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.GPAWPotential.generate_slices
@@ -188,7 +188,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 
 `````
 
-````{py:function} get_core_correction_interpolators(setups, D_asp, Q_aL, rcgauss)
+````{py:function} get_core_correction_interpolators(...)
 :canonical: abtem.potentials.gpaw.get_core_correction_interpolators
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.get_core_correction_interpolators
@@ -196,7 +196,7 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 ```
 ````
 
-````{py:function} integrate_slice(array, gpts, a, b, thickness)
+````{py:function} integrate_slice(...)
 :canonical: abtem.potentials.gpaw.integrate_slice
 
 ```{autodoc2-docstring} abtem.potentials.gpaw.integrate_slice

@@ -179,7 +179,7 @@
 
 ````
 
-````{py:function} array_row_intersection(a, b)
+````{py:function} array_row_intersection(...)
 :canonical: abtem.core.utils.array_row_intersection
 
 ```{autodoc2-docstring} abtem.core.utils.array_row_intersection
@@ -187,7 +187,7 @@
 ```
 ````
 
-````{py:function} ensure_list(x)
+````{py:function} ensure_list(...)
 :canonical: abtem.core.utils.ensure_list
 
 ```{autodoc2-docstring} abtem.core.utils.ensure_list
@@ -195,7 +195,7 @@
 ```
 ````
 
-````{py:function} expand_dims_to_broadcast(arr1: numpy.ndarray | dask.array.core.Array, arr2: numpy.ndarray | dask.array.core.Array, match_dims: typing.Optional[tuple[tuple[int, ...], tuple[int, ...]]] = None, broadcast: bool = False) -> tuple[numpy.ndarray | dask.array.core.Array, numpy.ndarray | dask.array.core.Array]
+````{py:function} expand_dims_to_broadcast(...) -> tuple[numpy.ndarray | dask.array.core.Array, numpy.ndarray | dask.array.core.Array]
 :canonical: abtem.core.utils.expand_dims_to_broadcast
 
 ```{autodoc2-docstring} abtem.core.utils.expand_dims_to_broadcast
@@ -203,7 +203,7 @@
 ```
 ````
 
-````{py:function} flatten_list_of_lists(lst: list[list]) -> list
+````{py:function} flatten_list_of_lists(...) -> list
 :canonical: abtem.core.utils.flatten_list_of_lists
 
 ```{autodoc2-docstring} abtem.core.utils.flatten_list_of_lists
@@ -211,7 +211,7 @@
 ```
 ````
 
-````{py:function} get_data_path(file: str) -> str
+````{py:function} get_data_path(...) -> str
 :canonical: abtem.core.utils.get_data_path
 
 ```{autodoc2-docstring} abtem.core.utils.get_data_path
@@ -219,7 +219,7 @@
 ```
 ````
 
-````{py:function} get_dtype(complex: bool = False) -> numpy.dtype
+````{py:function} get_dtype(...) -> numpy.dtype
 :canonical: abtem.core.utils.get_dtype
 
 ```{autodoc2-docstring} abtem.core.utils.get_dtype
@@ -227,7 +227,7 @@
 ```
 ````
 
-````{py:function} insert_empty_axis(match_axis1, match_axis2)
+````{py:function} insert_empty_axis(...)
 :canonical: abtem.core.utils.insert_empty_axis
 
 ```{autodoc2-docstring} abtem.core.utils.insert_empty_axis
@@ -235,7 +235,7 @@
 ```
 ````
 
-````{py:function} interleave(l1: list | tuple, l2: list | tuple) -> list | tuple
+````{py:function} interleave(...) -> list | tuple
 :canonical: abtem.core.utils.interleave
 
 ```{autodoc2-docstring} abtem.core.utils.interleave
@@ -243,7 +243,7 @@
 ```
 ````
 
-````{py:function} is_broadcastable(*shapes: tuple[int, ...]) -> bool | tuple[int, ...]
+````{py:function} is_broadcastable(...) -> bool | tuple[int, ...]
 :canonical: abtem.core.utils.is_broadcastable
 
 ```{autodoc2-docstring} abtem.core.utils.is_broadcastable
@@ -251,7 +251,7 @@
 ```
 ````
 
-````{py:function} is_scalar(value) -> typing.TypeGuard[float | int | numpy.floating | numpy.integer]
+````{py:function} is_scalar(...) -> typing.TypeGuard[float | int | numpy.floating | numpy.integer]
 :canonical: abtem.core.utils.is_scalar
 
 ```{autodoc2-docstring} abtem.core.utils.is_scalar
@@ -259,7 +259,7 @@
 ```
 ````
 
-````{py:function} itemset(arr: numpy.ndarray, args: int | slice | typing.Sequence[int], item: typing.Any) -> None
+````{py:function} itemset(...) -> None
 :canonical: abtem.core.utils.itemset
 
 ```{autodoc2-docstring} abtem.core.utils.itemset
@@ -267,7 +267,7 @@
 ```
 ````
 
-````{py:function} label_to_index(labels: numpy.ndarray, max_label: typing.Optional[int] = None, min_label: int = 0)
+````{py:function} label_to_index(...)
 :canonical: abtem.core.utils.label_to_index
 
 ```{autodoc2-docstring} abtem.core.utils.label_to_index
@@ -275,7 +275,7 @@
 ```
 ````
 
-````{py:function} normalize_axes(axes: tuple[int, ...] | int, shape: tuple[int, ...]) -> tuple[int, ...]
+````{py:function} normalize_axes(...) -> tuple[int, ...]
 :canonical: abtem.core.utils.normalize_axes
 
 ```{autodoc2-docstring} abtem.core.utils.normalize_axes
@@ -283,7 +283,7 @@
 ```
 ````
 
-````{py:function} number_to_tuple(value: abtem.core.utils.T | tuple[abtem.core.utils.T, ...], dimension: typing.Optional[int] = None) -> tuple[abtem.core.utils.T, ...]
+````{py:function} number_to_tuple(...) -> tuple[abtem.core.utils.T, ...]
 :canonical: abtem.core.utils.number_to_tuple
 
 ```{autodoc2-docstring} abtem.core.utils.number_to_tuple
@@ -291,7 +291,7 @@
 ```
 ````
 
-````{py:function} safe_ceiling_int(n: float, tol: int = 7) -> int
+````{py:function} safe_ceiling_int(...) -> int
 :canonical: abtem.core.utils.safe_ceiling_int
 
 ```{autodoc2-docstring} abtem.core.utils.safe_ceiling_int
@@ -299,7 +299,7 @@
 ```
 ````
 
-````{py:function} safe_equality(a, b, exclude: tuple[str, ...] = ()) -> bool
+````{py:function} safe_equality(...) -> bool
 :canonical: abtem.core.utils.safe_equality
 
 ```{autodoc2-docstring} abtem.core.utils.safe_equality
@@ -307,7 +307,7 @@
 ```
 ````
 
-````{py:function} safe_floor_int(n: float, tol: int = 7) -> int
+````{py:function} safe_floor_int(...) -> int
 :canonical: abtem.core.utils.safe_floor_int
 
 ```{autodoc2-docstring} abtem.core.utils.safe_floor_int
@@ -315,7 +315,7 @@
 ```
 ````
 
-````{py:function} tuple_range(length: int, offset: int = 0) -> tuple[int, ...]
+````{py:function} tuple_range(...) -> tuple[int, ...]
 :canonical: abtem.core.utils.tuple_range
 
 ```{autodoc2-docstring} abtem.core.utils.tuple_range

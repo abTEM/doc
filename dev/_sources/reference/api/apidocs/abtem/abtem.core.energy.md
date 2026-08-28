@@ -76,7 +76,7 @@
 
 ### API
 
-`````{py:class} Accelerator(energy: typing.Optional[float] = None, lock_energy: bool = False)
+`````{py:class} Accelerator(...)
 :canonical: abtem.core.energy.Accelerator
 
 Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyMixin`
@@ -101,7 +101,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 
 ````
 
-````{py:method} check_match(other: abtem.core.energy.Accelerator | abtem.core.energy.HasAcceleratorMixin)
+````{py:method} check_match(...)
 :canonical: abtem.core.energy.Accelerator.check_match
 
 ```{autodoc2-docstring} abtem.core.energy.Accelerator.check_match
@@ -120,7 +120,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 
 ````
 
-````{py:method} match(other: abtem.core.energy.Accelerator | abtem.core.energy.HasAcceleratorMixin, check_match: bool = False)
+````{py:method} match(...)
 :canonical: abtem.core.energy.Accelerator.match
 
 ```{autodoc2-docstring} abtem.core.energy.Accelerator.match
@@ -219,7 +219,7 @@ Bases: {py:obj}`Exception`
 
 ````
 
-````{py:function} energy2mass(energy: float) -> float
+````{py:function} energy2mass(...) -> float
 :canonical: abtem.core.energy.energy2mass
 
 ```{autodoc2-docstring} abtem.core.energy.energy2mass
@@ -227,7 +227,7 @@ Bases: {py:obj}`Exception`
 ```
 ````
 
-````{py:function} energy2sigma(energy: float) -> float
+````{py:function} energy2sigma(...) -> float
 :canonical: abtem.core.energy.energy2sigma
 
 ```{autodoc2-docstring} abtem.core.energy.energy2sigma
@@ -235,7 +235,7 @@ Bases: {py:obj}`Exception`
 ```
 ````
 
-````{py:function} energy2wavelength(energy: float) -> float
+````{py:function} energy2wavelength(...) -> float
 :canonical: abtem.core.energy.energy2wavelength
 
 ```{autodoc2-docstring} abtem.core.energy.energy2wavelength
@@ -243,7 +243,7 @@ Bases: {py:obj}`Exception`
 ```
 ````
 
-````{py:function} reciprocal_space_sampling_to_angular_sampling(reciprocal_space_sampling: abtem.core.energy.T, energy: float) -> abtem.core.energy.T
+````{py:function} reciprocal_space_sampling_to_angular_sampling(...) -> abtem.core.energy.T
 :canonical: abtem.core.energy.reciprocal_space_sampling_to_angular_sampling
 
 ```{autodoc2-docstring} abtem.core.energy.reciprocal_space_sampling_to_angular_sampling
@@ -251,7 +251,7 @@ Bases: {py:obj}`Exception`
 ```
 ````
 
-````{py:function} relativistic_mass_correction(energy: float) -> float
+````{py:function} relativistic_mass_correction(...) -> float
 :canonical: abtem.core.energy.relativistic_mass_correction
 
 ```{autodoc2-docstring} abtem.core.energy.relativistic_mass_correction

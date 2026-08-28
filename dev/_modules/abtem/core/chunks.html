@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -971,6 +971,225 @@
         <span class="k">yield</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span>
         <span class="n">start</span> <span class="o">=</span> <span class="n">end</span></div>
 
+
+
+<div class="viewcode-block" id="estimate_potential_chunk_size">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.chunks.html#abtem.core.chunks.estimate_potential_chunk_size">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">estimate_potential_chunk_size</span><span class="p">(</span>
+    <span class="n">gpts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Estimate the number of potential slices that fit in the memory budget.</span>
+
+<span class="sd">    ``build()`` places the entire slice dimension into a single dask chunk, so</span>
+<span class="sd">    the full potential must fit in memory at once. This function calculates how</span>
+<span class="sd">    many slices can be held simultaneously when the potential is instead built</span>
+<span class="sd">    in smaller chunks via ``generate_chunked_slices()``.</span>
+
+<span class="sd">    On GPU the per-slice cost accounts for CuPy memory pool fragmentation —</span>
+<span class="sd">    the pool may hold large contiguous blocks for live arrays (waves, probes)</span>
+<span class="sd">    that prevent new allocations even when total free bytes suffice.  The</span>
+<span class="sd">    effective per-slice cost under fragmentation is empirically ~5× the raw</span>
+<span class="sd">    slice size for scan workloads at 4096² grids.</span>
+
+<span class="sd">    On CPU there is no pool fragmentation and system RAM is typically</span>
+<span class="sd">    abundant.  The default is therefore to place the entire potential in</span>
+<span class="sd">    a single chunk (no chunking), matching pre-chunking behaviour.  Set</span>
+<span class="sd">    ``potential.slice-chunk-size`` in the configuration to a positive</span>
+<span class="sd">    integer to enable CPU chunking when memory is genuinely limited.</span>
+
+<span class="sd">    On GPU the budget uses the CUDA-reported free memory without calling</span>
+<span class="sd">    ``free_all_blocks()`` first. Dead pool blocks represent recent memory</span>
+<span class="sd">    pressure from build/propagation temporaries; leaving them gives a</span>
+<span class="sd">    conservative estimate that self-adapts as the pool fills up over</span>
+<span class="sd">    successive scan batches. Falls back to ``dask.chunk-size-gpu`` when</span>
+<span class="sd">    CuPy is unavailable.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gpts : tuple of int</span>
+<span class="sd">        The number of grid points (y, x).</span>
+<span class="sd">    device : str</span>
+<span class="sd">        The device ('cpu' or 'gpu').</span>
+<span class="sd">    dtype : np.dtype, optional</span>
+<span class="sd">        The dtype of the potential array. If None, uses float32.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        The estimated number of slices that fit in memory.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span>
+
+    <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+    <span class="n">chunk_size_key</span> <span class="o">=</span> <span class="s2">"potential.slice-chunk-size"</span>
+    <span class="n">chunk_size_setting</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">chunk_size_key</span><span class="p">,</span> <span class="s2">"auto"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">chunk_size_setting</span> <span class="o">!=</span> <span class="s2">"auto"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunk_size_setting</span><span class="p">)</span>
+
+    <span class="n">slice_bytes</span> <span class="o">=</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dtype</span><span class="o">.</span><span class="n">itemsize</span>
+
+    <span class="k">if</span> <span class="n">device</span> <span class="o">==</span> <span class="s2">"gpu"</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">cupy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cp</span>
+
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">get_default_memory_pool</span><span class="p">()</span>
+
+            <span class="c1"># Use CUDA-reported free memory without calling</span>
+            <span class="c1"># free_all_blocks() first. Dead pool blocks represent recent</span>
+            <span class="c1"># memory pressure and keep the estimate conservative, which</span>
+            <span class="c1"># is the desired behaviour as the pool fills over successive</span>
+            <span class="c1"># scan batches.</span>
+            <span class="n">free_mem</span><span class="p">,</span> <span class="n">total_mem</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Device</span><span class="p">()</span><span class="o">.</span><span class="n">mem_info</span>
+
+            <span class="c1"># Cross-check against pool live usage. This guards the rare</span>
+            <span class="c1"># case where dead blocks were released by someone else (e.g.</span>
+            <span class="c1"># cuFFT plan cache eviction), making free_mem higher than the</span>
+            <span class="c1"># live-data picture suggests.</span>
+            <span class="n">pool_used</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">used_bytes</span><span class="p">()</span>
+            <span class="n">effective_free</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">free_mem</span><span class="p">,</span> <span class="n">total_mem</span> <span class="o">-</span> <span class="n">pool_used</span><span class="p">)</span>
+
+            <span class="c1"># Per-slice cost: output array (1×) + transmission function</span>
+            <span class="c1"># (2×) + build temporaries (FFTs, Gaussian integrals) +</span>
+            <span class="c1"># propagation FFT workspace. 5× is less conservative than the</span>
+            <span class="c1"># original 8× now that the synchronous scheduler prevents</span>
+            <span class="c1"># concurrent batch execution from multiplying peak VRAM.</span>
+            <span class="c1">#</span>
+            <span class="c1"># Budget: 35 % of effective-free VRAM at computation time.</span>
+            <span class="c1"># At this point the probe batch is already resident, so</span>
+            <span class="c1"># effective_free is already reduced by the probe allocation.</span>
+            <span class="c1"># Together with the 40 % claimed by estimate_scan_batch_size</span>
+            <span class="c1"># at graph-construction time, the joint budget is</span>
+            <span class="c1"># 40 % + 35 % × (1 − probe_fraction) ≈ 73 %, leaving 27 %</span>
+            <span class="c1"># headroom.  (estimate_scan_batch_size uses effective_free too,</span>
+            <span class="c1"># so both estimates operate on the same VRAM picture.)</span>
+            <span class="n">effective_per_slice</span> <span class="o">=</span> <span class="n">slice_bytes</span> <span class="o">*</span> <span class="mi">5</span>
+            <span class="n">budget_bytes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">effective_free</span> <span class="o">*</span> <span class="mf">0.35</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+            <span class="n">effective_per_slice</span> <span class="o">=</span> <span class="n">slice_bytes</span> <span class="o">*</span> <span class="mi">5</span>
+            <span class="n">budget_bytes</span> <span class="o">=</span> <span class="n">parse_bytes</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"dask.chunk-size-gpu"</span><span class="p">,</span> <span class="s2">"512 MB"</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># On CPU, system RAM is typically abundant and there is no</span>
+        <span class="c1"># memory-pool fragmentation.  The default is therefore to place</span>
+        <span class="c1"># the entire potential in a single chunk (no chunking), matching</span>
+        <span class="c1"># the pre-chunking behaviour.  The potential.slice-chunk-size</span>
+        <span class="c1"># config key (checked above) allows an explicit override when</span>
+        <span class="c1"># memory is genuinely limited.</span>
+        <span class="k">return</span> <span class="mi">4096</span>
+
+    <span class="n">chunk_size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">budget_bytes</span> <span class="o">/</span> <span class="n">effective_per_slice</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">chunk_size</span><span class="p">,</span> <span class="mi">4096</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_nearest_power_of_two</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Round n to the nearest power of two.</span>
+
+<span class="sd">    Prefers the *upper* power when it fits within 25 % of the raw estimate</span>
+<span class="sd">    (i.e. when ``ceil_pot &lt;= n * 1.25``).  This lets the auto-sizing snap</span>
+<span class="sd">    to GPU-friendly batch sizes (8, 16, 32, 64 …) without meaningfully</span>
+<span class="sd">    exceeding the VRAM budget, since the raw estimate already uses only</span>
+<span class="sd">    50 % of free VRAM as headroom.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    59 → 64  (int(59 * 1.25) = 73;  64 ≤ 73,  use upper)</span>
+<span class="sd">    14 → 16  (int(14 * 1.25) = 17;  16 ≤ 17,  use upper)</span>
+<span class="sd">    20 → 16  (int(20 * 1.25) = 25;  32 &gt; 25,  use lower)</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    <span class="n">floor_pot</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">bit_length</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>   <span class="c1"># largest power of two ≤ n</span>
+    <span class="n">ceil_pot</span> <span class="o">=</span> <span class="n">floor_pot</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span>                <span class="c1"># smallest power of two ≥ n</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="n">floor_pot</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">n</span>                             <span class="c1"># already a power of two</span>
+    <span class="k">if</span> <span class="n">ceil_pot</span> <span class="o">&lt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="mf">1.25</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ceil_pot</span>
+    <span class="k">return</span> <span class="n">floor_pot</span>
+
+
+<div class="viewcode-block" id="estimate_scan_batch_size">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.chunks.html#abtem.core.chunks.estimate_scan_batch_size">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">estimate_scan_batch_size</span><span class="p">(</span>
+    <span class="n">gpts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">dtype</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Estimate the maximum number of probe wavefunctions per scan batch.</span>
+
+<span class="sd">    For GPU, queries free CUDA memory at graph-construction time and</span>
+<span class="sd">    allocates up to half of it for probe wavefunctions. This is</span>
+<span class="sd">    intentionally generous because ``estimate_potential_chunk_size`` is</span>
+<span class="sd">    called at *computation* time (inside ``generate_chunked_slices``) when</span>
+<span class="sd">    the probe batch is already resident in VRAM; it therefore sees the</span>
+<span class="sd">    reduced free memory and sizes the potential chunk to fit in what</span>
+<span class="sd">    remains. The two estimates are thus naturally coordinated without</span>
+<span class="sd">    requiring explicit cross-referencing.</span>
+
+<span class="sd">    The raw estimate is rounded to the nearest power of two (preferring</span>
+<span class="sd">    the upper power when within 25 % headroom) so that batch sizes snap</span>
+<span class="sd">    to GPU-friendly values such as 8, 16, 32, 64.</span>
+
+<span class="sd">    For CPU, falls back to the ``dask.chunk-size`` configuration key.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gpts : tuple of int</span>
+<span class="sd">        Spatial grid size ``(ny, nx)`` of each probe wavefunction.</span>
+<span class="sd">    dtype : dtype-like</span>
+<span class="sd">        Wavefunction dtype (typically ``complex64``).</span>
+<span class="sd">    device : str</span>
+<span class="sd">        ``"gpu"`` or ``"cpu"``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        Maximum number of probe wavefunctions per batch (≥ 1).</span>
+<span class="sd">    """</span>
+    <span class="n">per_probe_bytes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">gpts</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">itemsize</span>
+
+    <span class="k">if</span> <span class="n">device</span> <span class="o">==</span> <span class="s2">"gpu"</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">cupy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cp</span>
+
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">get_default_memory_pool</span><span class="p">()</span>
+            <span class="n">free_mem</span><span class="p">,</span> <span class="n">total_mem</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Device</span><span class="p">()</span><span class="o">.</span><span class="n">mem_info</span>
+            <span class="n">pool_used</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">used_bytes</span><span class="p">()</span>
+            <span class="c1"># Use the same effective-free formula as estimate_potential_chunk_size</span>
+            <span class="c1"># so both estimates operate on a consistent VRAM picture.  Dead pool</span>
+            <span class="c1"># blocks (cached but not live) are included in free_mem by CUDA, but</span>
+            <span class="c1"># total_mem - pool_used excludes them; taking the min is conservative.</span>
+            <span class="n">effective_free</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">free_mem</span><span class="p">,</span> <span class="n">total_mem</span> <span class="o">-</span> <span class="n">pool_used</span><span class="p">)</span>
+
+            <span class="c1"># Allocate up to 50 % of effective VRAM for probe-batch overhead.</span>
+            <span class="c1"># A 6× overhead factor accounts for transient copies during</span>
+            <span class="c1"># transmission-function multiply, FFT workspaces, and cuFFT plan</span>
+            <span class="c1"># buffers.  Empirically: 4096² uses ~756 MB/probe (5.6× raw</span>
+            <span class="c1"># wavefunction), 2048² uses ~147 MB/probe (4.4×).</span>
+            <span class="c1">#</span>
+            <span class="c1"># estimate_potential_chunk_size runs at *computation* time, when</span>
+            <span class="c1"># the probe batch is already resident; it sees the reduced free</span>
+            <span class="c1"># memory and sizes the potential chunk to fit in what remains.</span>
+            <span class="c1"># Both functions now use the same pool-aware effective_free so</span>
+            <span class="c1"># the two estimates operate on a consistent VRAM picture.</span>
+            <span class="n">probe_budget</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">effective_free</span> <span class="o">*</span> <span class="mf">0.50</span><span class="p">)</span>
+            <span class="n">per_probe_effective</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">per_probe_bytes</span> <span class="o">*</span> <span class="mi">6</span><span class="p">))</span>
+            <span class="n">n_probes</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">probe_budget</span> <span class="o">//</span> <span class="n">per_probe_effective</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_nearest_power_of_two</span><span class="p">(</span><span class="n">n_probes</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+            <span class="n">chunk_bytes</span> <span class="o">=</span> <span class="n">parse_bytes</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"dask.chunk-size-gpu"</span><span class="p">,</span> <span class="s2">"512 MB"</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">chunk_bytes</span> <span class="o">=</span> <span class="n">parse_bytes</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"dask.chunk-size"</span><span class="p">,</span> <span class="s2">"128 MB"</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">chunk_bytes</span> <span class="o">//</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">per_probe_bytes</span><span class="p">))</span></div>
+
 </pre></div>
 
                 </article>
@@ -1012,7 +1231,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

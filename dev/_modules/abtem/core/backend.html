@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -578,6 +578,100 @@
 
 
 
+<span class="n">_cuda_cluster_client</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="ensure_cuda_cluster">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.backend.html#abtem.core.backend.ensure_cuda_cluster">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ensure_cuda_cluster</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Start a dask-cuda cluster spanning all visible GPUs and return its client.</span>
+
+<span class="sd">    The cluster assigns one worker process to each GPU, allowing dask to distribute</span>
+<span class="sd">    computations across all of them. It is created once per process and reused on</span>
+<span class="sd">    subsequent calls. Requires the optional dask-cuda package.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    distributed.Client</span>
+<span class="sd">        The client connected to the dask-cuda cluster.</span>
+<span class="sd">    """</span>
+    <span class="k">global</span> <span class="n">_cuda_cluster_client</span>
+
+    <span class="k">if</span> <span class="n">_cuda_cluster_client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_cuda_cluster_client</span><span class="p">,</span> <span class="s2">"status"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"running"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_cuda_cluster_client</span>
+        <span class="c1"># The previous cluster was shut down; discard it and start a new one.</span>
+        <span class="n">_cuda_cluster_client</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">dask_cuda</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocalCUDACluster</span>  <span class="c1"># type: ignore</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">"The dask-cuda package is required to distribute computations across "</span>
+            <span class="s2">"multiple GPUs. Please install it (see "</span>
+            <span class="s2">"https://docs.rapids.ai/api/dask-cuda/stable/install/), or set the "</span>
+            <span class="s2">"configuration option 'dask.multi-gpu' to false."</span>
+        <span class="p">)</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">distributed</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+
+    <span class="c1"># Cap each worker's memory to a share of the cgroup/job limit so a</span>
+    <span class="c1"># memory-constrained allocation (e.g. a Slurm cgroup) spills instead of being</span>
+    <span class="c1"># OOM-killed. dask-cuda otherwise sizes workers from the node total, which</span>
+    <span class="c1"># over-commits when the cgroup grants less than the node has.</span>
+    <span class="n">cluster_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">distributed.system</span><span class="w"> </span><span class="kn">import</span> <span class="n">MEMORY_LIMIT</span>
+
+        <span class="n">n_gpus</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">getDeviceCount</span><span class="p">()</span> <span class="k">if</span> <span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">n_gpus</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cluster_kwargs</span><span class="p">[</span><span class="s2">"memory_limit"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.85</span> <span class="o">*</span> <span class="n">MEMORY_LIMIT</span> <span class="o">/</span> <span class="n">n_gpus</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># noqa: BLE001 -- fall back to dask-cuda's default sizing</span>
+        <span class="k">pass</span>
+
+    <span class="n">_cuda_cluster_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">LocalCUDACluster</span><span class="p">(</span><span class="o">**</span><span class="n">cluster_kwargs</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">_cuda_cluster_client</span></div>
+
+
+
+<div class="viewcode-block" id="is_gpu_dask_client">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.backend.html#abtem.core.backend.is_gpu_dask_client">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_gpu_dask_client</span><span class="p">(</span><span class="n">client</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Check whether a distributed client can safely execute CuPy computations.</span>
+
+<span class="sd">    Only a client whose workers are each single-threaded — as produced by</span>
+<span class="sd">    ``dask_cuda.LocalCUDACluster``, which additionally pins one GPU per worker — is</span>
+<span class="sd">    considered suitable. The threaded scheduler and multi-threaded workers share a</span>
+<span class="sd">    single CUDA context per process, which cannot be used with CuPy.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    client : distributed.Client or None</span>
+<span class="sd">        The client to check.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if the client is running and all of its workers are single-threaded.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">client</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="s2">"status"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">"running"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">nthreads</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">nthreads</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">nthreads</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">n</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nthreads</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
+
+
+
 <div class="viewcode-block" id="validate_device">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.backend.html#abtem.core.backend.validate_device">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">validate_device</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -858,7 +952,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

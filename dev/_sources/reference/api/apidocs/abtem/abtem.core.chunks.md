@@ -36,6 +36,16 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`estimate_potential_chunk_size <abtem.core.chunks.estimate_potential_chunk_size>`
+  - ```{autodoc2-docstring} abtem.core.chunks.estimate_potential_chunk_size
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`estimate_scan_batch_size <abtem.core.chunks.estimate_scan_batch_size>`
+  - ```{autodoc2-docstring} abtem.core.chunks.estimate_scan_batch_size
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`fill_in_chunk_sizes <abtem.core.chunks.fill_in_chunk_sizes>`
   - ```{autodoc2-docstring} abtem.core.chunks.fill_in_chunk_sizes
     :parser: rst
@@ -141,7 +151,7 @@
 
 ````
 
-````{py:function} assert_chunks_match_shape(shape: tuple[int, ...], chunks: abtem.core.chunks.ValidatedChunks) -> None
+````{py:function} assert_chunks_match_shape(...) -> None
 :canonical: abtem.core.chunks.assert_chunks_match_shape
 
 ```{autodoc2-docstring} abtem.core.chunks.assert_chunks_match_shape
@@ -149,7 +159,7 @@
 ```
 ````
 
-````{py:function} check_chunks_match_shape_length(shape: tuple[int, ...], chunks: abtem.core.chunks.Chunks) -> None
+````{py:function} check_chunks_match_shape_length(...) -> None
 :canonical: abtem.core.chunks.check_chunks_match_shape_length
 
 ```{autodoc2-docstring} abtem.core.chunks.check_chunks_match_shape_length
@@ -157,7 +167,7 @@
 ```
 ````
 
-````{py:function} chunk_ranges(chunks: abtem.core.chunks.ValidatedChunks) -> tuple[tuple[tuple[int, int], ...], ...]
+````{py:function} chunk_ranges(...) -> tuple[tuple[tuple[int, int], ...], ...]
 :canonical: abtem.core.chunks.chunk_ranges
 
 ```{autodoc2-docstring} abtem.core.chunks.chunk_ranges
@@ -165,7 +175,7 @@
 ```
 ````
 
-````{py:function} equal_sized_chunks(num_items: int, num_chunks: typing.Optional[int] = None, chunk_size: typing.Optional[int] = None) -> tuple[int, ...]
+````{py:function} equal_sized_chunks(...) -> tuple[int, ...]
 :canonical: abtem.core.chunks.equal_sized_chunks
 
 ```{autodoc2-docstring} abtem.core.chunks.equal_sized_chunks
@@ -173,7 +183,23 @@
 ```
 ````
 
-````{py:function} fill_in_chunk_sizes(shape: tuple[int, ...], chunks: tuple[int | tuple[int, ...], ...]) -> abtem.core.chunks.ValidatedChunks
+````{py:function} estimate_potential_chunk_size(...) -> int
+:canonical: abtem.core.chunks.estimate_potential_chunk_size
+
+```{autodoc2-docstring} abtem.core.chunks.estimate_potential_chunk_size
+:parser: rst
+```
+````
+
+````{py:function} estimate_scan_batch_size(...) -> int
+:canonical: abtem.core.chunks.estimate_scan_batch_size
+
+```{autodoc2-docstring} abtem.core.chunks.estimate_scan_batch_size
+:parser: rst
+```
+````
+
+````{py:function} fill_in_chunk_sizes(...) -> abtem.core.chunks.ValidatedChunks
 :canonical: abtem.core.chunks.fill_in_chunk_sizes
 
 ```{autodoc2-docstring} abtem.core.chunks.fill_in_chunk_sizes
@@ -181,7 +207,7 @@
 ```
 ````
 
-````{py:function} generate_chunks(num_items: int, num_chunks: typing.Optional[int] = None, chunks: typing.Optional[int] = None, start: int = 0) -> typing.Generator[tuple[int, int], None, None]
+````{py:function} generate_chunks(...) -> typing.Generator[tuple[int, int], None, None]
 :canonical: abtem.core.chunks.generate_chunks
 
 ```{autodoc2-docstring} abtem.core.chunks.generate_chunks
@@ -189,7 +215,7 @@
 ```
 ````
 
-````{py:function} is_tuple_of_ints(x: abtem.core.chunks.Chunks) -> typing.TypeGuard[tuple[int, ...]]
+````{py:function} is_tuple_of_ints(...) -> typing.TypeGuard[tuple[int, ...]]
 :canonical: abtem.core.chunks.is_tuple_of_ints
 
 ```{autodoc2-docstring} abtem.core.chunks.is_tuple_of_ints
@@ -197,7 +223,7 @@
 ```
 ````
 
-````{py:function} is_tuple_of_ints_or_tuple_of_ints(x: abtem.core.chunks.Chunks) -> typing.TypeGuard[tuple[tuple[int, ...], ...]]
+````{py:function} is_tuple_of_ints_or_tuple_of_ints(...) -> typing.TypeGuard[tuple[tuple[int, ...], ...]]
 :canonical: abtem.core.chunks.is_tuple_of_ints_or_tuple_of_ints
 
 ```{autodoc2-docstring} abtem.core.chunks.is_tuple_of_ints_or_tuple_of_ints
@@ -205,7 +231,7 @@
 ```
 ````
 
-````{py:function} is_tuple_of_ints_or_tuple_of_tuple_of_ints(x: abtem.core.chunks.Chunks) -> typing.TypeGuard[tuple[int | tuple[int, ...], ...]]
+````{py:function} is_tuple_of_ints_or_tuple_of_tuple_of_ints(...) -> typing.TypeGuard[tuple[int | tuple[int, ...], ...]]
 :canonical: abtem.core.chunks.is_tuple_of_ints_or_tuple_of_tuple_of_ints
 
 ```{autodoc2-docstring} abtem.core.chunks.is_tuple_of_ints_or_tuple_of_tuple_of_ints
@@ -213,7 +239,7 @@
 ```
 ````
 
-````{py:function} is_tuple_of_tuple_of_ints(x: abtem.core.chunks.Chunks) -> typing.TypeGuard[tuple[tuple[int, ...], ...]]
+````{py:function} is_tuple_of_tuple_of_ints(...) -> typing.TypeGuard[tuple[tuple[int, ...], ...]]
 :canonical: abtem.core.chunks.is_tuple_of_tuple_of_ints
 
 ```{autodoc2-docstring} abtem.core.chunks.is_tuple_of_tuple_of_ints
@@ -221,7 +247,7 @@
 ```
 ````
 
-````{py:function} is_validated_chunks(x: abtem.core.chunks.Chunks) -> typing.TypeGuard[abtem.core.chunks.ValidatedChunks]
+````{py:function} is_validated_chunks(...) -> typing.TypeGuard[abtem.core.chunks.ValidatedChunks]
 :canonical: abtem.core.chunks.is_validated_chunks
 
 ```{autodoc2-docstring} abtem.core.chunks.is_validated_chunks
@@ -229,7 +255,7 @@
 ```
 ````
 
-````{py:function} iterate_chunk_ranges(chunks: abtem.core.chunks.ValidatedChunks)
+````{py:function} iterate_chunk_ranges(...)
 :canonical: abtem.core.chunks.iterate_chunk_ranges
 
 ```{autodoc2-docstring} abtem.core.chunks.iterate_chunk_ranges
@@ -237,7 +263,7 @@
 ```
 ````
 
-````{py:function} validate_chunks(shape: tuple[int, ...], chunks: abtem.core.chunks.Chunks, max_elements: int | str = 'auto', dtype: typing.Optional[numpy.dtype] = None, device: str = 'cpu') -> abtem.core.chunks.ValidatedChunks
+````{py:function} validate_chunks(...) -> abtem.core.chunks.ValidatedChunks
 :canonical: abtem.core.chunks.validate_chunks
 
 ```{autodoc2-docstring} abtem.core.chunks.validate_chunks

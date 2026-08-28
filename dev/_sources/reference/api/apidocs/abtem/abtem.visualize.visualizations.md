@@ -48,7 +48,7 @@
 
 ### API
 
-`````{py:class} Visualization(measurement, ax: matplotlib.axes.Axes = None, artist_type=None, figsize: tuple[int, int] = None, aspect: bool = False, common_scale: bool = False, value_limits: tuple[float, float] = (None, None), overlay: bool | tuple[int, ...] = False, explode: bool | tuple[int, ...] = False, share_x: bool = False, share_y: bool = False, cbar: bool = False, interactive: bool = True, title: str = None, xlim: tuple[float, float] = None, ylim: tuple[float, float] = None, convert_complex: str = 'none', **kwargs)
+`````{py:class} Visualization(...)
 :canonical: abtem.visualize.visualizations.Visualization
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization
@@ -62,7 +62,7 @@
 :parser: rst
 ```
 
-````{py:method} adjust_coordinate_limits_to_artists(xlim=None, ylim=None)
+````{py:method} adjust_coordinate_limits_to_artists(...)
 :canonical: abtem.visualize.visualizations.Visualization.adjust_coordinate_limits_to_artists
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.adjust_coordinate_limits_to_artists
@@ -98,7 +98,7 @@
 
 ````
 
-````{py:method} axis(mode: str = 'all', ticks: bool = False, spines: bool = True)
+````{py:method} axis(...)
 :canonical: abtem.visualize.visualizations.Visualization.axis
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.axis
@@ -134,7 +134,7 @@
 
 ````
 
-````{py:method} interact(gui_type, display)
+````{py:method} interact(...)
 :canonical: abtem.visualize.visualizations.Visualization.interact
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.interact
@@ -162,7 +162,7 @@
 
 ````
 
-````{py:method} set_artists(name, locs: str | tuple[int, ...] = 'all', **kwargs)
+````{py:method} set_artists(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_artists
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_artists
@@ -171,7 +171,7 @@
 
 ````
 
-````{py:method} set_cbars(**kwargs)
+````{py:method} set_cbars(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_cbars
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_cbars
@@ -180,7 +180,7 @@
 
 ````
 
-````{py:method} set_cmap(cmap)
+````{py:method} set_cmap(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_cmap
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_cmap
@@ -189,7 +189,7 @@
 
 ````
 
-````{py:method} set_column_titles(titles: str | list[str], pad: float = 10.0, fontsize: float = 12, **kwargs)
+````{py:method} set_column_titles(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_column_titles
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_column_titles
@@ -198,7 +198,7 @@
 
 ````
 
-````{py:method} set_common_value_limits(value_limits=(None, None))
+````{py:method} set_common_value_limits(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_common_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_common_value_limits
@@ -207,7 +207,7 @@
 
 ````
 
-````{py:method} set_complex_conversion(complex_conversion: str)
+````{py:method} set_complex_conversion(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_complex_conversion
 :abstractmethod:
 
@@ -217,7 +217,7 @@
 
 ````
 
-````{py:method} set_legend(**kwargs)
+````{py:method} set_legend(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_legend
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_legend
@@ -226,7 +226,7 @@
 
 ````
 
-````{py:method} set_logscale(logscale: bool = False)
+````{py:method} set_logscale(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_logscale
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_logscale
@@ -235,7 +235,7 @@
 
 ````
 
-````{py:method} set_power(power: float = 1.0)
+````{py:method} set_power(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_power
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_power
@@ -244,7 +244,7 @@
 
 ````
 
-````{py:method} set_row_titles(titles: str | list[str], shift: float = 0.0, fontsize: float = 12, **kwargs)
+````{py:method} set_row_titles(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_row_titles
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_row_titles
@@ -253,7 +253,7 @@
 
 ````
 
-````{py:method} set_scale_bars(locs: str = 'lower right', **kwargs)
+````{py:method} set_scale_bars(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_scale_bars
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_scale_bars
@@ -262,7 +262,7 @@
 
 ````
 
-````{py:method} set_value_limits(value_limits: tuple[float, float] | list[float] = (None, None))
+````{py:method} set_value_limits(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_value_limits
@@ -271,7 +271,7 @@
 
 ````
 
-````{py:method} set_xlabel(label: str = None)
+````{py:method} set_xlabel(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_xlabel
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_xlabel
@@ -280,7 +280,7 @@
 
 ````
 
-````{py:method} set_xlim(xlim: tuple[float, float] | list[float] = None)
+````{py:method} set_xlim(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_xlim
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_xlim
@@ -289,7 +289,7 @@
 
 ````
 
-````{py:method} set_ylabel(label: str = None)
+````{py:method} set_ylabel(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_ylabel
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_ylabel
@@ -298,7 +298,7 @@
 
 ````
 
-````{py:method} set_ylim(ylim: tuple[float, float] | list[float] = None)
+````{py:method} set_ylim(...)
 :canonical: abtem.visualize.visualizations.Visualization.set_ylim
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.set_ylim
@@ -307,7 +307,7 @@
 
 ````
 
-````{py:method} update_data_indices(indices)
+````{py:method} update_data_indices(...)
 :canonical: abtem.visualize.visualizations.Visualization.update_data_indices
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.Visualization.update_data_indices
@@ -318,7 +318,7 @@
 
 `````
 
-````{py:function} convert_complex(measurement: abtem.measurements.BaseMeasurements, method: str) -> abtem.measurements.BaseMeasurements
+````{py:function} convert_complex(...) -> abtem.measurements.BaseMeasurements
 :canonical: abtem.visualize.visualizations.convert_complex
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.convert_complex
@@ -326,7 +326,7 @@
 ```
 ````
 
-````{py:function} discrete_cmap(num_colors, base_cmap)
+````{py:function} discrete_cmap(...)
 :canonical: abtem.visualize.visualizations.discrete_cmap
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.discrete_cmap
@@ -334,7 +334,7 @@
 ```
 ````
 
-````{py:function} show_atoms(atoms: ase.Atoms, plane: tuple[float, float] | str = 'xy', ax: matplotlib.axes.Axes = None, scale: float = 0.75, title: str = None, numbering: bool = False, show_periodic: bool = False, figsize: tuple[float, float] = None, legend: bool = False, merge: float = 0.01, tight_limits: bool = False, show_cell: bool = None, **kwargs)
+````{py:function} show_atoms(...)
 :canonical: abtem.visualize.visualizations.show_atoms
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.show_atoms

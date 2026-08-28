@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -523,6 +523,7 @@
   <h1>Source code for abtem.magnetism.gpaw</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">replace</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">runtime_checkable</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -541,7 +542,8 @@
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.magnetism.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">bohr_magneton</span><span class="p">,</span> <span class="n">vacuum_permeability</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.charge_density</span><span class="w"> </span><span class="kn">import</span> <span class="n">curl_fourier</span><span class="p">,</span> <span class="n">integrate_gradient_fourier</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.iam</span><span class="w"> </span><span class="kn">import</span> <span class="n">_FieldBuilder</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.gpaw</span><span class="w"> </span><span class="kn">import</span> <span class="n">GPAWPotential</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.iam</span><span class="w"> </span><span class="kn">import</span> <span class="n">PotentialArray</span><span class="p">,</span> <span class="n">_FieldBuilder</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_non_periodic_magnetic_vector_potential</span><span class="p">():</span>
@@ -555,6 +557,17 @@
     <span class="c1"># B_avg = mu_0 * M</span>
     <span class="k">pass</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_apply_rotation_matrix</span><span class="p">(</span>
+    <span class="n">vector_field</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">vector_field</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">vector_field_reshaped</span> <span class="o">=</span> <span class="n">vector_field</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">rotated_field_reshaped</span> <span class="o">=</span> <span class="n">rotation_matrix</span> <span class="o">@</span> <span class="n">vector_field_reshaped</span>
+
+    <span class="k">return</span> <span class="n">rotated_field_reshaped</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,)</span> <span class="o">+</span> <span class="n">shape</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="rotate_vector_field">
@@ -577,17 +590,8 @@
 <span class="sd">    rotated_field : np.ndarray</span>
 <span class="sd">        Rotated 3D vector field.</span>
 <span class="sd">    """</span>
-    <span class="n">rotation</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s2">"xyz"</span><span class="p">,</span> <span class="n">euler_angles</span><span class="p">)</span>
-    <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">rotation</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
-
-    <span class="n">shape</span> <span class="o">=</span> <span class="n">vector_field</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-    <span class="n">vector_field_reshaped</span> <span class="o">=</span> <span class="n">vector_field</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="n">rotated_field_reshaped</span> <span class="o">=</span> <span class="n">rotation_matrix</span> <span class="o">@</span> <span class="n">vector_field_reshaped</span>
-
-    <span class="n">rotated_field</span> <span class="o">=</span> <span class="n">rotated_field_reshaped</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,)</span> <span class="o">+</span> <span class="n">shape</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">rotated_field</span></div>
+    <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s2">"xyz"</span><span class="p">,</span> <span class="n">euler_angles</span><span class="p">)</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">_apply_rotation_matrix</span><span class="p">(</span><span class="n">vector_field</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">)</span></div>
 
 
 
@@ -627,6 +631,63 @@
 
 
 
+<span class="c1">#: Sentinel default for `rotate_field`: automatically rotate the</span>
+<span class="c1">#: largest-magnitude in-plane component into z (see</span>
+<span class="c1">#: `_auto_rotation_matrix_for_vector_field`). Pass an explicit Euler-angle</span>
+<span class="c1">#: tuple to pick a specific orientation, or `None` to disable rotation and</span>
+<span class="c1">#: see the raw (Az == 0) output.</span>
+<span class="n">_AUTO_ROTATE_FIELD</span> <span class="o">=</span> <span class="s2">"auto"</span>
+
+<span class="c1">#: Swaps x into z: (Ax, Ay, 0) -&gt; (0, Ay, -Ax). Euler angles (0, pi/2, 0).</span>
+<span class="n">_ROTATION_X_INTO_Z</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s2">"xyz"</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+
+<span class="c1">#: Swaps y into z: (Ax, Ay, 0) -&gt; (Ax, 0, Ay). Euler angles (pi/2, 0, 0).</span>
+<span class="n">_ROTATION_Y_INTO_Z</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s2">"xyz"</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_auto_rotation_matrix_for_vector_field</span><span class="p">(</span><span class="n">vector_field</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Rotation matrix that swaps whichever of the in-plane (x, y) components</span>
+<span class="sd">    of `vector_field` has the larger aggregate magnitude into z.</span>
+
+<span class="sd">    `calculate_magnetic_vector_potential` always builds the magnetization as</span>
+<span class="sd">    m = (0, 0, rho): collinear spin has no real-space direction, so GPAW's</span>
+<span class="sd">    internal spin axis is arbitrary. Because curl(m) and the subsequent</span>
+<span class="sd">    Poisson solve are applied component-wise, this makes the z-component of</span>
+<span class="sd">    `vector_field` (and hence the only component `adjust_coulomb_potential`</span>
+<span class="sd">    uses) identically zero for every collinear calculation, not just some.</span>
+
+<span class="sd">    Only the two 90-degree swaps (x into z, or y into z) are considered,</span>
+<span class="sd">    not an arbitrary in-plane rotation angle: x, y and z are the only</span>
+<span class="sd">    directions with a physical meaning here (the orthogonal axes of the</span>
+<span class="sd">    simulation cell), so a continuous "optimal" blend of Ax and Ay has no</span>
+<span class="sd">    real-space interpretation as a magnetization direction -- it would just</span>
+<span class="sd">    fit whatever numerical asymmetry happens to be in the grid.</span>
+<span class="sd">    """</span>
+    <span class="n">Ax</span> <span class="o">=</span> <span class="n">vector_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">Ay</span> <span class="o">=</span> <span class="n">vector_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">Sxx</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Ax</span> <span class="o">*</span> <span class="n">Ax</span><span class="p">))</span>
+    <span class="n">Syy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Ay</span> <span class="o">*</span> <span class="n">Ay</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">_ROTATION_X_INTO_Z</span> <span class="k">if</span> <span class="n">Sxx</span> <span class="o">&gt;=</span> <span class="n">Syy</span> <span class="k">else</span> <span class="n">_ROTATION_Y_INTO_Z</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_unsupported_ensemble_params</span><span class="p">(</span><span class="n">frozen_phonons</span><span class="p">,</span> <span class="n">repetitions</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">frozen_phonons</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">"frozen_phonons is not supported for magnetic fields/vector "</span>
+            <span class="s2">"potentials; build the field from a single calculator and combine "</span>
+            <span class="s2">"it with an electrostatic FrozenPhonons ensemble instead."</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">repetitions</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">"repetitions is not supported for magnetic fields/vector "</span>
+            <span class="s2">"potentials; build the field for a single unit cell and call "</span>
+            <span class="s2">".tile() on the resulting array instead."</span>
+        <span class="p">)</span>
+
+
 <div class="viewcode-block" id="GPAW">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.magnetism.gpaw.html#abtem.magnetism.gpaw.GPAW">[docs]</a>
 <span class="nd">@runtime_checkable</span>
@@ -655,7 +716,7 @@
         <span class="n">slice_thickness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">exit_planes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">plane</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"xy"</span><span class="p">,</span>
-        <span class="n">rotate_field</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rotate_field</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_AUTO_ROTATE_FIELD</span><span class="p">,</span>
         <span class="n">origin</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
         <span class="n">box</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">periodic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -667,6 +728,8 @@
     <span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">assume_colinear</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Non-collinear calculations not supported."</span><span class="p">)</span>
+
+        <span class="n">_check_unsupported_ensemble_params</span><span class="p">(</span><span class="n">frozen_phonons</span><span class="p">,</span> <span class="n">repetitions</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">gridrefinement</span> <span class="o">=</span> <span class="n">gridrefinement</span>
 
@@ -730,24 +793,31 @@
         <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">last_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_slices</span>
 
+        <span class="n">vector_potential</span> <span class="o">=</span> <span class="n">get_vector_potential_from_gpaw</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_calculators</span><span class="p">,</span> <span class="n">gridrefinement</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gridrefinement</span>
+        <span class="p">)</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quantity</span> <span class="o">==</span> <span class="s2">"vector_potential"</span><span class="p">:</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">get_vector_potential_from_gpaw</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_calculators</span><span class="p">,</span> <span class="n">gridrefinement</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gridrefinement</span>
-            <span class="p">)</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">vector_potential</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quantity</span> <span class="o">==</span> <span class="s2">"magnetic_field"</span><span class="p">:</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">get_magnetic_field_from_gpaw</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_calculators</span><span class="p">,</span> <span class="n">gridrefinement</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gridrefinement</span>
-            <span class="p">)</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">curl_fourier</span><span class="p">(</span><span class="n">vector_potential</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculators</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown quantity: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_quantity</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plane</span> <span class="o">!=</span> <span class="s2">"xy"</span><span class="p">:</span>
             <span class="n">axes</span> <span class="o">=</span> <span class="n">plane_to_axes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plane</span><span class="p">)</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="n">axes</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+            <span class="n">moved_axes</span> <span class="o">=</span> <span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">moved_axes</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))[</span><span class="n">axes</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+            <span class="n">vector_potential</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">vector_potential</span><span class="p">,</span> <span class="n">moved_axes</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))[</span>
+                <span class="n">axes</span><span class="p">,</span> <span class="o">...</span>
+            <span class="p">]</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotate_field</span><span class="p">:</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">rotate_vector_field</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotate_field</span><span class="p">)</span>
+        <span class="n">rotate_field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotate_field</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rotate_field</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">rotate_field</span> <span class="o">==</span> <span class="n">_AUTO_ROTATE_FIELD</span><span class="p">:</span>
+            <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">_auto_rotation_matrix_for_vector_field</span><span class="p">(</span><span class="n">vector_potential</span><span class="p">)</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">_apply_rotation_matrix</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rotate_field</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">rotate_vector_field</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">rotate_field</span><span class="p">)</span>
 
         <span class="n">slice_thicknesses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span>
         <span class="n">slice_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid_gpts</span>
@@ -818,7 +888,7 @@
         <span class="n">slice_thickness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">exit_planes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">plane</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"xy"</span><span class="p">,</span>
-        <span class="n">rotate_field</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rotate_field</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_AUTO_ROTATE_FIELD</span><span class="p">,</span>
         <span class="n">origin</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
         <span class="n">box</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">periodic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -828,6 +898,8 @@
         <span class="n">projection</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"fft"</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="n">_check_unsupported_ensemble_params</span><span class="p">(</span><span class="n">frozen_phonons</span><span class="p">,</span> <span class="n">repetitions</span><span class="p">)</span>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">calculators</span><span class="o">=</span><span class="n">calculators</span><span class="p">,</span>
             <span class="n">array_object</span><span class="o">=</span><span class="n">MagneticFieldArray</span><span class="p">,</span>
@@ -859,7 +931,7 @@
         <span class="n">slice_thickness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">exit_planes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">plane</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"xy"</span><span class="p">,</span>
-        <span class="n">rotate_field</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rotate_field</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_AUTO_ROTATE_FIELD</span><span class="p">,</span>
         <span class="n">origin</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
         <span class="n">box</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">periodic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -869,6 +941,8 @@
         <span class="n">projection</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"fft"</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="n">_check_unsupported_ensemble_params</span><span class="p">(</span><span class="n">frozen_phonons</span><span class="p">,</span> <span class="n">repetitions</span><span class="p">)</span>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">calculators</span><span class="o">=</span><span class="n">calculators</span><span class="p">,</span>
             <span class="n">array_object</span><span class="o">=</span><span class="n">VectorPotentialArray</span><span class="p">,</span>
@@ -886,6 +960,298 @@
             <span class="n">projection</span><span class="o">=</span><span class="n">projection</span><span class="p">,</span>
             <span class="n">periodic</span><span class="o">=</span><span class="n">periodic</span><span class="p">,</span>
         <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="GPAWMagneticFields">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.magnetism.gpaw.html#abtem.magnetism.gpaw.GPAWMagneticFields">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GPAWMagneticFields</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Bundles the electrostatic potential, magnetic vector potential and</span>
+<span class="sd">    (optionally) magnetic field built from the same GPAW calculator(s) by</span>
+<span class="sd">    `gpaw_magnetic_fields`.</span>
+
+<span class="sd">    `potential` may carry a frozen-phonon ensemble axis (or, after tiling,</span>
+<span class="sd">    come from a `CrystalPotential` build); `vector_potential` and</span>
+<span class="sd">    `magnetic_field` are always for a single, rigid configuration -- see</span>
+<span class="sd">    `_check_unsupported_ensemble_params`. Use `.tile()` to bring the</span>
+<span class="sd">    magnetic components up to a repeated crystal's size, and</span>
+<span class="sd">    `.combined_potential()` to fold the vector potential into an</span>
+<span class="sd">    electrostatic potential via `adjust_coulomb_potential`.</span>
+<span class="sd">    """</span>
+
+    <span class="n">potential</span><span class="p">:</span> <span class="n">PotentialArray</span>
+    <span class="n">vector_potential</span><span class="p">:</span> <span class="n">VectorPotentialArray</span>
+    <span class="n">magnetic_field</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MagneticFieldArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="GPAWMagneticFields.tile">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.magnetism.gpaw.html#abtem.magnetism.gpaw.GPAWMagneticFields.tile">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tile</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">repetitions</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"GPAWMagneticFields"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Tile `vector_potential` (and `magnetic_field`, if present) to match</span>
+<span class="sd">        a separately tiled/repeated electrostatic potential, e.g. built via</span>
+<span class="sd">        `abtem.CrystalPotential`.</span>
+
+<span class="sd">        `potential` is left untouched here -- tile or rebuild it separately</span>
+<span class="sd">        (e.g. `CrystalPotential(electrostatic_ensemble, repetitions=...)`)</span>
+<span class="sd">        before calling `combined_potential`.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">replace</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">vector_potential</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vector_potential</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">repetitions</span><span class="p">),</span>
+            <span class="n">magnetic_field</span><span class="o">=</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">magnetic_field</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">repetitions</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">magnetic_field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="kc">None</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GPAWMagneticFields.combined_potential">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.magnetism.gpaw.html#abtem.magnetism.gpaw.GPAWMagneticFields.combined_potential">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">combined_potential</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">potential</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PotentialArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PotentialArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Combine an electrostatic potential with `vector_potential` via</span>
+<span class="sd">        `VectorPotentialArray.adjust_coulomb_potential`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        energy : float</span>
+<span class="sd">            Electron energy [eV].</span>
+<span class="sd">        potential : PotentialArray, optional</span>
+<span class="sd">            The electrostatic potential to combine with `vector_potential`.</span>
+<span class="sd">            Defaults to `self.potential`; pass a separately</span>
+<span class="sd">            tiled/ensembled potential (e.g. a `CrystalPotential` build)</span>
+<span class="sd">            after calling `.tile()` for the frozen-phonon workflow.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        PotentialArray</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">potential</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vector_potential</span><span class="o">.</span><span class="n">adjust_coulomb_potential</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GPAWMagneticFields.show">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.magnetism.gpaw.html#abtem.magnetism.gpaw.GPAWMagneticFields.show">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">show</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tile</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Show side-by-side projections of the electrostatic potential and</span>
+<span class="sd">        the x and z components of the vector potential -- and, if built,</span>
+<span class="sd">        the magnetic field. `Az`/`Bz` are the components that matter for</span>
+<span class="sd">        `combined_potential`; `Ax`/`Bx` are shown alongside for a sanity</span>
+<span class="sd">        check that the in-plane and z-swapped components look sensible</span>
+<span class="sd">        relative to each other.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tile : two int, optional</span>
+<span class="sd">            Tile the projected images before plotting, e.g. to preview the</span>
+<span class="sd">            periodicity of a repeated unit cell.</span>
+<span class="sd">        figsize : two int, optional</span>
+<span class="sd">            Figure size passed to `matplotlib.pyplot.figure`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : matplotlib.figure.Figure</span>
+<span class="sd">        """</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">mpl_toolkits.axes_grid1</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageGrid</span>
+
+        <span class="n">panels</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">project</span><span class="p">(),</span> <span class="s2">"$V$"</span><span class="p">,</span> <span class="s2">"$Å^{-3}$"</span><span class="p">),</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vector_potential</span><span class="o">.</span><span class="n">project</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"$A_x$"</span><span class="p">,</span> <span class="s2">"ÅT"</span><span class="p">),</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vector_potential</span><span class="o">.</span><span class="n">project</span><span class="p">()[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">"$A_z$"</span><span class="p">,</span> <span class="s2">"ÅT"</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">magnetic_field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">panels</span> <span class="o">+=</span> <span class="p">[</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">magnetic_field</span><span class="o">.</span><span class="n">project</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"$B_x$"</span><span class="p">,</span> <span class="s2">"T"</span><span class="p">),</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">magnetic_field</span><span class="o">.</span><span class="n">project</span><span class="p">()[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">"$B_z$"</span><span class="p">,</span> <span class="s2">"T"</span><span class="p">),</span>
+            <span class="p">]</span>
+
+        <span class="c1"># Create the figure with pyplot's interactive auto-display off, then</span>
+        <span class="c1"># return it: otherwise Jupyter's inline backend renders it once from</span>
+        <span class="c1"># the auto-display hook and a second time from the returned value,</span>
+        <span class="c1"># showing the same plot twice.</span>
+        <span class="k">with</span> <span class="n">plt</span><span class="o">.</span><span class="n">ioff</span><span class="p">():</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+            <span class="n">grid</span> <span class="o">=</span> <span class="n">ImageGrid</span><span class="p">(</span>
+                <span class="n">fig</span><span class="p">,</span>
+                <span class="mi">111</span><span class="p">,</span>
+                <span class="n">nrows_ncols</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">panels</span><span class="p">)),</span>
+                <span class="n">cbar_mode</span><span class="o">=</span><span class="s2">"edge"</span><span class="p">,</span>
+                <span class="n">cbar_location</span><span class="o">=</span><span class="s2">"bottom"</span><span class="p">,</span>
+                <span class="n">cbar_pad</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                <span class="n">cbar_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                <span class="n">axes_pad</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">panels</span><span class="p">):</span>
+                <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">tile</span><span class="p">)</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">1e-5</span><span class="p">:</span>
+                    <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mf">1e-5</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+                <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">"lower"</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">cax</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fig</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="gpaw_magnetic_fields">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.magnetism.gpaw.html#abtem.magnetism.gpaw.gpaw_magnetic_fields">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gpaw_magnetic_fields</span><span class="p">(</span>
+    <span class="n">calculators</span><span class="p">:</span> <span class="n">GPAW</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">GPAW</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">gpts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sampling</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">slice_thickness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">exit_planes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">plane</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"xy"</span><span class="p">,</span>
+    <span class="n">origin</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+    <span class="n">box</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">periodic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">frozen_phonons</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseFrozenPhonons</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">rotate_field</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_AUTO_ROTATE_FIELD</span><span class="p">,</span>
+    <span class="n">include_magnetic_field</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">magnetic_calculator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GPAW</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">lazy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">potential_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">field_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GPAWMagneticFields</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Build the electrostatic potential, magnetic vector potential and</span>
+<span class="sd">    (optionally) magnetic field from the same GPAW calculator(s) in one</span>
+<span class="sd">    call.</span>
+
+<span class="sd">    `frozen_phonons` (an ensemble of atomic-displacement configurations) is</span>
+<span class="sd">    only supported for the electrostatic `potential` -- the magnetic</span>
+<span class="sd">    components come from a single, rigid ab initio calculation and cannot</span>
+<span class="sd">    vary per configuration. Tile the returned object with `.tile()` to</span>
+<span class="sd">    match a separately built, possibly-ensembled electrostatic potential</span>
+<span class="sd">    (e.g. from `abtem.CrystalPotential`), then combine with</span>
+<span class="sd">    `.combined_potential()`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    calculators : (list of) gpaw.calculator.GPAW or (list of) str</span>
+<span class="sd">        One or more converged GPAW calculators (or paths to `.gpw` files).</span>
+<span class="sd">        Forwarded to `GPAWPotential`. If a list (a frozen-phonon ensemble),</span>
+<span class="sd">        `magnetic_calculator` must be given explicitly, since</span>
+<span class="sd">        `GPAWVectorPotential`/`GPAWMagneticField` only support a single</span>
+<span class="sd">        calculator.</span>
+<span class="sd">    gpts, sampling, slice_thickness, exit_planes, plane, origin, box,</span>
+<span class="sd">    periodic, device : see `GPAWPotential`, `GPAWVectorPotential`</span>
+<span class="sd">        Forwarded to all built components.</span>
+<span class="sd">    frozen_phonons : BaseFrozenPhonons, optional</span>
+<span class="sd">        Forwarded to `GPAWPotential` only.</span>
+<span class="sd">    rotate_field : tuple of three float, "auto", or None</span>
+<span class="sd">        Forwarded to `GPAWVectorPotential`/`GPAWMagneticField`. Defaults to</span>
+<span class="sd">        `"auto"`: automatically swap the larger-magnitude in-plane</span>
+<span class="sd">        component into z (see `_auto_rotation_matrix_for_vector_field`).</span>
+<span class="sd">    include_magnetic_field : bool</span>
+<span class="sd">        If True, also build the magnetic field `B` (not used by</span>
+<span class="sd">        `combined_potential`, only for inspection/visualization). Roughly</span>
+<span class="sd">        doubles the GPAW-side cost of the magnetic part, so it is off by</span>
+<span class="sd">        default.</span>
+<span class="sd">    magnetic_calculator : gpaw.calculator.GPAW, optional</span>
+<span class="sd">        The single calculator representing the (rigid) magnetic</span>
+<span class="sd">        contribution. Defaults to `calculators` when that is a single</span>
+<span class="sd">        calculator; required when `calculators` is a list.</span>
+<span class="sd">    lazy : bool, optional</span>
+<span class="sd">        Passed to the electrostatic potential's `.build()`. The magnetic</span>
+<span class="sd">        components are always built eagerly, since</span>
+<span class="sd">        `GPAWVectorPotential`/`GPAWMagneticField` do not support lazy</span>
+<span class="sd">        building.</span>
+<span class="sd">    potential_kwargs, field_kwargs : dict, optional</span>
+<span class="sd">        Extra keyword arguments forwarded only to `GPAWPotential`, or only</span>
+<span class="sd">        to `GPAWVectorPotential`/`GPAWMagneticField`, respectively (e.g.</span>
+<span class="sd">        their differing `gridrefinement` defaults).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    GPAWMagneticFields</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">calculators</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">magnetic_calculator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"calculators is a list (a frozen-phonon ensemble); "</span>
+                <span class="s2">"GPAWVectorPotential/GPAWMagneticField only support a "</span>
+                <span class="s2">"single calculator. Pass magnetic_calculator explicitly to "</span>
+                <span class="s2">"pick which one represents the (rigid) magnetic "</span>
+                <span class="s2">"contribution."</span>
+            <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">magnetic_calculator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">magnetic_calculator</span> <span class="o">=</span> <span class="n">calculators</span>
+
+    <span class="n">potential_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">potential_kwargs</span> <span class="ow">or</span> <span class="p">{})</span>
+    <span class="n">field_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">field_kwargs</span> <span class="ow">or</span> <span class="p">{})</span>
+
+    <span class="n">shared</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
+        <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
+        <span class="n">slice_thickness</span><span class="o">=</span><span class="n">slice_thickness</span><span class="p">,</span>
+        <span class="n">exit_planes</span><span class="o">=</span><span class="n">exit_planes</span><span class="p">,</span>
+        <span class="n">plane</span><span class="o">=</span><span class="n">plane</span><span class="p">,</span>
+        <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span>
+        <span class="n">box</span><span class="o">=</span><span class="n">box</span><span class="p">,</span>
+        <span class="n">periodic</span><span class="o">=</span><span class="n">periodic</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">potential</span> <span class="o">=</span> <span class="n">GPAWPotential</span><span class="p">(</span>
+        <span class="n">calculators</span><span class="p">,</span>
+        <span class="n">frozen_phonons</span><span class="o">=</span><span class="n">frozen_phonons</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">shared</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">potential_kwargs</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="n">lazy</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">lazy</span><span class="p">:</span>
+        <span class="n">potential</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+
+    <span class="n">vector_potential</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">GPAWVectorPotential</span><span class="p">(</span>
+            <span class="n">magnetic_calculator</span><span class="p">,</span>
+            <span class="n">rotate_field</span><span class="o">=</span><span class="n">rotate_field</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">shared</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">field_kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+    <span class="p">)</span>
+
+    <span class="n">magnetic_field</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">include_magnetic_field</span><span class="p">:</span>
+        <span class="n">magnetic_field</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">GPAWMagneticField</span><span class="p">(</span>
+                <span class="n">magnetic_calculator</span><span class="p">,</span>
+                <span class="n">rotate_field</span><span class="o">=</span><span class="n">rotate_field</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">shared</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">field_kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">GPAWMagneticFields</span><span class="p">(</span>
+        <span class="n">potential</span><span class="o">=</span><span class="n">potential</span><span class="p">,</span>
+        <span class="n">vector_potential</span><span class="o">=</span><span class="n">vector_potential</span><span class="p">,</span>
+        <span class="n">magnetic_field</span><span class="o">=</span><span class="n">magnetic_field</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 
@@ -936,7 +1302,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

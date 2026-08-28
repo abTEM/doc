@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -742,10 +742,17 @@
 <span class="sd">        other: Accelerator object</span>
 <span class="sd">            The accelerator that should be checked.</span>
 <span class="sd">        """</span>
+        <span class="c1"># Use accelerator.energy directly for HasAcceleratorMixin subclasses that may</span>
+        <span class="c1"># override .energy to return non-scalar types (e.g. EnergyEnsemble).</span>
+        <span class="n">other_energy</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">other</span><span class="o">.</span><span class="n">energy</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Accelerator</span><span class="p">)</span>
+            <span class="k">else</span> <span class="n">other</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">energy</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="ow">and</span> <span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="p">(</span><span class="n">other_energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">!=</span> <span class="n">other_energy</span><span class="p">)</span>
         <span class="p">):</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Inconsistent energies"</span><span class="p">)</span></div>
 
@@ -770,11 +777,22 @@
         <span class="k">if</span> <span class="n">check_match</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">other</span><span class="o">.</span><span class="n">energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">other</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span>
+        <span class="c1"># Use accelerator.energy directly for HasAcceleratorMixin subclasses that may</span>
+        <span class="c1"># override .energy to return non-scalar types (e.g. EnergyEnsemble).</span>
+        <span class="n">other_energy</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">other</span><span class="o">.</span><span class="n">energy</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Accelerator</span><span class="p">)</span>
+            <span class="k">else</span> <span class="n">other</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">energy</span>
+        <span class="p">)</span>
 
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">energy</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">energy</span></div>
+        <span class="k">if</span> <span class="n">other_energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Accelerator</span><span class="p">):</span>
+                <span class="n">other</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">other</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">!=</span> <span class="n">other_energy</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">other_energy</span></div>
 </div>
 
 
@@ -872,7 +890,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

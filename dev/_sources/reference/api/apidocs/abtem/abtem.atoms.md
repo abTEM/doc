@@ -184,7 +184,7 @@
 
 ````
 
-````{py:function} B_to_sigma(B: float | numpy.ndarray) -> float | numpy.ndarray
+````{py:function} B_to_sigma(...) -> float | numpy.ndarray
 :canonical: abtem.atoms.B_to_sigma
 
 ```{autodoc2-docstring} abtem.atoms.B_to_sigma
@@ -192,7 +192,7 @@
 ```
 ````
 
-````{py:function} atom_property_dict_to_atom_property_array(atoms: ase.Atoms, props: dict[str, numpy.ndarray]) -> numpy.ndarray
+````{py:function} atom_property_dict_to_atom_property_array(...) -> numpy.ndarray
 :canonical: abtem.atoms.atom_property_dict_to_atom_property_array
 
 ```{autodoc2-docstring} abtem.atoms.atom_property_dict_to_atom_property_array
@@ -200,7 +200,7 @@
 ```
 ````
 
-````{py:function} atoms_in_cell(atoms: ase.Atoms, margin: typing.SupportsFloat | tuple[float, float, float] = 0.0) -> ase.Atoms
+````{py:function} atoms_in_cell(...) -> ase.Atoms
 :canonical: abtem.atoms.atoms_in_cell
 
 ```{autodoc2-docstring} abtem.atoms.atoms_in_cell
@@ -219,7 +219,7 @@
 
 ````
 
-````{py:function} best_orthogonal_cell(cell: numpy.ndarray, max_repetitions: int | tuple[int, int, int] = 5, eps: float = 1e-12) -> numpy.ndarray
+````{py:function} best_orthogonal_cell(...) -> numpy.ndarray
 :canonical: abtem.atoms.best_orthogonal_cell
 
 ```{autodoc2-docstring} abtem.atoms.best_orthogonal_cell
@@ -227,7 +227,7 @@
 ```
 ````
 
-````{py:function} cut_cell(atoms: ase.Atoms, cell: tuple[float, float, float] | None = None, plane: str | tuple[tuple[float, float, float], tuple[float, float, float]] = 'xy', origin: tuple[float, float, float] = (0.0, 0.0, 0.0), margin: float | tuple[float, float, float] = 0.0) -> ase.Atoms
+````{py:function} cut_cell(...) -> ase.Atoms
 :canonical: abtem.atoms.cut_cell
 
 ```{autodoc2-docstring} abtem.atoms.cut_cell
@@ -235,7 +235,7 @@
 ```
 ````
 
-````{py:function} decompose_affine_transform(affine_transform: numpy.ndarray) -> tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
+````{py:function} decompose_affine_transform(...) -> tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
 :canonical: abtem.atoms.decompose_affine_transform
 
 ```{autodoc2-docstring} abtem.atoms.decompose_affine_transform
@@ -243,7 +243,7 @@
 ```
 ````
 
-````{py:function} euler_sequence(axes: str, convention: str) -> tuple[int, int, int, int]
+````{py:function} euler_sequence(...) -> tuple[int, int, int, int]
 :canonical: abtem.atoms.euler_sequence
 
 ```{autodoc2-docstring} abtem.atoms.euler_sequence
@@ -251,7 +251,7 @@
 ```
 ````
 
-````{py:function} euler_to_rotation(ai: float, aj: float, ak: float, axes: str = 'xyz', convention: str = 'intrinsic') -> numpy.ndarray
+````{py:function} euler_to_rotation(...) -> numpy.ndarray
 :canonical: abtem.atoms.euler_to_rotation
 
 ```{autodoc2-docstring} abtem.atoms.euler_to_rotation
@@ -259,7 +259,7 @@
 ```
 ````
 
-````{py:function} flip_atoms(atoms: ase.Atoms, axis: int = 2) -> ase.Atoms
+````{py:function} flip_atoms(...) -> ase.Atoms
 :canonical: abtem.atoms.flip_atoms
 
 ```{autodoc2-docstring} abtem.atoms.flip_atoms
@@ -267,7 +267,7 @@
 ```
 ````
 
-````{py:function} is_cell_hexagonal(atoms: ase.Atoms | ase.cell.Cell) -> bool
+````{py:function} is_cell_hexagonal(...) -> bool
 :canonical: abtem.atoms.is_cell_hexagonal
 
 ```{autodoc2-docstring} abtem.atoms.is_cell_hexagonal
@@ -275,7 +275,7 @@
 ```
 ````
 
-````{py:function} is_cell_orthogonal(cell: ase.Atoms | ase.cell.Cell | numpy.ndarray, tol: float = 1e-12)
+````{py:function} is_cell_orthogonal(...)
 :canonical: abtem.atoms.is_cell_orthogonal
 
 ```{autodoc2-docstring} abtem.atoms.is_cell_orthogonal
@@ -283,7 +283,7 @@
 ```
 ````
 
-````{py:function} is_cell_valid(atoms: ase.Atoms, tol: float = 1e-12) -> bool
+````{py:function} is_cell_valid(...) -> bool
 :canonical: abtem.atoms.is_cell_valid
 
 ```{autodoc2-docstring} abtem.atoms.is_cell_valid
@@ -291,7 +291,7 @@
 ```
 ````
 
-````{py:function} merge_close_atoms(atoms: ase.Atoms, tol: float = 1e-07) -> ase.Atoms
+````{py:function} merge_close_atoms(...) -> ase.Atoms
 :canonical: abtem.atoms.merge_close_atoms
 
 ```{autodoc2-docstring} abtem.atoms.merge_close_atoms
@@ -299,7 +299,7 @@
 ```
 ````
 
-````{py:function} orthogonalize_cell(atoms: ase.Atoms, max_repetitions: int = 5, return_transform: bool = False, return_transform_matrix: bool = False, allow_transform: bool = True, plane: str | tuple[tuple[float, float, float], tuple[float, float, float]] = 'xy', origin: tuple[float, float, float] = (0.0, 0.0, 0.0), box: tuple[float, float, float] | None = None, tolerance: float = 0.01)
+````{py:function} orthogonalize_cell(...)
 :canonical: abtem.atoms.orthogonalize_cell
 
 ```{autodoc2-docstring} abtem.atoms.orthogonalize_cell
@@ -307,7 +307,7 @@
 ```
 ````
 
-````{py:function} pad_atoms(atoms: ase.Atoms, margins: typing.SupportsFloat | tuple[float, float, float], directions: str = 'xyz') -> ase.Atoms
+````{py:function} pad_atoms(...) -> ase.Atoms
 :canonical: abtem.atoms.pad_atoms
 
 ```{autodoc2-docstring} abtem.atoms.pad_atoms
@@ -315,7 +315,7 @@
 ```
 ````
 
-````{py:function} plane_to_axes(plane: str) -> tuple[int, ...]
+````{py:function} plane_to_axes(...) -> tuple[int, ...]
 :canonical: abtem.atoms.plane_to_axes
 
 ```{autodoc2-docstring} abtem.atoms.plane_to_axes
@@ -323,7 +323,7 @@
 ```
 ````
 
-````{py:function} pretty_print_transform(decomposed: tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray])
+````{py:function} pretty_print_transform(...)
 :canonical: abtem.atoms.pretty_print_transform
 
 ```{autodoc2-docstring} abtem.atoms.pretty_print_transform
@@ -331,7 +331,7 @@
 ```
 ````
 
-````{py:function} rotate_atoms(atoms: ase.Atoms, axes: str = 'zxz', angles: float | tuple[float, float, float] = (0.0, 0.0, 0.0), convention: str = 'intrinsic') -> ase.Atoms
+````{py:function} rotate_atoms(...) -> ase.Atoms
 :canonical: abtem.atoms.rotate_atoms
 
 ```{autodoc2-docstring} abtem.atoms.rotate_atoms
@@ -339,7 +339,7 @@
 ```
 ````
 
-````{py:function} rotate_atoms_to_plane(atoms: ase.Atoms, plane: str | tuple[tuple[float, float, float], tuple[float, float, float]] = 'xy') -> ase.Atoms
+````{py:function} rotate_atoms_to_plane(...) -> ase.Atoms
 :canonical: abtem.atoms.rotate_atoms_to_plane
 
 ```{autodoc2-docstring} abtem.atoms.rotate_atoms_to_plane
@@ -347,7 +347,7 @@
 ```
 ````
 
-````{py:function} rotation_matrix_from_plane(plane: str | tuple[tuple[float, float, float], tuple[float, float, float]] = 'xy') -> numpy.ndarray
+````{py:function} rotation_matrix_from_plane(...) -> numpy.ndarray
 :canonical: abtem.atoms.rotation_matrix_from_plane
 
 ```{autodoc2-docstring} abtem.atoms.rotation_matrix_from_plane
@@ -355,7 +355,7 @@
 ```
 ````
 
-````{py:function} rotation_matrix_to_euler(R: numpy.ndarray, axes: str = 'xyz', convention: str = 'intrinsic', eps: float = 1e-06) -> tuple[float, float, float]
+````{py:function} rotation_matrix_to_euler(...) -> tuple[float, float, float]
 :canonical: abtem.atoms.rotation_matrix_to_euler
 
 ```{autodoc2-docstring} abtem.atoms.rotation_matrix_to_euler
@@ -363,7 +363,7 @@
 ```
 ````
 
-````{py:function} shrink_cell(atoms: ase.Atoms, repetitions: tuple[int, int] = (2, 3), tol: float = 1e-06) -> ase.Atoms
+````{py:function} shrink_cell(...) -> ase.Atoms
 :canonical: abtem.atoms.shrink_cell
 
 ```{autodoc2-docstring} abtem.atoms.shrink_cell
@@ -371,7 +371,7 @@
 ```
 ````
 
-````{py:function} sigma_to_B(sigma: float | numpy.ndarray) -> float | numpy.ndarray
+````{py:function} sigma_to_B(...) -> float | numpy.ndarray
 :canonical: abtem.atoms.sigma_to_B
 
 ```{autodoc2-docstring} abtem.atoms.sigma_to_B
@@ -379,7 +379,7 @@
 ```
 ````
 
-````{py:function} standardize_cell(atoms: ase.Atoms, tol: float = 1e-12) -> ase.Atoms
+````{py:function} standardize_cell(...) -> ase.Atoms
 :canonical: abtem.atoms.standardize_cell
 
 ```{autodoc2-docstring} abtem.atoms.standardize_cell
@@ -387,7 +387,7 @@
 ```
 ````
 
-````{py:function} validate_per_atom_property(atoms: ase.Atoms, props: abtem.atoms.AtomProperties, return_array: bool = False) -> numpy.ndarray | dict[str, numpy.ndarray]
+````{py:function} validate_per_atom_property(...) -> numpy.ndarray | dict[str, numpy.ndarray]
 :canonical: abtem.atoms.validate_per_atom_property
 
 ```{autodoc2-docstring} abtem.atoms.validate_per_atom_property
@@ -395,7 +395,7 @@
 ```
 ````
 
-````{py:function} validate_sigmas(atoms: ase.Atoms, sigmas: abtem.atoms.AtomProperties, return_array: bool = False) -> tuple[numpy.ndarray | dict[str, numpy.ndarray], bool]
+````{py:function} validate_sigmas(...) -> tuple[numpy.ndarray | dict[str, numpy.ndarray], bool]
 :canonical: abtem.atoms.validate_sigmas
 
 ```{autodoc2-docstring} abtem.atoms.validate_sigmas
@@ -403,7 +403,7 @@
 ```
 ````
 
-````{py:function} wrap_with_tolerance(atoms: ase.Atoms, tol: float = 1e-06) -> ase.Atoms
+````{py:function} wrap_with_tolerance(...) -> ase.Atoms
 :canonical: abtem.atoms.wrap_with_tolerance
 
 ```{autodoc2-docstring} abtem.atoms.wrap_with_tolerance

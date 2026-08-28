@@ -22,7 +22,7 @@
 
 ### API
 
-`````{py:class} DiagonalMCF(eigenvectors: typing.Union[int, typing.Tuple[int]], focal_spread: float = 0.0, source_size: float = 0.0, rectangular_offset: typing.Tuple[float, float] = (0.0, 0.0), energy: float = None, semiangle_cutoff: float = None)
+`````{py:class} DiagonalMCF(...)
 :canonical: abtem.mcf.DiagonalMCF
 
 Bases: {py:obj}`abtem.transfer.ArrayWaveTransform`, {py:obj}`abtem.core.energy.HasAcceleratorMixin`
@@ -63,7 +63,7 @@ Bases: {py:obj}`abtem.transfer.ArrayWaveTransform`, {py:obj}`abtem.core.energy.H
 
 ````
 
-````{py:method} ensemble_blocks(chunks)
+````{py:method} ensemble_blocks(...)
 :canonical: abtem.mcf.DiagonalMCF.ensemble_blocks
 
 ```{autodoc2-docstring} abtem.mcf.DiagonalMCF.ensemble_blocks
@@ -90,7 +90,7 @@ Bases: {py:obj}`abtem.transfer.ArrayWaveTransform`, {py:obj}`abtem.core.energy.H
 
 ````
 
-````{py:method} evaluate(waves, return_correlation: bool = False)
+````{py:method} evaluate(...)
 :canonical: abtem.mcf.DiagonalMCF.evaluate
 
 ```{autodoc2-docstring} abtem.mcf.DiagonalMCF.evaluate

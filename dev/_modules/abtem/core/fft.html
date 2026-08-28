@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -524,6 +524,7 @@
 <span></span><span class="sd">"""Module for handling Fourier transforms and convolution in *ab*TEM."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">product</span> <span class="k">as</span> <span class="n">_product</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">overload</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
@@ -714,6 +715,49 @@
 
 <span class="n">U</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">"U"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span>
 
+<span class="c1"># Cache the parsed cuFFT cache limit + the config value it was derived from.</span>
+<span class="c1"># Revalidated on every GPU FFT dispatch without reparsing when the config is</span>
+<span class="c1"># unchanged (the common case in a hot loop).</span>
+<span class="n">_CUFFT_CACHE_STATE</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">object</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_configure_cufft_cache</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Apply ``cupy.fft-cache-size`` from the abTEM config to the cuFFT plan cache.</span>
+
+<span class="sd">    Called on every GPU FFT dispatch so that runtime config changes take effect.</span>
+<span class="sd">    The config value is a memory limit on the total workspace held by cached plans:</span>
+
+<span class="sd">    * ``0 MB``     — disable plan caching entirely (plans destroyed after each</span>
+<span class="sd">                     call, workspace freed immediately).  Use when VRAM is very</span>
+<span class="sd">                     tight; trades a small per-FFT planning overhead for zero</span>
+<span class="sd">                     persistent workspace.</span>
+<span class="sd">    * positive     — allow up to N bytes of cached workspace (``set_memsize``).</span>
+<span class="sd">                     Plans are reused for repeated same-shape transforms but the</span>
+<span class="sd">                     total persistent workspace is bounded.</span>
+<span class="sd">    * ``-1``       — unlimited (CuPy default, plans cached indefinitely).</span>
+<span class="sd">    """</span>
+    <span class="k">global</span> <span class="n">_CUFFT_CACHE_STATE</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"cupy.fft-cache-size"</span><span class="p">,</span> <span class="s2">"0 MB"</span><span class="p">)</span>
+
+    <span class="c1"># Fast path: config hasn't changed since we last applied it.</span>
+    <span class="k">if</span> <span class="n">_CUFFT_CACHE_STATE</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_CUFFT_CACHE_STATE</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">raw</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">dask.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_bytes</span>
+        <span class="n">limit</span> <span class="o">=</span> <span class="n">parse_bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">limit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_plan_cache</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">limit</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">cache</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>       <span class="c1"># disable caching entirely</span>
+    <span class="k">elif</span> <span class="n">limit</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">cache</span><span class="o">.</span><span class="n">set_memsize</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
+    <span class="c1"># limit &lt; 0 → leave at CuPy default (unlimited)</span>
+
+    <span class="n">_CUFFT_CACHE_STATE</span> <span class="o">=</span> <span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
+
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_fft_dispatch</span><span class="p">(</span>
     <span class="n">x</span><span class="p">:</span> <span class="n">U</span><span class="p">,</span>
@@ -746,6 +790,7 @@
     <span class="n">check_cupy_is_installed</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">_configure_cufft_cache</span><span class="p">()</span>
         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">fft</span><span class="p">,</span> <span class="n">func_name</span><span class="p">)(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 
@@ -1040,6 +1085,31 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_fft_interpolation_slices_1d</span><span class="p">(</span><span class="n">n1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n2</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">,</span> <span class="nb">slice</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return ``(in_slice, out_slice)`` pairs giving the low- and high-frequency</span>
+<span class="sd">    segments to copy from an FFT-shift-free array of size ``n1`` to one of</span>
+<span class="sd">    size ``n2``.  Produces the same result as</span>
+<span class="sd">    ``out[mask2] = inp[mask1]`` with masks from</span>
+<span class="sd">    ``_fft_interpolation_masks_1d`` — but as contiguous slices, so cropping</span>
+<span class="sd">    maps to a handful of memcpys instead of an advanced-indexing kernel</span>
+<span class="sd">    over the full array.</span>
+<span class="sd">    """</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))]</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">h</span><span class="p">)),</span>
+        <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">n1</span> <span class="o">-</span> <span class="n">t</span><span class="p">,</span> <span class="n">n1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="n">n2</span> <span class="o">-</span> <span class="n">t</span><span class="p">,</span> <span class="n">n2</span><span class="p">)),</span>
+    <span class="p">]</span>
+
+
 <div class="viewcode-block" id="fft_crop">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.fft.html#abtem.core.fft.fft_crop">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">fft_crop</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">normalize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
@@ -1067,11 +1137,25 @@
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
         <span class="n">new_shape</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)]</span> <span class="o">+</span> <span class="n">new_shape</span>
 
-    <span class="n">mask_in</span><span class="p">,</span> <span class="n">mask_out</span> <span class="o">=</span> <span class="n">fft_interpolation_masks</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">)</span>
+    <span class="c1"># Build per-dimension slice-pair lists.  Dimensions with equal in/out size</span>
+    <span class="c1"># (e.g. batch dims) take a single full-slice pair; the rest contribute 1–2</span>
+    <span class="c1"># (in_slice, out_slice) segments matching the centered-spectrum layout.</span>
+    <span class="c1"># The cartesian product yields up to 2**D corner copies (D = dims that</span>
+    <span class="c1"># change) — typically 4 for the 2D FFT case — avoiding both the</span>
+    <span class="c1"># materialisation of an N-dimensional boolean mask and advanced-indexing</span>
+    <span class="c1"># kernels that stream the full array once per call.</span>
+    <span class="n">slice_pairs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">,</span> <span class="nb">slice</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">n1</span> <span class="o">==</span> <span class="n">n2</span><span class="p">:</span>
+            <span class="n">slice_pairs</span><span class="o">.</span><span class="n">append</span><span class="p">([(</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">))])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">slice_pairs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_fft_interpolation_slices_1d</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
 
     <span class="n">new_array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">new_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-
-    <span class="n">new_array</span><span class="p">[</span><span class="n">mask_out</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="n">mask_in</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">combo</span> <span class="ow">in</span> <span class="n">_product</span><span class="p">(</span><span class="o">*</span><span class="n">slice_pairs</span><span class="p">):</span>
+        <span class="n">in_sl</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">combo</span><span class="p">)</span>
+        <span class="n">out_sl</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">combo</span><span class="p">)</span>
+        <span class="n">new_array</span><span class="p">[</span><span class="n">out_sl</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="n">in_sl</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
         <span class="n">new_array</span> <span class="o">=</span> <span class="n">new_array</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">new_array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
@@ -1180,7 +1264,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

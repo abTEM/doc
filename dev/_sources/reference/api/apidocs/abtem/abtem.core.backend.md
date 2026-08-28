@@ -36,6 +36,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`ensure_cuda_cluster <abtem.core.backend.ensure_cuda_cluster>`
+  - ```{autodoc2-docstring} abtem.core.backend.ensure_cuda_cluster
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`get_array_module <abtem.core.backend.get_array_module>`
   - ```{autodoc2-docstring} abtem.core.backend.get_array_module
     :parser: rst
@@ -48,6 +53,11 @@
     ```
 * - {py:obj}`get_scipy_module <abtem.core.backend.get_scipy_module>`
   - ```{autodoc2-docstring} abtem.core.backend.get_scipy_module
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`is_gpu_dask_client <abtem.core.backend.is_gpu_dask_client>`
+  - ```{autodoc2-docstring} abtem.core.backend.is_gpu_dask_client
     :parser: rst
     :summary:
     ```
@@ -84,7 +94,7 @@
 
 ````
 
-````{py:function} asnumpy(array: numpy.ndarray | dask.array.Array)
+````{py:function} asnumpy(...)
 :canonical: abtem.core.backend.asnumpy
 
 ```{autodoc2-docstring} abtem.core.backend.asnumpy
@@ -100,7 +110,7 @@
 ```
 ````
 
-````{py:function} copy_to_device(array: numpy.ndarray | dask.array.core.Array, device: types.ModuleType | numpy.ndarray | dask.array.core.Array | str | None = None)
+````{py:function} copy_to_device(...)
 :canonical: abtem.core.backend.copy_to_device
 
 ```{autodoc2-docstring} abtem.core.backend.copy_to_device
@@ -108,7 +118,7 @@
 ```
 ````
 
-````{py:function} device_name_from_array_module(xp: abtem.core.backend.ArrayModule) -> str
+````{py:function} device_name_from_array_module(...) -> str
 :canonical: abtem.core.backend.device_name_from_array_module
 
 ```{autodoc2-docstring} abtem.core.backend.device_name_from_array_module
@@ -116,7 +126,15 @@
 ```
 ````
 
-````{py:function} get_array_module(x: types.ModuleType | numpy.ndarray | dask.array.core.Array | str | None = None) -> types.ModuleType
+````{py:function} ensure_cuda_cluster()
+:canonical: abtem.core.backend.ensure_cuda_cluster
+
+```{autodoc2-docstring} abtem.core.backend.ensure_cuda_cluster
+:parser: rst
+```
+````
+
+````{py:function} get_array_module(...) -> types.ModuleType
 :canonical: abtem.core.backend.get_array_module
 
 ```{autodoc2-docstring} abtem.core.backend.get_array_module
@@ -124,7 +142,7 @@
 ```
 ````
 
-````{py:function} get_ndimage_module(x: types.ModuleType | numpy.ndarray | dask.array.core.Array | str | None = None) -> types.ModuleType
+````{py:function} get_ndimage_module(...) -> types.ModuleType
 :canonical: abtem.core.backend.get_ndimage_module
 
 ```{autodoc2-docstring} abtem.core.backend.get_ndimage_module
@@ -132,7 +150,7 @@
 ```
 ````
 
-````{py:function} get_scipy_module(x: types.ModuleType | numpy.ndarray | dask.array.core.Array | str | None = None)
+````{py:function} get_scipy_module(...)
 :canonical: abtem.core.backend.get_scipy_module
 
 ```{autodoc2-docstring} abtem.core.backend.get_scipy_module
@@ -140,7 +158,15 @@
 ```
 ````
 
-````{py:function} validate_device(device: str | None = None) -> str
+````{py:function} is_gpu_dask_client(...) -> bool
+:canonical: abtem.core.backend.is_gpu_dask_client
+
+```{autodoc2-docstring} abtem.core.backend.is_gpu_dask_client
+:parser: rst
+```
+````
+
+````{py:function} validate_device(...) -> str
 :canonical: abtem.core.backend.validate_device
 
 ```{autodoc2-docstring} abtem.core.backend.validate_device

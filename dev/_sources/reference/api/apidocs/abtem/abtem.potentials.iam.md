@@ -89,7 +89,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 
 ````
 
-````{py:method} build(first_slice: int = 0, last_slice: typing.Optional[int] = None, chunks: int = 1, lazy: typing.Optional[bool] = None)
+````{py:method} build(...)
 :canonical: abtem.potentials.iam.BaseField.build
 :abstractmethod:
 
@@ -99,7 +99,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 
 ````
 
-````{py:method} depth_profile(projection_axis: str = 'y', depth: typing.Optional[float] = None) -> abtem.measurements.Images
+````{py:method} depth_profile(...) -> abtem.measurements.Images
 :canonical: abtem.potentials.iam.BaseField.depth_profile
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.depth_profile
@@ -129,7 +129,16 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 
 ````
 
-````{py:method} generate_slices(first_slice: int = 0, last_slice: typing.Optional[int] = None)
+````{py:method} generate_chunked_slices(...)
+:canonical: abtem.potentials.iam.BaseField.generate_chunked_slices
+
+```{autodoc2-docstring} abtem.potentials.iam.BaseField.generate_chunked_slices
+:parser: rst
+```
+
+````
+
+````{py:method} generate_slices(...)
 :canonical: abtem.potentials.iam.BaseField.generate_slices
 :abstractmethod:
 
@@ -178,7 +187,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 
 ````
 
-````{py:method} show(project: bool = True, **kwargs)
+````{py:method} show(...)
 :canonical: abtem.potentials.iam.BaseField.show
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.show
@@ -187,7 +196,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.grid.HasGrid2
 
 ````
 
-````{py:method} show_depth_profile(projection_axis: str = 'y', depth: typing.Optional[float] = None, z_scale: float = 1.0, slice_lines: bool = True, ax=None, cbar: bool = False, cmap: typing.Optional[str] = None, vmin: typing.Optional[float] = None, vmax: typing.Optional[float] = None, power: float = 1.0, common_color_scale: bool = False, explode: bool | typing.Sequence[int] = (), figsize: typing.Optional[tuple[int, int]] = None, title: bool | str = True, **kwargs)
+````{py:method} show_depth_profile(...)
 :canonical: abtem.potentials.iam.BaseField.show_depth_profile
 
 ```{autodoc2-docstring} abtem.potentials.iam.BaseField.show_depth_profile
@@ -258,7 +267,7 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`
 
 `````
 
-`````{py:class} CrystalPotential(potential_unit: abtem.potentials.iam.BasePotential, repetitions: tuple[int, int, int], num_frozen_phonons: int | None = None, exit_planes: int | None = None, seeds: int | tuple[int, ...] | None = None, ensemble_mean: bool = True)
+`````{py:class} CrystalPotential(...)
 :canonical: abtem.potentials.iam.CrystalPotential
 
 Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
@@ -296,7 +305,16 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 
 ````
 
-````{py:method} generate_slices(first_slice: int = 0, last_slice: typing.Optional[int] = None, return_depth: bool = False)
+````{py:method} generate_chunked_slices(...)
+:canonical: abtem.potentials.iam.CrystalPotential.generate_chunked_slices
+
+```{autodoc2-docstring} abtem.potentials.iam.CrystalPotential.generate_chunked_slices
+:parser: rst
+```
+
+````
+
+````{py:method} generate_slices(...)
 :canonical: abtem.potentials.iam.CrystalPotential.generate_slices
 
 ```{autodoc2-docstring} abtem.potentials.iam.CrystalPotential.generate_slices
@@ -368,12 +386,12 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 
 `````
 
-`````{py:class} FieldArray(array: numpy.ndarray | dask.array.core.Array, slice_thickness: float | typing.Sequence[float], extent: typing.Optional[float | tuple[float, float]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, exit_planes: typing.Optional[int | tuple[int, ...]] = None, ensemble_axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, metadata: typing.Optional[dict] = None)
+`````{py:class} FieldArray(...)
 :canonical: abtem.potentials.iam.FieldArray
 
 Bases: {py:obj}`abtem.potentials.iam.BaseField`, {py:obj}`abtem.array.ArrayObject`
 
-````{py:method} build(first_slice: int = 0, last_slice: typing.Optional[int] = None, chunks: int = 1, lazy: typing.Optional[bool] = None)
+````{py:method} build(...)
 :canonical: abtem.potentials.iam.FieldArray.build
 
 ```{autodoc2-docstring} abtem.potentials.iam.FieldArray.build
@@ -382,7 +400,7 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`, {py:obj}`abtem.array.ArrayObjec
 
 ````
 
-````{py:method} depth_profile(projection_axis: str = 'y', depth: typing.Optional[float] = None) -> abtem.measurements.Images
+````{py:method} depth_profile(...) -> abtem.measurements.Images
 :canonical: abtem.potentials.iam.FieldArray.depth_profile
 
 ```{autodoc2-docstring} abtem.potentials.iam.FieldArray.depth_profile
@@ -397,7 +415,16 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`, {py:obj}`abtem.array.ArrayObjec
 
 ````
 
-````{py:method} generate_slices(first_slice: int = 0, last_slice: typing.Optional[int] = None)
+````{py:method} generate_chunked_slices(...)
+:canonical: abtem.potentials.iam.FieldArray.generate_chunked_slices
+
+```{autodoc2-docstring} abtem.potentials.iam.FieldArray.generate_chunked_slices
+:parser: rst
+```
+
+````
+
+````{py:method} generate_slices(...)
 :canonical: abtem.potentials.iam.FieldArray.generate_slices
 
 ```{autodoc2-docstring} abtem.potentials.iam.FieldArray.generate_slices
@@ -426,7 +453,7 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`, {py:obj}`abtem.array.ArrayObjec
 
 ````
 
-````{py:method} tile(repetitions: tuple[int, int] | tuple[int, int, int])
+````{py:method} tile(...)
 :canonical: abtem.potentials.iam.FieldArray.tile
 
 ```{autodoc2-docstring} abtem.potentials.iam.FieldArray.tile
@@ -435,7 +462,7 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`, {py:obj}`abtem.array.ArrayObjec
 
 ````
 
-````{py:method} to_hyperspy(transpose: bool = True)
+````{py:method} to_hyperspy(...)
 :canonical: abtem.potentials.iam.FieldArray.to_hyperspy
 
 ````
@@ -451,7 +478,7 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`, {py:obj}`abtem.array.ArrayObjec
 
 `````
 
-````{py:class} Potential(atoms: ase.Atoms | abtem.inelastic.phonons.BaseFrozenPhonons, gpts: int | tuple[int, int] | None = None, sampling: float | tuple[float, float] | None = None, slice_thickness: float | tuple[float, ...] = 1, parametrization: str | abtem.parametrizations.Parametrization = 'lobato', projection: str = 'infinite', exit_planes: int | tuple[int, ...] | None = None, plane: str | tuple[tuple[float, float, float], tuple[float, float, float]] = 'xy', origin: tuple[float, float, float] = (0.0, 0.0, 0.0), box: tuple[float, float, float] | None = None, periodic: bool = True, integrator: abtem.integrals.FieldIntegrator | None = None, device: str | None = None)
+````{py:class} Potential(...)
 :canonical: abtem.potentials.iam.Potential
 
 Bases: {py:obj}`abtem.potentials.iam._FieldBuilderFromAtoms`, {py:obj}`abtem.potentials.iam.BasePotential`
@@ -469,7 +496,7 @@ Bases: {py:obj}`abtem.potentials.iam._FieldBuilderFromAtoms`, {py:obj}`abtem.pot
 
 ````
 
-`````{py:class} PotentialArray(array: numpy.ndarray | dask.array.core.Array, slice_thickness: float | typing.Sequence[float], extent: typing.Optional[float | tuple[float, float]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, exit_planes: typing.Optional[int | tuple[int, ...]] = None, ensemble_axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, metadata: typing.Optional[dict] = None)
+`````{py:class} PotentialArray(...)
 :canonical: abtem.potentials.iam.PotentialArray
 
 Bases: {py:obj}`abtem.potentials.iam.BasePotential`, {py:obj}`abtem.potentials.iam.FieldArray`
@@ -485,14 +512,14 @@ Bases: {py:obj}`abtem.potentials.iam.BasePotential`, {py:obj}`abtem.potentials.i
 :parser: rst
 ```
 
-````{py:method} from_array_and_metadata(array: numpy.ndarray | dask.array.core.Array, axes_metadata: list[abtem.core.axes.AxisMetadata], metadata: dict) -> abtem.potentials.iam.PotentialArray
+````{py:method} from_array_and_metadata(...) -> abtem.potentials.iam.PotentialArray
 :canonical: abtem.potentials.iam.PotentialArray.from_array_and_metadata
 :abstractmethod:
 :classmethod:
 
 ````
 
-````{py:method} transmission_function(energy: float) -> abtem.potentials.iam.TransmissionFunction
+````{py:method} transmission_function(...) -> abtem.potentials.iam.TransmissionFunction
 :canonical: abtem.potentials.iam.PotentialArray.transmission_function
 
 ```{autodoc2-docstring} abtem.potentials.iam.PotentialArray.transmission_function
@@ -501,7 +528,7 @@ Bases: {py:obj}`abtem.potentials.iam.BasePotential`, {py:obj}`abtem.potentials.i
 
 ````
 
-````{py:method} transmit(waves: abtem.waves.Waves, conjugate: bool = False) -> abtem.waves.Waves
+````{py:method} transmit(...) -> abtem.waves.Waves
 :canonical: abtem.potentials.iam.PotentialArray.transmit
 
 ```{autodoc2-docstring} abtem.potentials.iam.PotentialArray.transmit
@@ -512,7 +539,7 @@ Bases: {py:obj}`abtem.potentials.iam.BasePotential`, {py:obj}`abtem.potentials.i
 
 `````
 
-`````{py:class} TransmissionFunction(array: numpy.ndarray, slice_thickness: float | typing.Sequence[float], extent: typing.Optional[float | tuple[float, float]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, energy: typing.Optional[float] = None)
+`````{py:class} TransmissionFunction(...)
 :canonical: abtem.potentials.iam.TransmissionFunction
 
 Bases: {py:obj}`abtem.potentials.iam.PotentialArray`, {py:obj}`abtem.core.energy.HasAcceleratorMixin`
@@ -528,7 +555,7 @@ Bases: {py:obj}`abtem.potentials.iam.PotentialArray`, {py:obj}`abtem.core.energy
 :parser: rst
 ```
 
-````{py:method} get_chunk(first_slice, last_slice) -> abtem.potentials.iam.TransmissionFunction
+````{py:method} get_chunk(...) -> abtem.potentials.iam.TransmissionFunction
 :canonical: abtem.potentials.iam.TransmissionFunction.get_chunk
 
 ```{autodoc2-docstring} abtem.potentials.iam.TransmissionFunction.get_chunk
@@ -537,7 +564,7 @@ Bases: {py:obj}`abtem.potentials.iam.PotentialArray`, {py:obj}`abtem.core.energy
 
 ````
 
-````{py:method} transmission_function(energy) -> abtem.potentials.iam.TransmissionFunction
+````{py:method} transmission_function(...) -> abtem.potentials.iam.TransmissionFunction
 :canonical: abtem.potentials.iam.TransmissionFunction.transmission_function
 
 ```{autodoc2-docstring} abtem.potentials.iam.TransmissionFunction.transmission_function
@@ -546,7 +573,7 @@ Bases: {py:obj}`abtem.potentials.iam.PotentialArray`, {py:obj}`abtem.core.energy
 
 ````
 
-````{py:method} transmit(waves: abtem.waves.Waves, conjugate: bool = False) -> abtem.waves.Waves
+````{py:method} transmit(...) -> abtem.waves.Waves
 :canonical: abtem.potentials.iam.TransmissionFunction.transmit
 
 ```{autodoc2-docstring} abtem.potentials.iam.TransmissionFunction.transmit
@@ -557,7 +584,7 @@ Bases: {py:obj}`abtem.potentials.iam.PotentialArray`, {py:obj}`abtem.core.energy
 
 `````
 
-````{py:function} validate_potential(potential: ase.Atoms | abtem.potentials.iam.BasePotential, waves: typing.Optional[abtem.waves.BaseWaves] = None) -> abtem.potentials.iam.BasePotential
+````{py:function} validate_potential(...) -> abtem.potentials.iam.BasePotential
 :canonical: abtem.potentials.iam.validate_potential
 
 ```{autodoc2-docstring} abtem.potentials.iam.validate_potential

@@ -54,7 +54,7 @@
 
 ````
 
-````{py:function} expm(a: numpy.ndarray) -> numpy.ndarray
+````{py:function} expm(...) -> numpy.ndarray
 :canonical: abtem.bloch.matrix_exponential.expm
 
 ```{autodoc2-docstring} abtem.bloch.matrix_exponential.expm

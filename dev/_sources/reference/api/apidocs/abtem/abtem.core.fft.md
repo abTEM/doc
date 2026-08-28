@@ -128,7 +128,7 @@
 
 ````
 
-````{py:function} fft2(x: abtem.core.fft.U, overwrite_x: bool = False, **kwargs) -> abtem.core.fft.U
+````{py:function} fft2(...) -> abtem.core.fft.U
 :canonical: abtem.core.fft.fft2
 
 ```{autodoc2-docstring} abtem.core.fft.fft2
@@ -136,7 +136,7 @@
 ```
 ````
 
-````{py:function} fft2_convolve(x: abtem.core.fft.U, kernel: numpy.ndarray, overwrite_x: bool = False) -> abtem.core.fft.U
+````{py:function} fft2_convolve(...) -> abtem.core.fft.U
 :canonical: abtem.core.fft.fft2_convolve
 
 ```{autodoc2-docstring} abtem.core.fft.fft2_convolve
@@ -144,7 +144,7 @@
 ```
 ````
 
-````{py:function} fft_crop(array: numpy.ndarray, new_shape: tuple[int, ...], normalize: bool = False)
+````{py:function} fft_crop(...)
 :canonical: abtem.core.fft.fft_crop
 
 ```{autodoc2-docstring} abtem.core.fft.fft_crop
@@ -152,7 +152,7 @@
 ```
 ````
 
-````{py:function} fft_interpolate(array: numpy.ndarray, new_shape: typing.Tuple[int, ...], normalization: str = 'values', overwrite_x: bool = False)
+````{py:function} fft_interpolate(...)
 :canonical: abtem.core.fft.fft_interpolate
 
 ```{autodoc2-docstring} abtem.core.fft.fft_interpolate
@@ -160,7 +160,7 @@
 ```
 ````
 
-````{py:function} fft_interpolation_masks(shape_in: tuple[int, ...], shape_out: tuple[int, ...]) -> tuple[numpy.ndarray, numpy.ndarray]
+````{py:function} fft_interpolation_masks(...) -> tuple[numpy.ndarray, numpy.ndarray]
 :canonical: abtem.core.fft.fft_interpolation_masks
 
 ```{autodoc2-docstring} abtem.core.fft.fft_interpolation_masks
@@ -168,7 +168,7 @@
 ```
 ````
 
-````{py:function} fft_shift(array: numpy.ndarray, positions: numpy.ndarray) -> numpy.ndarray
+````{py:function} fft_shift(...) -> numpy.ndarray
 :canonical: abtem.core.fft.fft_shift
 
 ```{autodoc2-docstring} abtem.core.fft.fft_shift
@@ -176,7 +176,7 @@
 ```
 ````
 
-````{py:function} fft_shift_kernel(positions: numpy.ndarray, shape: tuple[int, ...]) -> numpy.ndarray
+````{py:function} fft_shift_kernel(...) -> numpy.ndarray
 :canonical: abtem.core.fft.fft_shift_kernel
 
 ```{autodoc2-docstring} abtem.core.fft.fft_shift_kernel
@@ -184,7 +184,7 @@
 ```
 ````
 
-````{py:function} fftn(x: abtem.core.fft.U, overwrite_x: bool = False, **kwargs) -> abtem.core.fft.U
+````{py:function} fftn(...) -> abtem.core.fft.U
 :canonical: abtem.core.fft.fftn
 
 ```{autodoc2-docstring} abtem.core.fft.fftn
@@ -192,7 +192,7 @@
 ```
 ````
 
-````{py:function} get_fftw_object(array: numpy.ndarray, name: str, allow_new_wisdom: bool = True, overwrite_x: bool = False, axes: tuple[int, ...] = (-2, -1))
+````{py:function} get_fftw_object(...)
 :canonical: abtem.core.fft.get_fftw_object
 
 ```{autodoc2-docstring} abtem.core.fft.get_fftw_object
@@ -200,7 +200,7 @@
 ```
 ````
 
-````{py:function} ifft2(x: abtem.core.fft.U, overwrite_x: bool = False, **kwargs) -> abtem.core.fft.U
+````{py:function} ifft2(...) -> abtem.core.fft.U
 :canonical: abtem.core.fft.ifft2
 
 ```{autodoc2-docstring} abtem.core.fft.ifft2
@@ -208,7 +208,7 @@
 ```
 ````
 
-````{py:function} ifftn(x: abtem.core.fft.U, overwrite_x: bool = False, **kwargs) -> abtem.core.fft.U
+````{py:function} ifftn(...) -> abtem.core.fft.U
 :canonical: abtem.core.fft.ifftn
 
 ```{autodoc2-docstring} abtem.core.fft.ifftn

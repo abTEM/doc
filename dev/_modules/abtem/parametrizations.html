@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -1079,7 +1079,36 @@
 
 <div class="viewcode-block" id="LobatoParametrization.fit">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.parametrizations.html#abtem.parametrizations.LobatoParametrization.fit">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">guess</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">guess</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">regularization</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Fit the scattering factor functional form to data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Z : int</span>
+<span class="sd">            Atomic number the fit is stored under.</span>
+<span class="sd">        k : np.ndarray</span>
+<span class="sd">            Sample points in reciprocal space [1/Å].</span>
+<span class="sd">        f : np.ndarray</span>
+<span class="sd">            Scattering factor values at `k`.</span>
+<span class="sd">        guess : np.ndarray, optional</span>
+<span class="sd">            Initial parameter guess. Defaults to this element's own tabulated</span>
+<span class="sd">            parameters if already present, else the reference `lobato.json`</span>
+<span class="sd">            values.</span>
+<span class="sd">        regularization : float, optional</span>
+<span class="sd">            Weight of an L2 penalty pulling the fit towards `guess`. The</span>
+<span class="sd">            10-parameter functional form has near-degenerate parameter</span>
+<span class="sd">            directions -- pairs of large, nearly-cancelling terms that barely</span>
+<span class="sd">            affect the fitted curve in `k`-space but can shift the</span>
+<span class="sd">            reconstructed real-space potential substantially near `r = 0`.</span>
+<span class="sd">            An unregularized fit (the default, `0.0`) is appropriate when</span>
+<span class="sd">            `f` is essentially exact (e.g. refitting tabulated values through</span>
+<span class="sd">            the same functional form); a small positive value (e.g. `0.05`)</span>
+<span class="sd">            stabilizes those directions when `f` carries its own numerical</span>
+<span class="sd">            noise (e.g. from `GPAWParametrization`), at the cost of biasing</span>
+<span class="sd">            the fit towards `guess`.</span>
+<span class="sd">        """</span>
+
         <span class="k">def</span><span class="w"> </span><span class="nf">reshape_parameters</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
             <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
             <span class="k">return</span> <span class="n">p</span>
@@ -1088,14 +1117,6 @@
             <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:])</span>
             <span class="k">return</span> <span class="n">p</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">make_residuals_func</span><span class="p">(</span><span class="n">k2</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
-            <span class="k">def</span><span class="w"> </span><span class="nf">residuals_func</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
-                <span class="n">p</span> <span class="o">=</span> <span class="n">reshape_parameters</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-                <span class="n">p</span> <span class="o">=</span> <span class="n">apply_constraint</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">target</span> <span class="o">-</span> <span class="n">func</span><span class="p">(</span><span class="n">k2</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
-
-            <span class="k">return</span> <span class="n">residuals_func</span>
 
         <span class="k">if</span> <span class="n">guess</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">chemical_symbols</span><span class="p">[</span><span class="n">Z</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
@@ -1106,10 +1127,18 @@
                 <span class="p">)</span>
 
         <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_functions</span><span class="p">[</span><span class="s2">"scattering_factor"</span><span class="p">]</span>
+        <span class="n">k2</span> <span class="o">=</span> <span class="n">k</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">guess_flat</span> <span class="o">=</span> <span class="n">guess</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 
-        <span class="n">residuals_func</span> <span class="o">=</span> <span class="n">make_residuals_func</span><span class="p">(</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">residuals_func</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+            <span class="n">pr</span> <span class="o">=</span> <span class="n">apply_constraint</span><span class="p">(</span><span class="n">reshape_parameters</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
+            <span class="n">data_residuals</span> <span class="o">=</span> <span class="n">f</span> <span class="o">-</span> <span class="n">func</span><span class="p">(</span><span class="n">k2</span><span class="p">,</span> <span class="n">pr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">regularization</span><span class="p">:</span>
+                <span class="n">reg_residuals</span> <span class="o">=</span> <span class="n">regularization</span> <span class="o">*</span> <span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">guess_flat</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">data_residuals</span><span class="p">,</span> <span class="n">reg_residuals</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">data_residuals</span>
 
-        <span class="n">result</span> <span class="o">=</span> <span class="n">least_squares</span><span class="p">(</span><span class="n">residuals_func</span><span class="p">,</span> <span class="n">guess</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">least_squares</span><span class="p">(</span><span class="n">residuals_func</span><span class="p">,</span> <span class="n">guess_flat</span><span class="p">)</span>
         <span class="n">p_optimal</span> <span class="o">=</span> <span class="n">reshape_parameters</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
         <span class="n">p_optimal</span> <span class="o">=</span> <span class="n">apply_constraint</span><span class="p">(</span><span class="n">p_optimal</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">chemical_symbols</span><span class="p">[</span><span class="n">Z</span><span class="p">]]</span> <span class="o">=</span> <span class="n">p_optimal</span>
@@ -1326,7 +1355,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

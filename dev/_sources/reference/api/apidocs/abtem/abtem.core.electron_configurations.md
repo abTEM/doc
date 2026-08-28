@@ -63,7 +63,7 @@
 
 ### API
 
-````{py:function} aufbau(n_max: int = 7) -> list[tuple[int, int, int]]
+````{py:function} aufbau(...) -> list[tuple[int, int, int]]
 :canonical: abtem.core.electron_configurations.aufbau
 
 ```{autodoc2-docstring} abtem.core.electron_configurations.aufbau
@@ -93,7 +93,7 @@
 
 ````
 
-````{py:function} config_str_to_config_tuples(config_str: str) -> list[tuple]
+````{py:function} config_str_to_config_tuples(...) -> list[tuple]
 :canonical: abtem.core.electron_configurations.config_str_to_config_tuples
 
 ```{autodoc2-docstring} abtem.core.electron_configurations.config_str_to_config_tuples
@@ -101,7 +101,7 @@
 ```
 ````
 
-````{py:function} config_tuples_to_config_str(config_tuples: list[tuple]) -> str
+````{py:function} config_tuples_to_config_str(...) -> str
 :canonical: abtem.core.electron_configurations.config_tuples_to_config_str
 
 ```{autodoc2-docstring} abtem.core.electron_configurations.config_tuples_to_config_str
@@ -120,7 +120,7 @@
 
 ````
 
-````{py:function} remove_electron_from_config_str(config_str: str, n: int, ell: int) -> str
+````{py:function} remove_electron_from_config_str(...) -> str
 :canonical: abtem.core.electron_configurations.remove_electron_from_config_str
 
 ```{autodoc2-docstring} abtem.core.electron_configurations.remove_electron_from_config_str

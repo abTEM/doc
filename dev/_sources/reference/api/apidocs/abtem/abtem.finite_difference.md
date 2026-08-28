@@ -71,14 +71,14 @@
 
 ### API
 
-```{py:exception} DivergedError(message='the multislice exponential series diverged')
+```{py:exception} DivergedError(...)
 :canonical: abtem.finite_difference.DivergedError
 
 Bases: {py:obj}`Exception`
 
 ```
 
-`````{py:class} LaplaceOperator(accuracy)
+`````{py:class} LaplaceOperator(...)
 :canonical: abtem.finite_difference.LaplaceOperator
 
 ```{autodoc2-docstring} abtem.finite_difference.LaplaceOperator
@@ -92,7 +92,7 @@ Bases: {py:obj}`Exception`
 :parser: rst
 ```
 
-````{py:method} apply(waves)
+````{py:method} apply(...)
 :canonical: abtem.finite_difference.LaplaceOperator.apply
 
 ```{autodoc2-docstring} abtem.finite_difference.LaplaceOperator.apply
@@ -101,7 +101,7 @@ Bases: {py:obj}`Exception`
 
 ````
 
-````{py:method} get_stencil(waves: abtem.waves.Waves, device: str = 'cpu') -> typing.Callable
+````{py:method} get_stencil(...) -> typing.Callable
 :canonical: abtem.finite_difference.LaplaceOperator.get_stencil
 
 ```{autodoc2-docstring} abtem.finite_difference.LaplaceOperator.get_stencil
@@ -112,14 +112,14 @@ Bases: {py:obj}`Exception`
 
 `````
 
-```{py:exception} NotConvergedError(message='the series did not converge')
+```{py:exception} NotConvergedError(...)
 :canonical: abtem.finite_difference.NotConvergedError
 
 Bases: {py:obj}`Exception`
 
 ```
 
-````{py:function} conventional_operator(waves: numpy.ndarray | dask.array.core.Array, laplace: typing.Callable, transmission_function: numpy.ndarray, wavelength: float)
+````{py:function} conventional_operator(...)
 :canonical: abtem.finite_difference.conventional_operator
 
 ```{autodoc2-docstring} abtem.finite_difference.conventional_operator
@@ -138,7 +138,7 @@ Bases: {py:obj}`Exception`
 
 ````
 
-````{py:function} finite_difference_coefficients(derivative: int, accuracy: int = 2)
+````{py:function} finite_difference_coefficients(...)
 :canonical: abtem.finite_difference.finite_difference_coefficients
 
 ```{autodoc2-docstring} abtem.finite_difference.finite_difference_coefficients
@@ -146,7 +146,7 @@ Bases: {py:obj}`Exception`
 ```
 ````
 
-````{py:function} full_series(waves: numpy.ndarray | dask.array.core.Array, laplace: typing.Callable, transmission_function: numpy.ndarray, order: int, wavelength: float, thickness: float, override_prefactor: list[float] = [])
+````{py:function} full_series(...)
 :canonical: abtem.finite_difference.full_series
 
 ```{autodoc2-docstring} abtem.finite_difference.full_series
@@ -154,7 +154,7 @@ Bases: {py:obj}`Exception`
 ```
 ````
 
-````{py:function} multislice_step(waves: abtem.waves.Waves, potential_slice: abtem.potentials.iam.PotentialArray, next_slice: abtem.potentials.iam.PotentialArray | None, laplace: abtem.finite_difference.LaplaceOperator, tolerance: float = 1e-16, max_terms: int = 300, order: int = 1, fully_corrected: bool = False) -> abtem.waves.Waves | typing.Sequence[abtem.waves.Waves]
+````{py:function} multislice_step(...) -> abtem.waves.Waves | typing.Sequence[abtem.waves.Waves]
 :canonical: abtem.finite_difference.multislice_step
 
 ```{autodoc2-docstring} abtem.finite_difference.multislice_step
@@ -162,7 +162,7 @@ Bases: {py:obj}`Exception`
 ```
 ````
 
-````{py:function} propagator_taylor_series(waves: numpy.ndarray | dask.array.core.Array, order: int, laplace: typing.Callable, transmission_function: numpy.ndarray, wavelength: float, thickness: float)
+````{py:function} propagator_taylor_series(...)
 :canonical: abtem.finite_difference.propagator_taylor_series
 
 ```{autodoc2-docstring} abtem.finite_difference.propagator_taylor_series

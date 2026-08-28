@@ -40,7 +40,7 @@
 
 ### API
 
-````{py:function} gaussian_charge(r, Z, width)
+````{py:function} gaussian_charge(...)
 :canonical: abtem.parametrizations.functions.ewald.gaussian_charge
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.ewald.gaussian_charge
@@ -48,7 +48,7 @@
 ```
 ````
 
-````{py:function} gaussian_potential(r, Z, width)
+````{py:function} gaussian_potential(...)
 :canonical: abtem.parametrizations.functions.ewald.gaussian_potential
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.ewald.gaussian_potential
@@ -56,7 +56,7 @@
 ```
 ````
 
-````{py:function} point_charge_potential(r, Z)
+````{py:function} point_charge_potential(...)
 :canonical: abtem.parametrizations.functions.ewald.point_charge_potential
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.ewald.point_charge_potential
@@ -64,7 +64,7 @@
 ```
 ````
 
-````{py:function} potential(r, p)
+````{py:function} potential(...)
 :canonical: abtem.parametrizations.functions.ewald.potential
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.ewald.potential

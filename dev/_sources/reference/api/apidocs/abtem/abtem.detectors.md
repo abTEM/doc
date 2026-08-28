@@ -41,6 +41,16 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`SpectralAnnularDetector <abtem.detectors.SpectralAnnularDetector>`
+  - ```{autodoc2-docstring} abtem.detectors.SpectralAnnularDetector
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`SpectralSlitDetector <abtem.detectors.SpectralSlitDetector>`
+  - ```{autodoc2-docstring} abtem.detectors.SpectralSlitDetector
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`WavesDetector <abtem.detectors.WavesDetector>`
   - ```{autodoc2-docstring} abtem.detectors.WavesDetector
     :parser: rst
@@ -63,7 +73,7 @@
 
 ### API
 
-`````{py:class} AnnularDetector(inner: float = 0.0, outer: typing.Optional[float] = None, offset: tuple[float, float] = (0.0, 0.0), to_cpu: bool = True, url: typing.Optional[str] = None)
+`````{py:class} AnnularDetector(...)
 :canonical: abtem.detectors.AnnularDetector
 
 Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
@@ -79,8 +89,12 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 :parser: rst
 ```
 
-````{py:method} angular_limits(waves: abtem.waves.BaseWaves) -> tuple[float, float]
+````{py:method} angular_limits(...) -> tuple[float, float]
 :canonical: abtem.detectors.AnnularDetector.angular_limits
+
+```{autodoc2-docstring} abtem.detectors.AnnularDetector.angular_limits
+:parser: rst
+```
 
 ````
 
@@ -90,7 +104,7 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 
 ````
 
-````{py:method} detect(waves: abtem.transform.WavesType) -> abtem.measurements.Images | abtem.measurements.RealSpaceLineProfiles | abtem.measurements.MeasurementsEnsemble
+````{py:method} detect(...) -> abtem.measurements.Images | abtem.measurements.RealSpaceLineProfiles | abtem.measurements.MeasurementsEnsemble
 :canonical: abtem.detectors.AnnularDetector.detect
 
 ```{autodoc2-docstring} abtem.detectors.AnnularDetector.detect
@@ -99,7 +113,7 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 
 ````
 
-````{py:method} get_detector_region(waves: abtem.waves.BaseWaves, fftshift: bool = True)
+````{py:method} get_detector_region(...)
 :canonical: abtem.detectors.AnnularDetector.get_detector_region
 
 ```{autodoc2-docstring} abtem.detectors.AnnularDetector.get_detector_region
@@ -156,7 +170,7 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 
 `````
 
-`````{py:class} BaseDetector(to_cpu: bool = True, url: typing.Optional[str] = None)
+`````{py:class} BaseDetector(...)
 :canonical: abtem.detectors.BaseDetector
 
 Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.waves.Waves`\, {py:obj}`abtem.measurements.BaseMeasurements | abtem.waves.Waves`\]
@@ -172,17 +186,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.waves.Wave
 :parser: rst
 ```
 
-````{py:method} angular_limits(waves: abtem.waves.Waves) -> tuple[float, float]
-:canonical: abtem.detectors.BaseDetector.angular_limits
-:abstractmethod:
-
-```{autodoc2-docstring} abtem.detectors.BaseDetector.angular_limits
-:parser: rst
-```
-
-````
-
-````{py:method} apply(waves: abtem.waves.Waves, max_batch: int | str = 'auto') -> abtem.measurements.BaseMeasurements | abtem.waves.Waves
+````{py:method} apply(...) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves
 :canonical: abtem.detectors.BaseDetector.apply
 
 ```{autodoc2-docstring} abtem.detectors.BaseDetector.apply
@@ -191,7 +195,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.waves.Wave
 
 ````
 
-````{py:method} detect(waves: abtem.waves.Waves) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves
+````{py:method} detect(...) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves
 :canonical: abtem.detectors.BaseDetector.detect
 
 ```{autodoc2-docstring} abtem.detectors.BaseDetector.detect
@@ -222,7 +226,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.waves.Wave
 
 `````
 
-`````{py:class} FlexibleAnnularDetector(step_size: float = 1.0, inner: float = 0.0, outer: typing.Optional[float] = None, to_cpu: bool = True, url: typing.Optional[str] = None)
+`````{py:class} FlexibleAnnularDetector(...)
 :canonical: abtem.detectors.FlexibleAnnularDetector
 
 Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
@@ -244,7 +248,7 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 
 ````
 
-````{py:method} detect(waves: abtem.waves.Waves) -> abtem.measurements.PolarMeasurements
+````{py:method} detect(...) -> abtem.measurements.PolarMeasurements
 :canonical: abtem.detectors.FlexibleAnnularDetector.detect
 
 ````
@@ -277,7 +281,7 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 
 `````
 
-`````{py:class} PixelatedDetector(max_angle: str | float = 'valid', resample: str | tuple[float, float] | bool = False, reciprocal_space: bool = True, to_cpu: bool = True, url: typing.Optional[str] = None)
+`````{py:class} PixelatedDetector(...)
 :canonical: abtem.detectors.PixelatedDetector
 
 Bases: {py:obj}`abtem.detectors.BaseDetector`
@@ -293,12 +297,16 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 :parser: rst
 ```
 
-````{py:method} angular_limits(waves: abtem.waves.Waves) -> tuple[float, float]
+````{py:method} angular_limits(...) -> tuple[float, float]
 :canonical: abtem.detectors.PixelatedDetector.angular_limits
+
+```{autodoc2-docstring} abtem.detectors.PixelatedDetector.angular_limits
+:parser: rst
+```
 
 ````
 
-````{py:method} detect(waves: abtem.transform.WavesType) -> abtem.measurements.DiffractionPatterns | abtem.measurements.Images
+````{py:method} detect(...) -> abtem.measurements.DiffractionPatterns | abtem.measurements.Images
 :canonical: abtem.detectors.PixelatedDetector.detect
 
 ```{autodoc2-docstring} abtem.detectors.PixelatedDetector.detect
@@ -339,7 +347,7 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 
 `````
 
-`````{py:class} SegmentedDetector(nbins_radial: int, nbins_azimuthal: int, inner: float, outer: float, rotation: float = 0.0, offset: tuple[float, float] = (0.0, 0.0), to_cpu: bool = False, url: typing.Optional[str] = None)
+`````{py:class} SegmentedDetector(...)
 :canonical: abtem.detectors.SegmentedDetector
 
 Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
@@ -392,7 +400,199 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 
 `````
 
-`````{py:class} WavesDetector(gpts: typing.Optional[tuple[int, int]] = None, to_cpu: bool = False, url: typing.Optional[str] = None)
+`````{py:class} SpectralAnnularDetector(...)
+:canonical: abtem.detectors.SpectralAnnularDetector
+
+Bases: {py:obj}`abtem.detectors.AnnularDetector`
+
+```{autodoc2-docstring} abtem.detectors.SpectralAnnularDetector
+:parser: rst
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.detectors.SpectralAnnularDetector.__init__
+:parser: rst
+```
+
+````{py:property} q_max
+:canonical: abtem.detectors.SpectralAnnularDetector.q_max
+:type: typing.Optional[float]
+
+```{autodoc2-docstring} abtem.detectors.SpectralAnnularDetector.q_max
+:parser: rst
+```
+
+````
+
+````{py:property} q_min
+:canonical: abtem.detectors.SpectralAnnularDetector.q_min
+:type: float
+
+```{autodoc2-docstring} abtem.detectors.SpectralAnnularDetector.q_min
+:parser: rst
+```
+
+````
+
+````{py:property} q_sampling
+:canonical: abtem.detectors.SpectralAnnularDetector.q_sampling
+:type: typing.Optional[float]
+
+```{autodoc2-docstring} abtem.detectors.SpectralAnnularDetector.q_sampling
+:parser: rst
+```
+
+````
+
+````{py:method} show(...)
+:canonical: abtem.detectors.SpectralAnnularDetector.show
+
+```{autodoc2-docstring} abtem.detectors.SpectralAnnularDetector.show
+:parser: rst
+```
+
+````
+
+````{py:property} sweep_angle
+:canonical: abtem.detectors.SpectralAnnularDetector.sweep_angle
+:type: float
+
+```{autodoc2-docstring} abtem.detectors.SpectralAnnularDetector.sweep_angle
+:parser: rst
+```
+
+````
+
+`````
+
+`````{py:class} SpectralSlitDetector(...)
+:canonical: abtem.detectors.SpectralSlitDetector
+
+Bases: {py:obj}`abtem.detectors.BaseDetector`
+
+```{autodoc2-docstring} abtem.detectors.SpectralSlitDetector
+:parser: rst
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.detectors.SpectralSlitDetector.__init__
+:parser: rst
+```
+
+````{py:property} angle
+:canonical: abtem.detectors.SpectralSlitDetector.angle
+:type: float
+
+```{autodoc2-docstring} abtem.detectors.SpectralSlitDetector.angle
+:parser: rst
+```
+
+````
+
+````{py:property} corners
+:canonical: abtem.detectors.SpectralSlitDetector.corners
+:type: tuple[float, float, float, float]
+
+```{autodoc2-docstring} abtem.detectors.SpectralSlitDetector.corners
+:parser: rst
+```
+
+````
+
+````{py:method} detect(...) -> abtem.measurements.Images | abtem.measurements.RealSpaceLineProfiles | abtem.measurements.MeasurementsEnsemble
+:canonical: abtem.detectors.SpectralSlitDetector.detect
+
+```{autodoc2-docstring} abtem.detectors.SpectralSlitDetector.detect
+:parser: rst
+```
+
+````
+
+````{py:property} extent
+:canonical: abtem.detectors.SpectralSlitDetector.extent
+:type: float
+
+```{autodoc2-docstring} abtem.detectors.SpectralSlitDetector.extent
+:parser: rst
+```
+
+````
+
+````{py:method} get_detector_region(...)
+:canonical: abtem.detectors.SpectralSlitDetector.get_detector_region
+
+```{autodoc2-docstring} abtem.detectors.SpectralSlitDetector.get_detector_region
+:parser: rst
+```
+
+````
+
+````{py:property} offset
+:canonical: abtem.detectors.SpectralSlitDetector.offset
+:type: tuple[float, float]
+
+```{autodoc2-docstring} abtem.detectors.SpectralSlitDetector.offset
+:parser: rst
+```
+
+````
+
+````{py:property} q_max
+:canonical: abtem.detectors.SpectralSlitDetector.q_max
+:type: float
+
+```{autodoc2-docstring} abtem.detectors.SpectralSlitDetector.q_max
+:parser: rst
+```
+
+````
+
+````{py:property} q_min
+:canonical: abtem.detectors.SpectralSlitDetector.q_min
+:type: float
+
+```{autodoc2-docstring} abtem.detectors.SpectralSlitDetector.q_min
+:parser: rst
+```
+
+````
+
+````{py:property} q_sampling
+:canonical: abtem.detectors.SpectralSlitDetector.q_sampling
+:type: typing.Optional[float]
+
+```{autodoc2-docstring} abtem.detectors.SpectralSlitDetector.q_sampling
+:parser: rst
+```
+
+````
+
+````{py:method} show(...)
+:canonical: abtem.detectors.SpectralSlitDetector.show
+
+```{autodoc2-docstring} abtem.detectors.SpectralSlitDetector.show
+:parser: rst
+```
+
+````
+
+````{py:property} width
+:canonical: abtem.detectors.SpectralSlitDetector.width
+:type: float
+
+```{autodoc2-docstring} abtem.detectors.SpectralSlitDetector.width
+:parser: rst
+```
+
+````
+
+`````
+
+`````{py:class} WavesDetector(...)
 :canonical: abtem.detectors.WavesDetector
 
 Bases: {py:obj}`abtem.detectors.BaseDetector`
@@ -408,12 +608,16 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 :parser: rst
 ```
 
-````{py:method} angular_limits(waves: abtem.waves.BaseWaves) -> tuple[float, float]
+````{py:method} angular_limits(...) -> tuple[float, float]
 :canonical: abtem.detectors.WavesDetector.angular_limits
+
+```{autodoc2-docstring} abtem.detectors.WavesDetector.angular_limits
+:parser: rst
+```
 
 ````
 
-````{py:method} detect(waves: abtem.transform.WavesType) -> abtem.waves.Waves
+````{py:method} detect(...) -> abtem.waves.Waves
 :canonical: abtem.detectors.WavesDetector.detect
 
 ```{autodoc2-docstring} abtem.detectors.WavesDetector.detect
@@ -424,7 +628,7 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 
 `````
 
-````{py:function} validate_detectors(detectors: typing.Optional[BaseDetector | list[BaseDetector]] = None, waves: typing.Optional[abtem.waves.BaseWaves] = None) -> list[BaseDetector]
+````{py:function} validate_detectors(...) -> list[BaseDetector]
 :canonical: abtem.detectors.validate_detectors
 
 ```{autodoc2-docstring} abtem.detectors.validate_detectors

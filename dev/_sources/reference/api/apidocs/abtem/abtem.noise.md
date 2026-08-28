@@ -24,12 +24,12 @@
 
 ### API
 
-`````{py:class} NoiseTransform(dose: float | numpy.ndarray | abtem.distributions.BaseDistribution, samples: typing.Optional[int] = None, seeds: typing.Optional[int | tuple[int, ...]] = None)
+`````{py:class} NoiseTransform(...)
 :canonical: abtem.noise.NoiseTransform
 
 Bases: {py:obj}`abtem.transform.EnsembleTransform`
 
-````{py:method} apply(array_object: abtem.array.ArrayObject, max_batch: int | str = 'auto') -> abtem.array.ArrayObject
+````{py:method} apply(...) -> abtem.array.ArrayObject
 :canonical: abtem.noise.NoiseTransform.apply
 
 ```{autodoc2-docstring} abtem.noise.NoiseTransform.apply
@@ -82,10 +82,19 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 
 `````
 
-`````{py:class} ScanNoiseTransform(rms_power: float | numpy.ndarray | abtem.distributions.BaseDistribution, dwell_time: float, flyback_time: float, samples: typing.Optional[int] = None, max_frequency: float = 500, num_components: int = 1000, seeds: typing.Optional[int | tuple[int, ...]] = None)
+`````{py:class} ScanNoiseTransform(...)
 :canonical: abtem.noise.ScanNoiseTransform
 
 Bases: {py:obj}`abtem.transform.EnsembleTransform`
+
+````{py:method} apply(...) -> abtem.array.ArrayObject
+:canonical: abtem.noise.ScanNoiseTransform.apply
+
+```{autodoc2-docstring} abtem.noise.ScanNoiseTransform.apply
+:parser: rst
+```
+
+````
 
 ````{py:property} dwell_time
 :canonical: abtem.noise.ScanNoiseTransform.dwell_time

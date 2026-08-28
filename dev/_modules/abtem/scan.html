@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -1454,7 +1454,15 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">extent</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_end</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">d</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">extent</span><span class="p">):</span>
+
+            <span class="c1"># A scan with a single position along every axis is degenerate: its extent</span>
+            <span class="c1"># is zero, but the position is still well defined. This occurs both for a</span>
+            <span class="c1"># user-defined one-point scan and when such a scan is partitioned into</span>
+            <span class="c1"># blocks for lazy evaluation.</span>
+            <span class="n">single_point</span> <span class="o">=</span> <span class="n">gpts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gpts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">degenerate</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">extent</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">d</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">extent</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">degenerate</span> <span class="ow">and</span> <span class="n">single_point</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"scan extent must be positive, got </span><span class="si">{</span><span class="n">extent</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">extent</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1527,6 +1535,123 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">probe</span><span class="o">.</span><span class="n">extent</span>
 
         <span class="n">_validate_scan_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">probe</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GridScan.commensurate">
+<a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.scan.html#abtem.scan.GridScan.commensurate">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">commensurate</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">matrix</span><span class="p">:</span> <span class="s2">"BaseSMatrix | BasePotential | Atoms"</span><span class="p">,</span>
+        <span class="n">gpts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">Atom</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">end</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">Atom</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"GridScan"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Create a grid scan whose step is a whole number of pixels of the grid</span>
+<span class="sd">        the given scattering matrix is reduced on.</span>
+
+<span class="sd">        Scattering-matrix reductions with ``upsample=True`` are much faster for</span>
+<span class="sd">        such scans, since every probe position falls on the pixel grid of the</span>
+<span class="sd">        reduced wave functions. The requested number of positions or sampling</span>
+<span class="sd">        is snapped to the nearest whole-pixel step; when the scanned span is</span>
+<span class="sd">        itself a whole number of pixels, the step is snapped to a divisor of</span>
+<span class="sd">        the span so the scan tiles it exactly, otherwise the end point is</span>
+<span class="sd">        moved to the nearest lattice point.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        matrix : BaseSMatrix or BasePotential or Atoms</span>
+<span class="sd">            The scattering matrix (built or not) whose reduction grid the scan</span>
+<span class="sd">            steps along. Given a potential, the grid of a scattering matrix</span>
+<span class="sd">            with default downsampling is assumed.</span>
+<span class="sd">        gpts : one or two int, optional</span>
+<span class="sd">            Requested number of scan positions in the `x`- and `y`-direction.</span>
+<span class="sd">            Provide either gpts or sampling.</span>
+<span class="sd">        sampling : one or two float, optional</span>
+<span class="sd">            Requested sampling rate of the scan positions [Å]. Provide either</span>
+<span class="sd">            gpts or sampling.</span>
+<span class="sd">        start : one or two float or Atom, optional</span>
+<span class="sd">            Start corner of the scan [Å]. Default is (0., 0.).</span>
+<span class="sd">        end : one or two float or Atom, optional</span>
+<span class="sd">            End corner of the scan [Å] (not included, as for</span>
+<span class="sd">            ``endpoint=False``). Default is the scanned extent.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">gpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">sampling</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"provide either gpts or sampling"</span><span class="p">)</span>
+
+        <span class="n">coordinate_potential</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="s2">"downsampled_gpts"</span><span class="p">):</span>
+            <span class="n">matrix</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
+            <span class="n">grid_gpts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">downsampled_gpts</span><span class="p">)</span>
+            <span class="n">grid_extent</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">.</span><span class="n">_valid_extent</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="s2">"wave_vectors"</span><span class="p">):</span>
+            <span class="n">grid_gpts</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">.</span><span class="n">_valid_gpts</span>
+            <span class="n">grid_extent</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">.</span><span class="n">_valid_extent</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">validated_potential</span> <span class="o">=</span> <span class="n">validate_potential</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">validated_potential</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="n">validated_potential</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
+            <span class="n">coordinate_potential</span> <span class="o">=</span> <span class="n">validated_potential</span>
+
+            <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="n">_antialias_cutoff_gpts</span>
+
+            <span class="n">grid_gpts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="n">n</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="n">n</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span>
+                <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">_antialias_cutoff_gpts</span><span class="p">(</span>
+                    <span class="n">validated_potential</span><span class="o">.</span><span class="n">_valid_gpts</span><span class="p">,</span>
+                    <span class="n">validated_potential</span><span class="o">.</span><span class="n">_valid_sampling</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">grid_extent</span> <span class="o">=</span> <span class="n">validated_potential</span><span class="o">.</span><span class="n">_valid_extent</span>
+
+        <span class="n">pixel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">grid_extent</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">grid_gpts</span><span class="p">)</span>
+
+        <span class="n">start_coordinate</span> <span class="o">=</span> <span class="n">validate_coordinate</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">coordinate_potential</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">start_coordinate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">end_coordinate</span> <span class="o">=</span> <span class="n">validate_coordinate</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">coordinate_potential</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">end_coordinate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">end_coordinate</span> <span class="o">=</span> <span class="n">grid_extent</span>
+
+        <span class="n">span_pixels</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">end_coordinate</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">start_coordinate</span><span class="p">))</span> <span class="o">/</span> <span class="n">pixel</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">span_pixels</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"scan span must be positive, got </span><span class="si">{</span><span class="n">span_pixels</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">pixel</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">gpts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">gpts_pair</span> <span class="o">=</span> <span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">gpts</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">))</span> <span class="k">else</span> <span class="n">gpts</span>
+            <span class="n">targets</span> <span class="o">=</span> <span class="n">span_pixels</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gpts_pair</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">targets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">))</span>
+                <span class="k">else</span> <span class="n">sampling</span>
+            <span class="p">)</span> <span class="o">/</span> <span class="n">pixel</span>
+
+        <span class="n">scan_gpts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">scan_end</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">target</span><span class="p">,</span> <span class="n">span</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">delta</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="n">targets</span><span class="p">,</span> <span class="n">span_pixels</span><span class="p">,</span> <span class="n">start_coordinate</span><span class="p">,</span> <span class="n">pixel</span>
+        <span class="p">):</span>
+            <span class="n">whole_span</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">span</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">whole_span</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">span</span> <span class="o">-</span> <span class="n">whole_span</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+                <span class="n">step</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">whole_span</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">whole_span</span> <span class="o">%</span> <span class="n">d</span> <span class="o">==</span> <span class="mi">0</span><span class="p">),</span>
+                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">d</span> <span class="o">-</span> <span class="n">target</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="n">whole_span</span> <span class="o">//</span> <span class="n">step</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">step</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">target</span><span class="p">)))</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">span</span> <span class="o">/</span> <span class="n">step</span><span class="p">)))</span>
+            <span class="n">scan_gpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">scan_end</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">origin</span> <span class="o">+</span> <span class="n">n</span> <span class="o">*</span> <span class="n">step</span> <span class="o">*</span> <span class="n">delta</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">start_coordinate</span><span class="p">,</span>
+            <span class="n">end</span><span class="o">=</span><span class="p">(</span><span class="n">scan_end</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">scan_end</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="n">gpts</span><span class="o">=</span><span class="p">(</span><span class="n">scan_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">scan_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_x_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1772,7 +1897,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

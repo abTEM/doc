@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -904,6 +904,16 @@
 <span class="sd">        Truncate the distribution at this many standard deviations (default is 3.0).</span>
 <span class="sd">    normalize : str, optional</span>
 <span class="sd">        Specifies whether to normalize the 'intensity' (default) or 'amplitude'.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The Gaussian distribution is parameterized by its standard deviation σ</span>
+<span class="sd">    (``standard_deviation``). The corresponding full-width at half-maximum is</span>
+<span class="sd">    FWHM_G = 2√(2 ln 2)·σ ≈ 2.3548·σ.</span>
+
+<span class="sd">    Note that the Lorentzian and Voigt distributions use the half-width at</span>
+<span class="sd">    half-maximum (HWHM) γ as their width parameter, so for the same FWHM one</span>
+<span class="sd">    needs γ = FWHM / 2 but σ = FWHM / (2√(2 ln 2)) ≈ FWHM / 2.3548.</span>
 <span class="sd">    """</span>
     <span class="n">center</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
     <span class="n">standard_deviation</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">standard_deviation</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
@@ -920,6 +930,369 @@
         <span class="p">)</span>
 
         <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">values</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">standard_deviation</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"intensity"</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"amplitude"</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">/=</span> <span class="n">weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown normalization method: </span><span class="si">{</span><span class="n">normalize</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="n">distributions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">DistributionFromValues</span><span class="p">(</span>
+                <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">ensemble_mean</span><span class="o">=</span><span class="n">ensemble_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">MultidimensionalDistribution</span><span class="p">(</span><span class="n">distributions</span><span class="o">=</span><span class="n">distributions</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="lorentzian">
+<a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.distributions.html#abtem.distributions.lorentzian">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">lorentzian</span><span class="p">(</span>
+    <span class="n">half_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">dimension</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">center</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">ensemble_mean</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">sampling_limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"intensity"</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultidimensionalDistribution</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return a distribution with values weighted according to a (multidimensional)</span>
+<span class="sd">    Lorentzian (Cauchy) distribution. The values are evenly spaced within a given</span>
+<span class="sd">    truncation of the distribution. As an example, this distribution may be used for</span>
+<span class="sd">    simulating focal spread due to an energy-loss spectrum with Lorentzian tails.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    half_width : float or tuple of float</span>
+<span class="sd">        The half-width at half-maximum (HWHM) of the distribution. The half-widths</span>
+<span class="sd">        may be given for each axis as a tuple, or as a single number, in which case</span>
+<span class="sd">        it is equal for all axes.</span>
+<span class="sd">    num_samples : int or tuple of int</span>
+<span class="sd">        Number of evenly spaced samples. The number of samples may be given for each</span>
+<span class="sd">        axis as a tuple, or as a single number, in which case it is equal for all axes.</span>
+<span class="sd">    dimension : int, optional</span>
+<span class="sd">        Number of dimensions of the distribution.</span>
+<span class="sd">    center : float or tuple of float</span>
+<span class="sd">        The center of the distribution (default is 0.0). The center may be given for</span>
+<span class="sd">        each axis as a tuple, or as a single number, in which case it is equal for</span>
+<span class="sd">        all axes.</span>
+<span class="sd">    ensemble_mean : bool or tuple of bool, optional</span>
+<span class="sd">        If True, the mean of the ensemble of measurements defined by the distribution</span>
+<span class="sd">        is calculated, otherwise the full ensemble is kept. Default is True.</span>
+<span class="sd">    sampling_limit : float or tuple of float, optional</span>
+<span class="sd">        Truncate the distribution at this many half-widths (default is 10.0). The</span>
+<span class="sd">        Lorentzian has heavier tails than the Gaussian, so a larger truncation is</span>
+<span class="sd">        recommended.</span>
+<span class="sd">    normalize : str, optional</span>
+<span class="sd">        Specifies whether to normalize the 'intensity' (default) or 'amplitude'.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The Lorentzian distribution is parameterized by its half-width at half-maximum</span>
+<span class="sd">    (HWHM) γ (``half_width``). The corresponding full-width at half-maximum is</span>
+<span class="sd">    FWHM_L = 2γ.</span>
+
+<span class="sd">    Note that the Gaussian distribution uses the standard deviation σ as its width</span>
+<span class="sd">    parameter. For the same FWHM one needs γ = FWHM / 2 but</span>
+<span class="sd">    σ = FWHM / (2√(2 ln 2)) ≈ FWHM / 2.3548.</span>
+
+<span class="sd">    The Lorentzian source-size model is described in [1]_.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] D.T. Nguyen, S.D. Findlay, J. Etheridge, "The spatial coherence function</span>
+<span class="sd">       in scanning transmission electron microscopy and spectroscopy",</span>
+<span class="sd">       *Ultramicroscopy* **146**, 6–16 (2014).</span>
+<span class="sd">       https://doi.org/10.1016/j.ultramic.2014.04.008</span>
+<span class="sd">    """</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">half_width</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">half_width</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">ensemble_mean</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">ensemble_mean</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">sampling_limit</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">sampling_limit</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">num_samples</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+
+    <span class="n">distributions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseDistribution</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimension</span><span class="p">):</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+            <span class="o">-</span><span class="n">half_width</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">half_width</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="n">weights</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">((</span><span class="n">values</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">half_width</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"intensity"</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"amplitude"</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">/=</span> <span class="n">weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown normalization method: </span><span class="si">{</span><span class="n">normalize</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="n">distributions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">DistributionFromValues</span><span class="p">(</span>
+                <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">ensemble_mean</span><span class="o">=</span><span class="n">ensemble_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">MultidimensionalDistribution</span><span class="p">(</span><span class="n">distributions</span><span class="o">=</span><span class="n">distributions</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="voigtian">
+<a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.distributions.html#abtem.distributions.voigtian">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">voigtian</span><span class="p">(</span>
+    <span class="n">gaussian_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">lorentzian_gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">dimension</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">center</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">ensemble_mean</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">sampling_limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"intensity"</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultidimensionalDistribution</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return a distribution with values weighted according to a (multidimensional)</span>
+<span class="sd">    Voigtian distribution, which is the convolution of a Gaussian and a Lorentzian.</span>
+<span class="sd">    The values are evenly spaced within a given truncation of the distribution.</span>
+<span class="sd">    As an example, this distribution may be used for simulating focal spread due</span>
+<span class="sd">    to an energy-loss spectrum with both Gaussian and Lorentzian contributions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gaussian_sigma : float or tuple of float</span>
+<span class="sd">        The standard deviation (σ) of the Gaussian component. The standard deviations</span>
+<span class="sd">        may be given for each axis as a tuple, or as a single number, in which case</span>
+<span class="sd">        it is equal for all axes.</span>
+<span class="sd">    lorentzian_gamma : float or tuple of float</span>
+<span class="sd">        The half-width at half-maximum (HWHM, γ) of the Lorentzian component. The</span>
+<span class="sd">        half-widths may be given for each axis as a tuple, or as a single number,</span>
+<span class="sd">        in which case it is equal for all axes.</span>
+<span class="sd">    num_samples : int or tuple of int</span>
+<span class="sd">        Number of evenly spaced samples. The number of samples may be given for each</span>
+<span class="sd">        axis as a tuple, or as a single number, in which case it is equal for all axes.</span>
+<span class="sd">    dimension : int, optional</span>
+<span class="sd">        Number of dimensions of the distribution.</span>
+<span class="sd">    center : float or tuple of float</span>
+<span class="sd">        The center of the distribution (default is 0.0). The center may be given for</span>
+<span class="sd">        each axis as a tuple, or as a single number, in which case it is equal for</span>
+<span class="sd">        all axes.</span>
+<span class="sd">    ensemble_mean : bool or tuple of bool, optional</span>
+<span class="sd">        If True, the mean of the ensemble of measurements defined by the distribution</span>
+<span class="sd">        is calculated, otherwise the full ensemble is kept. Default is True.</span>
+<span class="sd">    sampling_limit : float or tuple of float, optional</span>
+<span class="sd">        Truncate the distribution at this many Voigt half-widths (default is 5.0).</span>
+<span class="sd">        The Voigt HWHM is estimated using the Thompson et al. (1987) approximation.</span>
+<span class="sd">    normalize : str, optional</span>
+<span class="sd">        Specifies whether to normalize the 'intensity' (default) or 'amplitude'.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The Voigt profile is the convolution of a Gaussian and a Lorentzian, with two</span>
+<span class="sd">    independent width parameters:</span>
+
+<span class="sd">    * ``gaussian_sigma`` (σ): standard deviation of the Gaussian component;</span>
+<span class="sd">      FWHM_G = 2√(2 ln 2)·σ ≈ 2.3548·σ.</span>
+<span class="sd">    * ``lorentzian_gamma`` (γ): half-width at half-maximum (HWHM) of the</span>
+<span class="sd">      Lorentzian component; FWHM_L = 2γ.</span>
+
+<span class="sd">    Because the two components use different parameterizations, σ and γ are</span>
+<span class="sd">    *not* directly comparable: for the same FWHM one needs γ = FWHM / 2 but</span>
+<span class="sd">    σ = FWHM / (2√(2 ln 2)) ≈ FWHM / 2.3548.</span>
+
+<span class="sd">    The profile is computed exactly via the Faddeeva function</span>
+<span class="sd">    (``scipy.special.wofz``). The degenerate limits σ → 0 (pure Lorentzian)</span>
+<span class="sd">    and γ → 0 (pure Gaussian) are handled analytically.</span>
+
+<span class="sd">    Note that Nguyen et al. (2014) proposed a pseudo-Voigt (weighted sum of</span>
+<span class="sd">    Gaussian and Lorentzian) rather than the true convolution implemented here;</span>
+<span class="sd">    see :func:`pseudo_voigtian` for that model.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">wofz</span>
+
+    <span class="n">center</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">gaussian_sigma</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">gaussian_sigma</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">lorentzian_gamma</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">lorentzian_gamma</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">ensemble_mean</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">ensemble_mean</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">sampling_limit</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">sampling_limit</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">num_samples</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+
+    <span class="n">distributions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseDistribution</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimension</span><span class="p">):</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="n">gaussian_sigma</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="n">lorentzian_gamma</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">sigma</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">gamma</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"At least one of gaussian_sigma or lorentzian_gamma must be non-zero."</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Voigt HWHM estimate via Thompson et al. (1987) for the sampling range</span>
+        <span class="n">fG</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span><span class="p">))</span>  <span class="c1"># Gaussian FWHM</span>
+        <span class="n">fL</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">gamma</span>  <span class="c1"># Lorentzian FWHM</span>
+        <span class="n">f5</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">fG</span><span class="o">**</span><span class="mi">5</span>
+            <span class="o">+</span> <span class="mf">2.69269</span> <span class="o">*</span> <span class="n">fG</span><span class="o">**</span><span class="mi">4</span> <span class="o">*</span> <span class="n">fL</span>
+            <span class="o">+</span> <span class="mf">2.42843</span> <span class="o">*</span> <span class="n">fG</span><span class="o">**</span><span class="mi">3</span> <span class="o">*</span> <span class="n">fL</span><span class="o">**</span><span class="mi">2</span>
+            <span class="o">+</span> <span class="mf">4.47163</span> <span class="o">*</span> <span class="n">fG</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">fL</span><span class="o">**</span><span class="mi">3</span>
+            <span class="o">+</span> <span class="mf">0.07842</span> <span class="o">*</span> <span class="n">fG</span> <span class="o">*</span> <span class="n">fL</span><span class="o">**</span><span class="mi">4</span>
+            <span class="o">+</span> <span class="n">fL</span><span class="o">**</span><span class="mi">5</span>
+        <span class="p">)</span>
+        <span class="n">voigt_hwhm</span> <span class="o">=</span> <span class="n">f5</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">5.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+            <span class="o">-</span><span class="n">voigt_hwhm</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">voigt_hwhm</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">sigma</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">((</span><span class="n">values</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">gamma</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">values</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="p">((</span><span class="n">values</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">sigma</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="p">))</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">wofz</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"intensity"</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"amplitude"</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">/=</span> <span class="n">weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown normalization method: </span><span class="si">{</span><span class="n">normalize</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="n">distributions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">DistributionFromValues</span><span class="p">(</span>
+                <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">ensemble_mean</span><span class="o">=</span><span class="n">ensemble_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">MultidimensionalDistribution</span><span class="p">(</span><span class="n">distributions</span><span class="o">=</span><span class="n">distributions</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="pseudo_voigtian">
+<a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.distributions.html#abtem.distributions.pseudo_voigtian">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pseudo_voigtian</span><span class="p">(</span>
+    <span class="n">gaussian_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">lorentzian_gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">eta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">dimension</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">center</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">ensemble_mean</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">sampling_limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"intensity"</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultidimensionalDistribution</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return a distribution with values weighted according to a (multidimensional)</span>
+<span class="sd">    pseudo-Voigtian distribution, which is a weighted linear sum of a Gaussian and</span>
+<span class="sd">    a Lorentzian (not their convolution). The values are evenly spaced within a</span>
+<span class="sd">    given truncation of the distribution.</span>
+
+<span class="sd">    The pseudo-Voigt model was proposed by Nguyen et al. (2014) to describe the</span>
+<span class="sd">    spatial coherence function in STEM. See :func:`voigtian` for the true</span>
+<span class="sd">    convolution (exact Voigt profile).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gaussian_sigma : float or tuple of float</span>
+<span class="sd">        The standard deviation (σ) of the Gaussian component. May be given for</span>
+<span class="sd">        each axis as a tuple, or as a single number equal for all axes.</span>
+<span class="sd">    lorentzian_gamma : float or tuple of float</span>
+<span class="sd">        The half-width at half-maximum (HWHM, γ) of the Lorentzian component.</span>
+<span class="sd">        May be given for each axis as a tuple, or as a single number equal for</span>
+<span class="sd">        all axes.</span>
+<span class="sd">    eta : float or tuple of float</span>
+<span class="sd">        The Lorentzian mixing fraction η ∈ [0, 1]. η = 0 gives a pure Gaussian;</span>
+<span class="sd">        η = 1 gives a pure Lorentzian. May be given for each axis as a tuple,</span>
+<span class="sd">        or as a single number equal for all axes.</span>
+<span class="sd">    num_samples : int or tuple of int</span>
+<span class="sd">        Number of evenly spaced samples. May be given for each axis as a tuple,</span>
+<span class="sd">        or as a single number equal for all axes.</span>
+<span class="sd">    dimension : int, optional</span>
+<span class="sd">        Number of dimensions of the distribution.</span>
+<span class="sd">    center : float or tuple of float</span>
+<span class="sd">        The center of the distribution (default is 0.0). May be given for each</span>
+<span class="sd">        axis as a tuple, or as a single number equal for all axes.</span>
+<span class="sd">    ensemble_mean : bool or tuple of bool, optional</span>
+<span class="sd">        If True, the mean of the ensemble of measurements defined by the</span>
+<span class="sd">        distribution is calculated, otherwise the full ensemble is kept.</span>
+<span class="sd">        Default is True.</span>
+<span class="sd">    sampling_limit : float or tuple of float, optional</span>
+<span class="sd">        Truncate the distribution at this many widths (default is 10.0). The</span>
+<span class="sd">        effective width is max(σ, γ), so the range is sampling_limit·max(σ, γ)</span>
+<span class="sd">        on each side of the center.</span>
+<span class="sd">    normalize : str, optional</span>
+<span class="sd">        Specifies whether to normalize the 'intensity' (default) or 'amplitude'.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The pseudo-Voigt profile is</span>
+
+<span class="sd">        PV(x) = (1 - η) · G(x; σ) + η · L(x; γ)</span>
+
+<span class="sd">    where G and L are un-normalized Gaussian and Lorentzian profiles evaluated</span>
+<span class="sd">    on the same grid, and the result is normalized before use.</span>
+
+<span class="sd">    Width parameterization:</span>
+
+<span class="sd">    * ``gaussian_sigma`` (σ): standard deviation; FWHM_G = 2√(2 ln 2)·σ ≈ 2.3548·σ.</span>
+<span class="sd">    * ``lorentzian_gamma`` (γ): HWHM; FWHM_L = 2γ.</span>
+
+<span class="sd">    For the same FWHM, γ = FWHM / 2 whereas σ = FWHM / (2√(2 ln 2)) ≈ FWHM / 2.3548.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] D.T. Nguyen, S.D. Findlay, J. Etheridge, "The spatial coherence function</span>
+<span class="sd">       in scanning transmission electron microscopy and spectroscopy",</span>
+<span class="sd">       *Ultramicroscopy* **146**, 6–16 (2014).</span>
+<span class="sd">       https://doi.org/10.1016/j.ultramic.2014.04.008</span>
+<span class="sd">    """</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">gaussian_sigma</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">gaussian_sigma</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">lorentzian_gamma</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">lorentzian_gamma</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">eta</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">ensemble_mean</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">ensemble_mean</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">sampling_limit</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">sampling_limit</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="n">num_samples</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+
+    <span class="n">distributions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseDistribution</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimension</span><span class="p">):</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="n">gaussian_sigma</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="n">lorentzian_gamma</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">eta_i</span> <span class="o">=</span> <span class="n">eta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="n">hw</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hw</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"At least one of gaussian_sigma or lorentzian_gamma must be non-zero."</span>
+            <span class="p">)</span>
+
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+            <span class="o">-</span><span class="n">hw</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">hw</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">values</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">sigma</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">g_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">g_weights</span><span class="p">[</span><span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">g_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">gamma</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">l_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">l_weights</span><span class="p">[</span><span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">l_weights</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">weights</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">eta_i</span><span class="p">)</span> <span class="o">*</span> <span class="n">g_weights</span> <span class="o">+</span> <span class="n">eta_i</span> <span class="o">*</span> <span class="n">l_weights</span>
 
         <span class="k">if</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"intensity"</span><span class="p">:</span>
             <span class="n">weights</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
@@ -1149,7 +1522,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

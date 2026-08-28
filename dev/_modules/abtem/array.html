@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -568,7 +568,9 @@
     <span class="n">copy_to_device</span><span class="p">,</span>
     <span class="n">cp</span><span class="p">,</span>
     <span class="n">device_name_from_array_module</span><span class="p">,</span>
+    <span class="n">ensure_cuda_cluster</span><span class="p">,</span>
     <span class="n">get_array_module</span><span class="p">,</span>
+    <span class="n">is_gpu_dask_client</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chunks</span><span class="p">,</span> <span class="n">iterate_chunk_ranges</span><span class="p">,</span> <span class="n">validate_chunks</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ensemble</span><span class="p">,</span> <span class="n">_wrap_with_array</span><span class="p">,</span> <span class="n">unpack_blockwise_args</span>
@@ -949,7 +951,20 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">compute</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">delayed_write</span>
 
-        <span class="k">with</span> <span class="n">_compute_context</span><span class="p">(</span>
+        <span class="c1"># On GPU, force the synchronous scheduler to avoid multiple dask tasks</span>
+        <span class="c1"># running in parallel, each loading potential chunks + wave arrays into</span>
+        <span class="c1"># VRAM simultaneously. We must use dask.config.set() (via the guard) rather</span>
+        <span class="c1"># than just passing scheduler= to dask.compute(), because the delayed graph</span>
+        <span class="c1"># contains inner array.compute() calls that would otherwise use dask's</span>
+        <span class="c1"># default threaded scheduler. The guard makes an exception for an active</span>
+        <span class="c1"># single-threaded dask-cuda client, which already runs one task per GPU.</span>
+        <span class="n">is_gpu</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"device"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"gpu"</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="n">_is_gpu_array_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_gpu</span><span class="p">:</span>
+            <span class="n">check_cupy_is_installed</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="n">_gpu_scheduler_guard</span><span class="p">(</span><span class="n">is_gpu</span><span class="p">),</span> <span class="n">_compute_context</span><span class="p">(</span>
             <span class="n">progress_bar</span><span class="p">,</span> <span class="n">profiler</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">resource_profiler</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span> <span class="k">as</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">profiler</span><span class="p">,</span> <span class="n">resource_profiler</span><span class="p">):</span>
             <span class="n">output</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">delayed_write</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -1027,6 +1042,46 @@
         <span class="k">yield</span> <span class="n">progress_bar_ctx1</span><span class="p">,</span> <span class="n">profiler_ctx1</span><span class="p">,</span> <span class="n">resource_profiler_ctx1</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_gpu_array_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Return True if obj's computation involves GPU (CuPy) arrays.</span>
+
+<span class="sd">    Detects GPU even when the output array has numpy meta, e.g. when a detector</span>
+<span class="sd">    with to_cpu=True produces CPU-resident results from GPU wave computations.</span>
+<span class="sd">    ArrayObject.device checks _device first (set in apply_transform when the source</span>
+<span class="sd">    was GPU), so this correctly handles the to_cpu=True case.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">"device"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="s2">"gpu"</span>
+
+
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_gpu_scheduler_guard</span><span class="p">(</span><span class="n">is_gpu</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Guard nested/implicit GPU computes against the threaded scheduler.</span>
+
+<span class="sd">    On GPU, force the synchronous scheduler so that nested ``array.compute()``</span>
+<span class="sd">    calls cannot fall back to dask's default threaded scheduler and load multiple</span>
+<span class="sd">    potential/wave chunks into a single GPU's memory at once. When a single-</span>
+<span class="sd">    threaded dask-cuda client is active (one worker pinned per GPU), that per-GPU</span>
+<span class="sd">    exclusivity already holds inside each worker, so the work is left to the</span>
+<span class="sd">    client to distribute across the cluster instead of being forced synchronous.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_gpu</span><span class="p">:</span>
+        <span class="k">yield</span>
+        <span class="k">return</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">distributed</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_client</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">get_client</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">is_gpu_dask_client</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+        <span class="k">yield</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">dask</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">"synchronous"</span><span class="p">):</span>
+            <span class="k">yield</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_compute</span><span class="p">(</span>
     <span class="n">array_objects</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ArrayObjectType</span><span class="p">],</span>
     <span class="n">progress_bar</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1035,20 +1090,35 @@
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">ArrayObjectType</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">]:</span>
     <span class="n">is_gpu</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"device"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"gpu"</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
-        <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">"device"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="s2">"gpu"</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">array_objects</span>
+        <span class="n">_is_gpu_array_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">array_objects</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">is_gpu</span><span class="p">:</span>
         <span class="n">check_cupy_is_installed</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="s2">"scheduler"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">distributed</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_client</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="n">get_client</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Start a dask-cuda cluster spanning all visible GPUs when multi-GPU is</span>
+        <span class="c1"># enabled, no client is already handling the computation, and the user has</span>
+        <span class="c1"># not explicitly requested a scheduler.</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">client</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="s2">"scheduler"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span>
+            <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"dask.multi-gpu"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">cp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">getDeviceCount</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span>
+        <span class="p">):</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="n">ensure_cuda_cluster</span><span class="p">()</span>
+
+        <span class="c1"># The threaded scheduler and multi-threaded workers cannot be used with CuPy;</span>
+        <span class="c1"># fall back to synchronous execution unless a suitable (dask-cuda) client is</span>
+        <span class="c1"># handling the computation.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_gpu_dask_client</span><span class="p">(</span><span class="n">client</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"scheduler"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="s2">"scheduler"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"synchronous"</span>
-
-        <span class="k">if</span> <span class="s2">"num_workers"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s2">"num_workers"</span><span class="p">]</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">getDeviceCount</span><span class="p">()</span>
-
-        <span class="k">if</span> <span class="s2">"threads_per_worker"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s2">"threads_per_worker"</span><span class="p">]</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">getDeviceCount</span><span class="p">()</span>
 
     <span class="k">with</span> <span class="n">_compute_context</span><span class="p">(</span>
         <span class="n">progress_bar</span><span class="p">,</span> <span class="n">profiler</span><span class="o">=</span><span class="n">profiler</span><span class="p">,</span> <span class="n">resource_profiler</span><span class="o">=</span><span class="n">resource_profiler</span>
@@ -1385,6 +1455,10 @@
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""The device where the array is stored."""</span>
+        <span class="c1"># _device may be set explicitly (e.g. for CPU-resident measurements that</span>
+        <span class="c1"># were produced by GPU computation) following the WavesBuilder convention.</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_device"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_device</span>
         <span class="k">return</span> <span class="n">device_name_from_array_module</span><span class="p">(</span><span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">))</span>
 
     <span class="nd">@property</span>
@@ -1837,7 +1911,10 @@
             <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">squeezed</span>
         <span class="p">]</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_device"</span><span class="p">):</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">_device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_device</span>
+        <span class="k">return</span> <span class="n">result</span></div>
 
 
 <div class="viewcode-block" id="ArrayObject.ensure_lazy">
@@ -2141,6 +2218,15 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">max_batch</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
                 <span class="n">max_batch</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_batch</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_shape</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">max_batch</span> <span class="o">==</span> <span class="s2">"auto"</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="s2">"gpu"</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="n">estimate_scan_batch_size</span>
+
+                <span class="n">n_probes</span> <span class="o">=</span> <span class="n">estimate_scan_batch_size</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">base_shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="s2">"gpu"</span>
+                <span class="p">)</span>
+                <span class="c1"># Convert probes → total elements so validate_chunks</span>
+                <span class="c1"># receives an int and skips its own config-based "auto" path.</span>
+                <span class="n">max_batch</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_probes</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_shape</span><span class="p">))</span>
 
             <span class="n">chunks</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">_default_ensemble_chunks</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lazy_array</span><span class="o">.</span><span class="n">chunks</span>
 
@@ -2228,6 +2314,14 @@
             <span class="n">output</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_array_and_metadata</span><span class="p">(</span>
                 <span class="n">array</span><span class="p">,</span> <span class="n">axes_metadata</span><span class="o">=</span><span class="n">axes_metadata</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span>
             <span class="p">)</span>
+            <span class="c1"># When the source was on GPU but the output is CPU-resident</span>
+            <span class="c1"># Record the computation device on the output so _compute()</span>
+            <span class="c1"># selects the synchronous scheduler for GPU work.  Check</span>
+            <span class="c1"># self.device (which honours _device on lazy arrays) rather</span>
+            <span class="c1"># than inspecting the dask-array module, which always returns</span>
+            <span class="c1"># numpy for a not-yet-computed lazy array.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="s2">"gpu"</span><span class="p">:</span>
+                <span class="n">output</span><span class="o">.</span><span class="n">_device</span> <span class="o">=</span> <span class="s2">"gpu"</span>
             <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -2965,7 +3059,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

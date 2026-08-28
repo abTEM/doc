@@ -25,7 +25,7 @@
 
 ### API
 
-`````{py:class} TqdmWrapper(*args, enabled: typing.Optional[bool] = None, **kwargs: typing.Any)
+`````{py:class} TqdmWrapper(...)
 :canonical: abtem.core.diagnostics.TqdmWrapper
 
 ```{autodoc2-docstring} abtem.core.diagnostics.TqdmWrapper
@@ -57,7 +57,7 @@
 
 ````
 
-````{py:method} update_if_exists(n: int = 1) -> None
+````{py:method} update_if_exists(...) -> None
 :canonical: abtem.core.diagnostics.TqdmWrapper.update_if_exists
 
 ```{autodoc2-docstring} abtem.core.diagnostics.TqdmWrapper.update_if_exists

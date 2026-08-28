@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -527,6 +527,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bisect</span><span class="w"> </span><span class="kn">import</span> <span class="n">bisect_left</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -534,25 +535,17 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">chemical_symbols</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numba</span><span class="w"> </span><span class="kn">import</span> <span class="n">jit</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">spherical_jn</span>
 
-<span class="c1"># ---------</span>
-<span class="c1"># This is a version check for scipy &gt;=v1.17.0</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">version</span><span class="p">,</span> <span class="n">PackageNotFoundError</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">packaging.version</span><span class="w"> </span><span class="kn">import</span> <span class="n">Version</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>
-    <span class="n">_SCIPY_VERSION</span> <span class="o">=</span> <span class="n">Version</span><span class="p">(</span><span class="n">version</span><span class="p">(</span><span class="s2">"scipy"</span><span class="p">))</span>
-<span class="k">except</span> <span class="n">PackageNotFoundError</span><span class="p">:</span>
-    <span class="n">scipy</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">_SCIPY_VERSION</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># sph_harm_y is the non-deprecated replacement for sph_harm, available</span>
+    <span class="c1"># since scipy 1.15; sph_harm itself is removed in scipy 1.17.</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">sph_harm_y</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">sph_harm</span>
 
-<span class="k">if</span> <span class="n">_SCIPY_VERSION</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_SCIPY_VERSION</span> <span class="o">&gt;=</span> <span class="n">Version</span><span class="p">(</span><span class="s2">"1.17.0"</span><span class="p">):</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">spherical_jn</span><span class="p">,</span> <span class="n">sph_harm_y</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">spherical_jn</span><span class="p">,</span> <span class="n">sph_harm</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">sph_harm_y</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">phi</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">sph_harm</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
-<span class="c1"># ---------</span>
 
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.array</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayObject</span>
@@ -763,7 +756,12 @@
 <span class="w">    </span><span class="sd">"""Given precomputed function f(x), solves for x(t), which satisfies:</span>
 <span class="sd">    x''(t) = f(t) x(t)</span>
 <span class="sd">    """</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+    <span class="c1"># f.copy() rather than np.zeros(len(f)): some numba/numpy pairings</span>
+    <span class="c1"># (observed: numba 0.64.0 + numpy 2.4.3) fail to type numba's internal</span>
+    <span class="c1"># np.zeros -&gt; np.empty lowering inside @njit, while ndarray.copy() is</span>
+    <span class="c1"># unaffected. Every element of x is overwritten below before being</span>
+    <span class="c1"># read, so the borrowed initial values from f are never used.</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x0</span>
     <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="n">dh</span> <span class="o">*</span> <span class="n">dx</span>
     <span class="n">h2</span> <span class="o">=</span> <span class="n">dh</span><span class="o">**</span><span class="mi">2</span>
@@ -1164,7 +1162,7 @@
         <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
                 <span class="s2">"Calculating core-loss EELS form factors requires sympy. "</span>
-                <span class="s2">"Install it with `pip install abtem[core-loss]` or "</span>
+                <span class="s2">"Install it with `pip install abtem[gpaw]` or "</span>
                 <span class="s2">"`pip install sympy`."</span>
             <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
@@ -1719,128 +1717,978 @@
 
 
 
-<div class="viewcode-block" id="linear_scaling_transition_multislice">
-<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html#abtem.inelastic.core_loss.linear_scaling_transition_multislice">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">linear_scaling_transition_multislice</span><span class="p">(</span>
-    <span class="n">S1</span><span class="p">:</span> <span class="n">SMatrix</span><span class="p">,</span> <span class="n">S2</span><span class="p">:</span> <span class="n">SMatrix</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">transition_potentials</span><span class="p">,</span> <span class="n">reverse_multislice</span><span class="o">=</span><span class="kc">False</span>
-<span class="p">):</span>
-    <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.auto</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_scattering_sites</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="n">sites</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Extract scattering sites from a potential, or validate provided sites.</span>
 
-    <span class="n">positions</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="sd">    Handles ``Potential`` (via ``get_sliced_atoms``), ``FrozenPhonons``-wrapped</span>
+<span class="sd">    potentials (via ``atoms``), and ``CrystalPotential`` (via</span>
+<span class="sd">    ``potential_unit.get_transformed_atoms`` tiled by ``repetitions``).</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.slicing</span><span class="w"> </span><span class="kn">import</span> <span class="n">SliceIndexedAtoms</span>
 
-    <span class="n">prism_region</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">S1</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">S1</span><span class="o">.</span><span class="n">interpolation</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
-        <span class="n">S1</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">S1</span><span class="o">.</span><span class="n">interpolation</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">sites</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="s2">"get_sliced_atoms"</span><span class="p">):</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">get_sliced_atoms</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">sites</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="s2">"atoms"</span><span class="p">):</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">atoms</span>
+    <span class="k">elif</span> <span class="n">sites</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="s2">"potential_unit"</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">potential_unit</span><span class="p">,</span> <span class="s2">"get_transformed_atoms"</span><span class="p">):</span>
+            <span class="n">unit_atoms</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">potential_unit</span><span class="o">.</span><span class="n">get_transformed_atoms</span><span class="p">()</span>
+            <span class="n">sites</span> <span class="o">=</span> <span class="n">unit_atoms</span> <span class="o">*</span> <span class="n">potential</span><span class="o">.</span><span class="n">repetitions</span>
 
-    <span class="n">positions</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="n">SliceIndexedAtoms</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="n">potential</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">SliceIndexedAtoms</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"Could not derive scattering sites from the potential "</span>
+            <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">potential</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">). Pass ``sites=`` explicitly as an "</span>
+            <span class="s2">"ase.Atoms or SliceIndexedAtoms covering the full simulation cell."</span>
+        <span class="p">)</span>
 
-    <span class="n">wave_vectors</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">wave_vectors</span><span class="p">)</span>
-    <span class="n">coefficients</span> <span class="o">=</span> <span class="n">complex_exponential</span><span class="p">(</span>
-        <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">wave_vectors</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
-    <span class="p">)</span>
-    <span class="n">coefficients</span> <span class="o">*=</span> <span class="n">complex_exponential</span><span class="p">(</span>
-        <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">wave_vectors</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="p">)</span>
-    <span class="n">coefficients</span> <span class="o">=</span> <span class="n">coefficients</span> <span class="o">/</span> <span class="n">xp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">coefficients</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sites</span>
 
-    <span class="n">potential</span> <span class="o">=</span> <span class="n">S1</span><span class="o">.</span><span class="n">potential</span>
 
-    <span class="n">sites</span> <span class="o">=</span> <span class="n">transition_potentials</span><span class="o">.</span><span class="n">validate_sites</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_prism_eels_common_setup</span><span class="p">(</span><span class="n">s_matrix</span><span class="p">,</span> <span class="n">transition_potentials</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="n">sites</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Shared setup for the real-space and beam-basis PRISM-EELS drivers."""</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_types</span>
 
-    <span class="n">chunks</span> <span class="o">=</span> <span class="n">S1</span><span class="o">.</span><span class="n">chunks</span>
-    <span class="n">stream</span> <span class="o">=</span> <span class="n">S1</span><span class="o">.</span><span class="n">_device</span> <span class="o">==</span> <span class="s2">"gpu"</span> <span class="ow">and</span> <span class="n">S1</span><span class="o">.</span><span class="n">_store_on_host</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.antialias</span><span class="w"> </span><span class="kn">import</span> <span class="n">AntialiasAperture</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.detectors</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlexibleAnnularDetector</span><span class="p">,</span> <span class="n">validate_detectors</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.multislice</span><span class="w"> </span><span class="kn">import</span> <span class="n">FresnelPropagator</span><span class="p">,</span> <span class="n">conventional_multislice_step</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.prism.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">plane_waves</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.scan</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate_scan</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.transfer</span><span class="w"> </span><span class="kn">import</span> <span class="n">CTF</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="n">Waves</span>
 
-    <span class="n">S1</span> <span class="o">=</span> <span class="n">S1</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">reverse_multislice</span><span class="p">:</span>
-        <span class="n">S2_multislice</span> <span class="o">=</span> <span class="n">S2</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_potentials</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">transition_potentials</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">"PRISM-EELS supports a single transition potential."</span>
+            <span class="p">)</span>
+        <span class="n">transition_potential</span> <span class="o">=</span> <span class="n">transition_potentials</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">S2_multislice</span> <span class="o">=</span> <span class="n">S2</span>
+        <span class="n">transition_potential</span> <span class="o">=</span> <span class="n">transition_potentials</span>
 
-    <span class="n">images</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="p">)),</span> <span class="n">delay</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
-            <span class="n">S1</span> <span class="o">=</span> <span class="n">S1</span><span class="o">.</span><span class="n">streaming_multislice</span><span class="p">(</span>
-                <span class="n">potential</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="n">i</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_potential</span><span class="p">,</span> <span class="n">TransitionPotential</span><span class="p">):</span>
+        <span class="n">transition_potential</span> <span class="o">=</span> <span class="n">transition_potential</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+    <span class="n">potential</span> <span class="o">=</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">potential</span>
+    <span class="n">energy</span> <span class="o">=</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">energy</span>
+    <span class="n">extent</span> <span class="o">=</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">extent</span>
+    <span class="n">gpts</span> <span class="o">=</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">gpts</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">s_matrix</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">complex_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">scan</span> <span class="o">=</span> <span class="n">validate_scan</span><span class="p">(</span><span class="n">scan</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">detectors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">detectors</span> <span class="o">=</span> <span class="p">[</span><span class="n">FlexibleAnnularDetector</span><span class="p">()]</span>
+    <span class="n">detectors</span> <span class="o">=</span> <span class="n">validate_detectors</span><span class="p">(</span><span class="n">detectors</span><span class="p">)</span>
+
+    <span class="n">wave_vectors</span> <span class="o">=</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">wave_vectors</span>
+    <span class="n">wave_vectors_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="n">wave_vectors</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">wave_vectors</span><span class="p">,</span> <span class="s2">"get"</span><span class="p">)</span> <span class="k">else</span> <span class="n">wave_vectors</span>
+    <span class="p">)</span>
+    <span class="n">n_k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">wave_vectors_np</span><span class="p">)</span>
+
+    <span class="n">s_array</span> <span class="o">=</span> <span class="n">plane_waves</span><span class="p">(</span>
+        <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">wave_vectors_np</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">extent</span><span class="p">,</span> <span class="n">gpts</span>
+    <span class="p">)</span>
+    <span class="n">s_array</span> <span class="o">=</span> <span class="n">s_array</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">s_matrix</span><span class="o">.</span><span class="n">interpolation</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">s_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
+    <span class="p">)</span>
+
+    <span class="n">s_waves</span> <span class="o">=</span> <span class="n">Waves</span><span class="p">(</span>
+        <span class="n">s_array</span><span class="p">,</span>
+        <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+        <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+        <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="p">[</span><span class="n">OrdinalAxis</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_k</span><span class="p">)))],</span>
+    <span class="p">)</span>
+
+    <span class="n">antialias_aperture</span> <span class="o">=</span> <span class="n">AntialiasAperture</span><span class="p">()</span>
+    <span class="n">propagator</span> <span class="o">=</span> <span class="n">FresnelPropagator</span><span class="p">()</span>
+
+    <span class="n">transmissions</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">antialias_aperture</span><span class="o">.</span><span class="n">bandlimit</span><span class="p">(</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">transmission_function</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">),</span> <span class="n">in_place</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">potential</span><span class="o">.</span><span class="n">generate_slices</span><span class="p">()</span>
+    <span class="p">]</span>
+
+    <span class="n">transition_potential</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s_waves</span><span class="p">)</span>
+    <span class="n">transition_potential</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s_waves</span><span class="p">)</span>
+    <span class="n">transition_potential</span> <span class="o">=</span> <span class="n">transition_potential</span><span class="o">.</span><span class="n">copy_to_device</span><span class="p">(</span><span class="n">s_matrix</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">transition_potential</span><span class="o">.</span><span class="n">Z</span>
+
+    <span class="n">sites</span> <span class="o">=</span> <span class="n">_extract_scattering_sites</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
+
+    <span class="n">positions_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">get_positions</span><span class="p">())</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">positions</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">positions_np</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">n_positions</span> <span class="o">=</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">wave_vectors_xp</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">wave_vectors_np</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="n">position_coefficients</span> <span class="o">=</span> <span class="n">complex_exponential</span><span class="p">(</span>
+        <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="o">*</span> <span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span>
+        <span class="o">*</span> <span class="n">wave_vectors_xp</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">*</span> <span class="n">complex_exponential</span><span class="p">(</span>
+        <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="o">*</span> <span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="o">*</span> <span class="n">wave_vectors_xp</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="n">ctf</span> <span class="o">=</span> <span class="n">CTF</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="o">=</span><span class="n">s_matrix</span><span class="o">.</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">)</span>
+    <span class="n">ctf</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s_matrix</span><span class="o">.</span><span class="n">dummy_probes</span><span class="p">())</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">xp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">wave_vectors_xp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">wave_vectors_xp</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">ctf</span><span class="o">.</span><span class="n">wavelength</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">wave_vectors_xp</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">wave_vectors_xp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">ctf_array</span> <span class="o">=</span> <span class="n">ctf</span><span class="o">.</span><span class="n">_evaluate_from_angular_grid</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span>
+    <span class="n">ctf_array</span> <span class="o">=</span> <span class="n">ctf_array</span> <span class="o">/</span> <span class="n">xp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">ctf_array</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">coefficients</span> <span class="o">=</span> <span class="p">(</span><span class="n">position_coefficients</span> <span class="o">*</span> <span class="n">ctf_array</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+        <span class="n">complex_dtype</span>
+    <span class="p">)</span>
+
+    <span class="n">full_sampling</span> <span class="o">=</span> <span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">full_sampling_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">full_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_types</span><span class="o">.</span><span class="n">SimpleNamespace</span><span class="p">(</span>
+        <span class="n">transition_potential</span><span class="o">=</span><span class="n">transition_potential</span><span class="p">,</span>
+        <span class="n">Z</span><span class="o">=</span><span class="n">Z</span><span class="p">,</span>
+        <span class="n">potential</span><span class="o">=</span><span class="n">potential</span><span class="p">,</span>
+        <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+        <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+        <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
+        <span class="n">xp</span><span class="o">=</span><span class="n">xp</span><span class="p">,</span>
+        <span class="n">complex_dtype</span><span class="o">=</span><span class="n">complex_dtype</span><span class="p">,</span>
+        <span class="n">scan</span><span class="o">=</span><span class="n">scan</span><span class="p">,</span>
+        <span class="n">detectors</span><span class="o">=</span><span class="n">detectors</span><span class="p">,</span>
+        <span class="n">wave_vectors_np</span><span class="o">=</span><span class="n">wave_vectors_np</span><span class="p">,</span>
+        <span class="n">n_k</span><span class="o">=</span><span class="n">n_k</span><span class="p">,</span>
+        <span class="n">s_waves</span><span class="o">=</span><span class="n">s_waves</span><span class="p">,</span>
+        <span class="n">antialias_aperture</span><span class="o">=</span><span class="n">antialias_aperture</span><span class="p">,</span>
+        <span class="n">propagator</span><span class="o">=</span><span class="n">propagator</span><span class="p">,</span>
+        <span class="n">transmissions</span><span class="o">=</span><span class="n">transmissions</span><span class="p">,</span>
+        <span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span>
+        <span class="n">positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
+        <span class="n">n_positions</span><span class="o">=</span><span class="n">n_positions</span><span class="p">,</span>
+        <span class="n">coefficients</span><span class="o">=</span><span class="n">coefficients</span><span class="p">,</span>
+        <span class="n">full_sampling</span><span class="o">=</span><span class="n">full_sampling</span><span class="p">,</span>
+        <span class="n">full_sampling_arr</span><span class="o">=</span><span class="n">full_sampling_arr</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="prism_transition_potential_scan">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html#abtem.inelastic.core_loss.prism_transition_potential_scan">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prism_transition_potential_scan</span><span class="p">(</span>
+    <span class="n">s_matrix</span><span class="p">:</span> <span class="s2">"SMatrix"</span><span class="p">,</span>
+    <span class="n">transition_potentials</span><span class="p">,</span>
+    <span class="n">scan</span><span class="p">,</span>
+    <span class="n">detectors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">double_channel</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">inelastic_crop</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""PRISM-EELS driver following Brown et al. (Phys. Rev. Research 1,</span>
+<span class="sd">    033186, 2019).</span>
+
+<span class="sd">    Supports any ``interpolation`` factor, ``downsample`` setting, and both</span>
+<span class="sd">    single- and double-channel modes. The scatter and (optionally)</span>
+<span class="sd">    double-channel propagation operate on a cropped grid at full resolution</span>
+<span class="sd">    centered at each scattering site (Sec. IV B); when ``downsample`` is</span>
+<span class="sd">    enabled the scattered result is Fourier-cropped to the downsampled</span>
+<span class="sd">    resolution before per-position reduction.</span>
+
+<span class="sd">    At ``interpolation=(1,1)`` with ``downsample=False`` the output is</span>
+<span class="sd">    bit-equivalent (to float32 noise) to ``Probe.transition_potential_scan``</span>
+<span class="sd">    at the matching ``double_channel`` setting.</span>
+
+<span class="sd">    ``double_channel=True`` propagates the scattered state through the</span>
+<span class="sd">    remaining potential slices to the exit before reducing per-position;</span>
+<span class="sd">    ``double_channel=False`` (default) detects immediately at the scatter</span>
+<span class="sd">    slice — Brown's single-channel approximation.</span>
+
+<span class="sd">    Frozen-phonon ensemble averaging is handled at the ``SMatrix`` level</span>
+<span class="sd">    (see ``SMatrix.transition_potential_scan``); Dask lazy evaluation is</span>
+<span class="sd">    supported via the ``lazy`` parameter on that method.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s_matrix : SMatrix</span>
+<span class="sd">        S-matrix specification (any ``interpolation``).</span>
+<span class="sd">    transition_potentials : BaseTransitionPotential</span>
+<span class="sd">        Atomic transition potential.</span>
+<span class="sd">    scan : BaseScan or tuple</span>
+<span class="sd">        Scan positions.</span>
+<span class="sd">    detectors : BaseDetector or list, optional</span>
+<span class="sd">        Detectors. Defaults to ``FlexibleAnnularDetector()``.</span>
+<span class="sd">    sites : Atoms or SliceIndexedAtoms, optional</span>
+<span class="sd">        Scattering sites. Auto-extracted from the potential if not given,</span>
+<span class="sd">        following the same logic as</span>
+<span class="sd">        ``transition_potential_multislice_and_detect``.</span>
+<span class="sd">    inelastic_crop : float or tuple of float, optional</span>
+<span class="sd">        Real-space side length [Å] of the window on which the transition</span>
+<span class="sd">        potential ``H_n0`` and the scattered wave are evaluated, following</span>
+<span class="sd">        Brown et al. Sec. IV B (their independent ``inelastic_crop`` factor).</span>
+<span class="sd">        Smaller windows speed up the scatter and — most significantly — the</span>
+<span class="sd">        double-channel inner propagation, at the cost of truncating the</span>
+<span class="sd">        ``H_n0`` tails (cf. their Fig. 4 / Table II). If ``None`` (default)</span>
+<span class="sd">        the full PRISM cell ``extent / interpolation`` is used (current</span>
+<span class="sd">        behaviour). The window is clamped to the PRISM cell: values larger</span>
+<span class="sd">        than ``extent / interpolation`` are not supported by this real-space</span>
+<span class="sd">        reduction (they would admit aliased probe copies) and are clamped</span>
+<span class="sd">        with a warning — exceeding the cell requires the beam-basis reduction</span>
+<span class="sd">        (see the PRISM-EELS follow-up note).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    BaseMeasurements or list of BaseMeasurements</span>
+<span class="sd">        One measurement per detector.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">fft_interpolate</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span><span class="p">,</span> <span class="n">safe_ceiling_int</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.multislice</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">FresnelPropagator</span><span class="p">,</span>
+        <span class="n">_potential_ensemble_shape_and_metadata</span><span class="p">,</span>
+        <span class="n">allocate_multislice_measurements</span><span class="p">,</span>
+        <span class="n">conventional_multislice_step</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.prism.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">batch_crop_2d</span><span class="p">,</span>
+        <span class="n">minimum_crop</span><span class="p">,</span>
+        <span class="n">wrapped_crop_2d</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="n">Waves</span><span class="p">,</span> <span class="n">reduce_ensemble</span>
+
+    <span class="n">ctx</span> <span class="o">=</span> <span class="n">_prism_eels_common_setup</span><span class="p">(</span>
+        <span class="n">s_matrix</span><span class="p">,</span> <span class="n">transition_potentials</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="n">sites</span>
+    <span class="p">)</span>
+    <span class="n">transition_potential</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">transition_potential</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">Z</span>
+    <span class="n">potential</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">potential</span>
+    <span class="n">energy</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">energy</span>
+    <span class="n">extent</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">extent</span>
+    <span class="n">gpts</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">gpts</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">xp</span>
+    <span class="n">complex_dtype</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">complex_dtype</span>
+    <span class="n">real_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">scan</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">scan</span>
+    <span class="n">detectors</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">detectors</span>
+    <span class="n">n_k</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">n_k</span>
+    <span class="n">s_waves</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">s_waves</span>
+    <span class="n">transmissions</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">transmissions</span>
+    <span class="n">n_slices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">transmissions</span><span class="p">)</span>
+    <span class="n">sites</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">sites</span>
+    <span class="n">positions</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">positions</span>
+    <span class="n">n_positions</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">n_positions</span>
+    <span class="n">coefficients</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">coefficients</span>
+    <span class="n">full_sampling</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">full_sampling</span>
+    <span class="n">full_sampling_arr</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">full_sampling_arr</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_step</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="n">transmission</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">conventional_multislice_step</span><span class="p">(</span>
+            <span class="n">waves</span><span class="p">,</span>
+            <span class="n">potential_slice</span><span class="o">=</span><span class="n">transmission</span><span class="p">,</span>
+            <span class="n">propagator</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">propagator</span><span class="p">,</span>
+            <span class="n">antialias_aperture</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">antialias_aperture</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># --- Window properties ---</span>
+    <span class="n">interpolation</span> <span class="o">=</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">interpolation</span>
+    <span class="n">ds_gpts</span> <span class="o">=</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">downsampled_gpts</span>
+    <span class="n">full_sampling</span> <span class="o">=</span> <span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">ds_sampling</span> <span class="o">=</span> <span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">ds_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">ds_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">needs_downsample</span> <span class="o">=</span> <span class="n">ds_gpts</span> <span class="o">!=</span> <span class="n">gpts</span>
+
+    <span class="n">scatter_window_gpts</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">interpolation</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+        <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">interpolation</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="p">)</span>
+    <span class="n">output_window_gpts</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">ds_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">interpolation</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+        <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">ds_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">interpolation</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="p">)</span>
+    <span class="n">scatter_window_extent</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">scatter_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">full_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">scatter_window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">full_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">output_window_extent</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">output_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">ds_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">output_window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">ds_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="c1"># --- Inelastic crop window (Brown et al. Sec. IV B, independent of the</span>
+    <span class="c1"># interpolation factor) ---</span>
+    <span class="c1"># The scatter and double-channel propagation run on this window; the</span>
+    <span class="c1"># scattered result is then embedded (centered, zero-padded) back into</span>
+    <span class="c1"># scatter_window_gpts before the per-position reduction so that the</span>
+    <span class="c1"># detection grid — and hence the validated normalisation — is unchanged.</span>
+    <span class="c1"># The window is clamped to the PRISM cell (scatter_window_gpts): a larger</span>
+    <span class="c1"># window would admit aliased probe copies in this real-space reduction</span>
+    <span class="c1"># and requires the beam-basis path instead.</span>
+    <span class="k">if</span> <span class="n">inelastic_crop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">inelastic_window_gpts</span> <span class="o">=</span> <span class="n">scatter_window_gpts</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">inelastic_crop</span><span class="p">):</span>
+            <span class="n">inelastic_crop</span> <span class="o">=</span> <span class="p">(</span><span class="n">inelastic_crop</span><span class="p">,</span> <span class="n">inelastic_crop</span><span class="p">)</span>
+        <span class="n">requested</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">inelastic_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">full_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">inelastic_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">full_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="p">)</span>
+        <span class="n">inelastic_window_gpts</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">min</span><span class="p">(</span><span class="n">requested</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">scatter_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="nb">min</span><span class="p">(</span><span class="n">requested</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">scatter_window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">requested</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">scatter_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="ow">or</span> <span class="n">requested</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">scatter_window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">"inelastic_crop exceeds the PRISM cell "</span>
+                <span class="sa">f</span><span class="s2">"(extent / interpolation = </span><span class="si">{</span><span class="n">scatter_window_extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> x "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">scatter_window_extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> A); clamping to the cell. "</span>
+                <span class="s2">"Larger inelastic windows require the beam-basis reduction."</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">S2_multislice</span><span class="p">,</span> <span class="s2">"build"</span><span class="p">):</span>
-                <span class="n">S2</span> <span class="o">=</span> <span class="n">S2</span><span class="o">.</span><span class="n">streaming_multislice</span><span class="p">(</span>
-                    <span class="n">potential</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="n">i</span>
+    <span class="n">inelastic_window_extent</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">inelastic_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">full_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">inelastic_window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">full_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_embed_in_scatter_window</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+        <span class="c1"># Place an inelastic_window_gpts-sized array (centered on the site)</span>
+        <span class="c1"># into a scatter_window_gpts-sized zero array (also centered). When</span>
+        <span class="c1"># the two match (inelastic_crop is None) this is a no-op.</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
+        <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">scatter_window_gpts</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">arr</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">scatter_window_gpts</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="p">)</span>
+        <span class="n">o0</span> <span class="o">=</span> <span class="p">(</span><span class="n">scatter_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">src</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">o1</span> <span class="o">=</span> <span class="p">(</span><span class="n">scatter_window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">src</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">out</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">o0</span> <span class="p">:</span> <span class="n">o0</span> <span class="o">+</span> <span class="n">src</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">o1</span> <span class="p">:</span> <span class="n">o1</span> <span class="o">+</span> <span class="n">src</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">arr</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="c1"># --- Pre-compute windowed TP (Brown et al. Sec. IV B) ---</span>
+    <span class="c1"># Scatter and double-channel propagation operate on an</span>
+    <span class="c1"># inelastic_window_gpts-sized grid centered at each site.</span>
+    <span class="n">_tp_real_origin</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span>
+        <span class="n">transition_potential</span><span class="o">.</span><span class="n">array</span> <span class="o">*</span> <span class="n">energy2sigma</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">_tp_crop_corner</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="o">-</span><span class="n">inelastic_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="o">-</span><span class="n">inelastic_window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">_tp_window_real</span> <span class="o">=</span> <span class="n">wrapped_crop_2d</span><span class="p">(</span>
+        <span class="n">_tp_real_origin</span><span class="p">,</span> <span class="n">_tp_crop_corner</span><span class="p">,</span> <span class="n">inelastic_window_gpts</span>
+    <span class="p">)</span>
+    <span class="n">_tp_window_k</span> <span class="o">=</span> <span class="n">fft2</span><span class="p">(</span><span class="n">_tp_window_real</span><span class="p">)</span>
+    <span class="n">_window_propagator</span> <span class="o">=</span> <span class="n">FresnelPropagator</span><span class="p">()</span>
+
+    <span class="n">_dummy_window_waves</span> <span class="o">=</span> <span class="n">Waves</span><span class="p">(</span>
+        <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">inelastic_window_gpts</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">complex_dtype</span><span class="p">),</span>
+        <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+        <span class="n">extent</span><span class="o">=</span><span class="n">inelastic_window_extent</span><span class="p">,</span>
+        <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="p">[</span><span class="n">OrdinalAxis</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,))],</span>
+    <span class="p">)</span>
+    <span class="n">full_sampling_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">full_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="c1"># Reduction helpers operate in the downsampled grid.</span>
+    <span class="n">pixel_positions</span> <span class="o">=</span> <span class="n">positions</span> <span class="o">/</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ds_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">reduce_crop_corner</span><span class="p">,</span> <span class="n">reduce_size</span><span class="p">,</span> <span class="n">reduce_corners</span> <span class="o">=</span> <span class="n">minimum_crop</span><span class="p">(</span>
+        <span class="n">pixel_positions</span><span class="p">,</span> <span class="n">output_window_gpts</span>
+    <span class="p">)</span>
+
+    <span class="c1"># --- Exit planes ---</span>
+    <span class="n">exit_planes</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span>
+    <span class="n">n_exit</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">exit_planes</span><span class="p">)</span>
+    <span class="p">(</span>
+        <span class="n">extra_ensemble_axes_shape</span><span class="p">,</span>
+        <span class="n">extra_ensemble_axes_metadata</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="n">_potential_ensemble_shape_and_metadata</span><span class="p">(</span><span class="n">potential</span><span class="p">)</span>
+
+    <span class="c1"># --- Allocate measurements with the scan shape ---</span>
+    <span class="n">scan_axes_metadata</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
+    <span class="n">scan_shape</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">dummy_scan_waves</span> <span class="o">=</span> <span class="n">Waves</span><span class="p">(</span>
+        <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">scan_shape</span> <span class="o">+</span> <span class="n">output_window_gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">complex_dtype</span><span class="p">),</span>
+        <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+        <span class="n">extent</span><span class="o">=</span><span class="n">output_window_extent</span><span class="p">,</span>
+        <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="n">scan_axes_metadata</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">measurements</span> <span class="o">=</span> <span class="n">allocate_multislice_measurements</span><span class="p">(</span>
+        <span class="n">dummy_scan_waves</span><span class="p">,</span>
+        <span class="n">detectors</span><span class="p">,</span>
+        <span class="n">extra_ensemble_axes_shape</span><span class="p">,</span>
+        <span class="n">extra_ensemble_axes_metadata</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># --- Reduce, detect, accumulate helper ---</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reduce_and_record</span><span class="p">(</span><span class="n">scattered_window</span><span class="p">,</span> <span class="n">site_xy</span><span class="p">,</span> <span class="n">exit_idx</span><span class="p">):</span>
+        <span class="n">ds_sampling_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ds_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">site_pixel_ds</span> <span class="o">=</span> <span class="n">site_xy</span> <span class="o">/</span> <span class="n">ds_sampling_arr</span>
+        <span class="n">site_pixel_int_ds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">site_pixel_ds</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">site_crop_corner_ds</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">site_pixel_int_ds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">output_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">site_pixel_int_ds</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">output_window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">site_in_bbox</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">site_crop_corner_ds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">reduce_crop_corner</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">site_crop_corner_ds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">reduce_crop_corner</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">bbox_scattered</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="n">scattered_window</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">reduce_size</span><span class="p">),</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">complex_dtype</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">_n0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">_n1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="n">_r0</span> <span class="o">=</span> <span class="n">site_in_bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">_n0</span> <span class="o">*</span> <span class="n">ds_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">_r1</span> <span class="o">=</span> <span class="n">site_in_bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">_n1</span> <span class="o">*</span> <span class="n">ds_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">_s0</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">_r0</span><span class="p">)</span>
+                <span class="n">_s1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">_r1</span><span class="p">)</span>
+                <span class="n">_d0</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">_r0</span><span class="p">)</span>
+                <span class="n">_d1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">_r1</span><span class="p">)</span>
+                <span class="n">_e0</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">reduce_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">_r0</span> <span class="o">+</span> <span class="n">output_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">_e1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">reduce_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">_r1</span> <span class="o">+</span> <span class="n">output_window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">_d0</span> <span class="o">&gt;=</span> <span class="n">_e0</span> <span class="ow">or</span> <span class="n">_d1</span> <span class="o">&gt;=</span> <span class="n">_e1</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">bbox_scattered</span><span class="p">[</span>
+                    <span class="o">...</span><span class="p">,</span> <span class="n">_d0</span><span class="p">:</span><span class="n">_e0</span><span class="p">,</span> <span class="n">_d1</span><span class="p">:</span><span class="n">_e1</span>
+                <span class="p">]</span> <span class="o">=</span> <span class="n">scattered_window</span><span class="p">[</span>
+                    <span class="o">...</span><span class="p">,</span>
+                    <span class="n">_s0</span> <span class="p">:</span> <span class="n">_s0</span> <span class="o">+</span> <span class="p">(</span><span class="n">_e0</span> <span class="o">-</span> <span class="n">_d0</span><span class="p">),</span>
+                    <span class="n">_s1</span> <span class="p">:</span> <span class="n">_s1</span> <span class="o">+</span> <span class="p">(</span><span class="n">_e1</span> <span class="o">-</span> <span class="n">_d1</span><span class="p">),</span>
+                <span class="p">]</span>
+
+        <span class="n">reduced</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span>
+            <span class="n">coefficients</span><span class="p">,</span> <span class="n">bbox_scattered</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">reduced</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">reduced</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">waves_at_positions</span> <span class="o">=</span> <span class="n">batch_crop_2d</span><span class="p">(</span>
+            <span class="n">reduced</span><span class="p">,</span> <span class="n">reduce_corners</span><span class="p">,</span> <span class="n">output_window_gpts</span>
+        <span class="p">)</span>
+
+        <span class="n">position_waves_shape</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">waves_at_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+            <span class="o">+</span> <span class="n">scan_shape</span>
+            <span class="o">+</span> <span class="n">waves_at_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="p">)</span>
+        <span class="n">waves_at_positions</span> <span class="o">=</span> <span class="n">waves_at_positions</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+            <span class="n">position_waves_shape</span>
+        <span class="p">)</span>
+
+        <span class="n">n_T</span> <span class="o">=</span> <span class="n">waves_at_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">position_waves</span> <span class="o">=</span> <span class="n">Waves</span><span class="p">(</span>
+            <span class="n">waves_at_positions</span><span class="p">,</span>
+            <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+            <span class="n">extent</span><span class="o">=</span><span class="n">output_window_extent</span><span class="p">,</span>
+            <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">OrdinalAxis</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_T</span><span class="p">)))</span>
+            <span class="p">]</span>
+            <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">scan_axes_metadata</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">det_idx</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">position_waves</span><span class="p">)</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">0</span><span class="p">,))</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exit_idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="p">()</span> <span class="k">if</span> <span class="n">n_exit</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">(</span><span class="n">exit_idx</span><span class="p">,)</span>
+                <span class="n">measurements</span><span class="p">[</span><span class="n">det_idx</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">m</span><span class="o">.</span><span class="n">array</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">measurements</span><span class="p">[</span><span class="n">det_idx</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">exit_idx</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                    <span class="n">m</span><span class="o">.</span><span class="n">array</span><span class="p">[(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">exit_idx</span><span class="p">)]</span>
                 <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">S2_multislice</span> <span class="o">=</span> <span class="n">S2_multislice</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
-                    <span class="n">potential</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="n">i</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_scatter_at_site</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+        <span class="n">site_xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">atom</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">atom</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+        <span class="p">)</span>
+        <span class="n">site_pixel</span> <span class="o">=</span> <span class="n">site_xy</span> <span class="o">/</span> <span class="n">full_sampling_arr</span>
+        <span class="n">site_pixel_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">site_pixel</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">sub_pixel</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">site_pixel</span> <span class="o">-</span> <span class="n">site_pixel_int</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">site_crop_corner</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">site_pixel_int</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">inelastic_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">site_pixel_int</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">inelastic_window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">s_cropped</span> <span class="o">=</span> <span class="n">wrapped_crop_2d</span><span class="p">(</span>
+            <span class="n">s_waves</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">site_crop_corner</span><span class="p">,</span> <span class="n">inelastic_window_gpts</span>
+        <span class="p">)</span>
+        <span class="n">shift_k</span> <span class="o">=</span> <span class="n">fft_shift_kernel</span><span class="p">(</span><span class="n">sub_pixel</span><span class="p">,</span> <span class="n">inelastic_window_gpts</span><span class="p">)</span>
+        <span class="n">tp_shifted</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">_tp_window_k</span> <span class="o">*</span> <span class="n">shift_k</span><span class="p">)</span>
+        <span class="n">sw</span> <span class="o">=</span> <span class="n">tp_shifted</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">s_cropped</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="k">return</span> <span class="n">sw</span><span class="p">,</span> <span class="n">site_xy</span><span class="p">,</span> <span class="n">site_crop_corner</span>
+
+    <span class="c1"># --- Main loop ---</span>
+    <span class="k">for</span> <span class="n">slice_index</span><span class="p">,</span> <span class="n">transmission</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">transmissions</span><span class="p">):</span>
+        <span class="n">s_waves</span> <span class="o">=</span> <span class="n">_step</span><span class="p">(</span><span class="n">s_waves</span><span class="p">,</span> <span class="n">transmission</span><span class="p">)</span>
+
+        <span class="n">sites_this_slice</span> <span class="o">=</span> <span class="n">sites</span><span class="o">.</span><span class="n">get_atoms_in_slices</span><span class="p">(</span>
+            <span class="n">slice_index</span><span class="p">,</span> <span class="n">atomic_number</span><span class="o">=</span><span class="n">Z</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sites_this_slice</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">double_channel</span><span class="p">:</span>
+            <span class="n">ep_start</span> <span class="o">=</span> <span class="n">bisect_left</span><span class="p">(</span><span class="n">exit_planes</span><span class="p">,</span> <span class="n">slice_index</span><span class="p">)</span>
+            <span class="n">exit_idx</span> <span class="o">=</span> <span class="p">()</span> <span class="k">if</span> <span class="n">n_exit</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">(</span>
+                <span class="nb">slice</span><span class="p">(</span><span class="n">ep_start</span><span class="p">,</span> <span class="n">n_exit</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">sites_this_slice</span><span class="p">:</span>
+                <span class="n">sw</span><span class="p">,</span> <span class="n">site_xy</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_scatter_at_site</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+                <span class="n">sw</span> <span class="o">=</span> <span class="n">_embed_in_scatter_window</span><span class="p">(</span><span class="n">sw</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">needs_downsample</span><span class="p">:</span>
+                    <span class="n">sw</span> <span class="o">=</span> <span class="n">fft_interpolate</span><span class="p">(</span>
+                        <span class="n">sw</span><span class="p">,</span> <span class="n">output_window_gpts</span><span class="p">,</span>
+                        <span class="n">normalization</span><span class="o">=</span><span class="s2">"intensity"</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="n">_reduce_and_record</span><span class="p">(</span><span class="n">sw</span><span class="p">,</span> <span class="n">site_xy</span><span class="p">,</span> <span class="n">exit_idx</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">site_xys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">site_crop_corners</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">scattered_windows</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">sites_this_slice</span><span class="p">:</span>
+            <span class="n">sw</span><span class="p">,</span> <span class="n">site_xy</span><span class="p">,</span> <span class="n">site_crop_corner</span> <span class="o">=</span> <span class="n">_scatter_at_site</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+            <span class="n">site_xys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">site_xy</span><span class="p">)</span>
+            <span class="n">site_crop_corners</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">site_crop_corner</span><span class="p">)</span>
+            <span class="n">scattered_windows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sw</span><span class="p">)</span>
+
+        <span class="n">n_T_val</span> <span class="o">=</span> <span class="n">scattered_windows</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">n_sites_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">scattered_windows</span><span class="p">)</span>
+
+        <span class="c1"># Double-channel: batch inner propagation across all sites in</span>
+        <span class="c1"># this slice.  Shape: (n_sites, n_T * n_k, wh, ww) on the inelastic</span>
+        <span class="c1"># window; embedded back into scatter_window_gpts at each exit plane.</span>
+        <span class="n">batched</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
+            <span class="n">sw</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">inelastic_window_gpts</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">sw</span> <span class="ow">in</span> <span class="n">scattered_windows</span>
+        <span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">slice_index</span> <span class="ow">in</span> <span class="n">exit_planes</span><span class="p">:</span>
+            <span class="n">ep_idx</span> <span class="o">=</span> <span class="n">exit_planes</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">slice_index</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">s_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sites_slice</span><span class="p">):</span>
+                <span class="n">sw_out</span> <span class="o">=</span> <span class="n">_embed_in_scatter_window</span><span class="p">(</span>
+                    <span class="n">batched</span><span class="p">[</span><span class="n">s_idx</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                        <span class="p">(</span><span class="n">n_T_val</span><span class="p">,</span> <span class="n">n_k</span><span class="p">)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">inelastic_window_gpts</span><span class="p">)</span>
+                    <span class="p">)</span>
                 <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">S1</span> <span class="o">=</span> <span class="n">S1</span><span class="o">.</span><span class="n">multislice</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
-        <span class="c1"># S2_multislice = S2.build(start=len(potential), stop=i, lazy=False)</span>
+                <span class="k">if</span> <span class="n">needs_downsample</span><span class="p">:</span>
+                    <span class="n">sw_out</span> <span class="o">=</span> <span class="n">fft_interpolate</span><span class="p">(</span>
+                        <span class="n">sw_out</span><span class="p">,</span> <span class="n">output_window_gpts</span><span class="p">,</span>
+                        <span class="n">normalization</span><span class="o">=</span><span class="s2">"intensity"</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="n">_reduce_and_record</span><span class="p">(</span><span class="n">sw_out</span><span class="p">,</span> <span class="n">site_xys</span><span class="p">[</span><span class="n">s_idx</span><span class="p">],</span> <span class="n">ep_idx</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">reverse_multislice</span><span class="p">:</span>
-            <span class="n">S2_multislice</span> <span class="o">=</span> <span class="n">S2_multislice</span><span class="o">.</span><span class="n">multislice</span><span class="p">(</span>
-                <span class="n">potential</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">conjugate</span><span class="o">=</span><span class="kc">True</span>
+        <span class="k">for</span> <span class="n">inner_idx</span><span class="p">,</span> <span class="n">inner_transmission</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+            <span class="n">transmissions</span><span class="p">[</span><span class="n">slice_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
+        <span class="p">):</span>
+            <span class="c1"># Crop transmission for each site: (n_sites, 1, wh, ww).</span>
+            <span class="c1"># Transmissions may carry a leading singleton ensemble dim</span>
+            <span class="c1"># (shape (1, H, W)); squeeze to 2D before stacking.</span>
+            <span class="n">t_arr</span> <span class="o">=</span> <span class="n">inner_transmission</span><span class="o">.</span><span class="n">array</span>
+            <span class="k">if</span> <span class="n">t_arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">t_arr</span> <span class="o">=</span> <span class="n">t_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">cropped_t</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
+                <span class="n">wrapped_crop_2d</span><span class="p">(</span><span class="n">t_arr</span><span class="p">,</span> <span class="n">sc</span><span class="p">,</span> <span class="n">inelastic_window_gpts</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">sc</span> <span class="ow">in</span> <span class="n">site_crop_corners</span>
+            <span class="p">])[:,</span> <span class="kc">None</span><span class="p">]</span>
+            <span class="n">batched</span> <span class="o">*=</span> <span class="n">cropped_t</span>
+
+            <span class="n">kernel</span> <span class="o">=</span> <span class="n">_window_propagator</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span>
+                <span class="n">_dummy_window_waves</span><span class="p">,</span>
+                <span class="n">thickness</span><span class="o">=</span><span class="n">inner_transmission</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
             <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">S2_multislice</span> <span class="o">=</span> <span class="n">S2</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">batched</span> <span class="o">=</span> <span class="n">fft2_convolve</span><span class="p">(</span><span class="n">batched</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="n">sites_slice</span> <span class="o">=</span> <span class="n">transition_potentials</span><span class="o">.</span><span class="n">validate_sites</span><span class="p">(</span><span class="n">sites</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">abs_inner</span> <span class="o">=</span> <span class="n">slice_index</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">inner_idx</span>
+            <span class="k">if</span> <span class="n">abs_inner</span> <span class="ow">in</span> <span class="n">exit_planes</span><span class="p">:</span>
+                <span class="n">ep_idx</span> <span class="o">=</span> <span class="n">exit_planes</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">abs_inner</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">s_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sites_slice</span><span class="p">):</span>
+                    <span class="n">sw_out</span> <span class="o">=</span> <span class="n">_embed_in_scatter_window</span><span class="p">(</span>
+                        <span class="n">batched</span><span class="p">[</span><span class="n">s_idx</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                            <span class="p">(</span><span class="n">n_T_val</span><span class="p">,</span> <span class="n">n_k</span><span class="p">)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">inelastic_window_gpts</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">needs_downsample</span><span class="p">:</span>
+                        <span class="n">sw_out</span> <span class="o">=</span> <span class="n">fft_interpolate</span><span class="p">(</span>
+                            <span class="n">sw_out</span><span class="p">,</span> <span class="n">output_window_gpts</span><span class="p">,</span>
+                            <span class="n">normalization</span><span class="o">=</span><span class="s2">"intensity"</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="n">_reduce_and_record</span><span class="p">(</span>
+                        <span class="n">sw_out</span><span class="p">,</span> <span class="n">site_xys</span><span class="p">[</span><span class="n">s_idx</span><span class="p">],</span> <span class="n">ep_idx</span>
+                    <span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">sites_slice</span><span class="p">:</span>
-            <span class="c1"># S2_crop = S2.crop_to_positions(site)</span>
-            <span class="n">S2_crop</span> <span class="o">=</span> <span class="n">S2_multislice</span><span class="o">.</span><span class="n">crop_to_positions</span><span class="p">(</span><span class="n">site</span><span class="p">)</span>
-            <span class="n">scattered_S1</span> <span class="o">=</span> <span class="n">S1</span><span class="o">.</span><span class="n">crop_to_positions</span><span class="p">(</span><span class="n">site</span><span class="p">)</span>
+    <span class="c1"># Squeeze out single-point-scan axes the same way the multislice path</span>
+    <span class="c1"># does (via reduce_ensemble inside Waves.transition_potential_multislice</span>
+    <span class="c1"># — see waves.py:1075). This is what makes ``scan=(0, 0)`` return a bare</span>
+    <span class="c1"># detector-shaped measurement instead of a ``(1, *detector_shape)``</span>
+    <span class="c1"># array with a singleton scan axis.</span>
+    <span class="n">measurements</span> <span class="o">=</span> <span class="p">[</span><span class="n">reduce_ensemble</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">measurements</span><span class="p">]</span>
 
-            <span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
-                <span class="n">S2_crop</span> <span class="o">=</span> <span class="n">S2_crop</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="s2">"gpu"</span><span class="p">)</span>
-                <span class="n">scattered_S1</span> <span class="o">=</span> <span class="n">scattered_S1</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="s2">"gpu"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">measurements</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">measurements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">measurements</span></div>
 
-            <span class="n">shifted_site</span> <span class="o">=</span> <span class="n">site</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">scattered_S1</span><span class="o">.</span><span class="n">crop_offset</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-                <span class="n">scattered_S1</span><span class="o">.</span><span class="n">sampling</span>
+
+
+<div class="viewcode-block" id="prism_transition_potential_scan_beam_basis">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html#abtem.inelastic.core_loss.prism_transition_potential_scan_beam_basis">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prism_transition_potential_scan_beam_basis</span><span class="p">(</span>
+    <span class="n">s_matrix</span><span class="p">:</span> <span class="s2">"SMatrix"</span><span class="p">,</span>
+    <span class="n">transition_potentials</span><span class="p">,</span>
+    <span class="n">scan</span><span class="p">,</span>
+    <span class="n">detectors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">double_channel</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">inelastic_crop</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""PRISM-EELS beam-basis reduction (Brown et al. Sec. IV B / Eq. dropped</span>
+<span class="sd">    in supplementary; ``PRISM_double_channeling_nanoparticle.m``) — the</span>
+<span class="sd">    accuracy-oriented alternative to :func:`prism_transition_potential_scan`.</span>
+
+<span class="sd">    Implements Brown's beam-basis contraction (un-reduced S-matrix columns</span>
+<span class="sd">    against a transition-potential window, *before* applying the periodic</span>
+<span class="sd">    position phase ramps). This was originally pursued (GitHub issue</span>
+<span class="sd">    abTEM/abTEM#293) to let the transition-potential window *exceed* the</span>
+<span class="sd">    real-space driver's PRISM-cell cap, in the hope of fixing the</span>
+<span class="sd">    delocalized-edge truncation error at ``interpolation &gt; 1``. **That goal</span>
+<span class="sd">    turned out to be unfounded:** the interpolation-decimated PRISM probe is</span>
+<span class="sd">    exactly periodic with the PRISM cell (``extent / interpolation``), so a</span>
+<span class="sd">    window larger than the cell multiplies the transition-potential tail</span>
+<span class="sd">    against an exact *copy* of the probe peak — adding spurious signal rather</span>
+<span class="sd">    than recovering accuracy. A direct experiment (issue #293, Update 4)</span>
+<span class="sd">    confirms the shape error is flat-to-worse as the window grows past the</span>
+<span class="sd">    cell, and Brown's own published run uses a window *smaller* than the cell.</span>
+<span class="sd">    ``inelastic_crop`` is therefore clamped to the cell, exactly like the</span>
+<span class="sd">    real-space driver. This function is kept as a **validated, independent</span>
+<span class="sd">    re-derivation** of Brown's reduction (bit-exact at ``interpolation=1``);</span>
+<span class="sd">    it does not — and now appears it cannot — beat the real-space path on</span>
+<span class="sd">    delocalized-edge accuracy. The lever for delocalized edges is a larger</span>
+<span class="sd">    cell (lower ``interpolation`` or a bigger supercell), not a larger window.</span>
+
+<span class="sd">    Normalisation derivation (validated bit-exact against</span>
+<span class="sd">    ``Probe.transition_potential_scan`` at ``interpolation=(1, 1)`` for both</span>
+<span class="sd">    single- and double-channel; see ``project_prism_eels_beam_basis_convention``</span>
+<span class="sd">    memory note): for an abtem ``fft2``/``ifft2`` pair (unnormalised forward,</span>
+<span class="sd">    ``1/N`` inverse),</span>
+
+<span class="sd">    .. code-block::</span>
+
+<span class="sd">        fft2(forward_propagate(psi))[q] = N * sum_r conj(S2[q, r]) * psi[r]</span>
+
+<span class="sd">    where ``N = prod(gpts)`` and ``S2[q]`` is built by reverse-propagating</span>
+<span class="sd">    ``ifft2(delta_q)`` through the remaining slices with</span>
+<span class="sd">    ``conventional_multislice_step(..., conjugate=True, transpose=True)``.</span>
+<span class="sd">    The full contraction is</span>
+
+<span class="sd">    .. code-block::</span>
+
+<span class="sd">        SHn0[q, k]    = N * sum_{r in window} conj(S2[q, r]) * H(r) * S1[k, r]</span>
+<span class="sd">        recip[pos, q] = sum_k coeff[pos, k] * SHn0[q, k]</span>
+
+<span class="sd">    **Limitations** (this is a validated reference implementation, not an</span>
+<span class="sd">    optimised production path — see GitHub issue abTEM/abTEM#293):</span>
+
+<span class="sd">    - ``inelastic_crop`` exceeding the PRISM cell is clamped (with a warning):</span>
+<span class="sd">      it is not a useful regime — see the docstring intro.</span>
+<span class="sd">    - ``S2`` (double-channel) is built over the *full* native reciprocal grid</span>
+<span class="sd">      (``prod(gpts)`` beams). Memory and compute scale as ``O(prod(gpts)^2)``</span>
+<span class="sd">      per scattering site per slice — only practical for small grids.</span>
+<span class="sd">    - Single exit plane only (``len(potential.exit_planes) == 1``).</span>
+<span class="sd">    - No frozen-phonon ensemble (``potential.ensemble_shape == ()``).</span>
+<span class="sd">    - No ``downsample`` support (``s_matrix.downsampled_gpts == s_matrix.gpts``).</span>
+<span class="sd">    - Eager only; no Dask laziness.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s_matrix : SMatrix</span>
+<span class="sd">        S-matrix specification (any ``interpolation``).</span>
+<span class="sd">    transition_potentials : BaseTransitionPotential</span>
+<span class="sd">        Atomic transition potential.</span>
+<span class="sd">    scan : BaseScan or tuple</span>
+<span class="sd">        Scan positions.</span>
+<span class="sd">    detectors : BaseDetector or list, optional</span>
+<span class="sd">        Detectors. Defaults to ``FlexibleAnnularDetector()``.</span>
+<span class="sd">    sites : Atoms or SliceIndexedAtoms, optional</span>
+<span class="sd">        Scattering sites. Auto-extracted from the potential if not given.</span>
+<span class="sd">    double_channel : bool, optional</span>
+<span class="sd">        If ``True`` (default), propagate the scattered state to the exit via</span>
+<span class="sd">        a reverse-multislice ``S2`` before reducing. If ``False``, detect</span>
+<span class="sd">        immediately at the scatter slice (single-channel): ``S2`` is then</span>
+<span class="sd">        trivial — the contraction reduces to an FFT of the windowed</span>
+<span class="sd">        scattered field directly, no reverse multislice needed.</span>
+<span class="sd">    inelastic_crop : float or tuple of float, optional</span>
+<span class="sd">        Real-space side length [Å] of the window on which ``H_n0`` and the</span>
+<span class="sd">        scattered wave are evaluated. Clamped to the PRISM cell</span>
+<span class="sd">        (``extent / interpolation``) with a warning if larger — see</span>
+<span class="sd">        Limitations above. If ``None`` (default), the PRISM cell is used,</span>
+<span class="sd">        matching the real-space driver's default window.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    BaseMeasurements or list of BaseMeasurements</span>
+<span class="sd">        One measurement per detector.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">safe_ceiling_int</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.multislice</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">allocate_multislice_measurements</span><span class="p">,</span>
+        <span class="n">conventional_multislice_step</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.prism.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">wrapped_crop_2d</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="n">Waves</span>
+
+    <span class="n">ctx</span> <span class="o">=</span> <span class="n">_prism_eels_common_setup</span><span class="p">(</span>
+        <span class="n">s_matrix</span><span class="p">,</span> <span class="n">transition_potentials</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="n">sites</span>
+    <span class="p">)</span>
+    <span class="n">transition_potential</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">transition_potential</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">Z</span>
+    <span class="n">potential</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">potential</span>
+    <span class="n">energy</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">energy</span>
+    <span class="n">extent</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">extent</span>
+    <span class="n">gpts</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">gpts</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">xp</span>
+    <span class="n">complex_dtype</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">complex_dtype</span>
+    <span class="n">scan</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">scan</span>
+    <span class="n">detectors</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">detectors</span>
+    <span class="n">n_k</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">n_k</span>
+    <span class="n">s_waves</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">s_waves</span>
+    <span class="n">transmissions</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">transmissions</span>
+    <span class="n">sites</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">sites</span>
+    <span class="n">positions</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">positions</span>
+    <span class="n">n_positions</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">n_positions</span>
+    <span class="n">coefficients</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">coefficients</span>
+    <span class="n">full_sampling</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">full_sampling</span>
+    <span class="n">full_sampling_arr</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">full_sampling_arr</span>
+
+    <span class="k">if</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">downsampled_gpts</span> <span class="o">!=</span> <span class="n">gpts</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">"PRISM-EELS beam-basis does not yet support downsample "</span>
+            <span class="s2">"(s_matrix.downsampled_gpts != s_matrix.gpts)."</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">"PRISM-EELS beam-basis does not yet support frozen-phonon "</span>
+            <span class="s2">"ensembles (potential.ensemble_shape is non-empty)."</span>
+        <span class="p">)</span>
+
+    <span class="n">exit_planes</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exit_planes</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">"PRISM-EELS beam-basis only supports a single exit plane "</span>
+            <span class="sa">f</span><span class="s2">"(got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">exit_planes</span><span class="p">)</span><span class="si">}</span><span class="s2">)."</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_step</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="n">transmission</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">conventional_multislice_step</span><span class="p">(</span>
+            <span class="n">waves</span><span class="p">,</span>
+            <span class="n">potential_slice</span><span class="o">=</span><span class="n">transmission</span><span class="p">,</span>
+            <span class="n">propagator</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">propagator</span><span class="p">,</span>
+            <span class="n">antialias_aperture</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">antialias_aperture</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">tp_k</span> <span class="o">=</span> <span class="n">transition_potential</span><span class="o">.</span><span class="n">array</span> <span class="o">*</span> <span class="n">energy2sigma</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
+    <span class="n">n_T</span> <span class="o">=</span> <span class="n">tp_k</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">n_pix</span> <span class="o">=</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">interpolation</span> <span class="o">=</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">interpolation</span>
+
+    <span class="n">cell_gpts</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">interpolation</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+        <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">interpolation</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="p">)</span>
+    <span class="n">cell_extent</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">cell_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">full_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">cell_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">full_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">prism_region</span> <span class="o">=</span> <span class="p">(</span><span class="n">cell_extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">cell_extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">inelastic_crop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">window_gpts</span> <span class="o">=</span> <span class="n">cell_gpts</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">inelastic_crop</span><span class="p">):</span>
+            <span class="n">inelastic_crop</span> <span class="o">=</span> <span class="p">(</span><span class="n">inelastic_crop</span><span class="p">,</span> <span class="n">inelastic_crop</span><span class="p">)</span>
+        <span class="n">window_gpts</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">min</span><span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">inelastic_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">full_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">])),</span>
+            <span class="nb">min</span><span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">inelastic_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">full_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">cell_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">cell_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">"PRISM-EELS beam-basis: inelastic_crop exceeding the PRISM cell "</span>
+            <span class="s2">"(extent / interpolation) does not improve accuracy and is "</span>
+            <span class="s2">"clamped to the cell. The interpolation-decimated PRISM probe is "</span>
+            <span class="s2">"exactly cell-periodic, so a larger window multiplies the "</span>
+            <span class="s2">"transition-potential tail against a copy of the probe peak "</span>
+            <span class="s2">"(spurious signal, not recovered accuracy) — see GitHub issue "</span>
+            <span class="s2">"abTEM/abTEM#293, Update 4. The lever for delocalized edges is a "</span>
+            <span class="s2">"larger cell (lower interpolation / bigger supercell)."</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">window_gpts</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">min</span><span class="p">(</span><span class="n">window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cell_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="nb">min</span><span class="p">(</span><span class="n">window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cell_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="p">)</span>
+
+    <span class="c1"># --- Allocate measurements (full scan shape; identical pattern to the</span>
+    <span class="c1"># real-space driver, single exit plane). ---</span>
+    <span class="c1"># Detection resolution: double-channel's q-basis is intrinsically the</span>
+    <span class="c1"># full native reciprocal grid (S2 is built over all ``gpts`` pixels), so</span>
+    <span class="c1"># detect at ``gpts``/``extent``. Single-channel's q is whatever size we</span>
+    <span class="c1"># FFT (no reverse multislice) — detecting on a *zero-padded* gpts-sized</span>
+    <span class="c1"># array would inflate the Parseval-summed intensity by</span>
+    <span class="c1"># ``prod(gpts) / prod(window_gpts)`` relative to the real-space driver's</span>
+    <span class="c1"># convention (detector.detect() does its own internal FFT at whatever</span>
+    <span class="c1"># array size it is given, and the unnormalised-forward/``1/N``-inverse</span>
+    <span class="c1"># FFT pair used throughout abtem is not size-invariant for the *total*</span>
+    <span class="c1"># intensity). So single-channel must FFT and detect directly at</span>
+    <span class="c1"># ``window_gpts``/``window_extent``, matching the real-space driver's</span>
+    <span class="c1"># ``output_window_gpts``-sized detection grid when ``window_gpts``</span>
+    <span class="c1"># equals the cell.</span>
+    <span class="n">detect_gpts</span> <span class="o">=</span> <span class="n">gpts</span> <span class="k">if</span> <span class="n">double_channel</span> <span class="k">else</span> <span class="n">window_gpts</span>
+    <span class="n">detect_extent</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">detect_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">full_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">detect_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">full_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="n">scan_axes_metadata</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
+    <span class="n">scan_shape</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">dummy_scan_waves</span> <span class="o">=</span> <span class="n">Waves</span><span class="p">(</span>
+        <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">scan_shape</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">detect_gpts</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">complex_dtype</span><span class="p">),</span>
+        <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+        <span class="n">extent</span><span class="o">=</span><span class="n">detect_extent</span><span class="p">,</span>
+        <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="n">scan_axes_metadata</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">measurements</span> <span class="o">=</span> <span class="n">allocate_multislice_measurements</span><span class="p">(</span>
+        <span class="n">dummy_scan_waves</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="p">(),</span> <span class="p">[]</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_detect_and_accumulate</span><span class="p">(</span><span class="n">recip_full</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+        <span class="c1"># recip_full: (n_T, n_masked, *detect_gpts) reciprocal-space.</span>
+        <span class="n">real_full</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">recip_full</span><span class="p">)</span>
+        <span class="n">wave</span> <span class="o">=</span> <span class="n">Waves</span><span class="p">(</span>
+            <span class="n">real_full</span><span class="p">,</span>
+            <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+            <span class="n">extent</span><span class="o">=</span><span class="n">detect_extent</span><span class="p">,</span>
+            <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">OrdinalAxis</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_T</span><span class="p">))),</span>
+                <span class="n">OrdinalAxis</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">())))),</span>
+            <span class="p">],</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">det_idx</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">wave</span><span class="p">)</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">0</span><span class="p">,))</span>
+            <span class="n">full_partial</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">n_positions</span><span class="p">,)</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span>
             <span class="p">)</span>
-            <span class="n">scattered_S1</span> <span class="o">=</span> <span class="n">transition_potentials</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">scattered_S1</span><span class="p">,</span> <span class="n">shifted_site</span><span class="p">)</span>
+            <span class="n">full_partial</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">array</span>
+            <span class="n">full_partial</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="n">full_partial</span><span class="p">,</span> <span class="n">measurements</span><span class="p">[</span><span class="n">det_idx</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+            <span class="n">measurements</span><span class="p">[</span><span class="n">det_idx</span><span class="p">]</span><span class="o">.</span><span class="n">array</span> <span class="o">+=</span> <span class="n">full_partial</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="n">scan_shape</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">S1</span><span class="o">.</span><span class="n">interpolation</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
-                <span class="n">cropped_coefficients</span> <span class="o">=</span> <span class="n">coefficients</span>
-                <span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># --- Main loop ---</span>
+    <span class="k">for</span> <span class="n">slice_index</span><span class="p">,</span> <span class="n">transmission</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">transmissions</span><span class="p">):</span>
+        <span class="n">s_waves</span> <span class="o">=</span> <span class="n">_step</span><span class="p">(</span><span class="n">s_waves</span><span class="p">,</span> <span class="n">transmission</span><span class="p">)</span>
+
+        <span class="n">sites_this_slice</span> <span class="o">=</span> <span class="n">sites</span><span class="o">.</span><span class="n">get_atoms_in_slices</span><span class="p">(</span><span class="n">slice_index</span><span class="p">,</span> <span class="n">atomic_number</span><span class="o">=</span><span class="n">Z</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sites_this_slice</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="n">s2_full</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">double_channel</span><span class="p">:</span>
+            <span class="c1"># Build S2 over the FULL native reciprocal grid: reverse</span>
+            <span class="c1"># multislice (conjugate transmission, transposed propagate</span>
+            <span class="c1"># order) of every reciprocal-pixel delta function, batched.</span>
+            <span class="n">delta_k</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n_pix</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">complex_dtype</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n_pix</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">gpts</span><span class="p">))</span>
+            <span class="n">s2_array</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">delta_k</span><span class="p">)</span>
+            <span class="n">s2_waves</span> <span class="o">=</span> <span class="n">Waves</span><span class="p">(</span>
+                <span class="n">s2_array</span><span class="p">,</span>
+                <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+                <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+                <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="p">[</span><span class="n">OrdinalAxis</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_pix</span><span class="p">)))],</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">transmissions</span><span class="p">[</span><span class="n">slice_index</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]):</span>
+                <span class="n">s2_waves</span> <span class="o">=</span> <span class="n">_step</span><span class="p">(</span><span class="n">s2_waves</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">conjugate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transpose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">s2_full</span> <span class="o">=</span> <span class="n">s2_waves</span><span class="o">.</span><span class="n">array</span>  <span class="c1"># (n_pix, *gpts)</span>
+
+        <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">sites_this_slice</span><span class="p">:</span>
+            <span class="n">site_xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">atom</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">atom</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+            <span class="p">)</span>
+            <span class="n">site_pixel</span> <span class="o">=</span> <span class="n">site_xy</span> <span class="o">/</span> <span class="n">full_sampling_arr</span>
+            <span class="n">site_pixel_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">site_pixel</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">crop_corner</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">site_pixel_int</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">site_pixel_int</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">shift_k</span> <span class="o">=</span> <span class="n">fft_shift_kernel</span><span class="p">(</span>
+                <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">site_pixel</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">gpts</span>
+            <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">H_full</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">tp_k</span> <span class="o">*</span> <span class="n">shift_k</span><span class="p">)</span>  <span class="c1"># (n_T, *gpts), shifted to true site position</span>
+            <span class="n">H_crop</span> <span class="o">=</span> <span class="n">wrapped_crop_2d</span><span class="p">(</span><span class="n">H_full</span><span class="p">,</span> <span class="n">crop_corner</span><span class="p">,</span> <span class="n">window_gpts</span><span class="p">)</span>
+            <span class="n">s1_crop</span> <span class="o">=</span> <span class="n">wrapped_crop_2d</span><span class="p">(</span><span class="n">s_waves</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">crop_corner</span><span class="p">,</span> <span class="n">window_gpts</span><span class="p">)</span>
+            <span class="n">HS1</span> <span class="o">=</span> <span class="n">H_crop</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">s1_crop</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># (n_T, n_k, wh, ww)</span>
+
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_positions</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">interpolation</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">&amp;=</span> <span class="p">(</span>
+                    <span class="n">xp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">site_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="o">%</span> <span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">prism_region</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="p">)</span> <span class="o">&lt;=</span> <span class="n">prism_region</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">interpolation</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">&amp;=</span> <span class="p">(</span>
+                    <span class="n">xp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">site_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="o">%</span> <span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">prism_region</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="p">)</span> <span class="o">&lt;=</span> <span class="n">prism_region</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">coeff_masked</span> <span class="o">=</span> <span class="n">coefficients</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>  <span class="c1"># (n_masked, n_k)</span>
+
+            <span class="k">if</span> <span class="n">double_channel</span><span class="p">:</span>
+                <span class="n">S2_crop</span> <span class="o">=</span> <span class="n">wrapped_crop_2d</span><span class="p">(</span><span class="n">s2_full</span><span class="p">,</span> <span class="n">crop_corner</span><span class="p">,</span> <span class="n">window_gpts</span><span class="p">)</span>
+                <span class="n">S2_flat</span> <span class="o">=</span> <span class="n">S2_crop</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_pix</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">recip_full</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="p">(</span>
+                            <span class="n">n_pix</span>
+                            <span class="o">*</span> <span class="p">(</span><span class="n">S2_flat</span> <span class="o">@</span> <span class="n">HS1</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_k</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>  <span class="c1"># (n_pix, n_k)</span>
+                        <span class="p">)</span>
+                        <span class="o">@</span> <span class="n">coeff_masked</span><span class="o">.</span><span class="n">T</span>  <span class="c1"># (n_pix, n_masked)</span>
+                        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_T</span><span class="p">)</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>  <span class="c1"># (n_T, n_pix, n_masked)</span>
+                <span class="n">recip_full</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">recip_full</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">n_T</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">gpts</span><span class="p">)</span>
+                <span class="p">)</span>  <span class="c1"># (n_T, n_masked, *gpts)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">mask</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coefficients</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">S1</span><span class="o">.</span><span class="n">interpolation</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">mask</span> <span class="o">*=</span> <span class="p">(</span>
-                        <span class="n">xp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">site</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-                        <span class="o">%</span> <span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">prism_region</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-                    <span class="p">)</span> <span class="o">&lt;=</span> <span class="n">prism_region</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">S1</span><span class="o">.</span><span class="n">interpolation</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">mask</span> <span class="o">*=</span> <span class="p">(</span>
-                        <span class="n">xp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">site</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-                        <span class="o">%</span> <span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">prism_region</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-                    <span class="p">)</span> <span class="o">&lt;=</span> <span class="n">prism_region</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="c1"># Single channel: S2 is trivial -- FFT the windowed</span>
+                <span class="c1"># scattered field directly (no reverse multislice, and no</span>
+                <span class="c1"># zero-padding to the full grid: detect at window_gpts</span>
+                <span class="c1"># resolution to match the real-space driver's convention,</span>
+                <span class="c1"># see the ``detect_gpts`` note above).</span>
+                <span class="n">SHn0</span> <span class="o">=</span> <span class="n">fft2</span><span class="p">(</span><span class="n">HS1</span><span class="p">)</span>  <span class="c1"># (n_T, n_k, *window_gpts)</span>
+                <span class="n">recip_full</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span>
+                    <span class="n">coeff_masked</span><span class="p">,</span> <span class="n">SHn0</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="p">)</span>  <span class="c1"># (n_masked, n_T, *window_gpts)</span>
+                <span class="n">recip_full</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">recip_full</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># (n_T, n_masked, *window_gpts)</span>
 
-                <span class="n">cropped_coefficients</span> <span class="o">=</span> <span class="n">coefficients</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+            <span class="n">_detect_and_accumulate</span><span class="p">(</span><span class="n">recip_full</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
 
-            <span class="n">a</span> <span class="o">=</span> <span class="n">S2_crop</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">S2</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-            <span class="n">b</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span>
-                <span class="n">scattered_S1</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">scattered_S1</span><span class="o">.</span><span class="n">array</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">S1</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span>
-            <span class="p">)</span>
-
-            <span class="n">SHn0</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-            <span class="n">SHn0</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">SHn0</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-
-            <span class="n">new_values</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">SHn0</span><span class="p">,</span> <span class="n">cropped_coefficients</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="kc">None</span><span class="p">]))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-                    <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-                <span class="p">),</span>
-                <span class="n">np</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">images</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_values</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">images</span> <span class="o">+=</span> <span class="n">new_values</span>
-
-    <span class="n">images</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">S1</span><span class="o">.</span><span class="n">interpolation</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
-
-    <span class="n">images</span> <span class="o">=</span> <span class="n">Images</span><span class="p">(</span><span class="n">images</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">gpts</span><span class="p">),</span> <span class="n">sampling</span><span class="o">=</span><span class="n">scan</span><span class="o">.</span><span class="n">sampling</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">images</span></div>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">measurements</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">measurements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">measurements</span></div>
 
 </pre></div>
 
@@ -1883,7 +2731,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

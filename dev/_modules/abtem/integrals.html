@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -772,8 +772,9 @@
 <div class="viewcode-block" id="GaussianProjectionIntegrals.get_gaussians">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.integrals.html#abtem.integrals.GaussianProjectionIntegrals.get_gaussians">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_gaussians</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussians</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian</span><span class="p">[(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)]</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussians</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussians</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">gaussian_projected_scattering_factors</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span></div>
 
@@ -781,8 +782,9 @@
 <div class="viewcode-block" id="GaussianProjectionIntegrals.get_corrections">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.integrals.html#abtem.integrals.GaussianProjectionIntegrals.get_corrections">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_corrections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_corrections</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_corrections</span><span class="p">[(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)]</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_corrections</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_corrections</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">correction_projected_scattering_factors</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span></div>
 
@@ -796,13 +798,15 @@
         <span class="n">weights</span> <span class="o">=</span> <span class="n">gaussian_projection_weights</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">shifted_a</span><span class="p">,</span> <span class="n">shifted_b</span><span class="p">)</span>
 
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">positions</span> <span class="o">=</span> <span class="p">(</span><span class="n">positions</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">fp_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">cx_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="p">(</span><span class="n">positions</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">fp_dtype</span><span class="p">)</span>
 
-        <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">complex64</span><span class="p">)</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cx_dtype</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
-            <span class="n">temp</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">complex64</span><span class="p">)</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cx_dtype</span><span class="p">)</span>
             <span class="n">superpose_deltas</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="n">array</span> <span class="o">+=</span> <span class="n">fft2</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">*</span> <span class="n">gaussians</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">complex64</span><span class="p">)</span>
+            <span class="n">array</span> <span class="o">+=</span> <span class="n">fft2</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">*</span> <span class="n">gaussians</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">cx_dtype</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">array</span>
 
@@ -810,11 +814,13 @@
         <span class="n">corrections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_corrections</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
 
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">fp_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">cx_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="n">positions</span> <span class="o">=</span> <span class="n">positions</span><span class="p">[(</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">)]</span>
-        <span class="n">positions</span> <span class="o">=</span> <span class="p">(</span><span class="n">positions</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="p">(</span><span class="n">positions</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">fp_dtype</span><span class="p">)</span>
 
-        <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">complex64</span><span class="p">)</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cx_dtype</span><span class="p">)</span>
 
         <span class="n">superpose_deltas</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span>
 
@@ -848,7 +854,14 @@
                 <span class="n">positions</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">array</span> <span class="o">/</span> <span class="n">sinc</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device</span><span class="p">))</span><span class="o">.</span><span class="n">real</span></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_sinc_cache"</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sinc_cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">sinc_key</span> <span class="o">=</span> <span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sinc_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sinc_cache</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sinc_cache</span><span class="p">[</span><span class="n">sinc_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">sinc</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">array</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sinc_cache</span><span class="p">[</span><span class="n">sinc_key</span><span class="p">])</span><span class="o">.</span><span class="n">real</span></div>
 </div>
 
 
@@ -1360,14 +1373,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_sorted_disks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span>
             <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
         <span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="c1"># Device-resident copies of disk_indices/radial_gpts, keyed by</span>
-        <span class="c1"># (symbol, sampling, device). Both are invariant per (symbol,</span>
+        <span class="c1"># Device-resident copy of the sorted disk, keyed by</span>
+        <span class="c1"># (symbol, sampling, device). The disk is invariant per (symbol,</span>
         <span class="c1"># sampling) across all slices, but integrate_on_grid is called once</span>
         <span class="c1"># per slice per species; without this cache each call re-uploads</span>
-        <span class="c1"># them to the GPU from scratch, which measurably dominated GPU</span>
-        <span class="c1"># build time (see PR #309 discussion) despite the arrays never</span>
-        <span class="c1"># changing between calls.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_device_arrays</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># it to the GPU from scratch, which measurably dominated GPU</span>
+        <span class="c1"># build time (see PR #309 discussion) despite the array never</span>
+        <span class="c1"># changing between calls. Only disks small enough to fit within</span>
+        <span class="c1"># the chunked-transfer bound are cached; larger disks are streamed</span>
+        <span class="c1"># in memory-bounded chunks instead (see integrate_on_grid).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_device_arrays</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">object</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">periodic</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">finite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -1529,6 +1544,8 @@
             <span class="n">shifted_a</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
             <span class="n">shifted_b</span> <span class="o">=</span> <span class="n">b</span> <span class="o">-</span> <span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
 
+            <span class="n">fp_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
             <span class="n">cutoff</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">radial_gpts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">disk_key</span> <span class="o">=</span> <span class="p">(</span><span class="n">chemical_symbols</span><span class="p">[</span><span class="n">number</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">sampling</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">disk_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sorted_disks</span><span class="p">:</span>
@@ -1558,58 +1575,93 @@
             <span class="n">disk_counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span>
                 <span class="n">disk_radii</span><span class="p">,</span> <span class="n">lateral_cutoff</span> <span class="o">+</span> <span class="n">margin</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">"right"</span>
             <span class="p">)</span>
-            <span class="c1"># Cheap host-side reduction so the GPU kernel launcher doesn't</span>
-            <span class="c1"># need a device sync just to size its grid; unused on CPU.</span>
+            <span class="c1"># Cheap host-side reduction: the largest per-atom truncation index</span>
+            <span class="c1"># bounds how much of the sorted disk the kernels need at all.</span>
             <span class="n">max_disk_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">disk_counts</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">disk_counts</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
 
-            <span class="k">if</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">cp</span><span class="p">:</span>
-                <span class="n">device_key</span> <span class="o">=</span> <span class="n">disk_key</span> <span class="o">+</span> <span class="p">(</span><span class="n">device</span><span class="p">,)</span>
-                <span class="n">cached_device_arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_device_arrays</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">device_key</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">cached_device_arrays</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">cached_device_arrays</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">disk</span><span class="p">),</span>
-                        <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">radial_gpts</span><span class="p">),</span>
-                    <span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_device_arrays</span><span class="p">[</span><span class="n">device_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">cached_device_arrays</span>
-                <span class="n">disk_indices</span><span class="p">,</span> <span class="n">radial_gpts_xp</span> <span class="o">=</span> <span class="n">cached_device_arrays</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">disk_indices</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">disk</span><span class="p">)</span>
-                <span class="n">radial_gpts_xp</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">radial_gpts</span>
+            <span class="c1"># Transfer the integral table and radial grid to the compute dtype</span>
+            <span class="c1"># (float32 or float64 according to the precision config) so that all</span>
+            <span class="c1"># subsequent GPU operations stay in the configured precision.</span>
+            <span class="c1"># Without the explicit dtype, table.integrate() returns numpy float64</span>
+            <span class="c1"># and xp.asarray() would preserve that, creating a full float64 GPU</span>
+            <span class="c1"># allocation even when precision='float32'.</span>
+            <span class="n">radial_potential</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+                <span class="n">table</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">shifted_a</span><span class="p">,</span> <span class="n">shifted_b</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span>
+            <span class="p">)</span>
+            <span class="n">radial_gpts_device</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">radial_gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span>
 
-            <span class="n">radial_potential</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">shifted_a</span><span class="p">,</span> <span class="n">shifted_b</span><span class="p">))</span>
+            <span class="n">positions</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span>
 
-            <span class="n">positions</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
-
+            <span class="c1"># Compute derivative entirely in the compute dtype.  Using</span>
+            <span class="c1"># table.radial_gpts (float64 numpy) as the denominator would upcast</span>
+            <span class="c1"># the division to float64 and then silently downcast back when</span>
+            <span class="c1"># assigned into the float32 derivative array.</span>
             <span class="n">radial_potential_derivative</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">radial_potential</span><span class="p">)</span>
             <span class="n">radial_potential_derivative</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">xp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">radial_potential</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">xp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">radial_gpts_xp</span><span class="p">)[</span><span class="kc">None</span><span class="p">]</span>
+                <span class="n">xp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">radial_potential</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">xp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">radial_gpts_device</span><span class="p">)[</span><span class="kc">None</span><span class="p">]</span>
             <span class="p">)</span>
 
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parametrization</span><span class="o">.</span><span class="n">sigmas</span><span class="p">):</span>
-                <span class="n">temp</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+                <span class="n">temp</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">temp</span> <span class="o">=</span> <span class="n">array</span>
 
             <span class="k">if</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">cp</span><span class="p">:</span>
-                <span class="n">interpolate_radial_functions_cuda</span><span class="p">(</span>
-                    <span class="n">array</span><span class="o">=</span><span class="n">temp</span><span class="p">,</span>
-                    <span class="n">positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
-                    <span class="n">disk_indices</span><span class="o">=</span><span class="n">disk_indices</span><span class="p">,</span>
-                    <span class="n">disk_counts</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">disk_counts</span><span class="p">),</span>
-                    <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
-                    <span class="n">radial_gpts</span><span class="o">=</span><span class="n">radial_gpts_xp</span><span class="p">,</span>
-                    <span class="n">radial_functions</span><span class="o">=</span><span class="n">radial_potential</span><span class="p">,</span>
-                    <span class="n">radial_derivative</span><span class="o">=</span><span class="n">radial_potential_derivative</span><span class="p">,</span>
-                    <span class="n">max_disk_count</span><span class="o">=</span><span class="n">max_disk_count</span><span class="p">,</span>
-                <span class="p">)</span>
+                <span class="c1"># radial_gpts_device already has the correct dtype (computed</span>
+                <span class="c1"># above); reuse it directly instead of re-converting.</span>
+                <span class="c1"># The kernel truncates per atom at disk_counts (with the</span>
+                <span class="c1"># chunk's global offset), so at most the max_disk_count prefix</span>
+                <span class="c1"># of the radius-sorted disk is ever scanned.</span>
+                <span class="n">disk_counts_device</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">disk_counts</span><span class="p">)</span>
+                <span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">2_000_000</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">disk</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">chunk_size</span><span class="p">:</span>
+                    <span class="c1"># Common case: the disk fits comfortably on device, so keep</span>
+                    <span class="c1"># a cached copy -- re-uploading it every slice measurably</span>
+                    <span class="c1"># dominated GPU build time (see PR #309 discussion).</span>
+                    <span class="n">device_key</span> <span class="o">=</span> <span class="n">disk_key</span> <span class="o">+</span> <span class="p">(</span><span class="n">device</span><span class="p">,)</span>
+                    <span class="n">disk_device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_device_arrays</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">device_key</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">disk_device</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">disk_device</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">disk</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_device_arrays</span><span class="p">[</span><span class="n">device_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">disk_device</span>
+                    <span class="n">interpolate_radial_functions_cuda</span><span class="p">(</span>
+                        <span class="n">array</span><span class="o">=</span><span class="n">temp</span><span class="p">,</span>
+                        <span class="n">positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
+                        <span class="n">disk_indices</span><span class="o">=</span><span class="n">disk_device</span><span class="p">[:</span><span class="n">max_disk_count</span><span class="p">],</span>
+                        <span class="n">disk_counts</span><span class="o">=</span><span class="n">disk_counts_device</span><span class="p">,</span>
+                        <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
+                        <span class="n">radial_gpts</span><span class="o">=</span><span class="n">radial_gpts_device</span><span class="p">,</span>
+                        <span class="n">radial_functions</span><span class="o">=</span><span class="n">radial_potential</span><span class="p">,</span>
+                        <span class="n">radial_derivative</span><span class="o">=</span><span class="n">radial_potential_derivative</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># For very fine sampling the disk can contain hundreds of</span>
+                    <span class="c1"># millions of pixels (&gt;5 GB) which would exceed device</span>
+                    <span class="c1"># memory: stream the needed prefix in bounded chunks so the</span>
+                    <span class="c1"># full disk never resides on the GPU.  The CUDA kernel</span>
+                    <span class="c1"># accumulates via atomic adds, so multiple calls produce</span>
+                    <span class="c1"># the same result.</span>
+                    <span class="k">for</span> <span class="n">start</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_disk_count</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">):</span>
+                        <span class="n">disk_chunk</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">disk</span><span class="p">[</span><span class="n">start</span> <span class="p">:</span> <span class="n">start</span> <span class="o">+</span> <span class="n">chunk_size</span><span class="p">])</span>
+                        <span class="n">interpolate_radial_functions_cuda</span><span class="p">(</span>
+                            <span class="n">array</span><span class="o">=</span><span class="n">temp</span><span class="p">,</span>
+                            <span class="n">positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
+                            <span class="n">disk_indices</span><span class="o">=</span><span class="n">disk_chunk</span><span class="p">,</span>
+                            <span class="n">disk_counts</span><span class="o">=</span><span class="n">disk_counts_device</span><span class="p">,</span>
+                            <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
+                            <span class="n">radial_gpts</span><span class="o">=</span><span class="n">radial_gpts_device</span><span class="p">,</span>
+                            <span class="n">radial_functions</span><span class="o">=</span><span class="n">radial_potential</span><span class="p">,</span>
+                            <span class="n">radial_derivative</span><span class="o">=</span><span class="n">radial_potential_derivative</span><span class="p">,</span>
+                            <span class="n">chunk_offset</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="k">del</span> <span class="n">disk_chunk</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">_threaded_interpolate_radial_functions</span><span class="p">(</span>
                     <span class="n">array</span><span class="o">=</span><span class="n">temp</span><span class="p">,</span>
                     <span class="n">positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
-                    <span class="n">disk_indices</span><span class="o">=</span><span class="n">disk_indices</span><span class="p">,</span>
+                    <span class="n">disk_indices</span><span class="o">=</span><span class="n">disk</span><span class="p">,</span>
                     <span class="n">disk_counts</span><span class="o">=</span><span class="n">disk_counts</span><span class="p">,</span>
                     <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
-                    <span class="n">radial_gpts</span><span class="o">=</span><span class="n">radial_gpts_xp</span><span class="p">,</span>
+                    <span class="n">radial_gpts</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">radial_gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">),</span>
                     <span class="n">radial_functions</span><span class="o">=</span><span class="n">radial_potential</span><span class="p">,</span>
                     <span class="n">radial_derivative</span><span class="o">=</span><span class="n">radial_potential_derivative</span><span class="p">,</span>
                 <span class="p">)</span>
@@ -1667,7 +1719,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

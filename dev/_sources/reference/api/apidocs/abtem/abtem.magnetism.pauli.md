@@ -35,7 +35,7 @@
 
 ### API
 
-````{py:function} apply_A_xy_dot_nabla_xy(A, wave_functions, sampling)
+````{py:function} apply_A_xy_dot_nabla_xy(...)
 :canonical: abtem.magnetism.pauli.apply_A_xy_dot_nabla_xy
 
 ```{autodoc2-docstring} abtem.magnetism.pauli.apply_A_xy_dot_nabla_xy
@@ -43,7 +43,7 @@
 ```
 ````
 
-````{py:function} central_difference_gradient_cbc(X, dx=1.0, dy=1.0)
+````{py:function} central_difference_gradient_cbc(...)
 :canonical: abtem.magnetism.pauli.central_difference_gradient_cbc
 
 ```{autodoc2-docstring} abtem.magnetism.pauli.central_difference_gradient_cbc
@@ -51,7 +51,7 @@
 ```
 ````
 
-````{py:function} central_difference_gradient_pbc(X, dx=1.0, dy=1.0)
+````{py:function} central_difference_gradient_pbc(...)
 :canonical: abtem.magnetism.pauli.central_difference_gradient_pbc
 
 ```{autodoc2-docstring} abtem.magnetism.pauli.central_difference_gradient_pbc

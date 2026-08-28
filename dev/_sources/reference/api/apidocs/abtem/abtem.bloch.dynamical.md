@@ -192,7 +192,7 @@
 
 ````
 
-`````{py:class} BaseStructureFactor(hkl: numpy.ndarray, g_max: float, centering: str, *args: typing.Any, **kwargs: typing.Any)
+`````{py:class} BaseStructureFactor(...)
 :canonical: abtem.bloch.dynamical.BaseStructureFactor
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BaseStructureFactor
@@ -278,7 +278,7 @@
 
 ````
 
-````{py:method} get_projected_potential(slice_thickness: typing.Optional[float | typing.Sequence[float]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None) -> abtem.potentials.iam.PotentialArray
+````{py:method} get_projected_potential(...) -> abtem.potentials.iam.PotentialArray
 :canonical: abtem.bloch.dynamical.BaseStructureFactor.get_projected_potential
 :abstractmethod:
 
@@ -310,7 +310,7 @@
 
 `````
 
-`````{py:class} BlochWaves(structure_factor: abtem.bloch.dynamical.BaseStructureFactor | ase.Atoms, energy: float, sg_max: float, g_max: typing.Optional[float] = None, orientation_matrix: typing.Optional[numpy.ndarray] = None, centering: str = 'auto', device: typing.Optional[str] = None, use_wave_eq: bool = False)
+`````{py:class} BlochWaves(...)
 :canonical: abtem.bloch.dynamical.BlochWaves
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves
@@ -324,7 +324,7 @@
 :parser: rst
 ```
 
-````{py:method} calculate_diffraction_patterns(thicknesses: float | typing.Sequence[float] | numpy.ndarray, return_complex: bool = False, lazy: bool = True) -> abtem.measurements.IndexedDiffractionPatterns
+````{py:method} calculate_diffraction_patterns(...) -> abtem.measurements.IndexedDiffractionPatterns
 :canonical: abtem.bloch.dynamical.BlochWaves.calculate_diffraction_patterns
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.calculate_diffraction_patterns
@@ -333,7 +333,7 @@
 
 ````
 
-````{py:method} calculate_exit_waves(thicknesses: float | typing.Iterable[float], gpts: typing.Optional[tuple[int, int]] = None, extent: typing.Optional[tuple[float, float]] = None, normalization: str = 'values', g_max: typing.Optional[float] = None, lazy: bool = True) -> abtem.waves.Waves
+````{py:method} calculate_exit_waves(...) -> abtem.waves.Waves
 :canonical: abtem.bloch.dynamical.BlochWaves.calculate_exit_waves
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.calculate_exit_waves
@@ -342,7 +342,7 @@
 
 ````
 
-````{py:method} calculate_scattering_matrix(z: float) -> numpy.ndarray
+````{py:method} calculate_scattering_matrix(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.BlochWaves.calculate_scattering_matrix
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.calculate_scattering_matrix
@@ -351,7 +351,7 @@
 
 ````
 
-````{py:method} calculate_structure_matrix(lazy: bool = True) -> numpy.ndarray
+````{py:method} calculate_structure_matrix(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.BlochWaves.calculate_structure_matrix
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.calculate_structure_matrix
@@ -429,7 +429,7 @@
 
 ````
 
-````{py:method} get_kinematical_diffraction_pattern(excitation_error_sigma: typing.Optional[float] = None) -> abtem.measurements.IndexedDiffractionPatterns
+````{py:method} get_kinematical_diffraction_pattern(...) -> abtem.measurements.IndexedDiffractionPatterns
 :canonical: abtem.bloch.dynamical.BlochWaves.get_kinematical_diffraction_pattern
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.get_kinematical_diffraction_pattern
@@ -468,7 +468,7 @@
 
 ````
 
-````{py:method} rotate(*args: str | abtem.distributions.BaseDistribution | numpy.ndarray | typing.SupportsFloat, degrees: bool = False) -> abtem.bloch.dynamical.BlochWaves | abtem.bloch.dynamical.BlochwaveEnsemble
+````{py:method} rotate(...) -> abtem.bloch.dynamical.BlochWaves | abtem.bloch.dynamical.BlochwaveEnsemble
 :canonical: abtem.bloch.dynamical.BlochWaves.rotate
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.rotate
@@ -529,7 +529,7 @@
 
 `````
 
-`````{py:class} BlochwaveEnsemble(*args: str | abtem.distributions.BaseDistribution | numpy.ndarray | typing.SupportsFloat, structure_factor: abtem.bloch.dynamical.BaseStructureFactor, energy: float, sg_max: float, g_max: float, centering: str = 'P', device: typing.Optional[str] = None, use_wave_eq: bool = False, use_degrees: bool = False)
+`````{py:class} BlochwaveEnsemble(...)
 :canonical: abtem.bloch.dynamical.BlochwaveEnsemble
 
 Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMixin`
@@ -555,7 +555,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 
 ````
 
-````{py:method} calculate_diffraction_patterns(thicknesses: float | typing.Sequence[float] | numpy.ndarray, return_complex: bool = False, lazy: bool = True, pbar: typing.Optional[bool] = None) -> abtem.measurements.IndexedDiffractionPatterns
+````{py:method} calculate_diffraction_patterns(...) -> abtem.measurements.IndexedDiffractionPatterns
 :canonical: abtem.bloch.dynamical.BlochwaveEnsemble.calculate_diffraction_patterns
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.calculate_diffraction_patterns
@@ -564,7 +564,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 
 ````
 
-````{py:method} calculate_exit_waves(thicknesses: float | typing.Sequence[float] | numpy.ndarray, gpts: typing.Optional[tuple[int, int]] = None, extent: typing.Optional[tuple[float, float]] = None, normalization: str = 'values', g_max: typing.Optional[float] = None, lazy: bool = True, pbar: typing.Optional[bool] = None) -> abtem.waves.Waves
+````{py:method} calculate_exit_waves(...) -> abtem.waves.Waves
 :canonical: abtem.bloch.dynamical.BlochwaveEnsemble.calculate_exit_waves
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.calculate_exit_waves
@@ -695,7 +695,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 
 `````
 
-`````{py:class} StructureFactor(atoms: ase.Atoms, g_max: float, parametrization: str = 'lobato', thermal_sigma: float | dict[str, float] | typing.Sequence[float] = 0.0, occupancy: float | dict[str, float] | typing.Sequence[float] = 1.0, cutoff: str = 'taper', device: typing.Optional[str] = None, centering: str = 'auto')
+`````{py:class} StructureFactor(...)
 :canonical: abtem.bloch.dynamical.StructureFactor
 
 Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.utils.CopyMixin`
@@ -721,7 +721,7 @@ Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.
 
 ````
 
-````{py:method} build(lazy: bool = True) -> abtem.bloch.dynamical.StructureFactorArray
+````{py:method} build(...) -> abtem.bloch.dynamical.StructureFactorArray
 :canonical: abtem.bloch.dynamical.StructureFactor.build
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactor.build
@@ -761,7 +761,7 @@ Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.
 
 ````
 
-````{py:method} get_potential_3d(lazy: bool = True) -> numpy.ndarray
+````{py:method} get_potential_3d(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.StructureFactor.get_potential_3d
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactor.get_potential_3d
@@ -770,7 +770,7 @@ Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.
 
 ````
 
-````{py:method} get_projected_potential(slice_thickness: typing.Optional[float | typing.Sequence[float]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, lazy: bool = True) -> abtem.potentials.iam.PotentialArray
+````{py:method} get_projected_potential(...) -> abtem.potentials.iam.PotentialArray
 :canonical: abtem.bloch.dynamical.StructureFactor.get_projected_potential
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactor.get_projected_potential
@@ -811,7 +811,7 @@ Bases: {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`, {py:obj}`abtem.core.
 
 `````
 
-`````{py:class} StructureFactorArray(array: numpy.ndarray, hkl: numpy.ndarray, cell: numpy.ndarray | ase.cell.Cell, g_max: float, centering: str = 'P', ensemble_axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, metadata: typing.Optional[dict] = None)
+`````{py:class} StructureFactorArray(...)
 :canonical: abtem.bloch.dynamical.StructureFactorArray
 
 Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStructureFactor`
@@ -833,7 +833,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 
 ````
 
-````{py:method} from_array_and_metadata(array: numpy.ndarray | dask.array.core.Array, axes_metadata: list[abtem.core.axes.AxisMetadata], metadata: dict) -> abtem.bloch.dynamical.StructureFactorArray
+````{py:method} from_array_and_metadata(...) -> abtem.bloch.dynamical.StructureFactorArray
 :canonical: abtem.bloch.dynamical.StructureFactorArray.from_array_and_metadata
 :abstractmethod:
 :classmethod:
@@ -849,7 +849,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 
 ````
 
-````{py:method} get_projected_potential(slice_thickness: typing.Optional[float | typing.Sequence[float]] = 0.5, sampling: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, lazy: bool = True) -> abtem.potentials.iam.PotentialArray
+````{py:method} get_projected_potential(...) -> abtem.potentials.iam.PotentialArray
 :canonical: abtem.bloch.dynamical.StructureFactorArray.get_projected_potential
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.StructureFactorArray.get_projected_potential
@@ -888,7 +888,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 
 `````
 
-````{py:function} allowed_chars(s: str, allowed_chars: str) -> bool
+````{py:function} allowed_chars(...) -> bool
 :canonical: abtem.bloch.dynamical.allowed_chars
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.allowed_chars
@@ -896,7 +896,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} calculate_M_matrix(hkl: numpy.ndarray, cell: numpy.ndarray | ase.cell.Cell, energy: float) -> numpy.ndarray
+````{py:function} calculate_M_matrix(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.calculate_M_matrix
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_M_matrix
@@ -904,7 +904,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} calculate_dynamical_scattering(structure_matrix: numpy.ndarray, hkl: numpy.ndarray, cell: numpy.ndarray | ase.cell.Cell, energy: float, thicknesses: float | typing.Iterable[float]) -> numpy.ndarray
+````{py:function} calculate_dynamical_scattering(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.calculate_dynamical_scattering
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_dynamical_scattering
@@ -912,7 +912,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} calculate_scattering_factors(g_vec: numpy.ndarray, atoms: ase.Atoms, parametrization: str | abtem.parametrizations.Parametrization, g_max: float, thermal_sigma: abtem.atoms.AtomProperties = 0.0, occupancy: abtem.atoms.AtomProperties = 1.0, cutoff: str = 'taper') -> numpy.ndarray
+````{py:function} calculate_scattering_factors(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.calculate_scattering_factors
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_scattering_factors
@@ -920,7 +920,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} calculate_scattering_matrix(A: numpy.ndarray, hkl: numpy.ndarray, cell: numpy.ndarray | ase.cell.Cell, z: float, energy: float, method: str = 'expm') -> numpy.ndarray
+````{py:function} calculate_scattering_matrix(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.calculate_scattering_matrix
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_scattering_matrix
@@ -928,7 +928,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} calculate_structure_factors(hkl: numpy.ndarray, atoms: ase.Atoms, parametrization: str | abtem.parametrizations.Parametrization, g_max: float, thermal_sigma: abtem.atoms.AtomProperties = 0.0, occupancy: abtem.atoms.AtomProperties = 1.0, cutoff: str = 'taper', device: str = 'cpu') -> numpy.ndarray
+````{py:function} calculate_structure_factors(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.calculate_structure_factors
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_structure_factors
@@ -936,7 +936,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} calculate_structure_matrix(structure_factor: numpy.ndarray, hkl: numpy.ndarray, hkl_selected: numpy.ndarray, cell: ase.cell.Cell | numpy.ndarray, energy: float, gpts: tuple[int, int, int], use_wave_eq: bool = False) -> numpy.ndarray
+````{py:function} calculate_structure_matrix(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.calculate_structure_matrix
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_structure_matrix
@@ -944,7 +944,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} calculate_wave_functions(amplitudes, g_vec, extent, gpts, thicknesses)
+````{py:function} calculate_wave_functions(...)
 :canonical: abtem.bloch.dynamical.calculate_wave_functions
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.calculate_wave_functions
@@ -952,7 +952,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} equal_slice_thicknesses(num_gpts_z: int, slice_thickness: float, depth: float) -> tuple[tuple[float, ...], tuple[int, ...]]
+````{py:function} equal_slice_thicknesses(...) -> tuple[tuple[float, ...], tuple[int, ...]]
 :canonical: abtem.bloch.dynamical.equal_slice_thicknesses
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.equal_slice_thicknesses
@@ -960,7 +960,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} exctinction_distances(structure_factor: numpy.ndarray, cell: ase.cell.Cell, energy: float) -> numpy.ndarray
+````{py:function} exctinction_distances(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.exctinction_distances
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.exctinction_distances
@@ -968,7 +968,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} expm(A: numpy.ndarray) -> numpy.ndarray
+````{py:function} expm(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.expm
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.expm
@@ -976,7 +976,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} is_base_distribution_tuple(rotations: tuple[abtem.distributions.BaseDistribution | numpy.ndarray | float, ...]) -> typing.TypeGuard[tuple[abtem.distributions.BaseDistribution, ...]]
+````{py:function} is_base_distribution_tuple(...) -> typing.TypeGuard[tuple[abtem.distributions.BaseDistribution, ...]]
 :canonical: abtem.bloch.dynamical.is_base_distribution_tuple
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.is_base_distribution_tuple
@@ -984,7 +984,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} is_rotations_ensemble(axes: str, rotations: abtem.bloch.dynamical.AllowedRotations) -> bool
+````{py:function} is_rotations_ensemble(...) -> bool
 :canonical: abtem.bloch.dynamical.is_rotations_ensemble
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.is_rotations_ensemble
@@ -992,7 +992,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} is_valid_rotation_axes(args: tuple[str | abtem.bloch.dynamical.AllowedRotations, ...]) -> typing.TypeGuard[tuple[str, ...]]
+````{py:function} is_valid_rotation_axes(...) -> typing.TypeGuard[tuple[str, ...]]
 :canonical: abtem.bloch.dynamical.is_valid_rotation_axes
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.is_valid_rotation_axes
@@ -1000,7 +1000,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} is_valid_rotations(args: tuple[str | abtem.bloch.dynamical.AllowedRotations, ...]) -> typing.TypeGuard[tuple[abtem.bloch.dynamical.AllowedRotations, ...]]
+````{py:function} is_valid_rotations(...) -> typing.TypeGuard[tuple[abtem.bloch.dynamical.AllowedRotations, ...]]
 :canonical: abtem.bloch.dynamical.is_valid_rotations
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.is_valid_rotations
@@ -1008,7 +1008,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} plane_wave_basis(g: numpy.ndarray, x: numpy.ndarray, y: numpy.ndarray, z: numpy.ndarray) -> numpy.ndarray
+````{py:function} plane_wave_basis(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.plane_wave_basis
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.plane_wave_basis
@@ -1016,7 +1016,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} plane_wave_coefficients(hkl: numpy.ndarray, xp) -> numpy.ndarray
+````{py:function} plane_wave_coefficients(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.plane_wave_coefficients
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.plane_wave_coefficients
@@ -1024,7 +1024,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} reduce_plane_wave_expansion(values, plane_waves)
+````{py:function} reduce_plane_wave_expansion(...)
 :canonical: abtem.bloch.dynamical.reduce_plane_wave_expansion
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.reduce_plane_wave_expansion
@@ -1032,7 +1032,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} slice_potential(potential_3d: numpy.ndarray, slice_chunks: tuple[int, ...], slice_thicknesses: tuple[float, ...], gpts: typing.Optional[tuple[int, int]] = None, rollaxis: bool = True) -> tuple[numpy.ndarray, numpy.ndarray]
+````{py:function} slice_potential(...) -> tuple[numpy.ndarray, numpy.ndarray]
 :canonical: abtem.bloch.dynamical.slice_potential
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.slice_potential
@@ -1040,7 +1040,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} structure_factor_1d_to_3d(structure_factor: numpy.ndarray, hkl: numpy.ndarray, gpts: tuple[int, int, int]) -> numpy.ndarray
+````{py:function} structure_factor_1d_to_3d(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.structure_factor_1d_to_3d
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.structure_factor_1d_to_3d
@@ -1048,7 +1048,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} structure_factor_to_potential(structure_factor: numpy.ndarray, hkl: numpy.ndarray, gpts: tuple[int, int, int]) -> numpy.ndarray
+````{py:function} structure_factor_to_potential(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.structure_factor_to_potential
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.structure_factor_to_potential
@@ -1056,7 +1056,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} validate_g_max(g_max: typing.Optional[float] = None, structure_factor: typing.Optional[abtem.bloch.dynamical.BaseStructureFactor] = None) -> float
+````{py:function} validate_g_max(...) -> float
 :canonical: abtem.bloch.dynamical.validate_g_max
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.validate_g_max
@@ -1064,7 +1064,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} validate_rotations(args: tuple[str | abtem.bloch.dynamical.AllowedRotations, ...]) -> tuple[tuple[str, ...], tuple[abtem.bloch.dynamical.AllowedRotations, ...]]
+````{py:function} validate_rotations(...) -> tuple[tuple[str, ...], tuple[abtem.bloch.dynamical.AllowedRotations, ...]]
 :canonical: abtem.bloch.dynamical.validate_rotations
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.validate_rotations

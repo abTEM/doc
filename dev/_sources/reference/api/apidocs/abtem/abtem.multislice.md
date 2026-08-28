@@ -116,9 +116,9 @@
 
 ````{py:attribute} order
 :canonical: abtem.multislice.FourierMultislice.order
-:type: typing.Literal[1, 2]
+:type: typing.Literal[1, 2, exact]
 :value: >
-   1
+   'exact'
 
 ```{autodoc2-docstring} abtem.multislice.FourierMultislice.order
 :parser: rst
@@ -154,7 +154,7 @@
 :parser: rst
 ```
 
-````{py:method} get_array(waves: abtem.waves.Waves, thickness: float, order: int = 1) -> numpy.ndarray
+````{py:method} get_array(...) -> numpy.ndarray
 :canonical: abtem.multislice.FresnelPropagator.get_array
 
 ```{autodoc2-docstring} abtem.multislice.FresnelPropagator.get_array
@@ -163,7 +163,7 @@
 
 ````
 
-````{py:method} propagate(waves: abtem.waves.Waves, thickness: float, in_place: bool = False, order: int = 1) -> abtem.waves.Waves
+````{py:method} propagate(...) -> abtem.waves.Waves
 :canonical: abtem.multislice.FresnelPropagator.propagate
 
 ```{autodoc2-docstring} abtem.multislice.FresnelPropagator.propagate
@@ -174,7 +174,7 @@
 
 `````
 
-`````{py:class} MultisliceTransform(potential: abtem.potentials.iam.BasePotential, detectors: typing.Optional[abtem.detectors.BaseDetector | list[abtem.detectors.BaseDetector]] = None, multislice_func: typing.Optional[typing.Callable] = None, **multislice_func_kwargs)
+`````{py:class} MultisliceTransform(...)
 :canonical: abtem.multislice.MultisliceTransform
 
 Bases: {py:obj}`abtem.transform.WavesTransform`\[{py:obj}`abtem.measurements.BaseMeasurements`\]
@@ -190,7 +190,7 @@ Bases: {py:obj}`abtem.transform.WavesTransform`\[{py:obj}`abtem.measurements.Bas
 :parser: rst
 ```
 
-````{py:method} apply(waves: abtem.waves.Waves, max_batch: int | str = 'auto') -> abtem.waves.Waves | abtem.measurements.BaseMeasurements | list[abtem.waves.Waves | abtem.measurements.BaseMeasurements]
+````{py:method} apply(...) -> abtem.waves.Waves | abtem.measurements.BaseMeasurements | list[abtem.waves.Waves | abtem.measurements.BaseMeasurements]
 :canonical: abtem.multislice.MultisliceTransform.apply
 
 ```{autodoc2-docstring} abtem.multislice.MultisliceTransform.apply
@@ -298,7 +298,7 @@ Bases: {py:obj}`abtem.transform.WavesTransform`\[{py:obj}`abtem.measurements.Bas
 
 `````
 
-````{py:function} allocate_measurement(waves: abtem.waves.Waves, detector: abtem.detectors.BaseDetector, extra_ensemble_axes_shape: tuple[int, ...], extra_ensemble_axes_metadata: list[abtem.core.axes.AxisMetadata]) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves
+````{py:function} allocate_measurement(...) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves
 :canonical: abtem.multislice.allocate_measurement
 
 ```{autodoc2-docstring} abtem.multislice.allocate_measurement
@@ -306,7 +306,7 @@ Bases: {py:obj}`abtem.transform.WavesTransform`\[{py:obj}`abtem.measurements.Bas
 ```
 ````
 
-````{py:function} allocate_multislice_measurements(waves: abtem.waves.Waves, detectors: list[abtem.detectors.BaseDetector], extra_ensemble_axes_shape: tuple[int, ...], extra_ensemble_axes_metadata: list[abtem.core.axes.AxisMetadata]) -> list[abtem.measurements.BaseMeasurements | abtem.waves.Waves]
+````{py:function} allocate_multislice_measurements(...) -> list[abtem.measurements.BaseMeasurements | abtem.waves.Waves]
 :canonical: abtem.multislice.allocate_multislice_measurements
 
 ```{autodoc2-docstring} abtem.multislice.allocate_multislice_measurements
@@ -314,7 +314,7 @@ Bases: {py:obj}`abtem.transform.WavesTransform`\[{py:obj}`abtem.measurements.Bas
 ```
 ````
 
-````{py:function} conventional_multislice_step(waves: abtem.waves.Waves, potential_slice: abtem.potentials.iam.PotentialArray | abtem.potentials.iam.TransmissionFunction, propagator: abtem.multislice.FresnelPropagator, antialias_aperture: abtem.antialias.AntialiasAperture, conjugate: bool = False, transpose: bool = False, order: int = 1) -> abtem.waves.Waves
+````{py:function} conventional_multislice_step(...) -> abtem.waves.Waves
 :canonical: abtem.multislice.conventional_multislice_step
 
 ```{autodoc2-docstring} abtem.multislice.conventional_multislice_step
@@ -322,7 +322,7 @@ Bases: {py:obj}`abtem.transform.WavesTransform`\[{py:obj}`abtem.measurements.Bas
 ```
 ````
 
-````{py:function} is_waves_base_measurements_or_list(value: typing.Any) -> typing.TypeGuard[Waves | BaseMeasurements | list[Waves | BaseMeasurements]]
+````{py:function} is_waves_base_measurements_or_list(...) -> typing.TypeGuard[Waves | BaseMeasurements | list[Waves | BaseMeasurements]]
 :canonical: abtem.multislice.is_waves_base_measurements_or_list
 
 ```{autodoc2-docstring} abtem.multislice.is_waves_base_measurements_or_list
@@ -330,7 +330,7 @@ Bases: {py:obj}`abtem.transform.WavesTransform`\[{py:obj}`abtem.measurements.Bas
 ```
 ````
 
-````{py:function} lookahead(iterable)
+````{py:function} lookahead(...)
 :canonical: abtem.multislice.lookahead
 
 ```{autodoc2-docstring} abtem.multislice.lookahead
@@ -338,7 +338,7 @@ Bases: {py:obj}`abtem.transform.WavesTransform`\[{py:obj}`abtem.measurements.Bas
 ```
 ````
 
-````{py:function} multislice_and_detect(waves: abtem.waves.Waves, potential: abtem.potentials.iam.BasePotential, detectors: typing.Optional[list[abtem.detectors.BaseDetector]] = None, algorithm: abtem.multislice.FourierMultislice | abtem.multislice.RealSpaceMultislice = FourierMultislice(), return_backscattered: bool = False, pbar: bool = False) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves | list[abtem.measurements.BaseMeasurements | abtem.waves.Waves]
+````{py:function} multislice_and_detect(...) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves | list[abtem.measurements.BaseMeasurements | abtem.waves.Waves]
 :canonical: abtem.multislice.multislice_and_detect
 
 ```{autodoc2-docstring} abtem.multislice.multislice_and_detect
@@ -346,7 +346,7 @@ Bases: {py:obj}`abtem.transform.WavesTransform`\[{py:obj}`abtem.measurements.Bas
 ```
 ````
 
-````{py:function} transition_potential_multislice_and_detect(waves: abtem.waves.Waves, potential: abtem.potentials.iam.BasePotential, transition_potential: abtem.inelastic.core_loss.TransitionPotential | abtem.inelastic.core_loss.TransitionPotentialArray, detectors: typing.Optional[list[abtem.detectors.BaseDetector]] = None, detectors_elastic: typing.Optional[list[abtem.detectors.BaseDetector]] = None, double_channel: bool = True, threshold: float = 1.0, sites: typing.Optional[abtem.slicing.SliceIndexedAtoms | ase.Atoms] = None, algorithm: abtem.multislice.FourierMultislice | abtem.multislice.RealSpaceMultislice = FourierMultislice(), scatter_max_batch: int | str = 1, pbar: bool = False) -> list[abtem.measurements.BaseMeasurements | abtem.waves.Waves] | abtem.measurements.BaseMeasurements | abtem.waves.Waves
+````{py:function} transition_potential_multislice_and_detect(...) -> list[abtem.measurements.BaseMeasurements | abtem.waves.Waves] | abtem.measurements.BaseMeasurements | abtem.waves.Waves
 :canonical: abtem.multislice.transition_potential_multislice_and_detect
 
 ```{autodoc2-docstring} abtem.multislice.transition_potential_multislice_and_detect

@@ -55,7 +55,7 @@
 
 ### API
 
-````{py:function} charge(r, p)
+````{py:function} charge(...)
 :canonical: abtem.parametrizations.functions.lobato.charge
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.lobato.charge
@@ -63,7 +63,7 @@
 ```
 ````
 
-````{py:function} potential(r, p)
+````{py:function} potential(...)
 :canonical: abtem.parametrizations.functions.lobato.potential
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.lobato.potential
@@ -71,7 +71,7 @@
 ```
 ````
 
-````{py:function} potential_derivative(r, p)
+````{py:function} potential_derivative(...)
 :canonical: abtem.parametrizations.functions.lobato.potential_derivative
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.lobato.potential_derivative
@@ -79,7 +79,7 @@
 ```
 ````
 
-````{py:function} projected_potential(r, p)
+````{py:function} projected_potential(...)
 :canonical: abtem.parametrizations.functions.lobato.projected_potential
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.lobato.projected_potential
@@ -87,7 +87,7 @@
 ```
 ````
 
-````{py:function} projected_scattering_factor(k2, p)
+````{py:function} projected_scattering_factor(...)
 :canonical: abtem.parametrizations.functions.lobato.projected_scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.lobato.projected_scattering_factor
@@ -95,7 +95,7 @@
 ```
 ````
 
-````{py:function} scattering_factor(k2, p)
+````{py:function} scattering_factor(...)
 :canonical: abtem.parametrizations.functions.lobato.scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.lobato.scattering_factor
@@ -103,7 +103,7 @@
 ```
 ````
 
-````{py:function} x_ray_scattering_factor(k, p)
+````{py:function} x_ray_scattering_factor(...)
 :canonical: abtem.parametrizations.functions.lobato.x_ray_scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.lobato.x_ray_scattering_factor

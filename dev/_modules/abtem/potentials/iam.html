@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -558,7 +558,7 @@
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_array_module</span><span class="p">,</span> <span class="n">validate_device</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chunks</span><span class="p">,</span> <span class="n">chunk_ranges</span><span class="p">,</span> <span class="n">generate_chunks</span><span class="p">,</span> <span class="n">validate_chunks</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.complex</span><span class="w"> </span><span class="kn">import</span> <span class="n">complex_exponential</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.complex</span><span class="w"> </span><span class="kn">import</span> <span class="n">complex_exponential</span><span class="p">,</span> <span class="n">complex_exponential_scaled</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">Accelerator</span><span class="p">,</span> <span class="n">HasAcceleratorMixin</span><span class="p">,</span> <span class="n">energy2sigma</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ensemble</span><span class="p">,</span> <span class="n">_wrap_with_array</span><span class="p">,</span> <span class="n">unpack_blockwise_args</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">Grid</span><span class="p">,</span> <span class="n">HasGrid2DMixin</span>
@@ -628,6 +628,9 @@
         <span class="n">exit_plane_index</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">exit_planes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_planes</span>
 
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exit_planes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">exit_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
             <span class="n">exit_plane_index</span> <span class="o">+=</span> <span class="mi">1</span>
 
@@ -661,6 +664,100 @@
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">generate_slices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first_slice</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="BaseField.generate_chunked_slices">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.potentials.iam.html#abtem.potentials.iam.BaseField.generate_chunked_slices">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_chunked_slices</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">first_slice</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">last_slice</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Generate potential slices in memory-budgeted chunks.</span>
+
+<span class="sd">        Previously, ``build()`` always placed the entire slice dimension into a</span>
+<span class="sd">        single dask chunk — meaning the full ``(num_slices, gpts_y, gpts_x)``</span>
+<span class="sd">        array had to fit in memory (or VRAM) at once. There was no slice-level</span>
+<span class="sd">        chunking. This method introduces that missing middle ground: it eagerly</span>
+<span class="sd">        builds a group of contiguous slices that fits within a configurable</span>
+<span class="sd">        memory budget, yields it as a ``PotentialArray``, and the caller can</span>
+<span class="sd">        discard it after propagation before the next chunk is built. This</span>
+<span class="sd">        bounds peak memory and enables simulations of systems whose full</span>
+<span class="sd">        potential would not fit in memory.</span>
+
+<span class="sd">        On GPU this is especially important: dask uses a synchronous scheduler,</span>
+<span class="sd">        so the full potential chunk would be materialized at once in VRAM.</span>
+<span class="sd">        Chunking over slices keeps VRAM usage bounded while still feeding the</span>
+<span class="sd">        GPU enough data per chunk for efficient computation.</span>
+
+<span class="sd">        This default implementation collects slices from ``generate_slices()``</span>
+<span class="sd">        and stacks them. Subclasses may override for more efficient</span>
+<span class="sd">        implementations (e.g. ``_FieldBuilderFromAtoms`` uses</span>
+<span class="sd">        ``build(first_slice, last_slice)`` to avoid intermediate single-slice</span>
+<span class="sd">        allocations).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        first_slice : int, optional</span>
+<span class="sd">            Index of the first slice.</span>
+<span class="sd">        last_slice : int, optional</span>
+<span class="sd">            Index of the last slice.</span>
+<span class="sd">        chunk_size : int or str, optional</span>
+<span class="sd">            Number of slices per chunk. ``"auto"`` selects based on the</span>
+<span class="sd">            configured memory budget (``dask.chunk-size`` on CPU,</span>
+<span class="sd">            ``dask.chunk-size-gpu`` on GPU). Can also be set globally via the</span>
+<span class="sd">            ``potential.slice-chunk-size`` configuration key.</span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        ------</span>
+<span class="sd">        PotentialArray</span>
+<span class="sd">            A chunk of contiguous potential slices with correctly assigned</span>
+<span class="sd">            exit planes.</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">estimate_potential_chunk_size</span><span class="p">,</span>
+            <span class="n">generate_chunks</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">chunk_size</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
+            <span class="n">chunk_size</span> <span class="o">=</span> <span class="n">estimate_potential_chunk_size</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Cap so the whole range is one chunk when it fits in the budget,</span>
+        <span class="c1"># then distribute evenly so the last chunk is never smaller than</span>
+        <span class="c1"># necessary (equal_sized_chunks inside generate_chunks handles this).</span>
+        <span class="n">chunk_size</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">last_slice</span> <span class="o">-</span> <span class="n">first_slice</span><span class="p">)</span>
+
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">exit_plane_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exit_plane_after</span>
+
+        <span class="k">for</span> <span class="n">chunk_start</span><span class="p">,</span> <span class="n">chunk_end</span> <span class="ow">in</span> <span class="n">generate_chunks</span><span class="p">(</span>
+            <span class="n">last_slice</span> <span class="o">-</span> <span class="n">first_slice</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">first_slice</span>
+        <span class="p">):</span>
+            <span class="n">arrays</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">slice_thicknesses</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">slic</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_slices</span><span class="p">(</span><span class="n">chunk_start</span><span class="p">,</span> <span class="n">chunk_end</span><span class="p">):</span>
+                <span class="n">arrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">slic</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+                <span class="n">slice_thicknesses</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">slic</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span>
+
+            <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">arrays</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">exit_planes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">exit_plane_after</span><span class="p">[</span><span class="n">chunk_start</span><span class="p">:</span><span class="n">chunk_end</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="n">chunk</span> <span class="o">=</span> <span class="n">PotentialArray</span><span class="p">(</span>
+                <span class="n">array</span><span class="p">,</span>
+                <span class="n">slice_thickness</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">slice_thicknesses</span><span class="p">),</span>
+                <span class="n">extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">chunk</span><span class="o">.</span><span class="n">_exit_planes</span> <span class="o">=</span> <span class="n">exit_planes</span>
+            <span class="k">yield</span> <span class="n">chunk</span></div>
 
 
 <div class="viewcode-block" id="BaseField.build">
@@ -1443,6 +1540,72 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">potential_array</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_chunked_slices</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">first_slice</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">last_slice</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Generate potential slices in memory-budgeted chunks.</span>
+
+<span class="sd">        Overrides the base class to use ``build(first_slice, last_slice,</span>
+<span class="sd">        lazy=False)`` for each chunk range. This eagerly computes a contiguous</span>
+<span class="sd">        block of slices directly into a single allocation, avoiding the</span>
+<span class="sd">        overhead of building and stacking individual slices. Each chunk is</span>
+<span class="sd">        discarded by the caller after propagation, so only one chunk needs</span>
+<span class="sd">        to reside in memory (or VRAM) at a time.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        first_slice : int, optional</span>
+<span class="sd">            Index of the first slice.</span>
+<span class="sd">        last_slice : int, optional</span>
+<span class="sd">            Index of the last slice.</span>
+<span class="sd">        chunk_size : int or str, optional</span>
+<span class="sd">            Number of slices per chunk. ``"auto"`` selects based on the</span>
+<span class="sd">            configured memory budget.</span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        ------</span>
+<span class="sd">        PotentialArray</span>
+<span class="sd">            An eagerly computed chunk of contiguous potential slices.</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">estimate_potential_chunk_size</span><span class="p">,</span>
+            <span class="n">generate_chunks</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">chunk_size</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
+            <span class="n">chunk_size</span> <span class="o">=</span> <span class="n">estimate_potential_chunk_size</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Cap so the whole range is one chunk when it fits in the budget,</span>
+        <span class="c1"># then distribute evenly so the last chunk is never smaller than</span>
+        <span class="c1"># necessary (equal_sized_chunks inside generate_chunks handles this).</span>
+        <span class="n">chunk_size</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">last_slice</span> <span class="o">-</span> <span class="n">first_slice</span><span class="p">)</span>
+
+        <span class="n">exit_plane_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exit_plane_after</span>
+
+        <span class="k">for</span> <span class="n">chunk_start</span><span class="p">,</span> <span class="n">chunk_end</span> <span class="ow">in</span> <span class="n">generate_chunks</span><span class="p">(</span>
+            <span class="n">last_slice</span> <span class="o">-</span> <span class="n">first_slice</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">first_slice</span>
+        <span class="p">):</span>
+            <span class="n">chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
+                <span class="n">first_slice</span><span class="o">=</span><span class="n">chunk_start</span><span class="p">,</span> <span class="n">last_slice</span><span class="o">=</span><span class="n">chunk_end</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Remap exit planes to chunk-local indices (build() sets the</span>
+            <span class="c1"># full potential's exit_planes which are global indices).</span>
+            <span class="n">chunk</span><span class="o">.</span><span class="n">_exit_planes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">exit_plane_after</span><span class="p">[</span><span class="n">chunk_start</span><span class="p">:</span><span class="n">chunk_end</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="k">yield</span> <span class="n">chunk</span>
+
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">ensemble_axes_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen_phonons</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
@@ -1466,7 +1629,19 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_from_partitioned_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">frozen_phonons_partial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen_phonons</span><span class="o">.</span><span class="n">_from_partitioned_args</span><span class="p">()</span>
-        <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"atoms"</span><span class="p">,</span> <span class="s2">"sampling"</span><span class="p">))</span>
+        <span class="c1"># integrator is excluded from the deep-copied kwargs and passed through</span>
+        <span class="c1"># by reference: generate_blocks()/ensemble_blocks() reconstruct a fresh</span>
+        <span class="c1"># Potential per ensemble member, and integrators (e.g.</span>
+        <span class="c1"># QuadratureProjectionIntegrals) lazily cache per-symbol projection</span>
+        <span class="c1"># tables and, on GPU, device-resident arrays specifically so repeated</span>
+        <span class="c1"># calls across many slices don't re-upload them (see the PR #309</span>
+        <span class="c1"># discussion in integrals.py). Deep-copying the integrator per member</span>
+        <span class="c1"># silently defeats that cache for every single ensemble member -- on</span>
+        <span class="c1"># GPU this means a real device-to-device copy of the cached arrays for</span>
+        <span class="c1"># every member, for no benefit, since the copy is used once and</span>
+        <span class="c1"># discarded.</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"atoms"</span><span class="p">,</span> <span class="s2">"sampling"</span><span class="p">,</span> <span class="s2">"integrator"</span><span class="p">))</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"integrator"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrator</span>
 
         <span class="k">return</span> <span class="n">partial</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_from_partitioned_args_func</span><span class="p">,</span>
@@ -1732,6 +1907,84 @@
             <span class="k">yield</span> <span class="n">slic</span></div>
 
 
+<div class="viewcode-block" id="FieldArray.generate_chunked_slices">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.potentials.iam.html#abtem.potentials.iam.FieldArray.generate_chunked_slices">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_chunked_slices</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">first_slice</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">last_slice</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Generate potential slices in memory-budgeted chunks.</span>
+
+<span class="sd">        For a pre-built ``PotentialArray`` the data is already in memory</span>
+<span class="sd">        (or backed by a dask array whose single chunk spans all slices).</span>
+<span class="sd">        This method yields views into the existing array without any new</span>
+<span class="sd">        allocation or copy, so chunking only controls iteration grouping.</span>
+
+<span class="sd">        Note: if the array is dask-backed, the full potential is still</span>
+<span class="sd">        materialized as a single chunk when computed (dask never chunks</span>
+<span class="sd">        along the slice axis). To benefit from true memory-bounded</span>
+<span class="sd">        slice chunking, pass an unbuilt :class:`.Potential` to the</span>
+<span class="sd">        multislice algorithm instead.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        first_slice : int, optional</span>
+<span class="sd">            Index of the first slice.</span>
+<span class="sd">        last_slice : int, optional</span>
+<span class="sd">            Index of the last slice.</span>
+<span class="sd">        chunk_size : int or str, optional</span>
+<span class="sd">            Number of slices per chunk. ``"auto"`` selects based on the</span>
+<span class="sd">            configured memory budget.</span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        ------</span>
+<span class="sd">        PotentialArray</span>
+<span class="sd">            A view into the existing array covering a chunk of slices.</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">estimate_potential_chunk_size</span><span class="p">,</span>
+            <span class="n">generate_chunks</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">chunk_size</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
+            <span class="n">chunk_size</span> <span class="o">=</span> <span class="n">estimate_potential_chunk_size</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Cap so the whole range is one chunk when it fits in the budget,</span>
+        <span class="c1"># then distribute evenly so the last chunk is never smaller than</span>
+        <span class="c1"># necessary (equal_sized_chunks inside generate_chunks handles this).</span>
+        <span class="n">chunk_size</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">last_slice</span> <span class="o">-</span> <span class="n">first_slice</span><span class="p">)</span>
+
+        <span class="n">exit_plane_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exit_plane_after</span>
+
+        <span class="k">for</span> <span class="n">chunk_start</span><span class="p">,</span> <span class="n">chunk_end</span> <span class="ow">in</span> <span class="n">generate_chunks</span><span class="p">(</span>
+            <span class="n">last_slice</span> <span class="o">-</span> <span class="n">first_slice</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">first_slice</span>
+        <span class="p">):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
+                <span class="nb">slice</span><span class="p">(</span><span class="n">chunk_start</span><span class="p">,</span> <span class="n">chunk_end</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">chunk_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
+
+            <span class="n">exit_planes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">exit_plane_after</span><span class="p">[</span><span class="n">chunk_start</span><span class="p">:</span><span class="n">chunk_end</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="n">chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+                <span class="n">chunk_array</span><span class="p">,</span>
+                <span class="n">slice_thickness</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">[</span><span class="n">chunk_start</span><span class="p">:</span><span class="n">chunk_end</span><span class="p">],</span>
+                <span class="n">extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">chunk</span><span class="o">.</span><span class="n">_exit_planes</span> <span class="o">=</span> <span class="n">exit_planes</span>
+            <span class="k">yield</span> <span class="n">chunk</span></div>
+
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="p">(</span><span class="n">Number</span><span class="p">,</span> <span class="nb">slice</span><span class="p">)):</span>
             <span class="n">items</span> <span class="o">=</span> <span class="p">(</span><span class="n">items</span><span class="p">,)</span>
@@ -1769,6 +2022,20 @@
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"slice_thickness"</span><span class="p">]</span> <span class="o">=</span> <span class="n">slice_thickness</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"sampling"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># the exit planes index the slices, hence they have to be mapped into the</span>
+        <span class="c1"># sliced potential; those falling outside it are dropped, and if none</span>
+        <span class="c1"># remain the exit plane defaults to the last slice of the new potential</span>
+        <span class="n">selected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">potential_array</span><span class="o">.</span><span class="n">num_slices</span><span class="p">)[</span><span class="n">slic_items</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="p">)</span>
+        <span class="n">exit_planes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">selected</span> <span class="o">==</span> <span class="n">plane</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">plane</span> <span class="ow">in</span> <span class="n">potential_array</span><span class="o">.</span><span class="n">exit_planes</span>
+            <span class="k">if</span> <span class="n">plane</span> <span class="ow">in</span> <span class="n">selected</span>
+        <span class="p">)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"exit_planes"</span><span class="p">]</span> <span class="o">=</span> <span class="n">exit_planes</span> <span class="k">if</span> <span class="n">exit_planes</span> <span class="k">else</span> <span class="kc">None</span>
+
         <span class="k">return</span> <span class="n">potential_array</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 <div class="viewcode-block" id="FieldArray.tile">
@@ -1794,9 +2061,12 @@
 
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">repetitions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
 
-        <span class="n">new_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="p">(</span><span class="n">repetitions</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">repetitions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">repetitions</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="p">)</span>
+        <span class="n">tile_reps</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">tile_reps</span><span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_dims</span><span class="p">]</span> <span class="o">=</span> <span class="n">repetitions</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">tile_reps</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">repetitions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">tile_reps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">repetitions</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">new_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">tile_reps</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">new_extent</span> <span class="o">=</span> <span class="p">(</span>
@@ -1996,9 +2266,9 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_transmission_function</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">energy</span><span class="p">):</span>
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
-        <span class="n">sigma</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">energy2sigma</span><span class="p">(</span><span class="n">energy</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
-        <span class="n">array</span> <span class="o">=</span> <span class="n">complex_exponential</span><span class="p">(</span><span class="n">sigma</span> <span class="o">*</span> <span class="n">array</span><span class="p">)</span>
+        <span class="c1"># complex_exponential_scaled fuses the sigma multiplication into the</span>
+        <span class="c1"># GPU sin/cos kernel, avoiding one slice-sized real temporary.</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">complex_exponential_scaled</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">energy2sigma</span><span class="p">(</span><span class="n">energy</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">array</span>
 
 <div class="viewcode-block" id="PotentialArray.from_array_and_metadata">
@@ -2592,10 +2862,13 @@
 
         <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">member_seed</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
         <span class="n">exit_plane_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exit_plane_after</span>
         <span class="n">cum_thickness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="n">first_slice</span>
-        <span class="n">stop</span> <span class="o">=</span> <span class="n">first_slice</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">unit_slices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span><span class="p">)</span>
+        <span class="n">global_idx</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># global slice counter across all z-repetitions</span>
 
         <span class="c1"># Lazy cache of tiled unit slices, keyed by (config_idx, slice_idx).</span>
         <span class="c1"># Without it each (z-rep, unit-slice) pair re-tiles the same array via</span>
@@ -2706,37 +2979,135 @@
             <span class="c1"># Draw an independent displaced realisation per unit cell in the x,</span>
             <span class="c1"># y and z supercell directions. For a single-config pool this</span>
             <span class="c1"># collapses to the cheap cached ``.tile()`` path below.</span>
+            <span class="c1"># Always draw (even for z-repetitions skipped below) so the</span>
+            <span class="c1"># frozen-phonon sequence and the pool budget accounting stay</span>
+            <span class="c1"># consistent regardless of first_slice -- different chunks of the</span>
+            <span class="c1"># same crystal must see the same per-layer configuration draws.</span>
             <span class="k">if</span> <span class="n">n_configs</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">config_tiles</span> <span class="o">=</span> <span class="n">_draw_config_tiles</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">config_tiles</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">global_idx</span> <span class="o">+</span> <span class="n">unit_slices</span> <span class="o">&lt;=</span> <span class="n">first_slice</span><span class="p">:</span>
+                <span class="c1"># This entire z-repetition is before the requested window;</span>
+                <span class="c1"># advance the counter and skip.</span>
+                <span class="n">global_idx</span> <span class="o">+=</span> <span class="n">unit_slices</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">global_idx</span> <span class="o">&gt;=</span> <span class="n">last_slice</span><span class="p">:</span>
+                <span class="c1"># Past the requested window; nothing more to yield.</span>
+                <span class="k">return</span>
+
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">unit_slices</span><span class="p">):</span>
+                <span class="c1"># Iterate j from 0 even for slices before first_slice in a</span>
+                <span class="c1"># partially-overlapping rep, so the unit generator advances in</span>
+                <span class="c1"># order (j=0, j=1, ...). The tiling cache ensures each</span>
+                <span class="c1"># (config, j) pair is tiled at most once.</span>
                 <span class="k">if</span> <span class="n">config_tiles</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">slic</span> <span class="o">=</span> <span class="n">_tiled_slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">slic</span> <span class="o">=</span> <span class="n">_mosaic_slice</span><span class="p">(</span><span class="n">config_tiles</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
 
-                <span class="n">exit_planes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">exit_plane_after</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">global_idx</span> <span class="o">&gt;=</span> <span class="n">first_slice</span><span class="p">:</span>
+                    <span class="n">exit_planes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">exit_plane_after</span><span class="p">[</span><span class="n">global_idx</span> <span class="p">:</span> <span class="n">global_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="c1"># Mutating the cached slice's exit_planes is safe: consumer</span>
+                    <span class="c1"># reads exit_planes immediately on each yield and holds no</span>
+                    <span class="c1"># back-reference across iterations.</span>
+                    <span class="n">slic</span><span class="o">.</span><span class="n">_exit_planes</span> <span class="o">=</span> <span class="n">exit_planes</span>
 
-                <span class="c1"># Mutating the cached slice is safe in the standard sequential</span>
-                <span class="c1"># consumption pattern (the consumer reads ``slic.exit_planes``</span>
-                <span class="c1"># immediately upon receiving the yield and never holds a back-</span>
-                <span class="c1"># reference across iterations — see multislice.py:672). Reset</span>
-                <span class="c1"># the value on every yield so re-entering the same cached</span>
-                <span class="c1"># slice on a different z-rep still carries the right metadata.</span>
-                <span class="n">slic</span><span class="o">.</span><span class="n">_exit_planes</span> <span class="o">=</span> <span class="n">exit_planes</span>
+                    <span class="k">if</span> <span class="n">return_depth</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">cum_thickness</span><span class="p">[</span><span class="n">global_idx</span><span class="p">],</span> <span class="n">slic</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">slic</span>
 
-                <span class="n">start</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="n">stop</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">global_idx</span> <span class="o">+=</span> <span class="mi">1</span>
 
-                <span class="k">if</span> <span class="n">return_depth</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="n">cum_thickness</span><span class="p">[</span><span class="n">stop</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">slic</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="n">slic</span>
+                <span class="k">if</span> <span class="n">global_idx</span> <span class="o">&gt;=</span> <span class="n">last_slice</span><span class="p">:</span>
+                    <span class="k">return</span></div>
 
-                <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">last_slice</span><span class="p">:</span>
-                    <span class="k">break</span></div>
+
+<div class="viewcode-block" id="CrystalPotential.generate_chunked_slices">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.potentials.iam.html#abtem.potentials.iam.CrystalPotential.generate_chunked_slices">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_chunked_slices</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">first_slice</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">last_slice</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Generate potential slices in memory-budgeted chunks.</span>
+
+<span class="sd">        Unlike the base-class implementation, this override builds the unit</span>
+<span class="sd">        potential **once** (not once per chunk) and fills each output chunk</span>
+<span class="sd">        array in-place, slice by slice, using ``xp.tile``.  This avoids the</span>
+<span class="sd">        ~2× peak-memory spike that the base class incurs from accumulating</span>
+<span class="sd">        per-slice tiled arrays into a list before concatenating them.</span>
+
+<span class="sd">        The dtype of the output follows the unit potential's array dtype,</span>
+<span class="sd">        which is set by the abtem ``precision`` config key (float32 / float64).</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="n">estimate_potential_chunk_size</span><span class="p">,</span> <span class="n">generate_chunks</span>
+
+        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">chunk_size</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
+            <span class="n">chunk_size</span> <span class="o">=</span> <span class="n">estimate_potential_chunk_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">chunk_size</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">last_slice</span> <span class="o">-</span> <span class="n">first_slice</span><span class="p">)</span>
+
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">exit_plane_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exit_plane_after</span>
+
+        <span class="c1"># Build the unit potential once; the base class would re-build it on</span>
+        <span class="c1"># every chunk (one generate_slices() call per chunk).</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span><span class="p">,</span> <span class="n">PotentialArray</span><span class="p">):</span>
+            <span class="n">unit_built</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">unit_built</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span>
+
+        <span class="n">unit_arr</span> <span class="o">=</span> <span class="n">unit_built</span><span class="o">.</span><span class="n">array</span>  <span class="c1"># (n_unit_slices, h, w) or (n_configs, n_unit_slices, h, w)</span>
+        <span class="k">if</span> <span class="n">unit_arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">unit_arr</span> <span class="o">=</span> <span class="n">unit_arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>  <span class="c1"># → (1, n_unit_slices, h, w)</span>
+
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seeds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">seeds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">unit_slices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span><span class="p">)</span>
+        <span class="n">n_configs</span> <span class="o">=</span> <span class="n">unit_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Pre-draw frozen-phonon config indices — one per z-repetition —</span>
+        <span class="c1"># to match the sequence that generate_slices() would produce.</span>
+        <span class="n">config_indices</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_configs</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repetitions</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+        <span class="n">unit_st</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span><span class="o">.</span><span class="n">slice_thickness</span>
+
+        <span class="k">for</span> <span class="n">chunk_start</span><span class="p">,</span> <span class="n">chunk_end</span> <span class="ow">in</span> <span class="n">generate_chunks</span><span class="p">(</span>
+            <span class="n">last_slice</span> <span class="o">-</span> <span class="n">first_slice</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">first_slice</span>
+        <span class="p">):</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">chunk_end</span> <span class="o">-</span> <span class="n">chunk_start</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">slice_thicknesses</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">global_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">chunk_start</span><span class="p">,</span> <span class="n">chunk_end</span><span class="p">)):</span>
+                <span class="n">rep_i</span><span class="p">,</span> <span class="n">unit_j</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">global_idx</span><span class="p">,</span> <span class="n">unit_slices</span><span class="p">)</span>
+                <span class="n">slc</span> <span class="o">=</span> <span class="n">unit_arr</span><span class="p">[</span><span class="n">config_indices</span><span class="p">[</span><span class="n">rep_i</span><span class="p">],</span> <span class="n">unit_j</span><span class="p">]</span>   <span class="c1"># (h, w)</span>
+                <span class="n">tiled</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">slc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">repetitions</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>       <span class="c1"># (full_h, full_w)</span>
+
+                <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">out</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n</span><span class="p">,)</span> <span class="o">+</span> <span class="n">tiled</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tiled</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+                <span class="n">out</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">tiled</span>
+                <span class="n">slice_thicknesses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">unit_st</span><span class="p">[</span><span class="n">unit_j</span><span class="p">])</span>
+
+            <span class="n">exit_planes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">exit_plane_after</span><span class="p">[</span><span class="n">chunk_start</span><span class="p">:</span><span class="n">chunk_end</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">chunk</span> <span class="o">=</span> <span class="n">PotentialArray</span><span class="p">(</span>
+                <span class="n">out</span><span class="p">,</span>
+                <span class="n">slice_thickness</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">slice_thicknesses</span><span class="p">),</span>
+                <span class="n">extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">chunk</span><span class="o">.</span><span class="n">_exit_planes</span> <span class="o">=</span> <span class="n">exit_planes</span>
+            <span class="k">yield</span> <span class="n">chunk</span></div>
 </div>
 
 </pre></div>
@@ -2780,7 +3151,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

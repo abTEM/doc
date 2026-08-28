@@ -26,11 +26,16 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`complex_exponential_scaled <abtem.core.complex.complex_exponential_scaled>`
+  - ```{autodoc2-docstring} abtem.core.complex.complex_exponential_scaled
+    :parser: rst
+    :summary:
+    ```
 ````
 
 ### API
 
-````{py:function} abs2(x: numpy.ndarray | dask.array.core.Array) -> numpy.ndarray | dask.array.core.Array
+````{py:function} abs2(...) -> numpy.ndarray | dask.array.core.Array
 :canonical: abtem.core.complex.abs2
 
 ```{autodoc2-docstring} abtem.core.complex.abs2
@@ -38,10 +43,18 @@
 ```
 ````
 
-````{py:function} complex_exponential(x: numpy.ndarray | dask.array.core.Array) -> numpy.ndarray | dask.array.core.Array
+````{py:function} complex_exponential(...) -> numpy.ndarray | dask.array.core.Array
 :canonical: abtem.core.complex.complex_exponential
 
 ```{autodoc2-docstring} abtem.core.complex.complex_exponential
+:parser: rst
+```
+````
+
+````{py:function} complex_exponential_scaled(...) -> numpy.ndarray | dask.array.core.Array
+:canonical: abtem.core.complex.complex_exponential_scaled
+
+```{autodoc2-docstring} abtem.core.complex.complex_exponential_scaled
 :parser: rst
 ```
 ````

@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -835,8 +835,12 @@
     <span class="n">integral_limits</span><span class="p">,</span>
     <span class="n">integral_sampling</span><span class="p">,</span>
     <span class="n">tables</span><span class="p">,</span>
+    <span class="n">B</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">tables</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+    <span class="c1"># B is a caller-allocated (3, tables.shape[2], tables.shape[3]) scratch</span>
+    <span class="c1"># buffer, fully overwritten every iteration below: some numba/numpy</span>
+    <span class="c1"># pairings fail to type numba's internal np.zeros -&gt; np.empty lowering</span>
+    <span class="c1"># inside @njit, so it can't be allocated in here.</span>
     <span class="k">for</span> <span class="n">position</span><span class="p">,</span> <span class="n">magnetic_moment</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">magnetic_moments</span><span class="p">):</span>
         <span class="n">shifted_limits</span> <span class="o">=</span> <span class="n">slice_limits</span> <span class="o">-</span> <span class="n">position</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">integral_limits</span> <span class="o">-</span> <span class="n">shifted_limits</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
@@ -887,8 +891,12 @@
     <span class="n">integral_limits</span><span class="p">,</span>
     <span class="n">integral_sampling</span><span class="p">,</span>
     <span class="n">tables</span><span class="p">,</span>
+    <span class="n">A</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">tables</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+    <span class="c1"># A is a caller-allocated (3, tables.shape[2], tables.shape[3]) scratch</span>
+    <span class="c1"># buffer, fully overwritten every iteration below: some numba/numpy</span>
+    <span class="c1"># pairings fail to type numba's internal np.zeros -&gt; np.empty lowering</span>
+    <span class="c1"># inside @njit, so it can't be allocated in here.</span>
     <span class="k">for</span> <span class="n">position</span><span class="p">,</span> <span class="n">magnetic_moment</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">magnetic_moments</span><span class="p">):</span>
         <span class="n">shifted_limits</span> <span class="o">=</span> <span class="n">slice_limits</span> <span class="o">-</span> <span class="n">position</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">integral_limits</span> <span class="o">-</span> <span class="n">shifted_limits</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
@@ -1016,6 +1024,7 @@
 
             <span class="n">integral_limits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slice_limits</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
             <span class="n">tables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_integral_table</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+            <span class="n">scratch</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">tables</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tables</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_interpolation_func</span><span class="p">(</span>
                 <span class="n">array</span><span class="p">,</span>
@@ -1026,6 +1035,7 @@
                 <span class="n">integral_limits</span><span class="p">,</span>
                 <span class="n">integral_sampling</span><span class="p">,</span>
                 <span class="n">tables</span><span class="p">,</span>
+                <span class="n">scratch</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">array</span></div>
@@ -1429,7 +1439,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

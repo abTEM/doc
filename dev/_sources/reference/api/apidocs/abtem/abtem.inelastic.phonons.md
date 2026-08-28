@@ -31,6 +31,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`EnergyResolvedAtomsEnsemble <abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble>`
+  - ```{autodoc2-docstring} abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`FrozenPhonons <abtem.inelastic.phonons.FrozenPhonons>`
   - ```{autodoc2-docstring} abtem.inelastic.phonons.FrozenPhonons
     :parser: rst
@@ -66,7 +71,7 @@
 
 ### API
 
-`````{py:class} AtomsEnsemble(trajectory: typing.Sequence[ase.Atoms], ensemble_mean: bool = True, ensemble_axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, cell: typing.Optional[ase.cell.Cell] = None)
+`````{py:class} AtomsEnsemble(...)
 :canonical: abtem.inelastic.phonons.AtomsEnsemble
 
 Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
@@ -124,7 +129,7 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 
 ````
 
-````{py:method} randomize(atoms: ase.Atoms) -> ase.Atoms
+````{py:method} randomize(...) -> ase.Atoms
 :canonical: abtem.inelastic.phonons.AtomsEnsemble.randomize
 
 ````
@@ -150,7 +155,7 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 
 `````
 
-`````{py:class} BaseFrozenPhonons(atomic_numbers: numpy.ndarray, cell: ase.cell.Cell, ensemble_mean: bool = True)
+`````{py:class} BaseFrozenPhonons(...)
 :canonical: abtem.inelastic.phonons.BaseFrozenPhonons
 
 Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyMixin`
@@ -216,7 +221,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} randomize(atoms: ase.Atoms) -> ase.Atoms
+````{py:method} randomize(...) -> ase.Atoms
 :canonical: abtem.inelastic.phonons.BaseFrozenPhonons.randomize
 :abstractmethod:
 
@@ -228,7 +233,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 `````
 
-`````{py:class} DummyFrozenPhonons(atoms: ase.Atoms, num_configs: typing.Optional[int] = None)
+`````{py:class} DummyFrozenPhonons(...)
 :canonical: abtem.inelastic.phonons.DummyFrozenPhonons
 
 Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
@@ -274,14 +279,81 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 
 ````
 
-````{py:method} randomize(atoms: ase.Atoms) -> ase.Atoms
+````{py:method} randomize(...) -> ase.Atoms
 :canonical: abtem.inelastic.phonons.DummyFrozenPhonons.randomize
 
 ````
 
 `````
 
-`````{py:class} FrozenPhonons(atoms: ase.Atoms, num_configs: int, sigmas: float | dict[str, float] | dict[str, tuple[float, ...]] | typing.Sequence[float], directions: str = 'xyz', ensemble_mean: bool = True, seed: typing.Optional[int | tuple[int, ...]] = None)
+`````{py:class} EnergyResolvedAtomsEnsemble(...)
+:canonical: abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble
+
+Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
+
+```{autodoc2-docstring} abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble
+:parser: rst
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble.__init__
+:parser: rst
+```
+
+````{py:property} atoms
+:canonical: abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble.atoms
+:type: ase.Atoms
+
+````
+
+````{py:property} energies
+:canonical: abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble.energies
+:type: numpy.ndarray
+
+```{autodoc2-docstring} abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble.energies
+:parser: rst
+```
+
+````
+
+````{py:property} ensemble_axes_metadata
+:canonical: abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble.ensemble_axes_metadata
+:type: list[abtem.core.axes.AxisMetadata]
+
+````
+
+````{py:property} ensemble_shape
+:canonical: abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble.ensemble_shape
+:type: tuple[int, ...]
+
+````
+
+````{py:property} num_configs
+:canonical: abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble.num_configs
+:type: int
+
+````
+
+````{py:method} randomize(...) -> ase.Atoms
+:canonical: abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble.randomize
+
+````
+
+````{py:property} snapshots
+:canonical: abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble.snapshots
+:type: numpy.ndarray
+
+```{autodoc2-docstring} abtem.inelastic.phonons.EnergyResolvedAtomsEnsemble.snapshots
+:parser: rst
+```
+
+````
+
+`````
+
+`````{py:class} FrozenPhonons(...)
 :canonical: abtem.inelastic.phonons.FrozenPhonons
 
 Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
@@ -330,7 +402,7 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 
 ````
 
-````{py:method} randomize(atoms: ase.Atoms) -> ase.Atoms
+````{py:method} randomize(...) -> ase.Atoms
 :canonical: abtem.inelastic.phonons.FrozenPhonons.randomize
 
 ````
@@ -378,7 +450,7 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 
 ````
 
-````{py:function} validate_seeds(seeds: int | tuple[int, ...] | None, num_seeds: typing.Optional[int] = None) -> tuple[int, ...]
+````{py:function} validate_seeds(...) -> tuple[int, ...]
 :canonical: abtem.inelastic.phonons.validate_seeds
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.validate_seeds

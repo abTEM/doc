@@ -45,7 +45,7 @@
 
 ### API
 
-````{py:function} potential(r, p)
+````{py:function} potential(...)
 :canonical: abtem.parametrizations.functions.kirkland.potential
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland.potential
@@ -53,7 +53,7 @@
 ```
 ````
 
-````{py:function} potential_derivative(r, p)
+````{py:function} potential_derivative(...)
 :canonical: abtem.parametrizations.functions.kirkland.potential_derivative
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland.potential_derivative
@@ -61,7 +61,7 @@
 ```
 ````
 
-````{py:function} projected_potential(r, p)
+````{py:function} projected_potential(...)
 :canonical: abtem.parametrizations.functions.kirkland.projected_potential
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland.projected_potential
@@ -69,7 +69,7 @@
 ```
 ````
 
-````{py:function} projected_scattering_factor(k2, p)
+````{py:function} projected_scattering_factor(...)
 :canonical: abtem.parametrizations.functions.kirkland.projected_scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland.projected_scattering_factor
@@ -77,7 +77,7 @@
 ```
 ````
 
-````{py:function} scattering_factor(k2, p)
+````{py:function} scattering_factor(...)
 :canonical: abtem.parametrizations.functions.kirkland.scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.kirkland.scattering_factor

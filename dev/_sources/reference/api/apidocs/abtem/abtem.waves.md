@@ -21,6 +21,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`EnergyEnsemble <abtem.waves.EnergyEnsemble>`
+  - ```{autodoc2-docstring} abtem.waves.EnergyEnsemble
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`PlaneWave <abtem.waves.PlaneWave>`
   - ```{autodoc2-docstring} abtem.waves.PlaneWave
     :parser: rst
@@ -48,6 +53,11 @@
 
 * - {py:obj}`reduce_ensemble <abtem.waves.reduce_ensemble>`
   - ```{autodoc2-docstring} abtem.waves.reduce_ensemble
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`validate_energy <abtem.waves.validate_energy>`
+  - ```{autodoc2-docstring} abtem.waves.validate_energy
     :parser: rst
     :summary:
     ```
@@ -188,7 +198,40 @@ Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.core.energy.HasA
 
 `````
 
-`````{py:class} PlaneWave(extent: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, energy: typing.Optional[float] = None, normalize: bool = False, tilt: tuple[float, float] = (0.0, 0.0), device: typing.Optional[str] = None)
+`````{py:class} EnergyEnsemble(...)
+:canonical: abtem.waves.EnergyEnsemble
+
+Bases: {py:obj}`abtem.distributions.EnsembleFromDistributions`
+
+```{autodoc2-docstring} abtem.waves.EnergyEnsemble
+:parser: rst
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.waves.EnergyEnsemble.__init__
+:parser: rst
+```
+
+````{py:property} energy
+:canonical: abtem.waves.EnergyEnsemble.energy
+
+```{autodoc2-docstring} abtem.waves.EnergyEnsemble.energy
+:parser: rst
+```
+
+````
+
+````{py:property} ensemble_axes_metadata
+:canonical: abtem.waves.EnergyEnsemble.ensemble_axes_metadata
+:type: list
+
+````
+
+`````
+
+`````{py:class} PlaneWave(...)
 :canonical: abtem.waves.PlaneWave
 
 Bases: {py:obj}`abtem.waves.WavesBuilder`
@@ -204,7 +247,7 @@ Bases: {py:obj}`abtem.waves.WavesBuilder`
 :parser: rst
 ```
 
-````{py:method} build(lazy: typing.Optional[bool] = None, max_batch: int | str = 'auto') -> abtem.waves.Waves
+````{py:method} build(...) -> abtem.waves.Waves
 :canonical: abtem.waves.PlaneWave.build
 
 ```{autodoc2-docstring} abtem.waves.PlaneWave.build
@@ -213,12 +256,22 @@ Bases: {py:obj}`abtem.waves.WavesBuilder`
 
 ````
 
+````{py:method} check_can_build()
+:canonical: abtem.waves.PlaneWave.check_can_build
+
+````
+
+````{py:property} energy
+:canonical: abtem.waves.PlaneWave.energy
+
+````
+
 ````{py:property} metadata
 :canonical: abtem.waves.PlaneWave.metadata
 
 ````
 
-````{py:method} multislice(potential: abtem.potentials.iam.BasePotential | ase.Atoms, detectors: typing.Optional[abtem.detectors.BaseDetector] = None, max_batch: int | str = 'auto', lazy: typing.Optional[bool] = None, **multislice_func_kwargs) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves | list[abtem.measurements.BaseMeasurements | abtem.waves.Waves]
+````{py:method} multislice(...) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves | list[abtem.measurements.BaseMeasurements | abtem.waves.Waves]
 :canonical: abtem.waves.PlaneWave.multislice
 
 ```{autodoc2-docstring} abtem.waves.PlaneWave.multislice
@@ -247,7 +300,7 @@ Bases: {py:obj}`abtem.waves.WavesBuilder`
 
 `````
 
-`````{py:class} Probe(semiangle_cutoff: typing.Optional[float] = None, extent: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, energy: typing.Optional[float] = None, soft: bool = True, tilt: abtem.tilt.TiltType2D = (0.0, 0.0), device: typing.Optional[str] = None, aperture: typing.Optional[abtem.transfer.BaseAperture] = None, aberrations: typing.Optional[abtem.transfer.Aberrations | dict] = None, scan_positions: typing.Optional[abtem.scan.BaseScan] = None, metadata: typing.Optional[dict] = None, **kwargs)
+`````{py:class} Probe(...)
 :canonical: abtem.waves.Probe
 
 Bases: {py:obj}`abtem.waves.WavesBuilder`
@@ -283,12 +336,17 @@ Bases: {py:obj}`abtem.waves.WavesBuilder`
 
 ````
 
-````{py:method} build(scan: typing.Optional[typing.Sequence | abtem.scan.BaseScan] = None, max_batch: int | str = 'auto', lazy: typing.Optional[bool] = None) -> abtem.waves.Waves
+````{py:method} build(...) -> abtem.waves.Waves
 :canonical: abtem.waves.Probe.build
 
 ```{autodoc2-docstring} abtem.waves.Probe.build
 :parser: rst
 ```
+
+````
+
+````{py:method} check_can_build()
+:canonical: abtem.waves.Probe.check_can_build
 
 ````
 
@@ -298,6 +356,11 @@ Bases: {py:obj}`abtem.waves.WavesBuilder`
 ```{autodoc2-docstring} abtem.waves.Probe.ctf
 :parser: rst
 ```
+
+````
+
+````{py:property} energy
+:canonical: abtem.waves.Probe.energy
 
 ````
 
@@ -311,7 +374,7 @@ Bases: {py:obj}`abtem.waves.WavesBuilder`
 
 ````
 
-````{py:method} multislice(potential: abtem.potentials.iam.BasePotential | ase.Atoms, scan: typing.Optional[typing.Sequence | abtem.scan.BaseScan] = None, detectors: typing.Optional[abtem.detectors.BaseDetector | list[abtem.detectors.BaseDetector]] = None, max_batch: int | str = 'auto', lazy: typing.Optional[bool] = None, **multislice_func_kwargs) -> abtem.waves.Waves | abtem.measurements.BaseMeasurements | list[abtem.waves.Waves | abtem.measurements.BaseMeasurements]
+````{py:method} multislice(...) -> abtem.waves.Waves | abtem.measurements.BaseMeasurements | list[abtem.waves.Waves | abtem.measurements.BaseMeasurements]
 :canonical: abtem.waves.Probe.multislice
 
 ```{autodoc2-docstring} abtem.waves.Probe.multislice
@@ -320,7 +383,7 @@ Bases: {py:obj}`abtem.waves.WavesBuilder`
 
 ````
 
-````{py:method} profiles(angle: float = 0.0) -> abtem.measurements.RealSpaceLineProfiles
+````{py:method} profiles(...) -> abtem.measurements.RealSpaceLineProfiles
 :canonical: abtem.waves.Probe.profiles
 
 ```{autodoc2-docstring} abtem.waves.Probe.profiles
@@ -329,7 +392,7 @@ Bases: {py:obj}`abtem.waves.WavesBuilder`
 
 ````
 
-````{py:method} scan(potential: ase.Atoms | abtem.potentials.iam.BasePotential, scan: typing.Optional[typing.Sequence | abtem.scan.BaseScan] = None, detectors: typing.Optional[abtem.detectors.BaseDetector | list[abtem.detectors.BaseDetector]] = None, max_batch: int | str = 'auto', lazy: typing.Optional[bool] = None, **multislice_func_kwargs) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves | list[abtem.measurements.BaseMeasurements | abtem.waves.Waves]
+````{py:method} scan(...) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves | list[abtem.measurements.BaseMeasurements | abtem.waves.Waves]
 :canonical: abtem.waves.Probe.scan
 
 ```{autodoc2-docstring} abtem.waves.Probe.scan
@@ -357,7 +420,7 @@ Bases: {py:obj}`abtem.waves.WavesBuilder`
 
 ````
 
-````{py:method} show(convert_complex: str = 'intensity', **kwargs) -> abtem.visualize.Visualization
+````{py:method} show(...) -> abtem.visualize.Visualization
 :canonical: abtem.waves.Probe.show
 
 ```{autodoc2-docstring} abtem.waves.Probe.show
@@ -375,7 +438,7 @@ Bases: {py:obj}`abtem.waves.WavesBuilder`
 
 ````
 
-````{py:method} transition_potential_scan(potential: abtem.potentials.iam.BasePotential | ase.Atoms, transition_potentials: abtem.inelastic.core_loss.BaseTransitionPotential | list[abtem.inelastic.core_loss.BaseTransitionPotential], scan: typing.Optional[abtem.scan.BaseScan | typing.Sequence] = None, detectors: typing.Optional[abtem.detectors.BaseDetector | list[abtem.detectors.BaseDetector]] = None, sites: typing.Optional[abtem.slicing.SliceIndexedAtoms | ase.Atoms] = None, max_batch: int | str = 'auto', lazy: typing.Optional[bool] = None, **multislice_func_kwargs) -> abtem.waves.Waves | abtem.measurements.BaseMeasurements | list[abtem.waves.Waves | abtem.measurements.BaseMeasurements]
+````{py:method} transition_potential_scan(...) -> abtem.waves.Waves | abtem.measurements.BaseMeasurements | list[abtem.waves.Waves | abtem.measurements.BaseMeasurements]
 :canonical: abtem.waves.Probe.transition_potential_scan
 
 ```{autodoc2-docstring} abtem.waves.Probe.transition_potential_scan
@@ -386,7 +449,7 @@ Bases: {py:obj}`abtem.waves.WavesBuilder`
 
 `````
 
-`````{py:class} Waves(array: numpy.ndarray | dask.array.core.Array, energy: typing.Optional[float] = None, extent: typing.Optional[float | tuple[float, float]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, reciprocal_space: bool = False, ensemble_axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, metadata: typing.Optional[dict] = None)
+`````{py:class} Waves(...)
 :canonical: abtem.waves.Waves
 
 Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
@@ -402,7 +465,17 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 :parser: rst
 ```
 
-````{py:method} apply_ctf(ctf: typing.Optional[abtem.transfer.CTF] = None, max_batch: int | str = 'auto', **kwargs: typing.Any) -> abtem.waves.Waves
+````{py:property} angular_sampling
+:canonical: abtem.waves.Waves.angular_sampling
+:type: tuple[float, float]
+
+```{autodoc2-docstring} abtem.waves.Waves.angular_sampling
+:parser: rst
+```
+
+````
+
+````{py:method} apply_ctf(...) -> abtem.waves.Waves
 :canonical: abtem.waves.Waves.apply_ctf
 
 ```{autodoc2-docstring} abtem.waves.Waves.apply_ctf
@@ -421,7 +494,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} convolve(kernel: numpy.ndarray, axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, out_space: str = 'in_space', in_place: bool = False) -> abtem.waves.Waves
+````{py:method} convolve(...) -> abtem.waves.Waves
 :canonical: abtem.waves.Waves.convolve
 
 ```{autodoc2-docstring} abtem.waves.Waves.convolve
@@ -430,7 +503,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} depth_profile(projection_axis: str = 'y', depth: typing.Optional[float] = None, convert_complex: str = 'intensity') -> abtem.measurements.Images
+````{py:method} depth_profile(...) -> abtem.measurements.Images
 :canonical: abtem.waves.Waves.depth_profile
 
 ```{autodoc2-docstring} abtem.waves.Waves.depth_profile
@@ -449,7 +522,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} diffraction_patterns(max_angle: typing.Optional[str | float] = 'cutoff', block_direct: bool | float = False, fftshift: bool = True, parity: str = 'odd', return_complex: bool = False, renormalize: bool = True) -> abtem.measurements.DiffractionPatterns
+````{py:method} diffraction_patterns(...) -> abtem.measurements.DiffractionPatterns
 :canonical: abtem.waves.Waves.diffraction_patterns
 
 ```{autodoc2-docstring} abtem.waves.Waves.diffraction_patterns
@@ -458,7 +531,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} downsample(max_angle: str | float = 'cutoff', gpts: typing.Optional[tuple[int, int]] = None, normalization: str = 'values') -> abtem.waves.Waves
+````{py:method} downsample(...) -> abtem.waves.Waves
 :canonical: abtem.waves.Waves.downsample
 
 ```{autodoc2-docstring} abtem.waves.Waves.downsample
@@ -467,7 +540,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} ensure_real_space(overwrite_x: bool = False) -> abtem.waves.Waves
+````{py:method} ensure_real_space(...) -> abtem.waves.Waves
 :canonical: abtem.waves.Waves.ensure_real_space
 
 ```{autodoc2-docstring} abtem.waves.Waves.ensure_real_space
@@ -476,7 +549,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} ensure_reciprocal_space(overwrite_x: bool = False) -> abtem.waves.Waves
+````{py:method} ensure_reciprocal_space(...) -> abtem.waves.Waves
 :canonical: abtem.waves.Waves.ensure_reciprocal_space
 
 ```{autodoc2-docstring} abtem.waves.Waves.ensure_reciprocal_space
@@ -485,7 +558,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} from_array_and_metadata(array: numpy.ndarray | dask.array.core.Array, axes_metadata: list[abtem.core.axes.AxisMetadata], metadata: typing.Optional[dict] = None) -> abtem.waves.Waves
+````{py:method} from_array_and_metadata(...) -> abtem.waves.Waves
 :canonical: abtem.waves.Waves.from_array_and_metadata
 :classmethod:
 
@@ -519,7 +592,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} multislice(potential: ase.Atoms | abtem.potentials.iam.BasePotential, detectors: typing.Optional[abtem.detectors.BaseDetector | list[abtem.detectors.BaseDetector]] = None, **multislice_func_kwargs) -> abtem.waves.Waves | abtem.measurements.BaseMeasurements | list[abtem.waves.Waves | abtem.measurements.BaseMeasurements]
+````{py:method} multislice(...) -> abtem.waves.Waves | abtem.measurements.BaseMeasurements | list[abtem.waves.Waves | abtem.measurements.BaseMeasurements]
 :canonical: abtem.waves.Waves.multislice
 
 ```{autodoc2-docstring} abtem.waves.Waves.multislice
@@ -528,7 +601,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} normalize(space: str = 'reciprocal', in_place: bool = False) -> abtem.waves.Waves
+````{py:method} normalize(...) -> abtem.waves.Waves
 :canonical: abtem.waves.Waves.normalize
 
 ```{autodoc2-docstring} abtem.waves.Waves.normalize
@@ -546,10 +619,19 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} phase_shift(amount: float) -> abtem.waves.Waves
+````{py:method} phase_shift(...) -> abtem.waves.Waves
 :canonical: abtem.waves.Waves.phase_shift
 
 ```{autodoc2-docstring} abtem.waves.Waves.phase_shift
+:parser: rst
+```
+
+````
+
+````{py:method} phonon_loss_diffraction_patterns(...)
+:canonical: abtem.waves.Waves.phonon_loss_diffraction_patterns
+
+```{autodoc2-docstring} abtem.waves.Waves.phonon_loss_diffraction_patterns
 :parser: rst
 ```
 
@@ -574,7 +656,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} scan(scan: abtem.scan.BaseScan | numpy.ndarray, potential: typing.Optional[ase.Atoms | abtem.potentials.iam.BasePotential] = None, detectors: typing.Optional[abtem.detectors.BaseDetector | list[abtem.detectors.BaseDetector]] = None, max_batch: int | str = 'auto', **multislice_func_kwargs) -> abtem.waves.Waves | abtem.measurements.BaseMeasurements | list[abtem.waves.Waves | abtem.measurements.BaseMeasurements]
+````{py:method} scan(...) -> abtem.waves.Waves | abtem.measurements.BaseMeasurements | list[abtem.waves.Waves | abtem.measurements.BaseMeasurements]
 :canonical: abtem.waves.Waves.scan
 
 ```{autodoc2-docstring} abtem.waves.Waves.scan
@@ -583,7 +665,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} show(convert_complex: str = 'intensity', **kwargs) -> abtem.visualize.Visualization
+````{py:method} show(...) -> abtem.visualize.Visualization
 :canonical: abtem.waves.Waves.show
 
 ```{autodoc2-docstring} abtem.waves.Waves.show
@@ -592,7 +674,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} show_depth_profile(projection_axis: str = 'y', depth: typing.Optional[float] = None, convert_complex: str = 'intensity', z_scale: float = 1.0, slice_lines: bool = False, ax=None, cbar: bool = False, cmap: typing.Optional[str] = None, vmin: typing.Optional[float] = None, vmax: typing.Optional[float] = None, power: float = 1.0, common_color_scale: bool = False, explode: bool | typing.Sequence[int] = (), figsize: typing.Optional[tuple[int, int]] = None, title: bool | str = True, **kwargs) -> abtem.visualize.Visualization
+````{py:method} show_depth_profile(...) -> abtem.visualize.Visualization
 :canonical: abtem.waves.Waves.show_depth_profile
 
 ```{autodoc2-docstring} abtem.waves.Waves.show_depth_profile
@@ -601,7 +683,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} tile(repetitions: tuple[int, int], renormalize: bool = False) -> abtem.waves.Waves
+````{py:method} tile(...) -> abtem.waves.Waves
 :canonical: abtem.waves.Waves.tile
 
 ```{autodoc2-docstring} abtem.waves.Waves.tile
@@ -610,7 +692,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} to_images(convert_complex: typing.Optional[str] = None) -> abtem.measurements.Images
+````{py:method} to_images(...) -> abtem.measurements.Images
 :canonical: abtem.waves.Waves.to_images
 
 ```{autodoc2-docstring} abtem.waves.Waves.to_images
@@ -619,7 +701,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
-````{py:method} transition_potential_multislice(potential: abtem.potentials.iam.BasePotential, transition_potentials: abtem.inelastic.core_loss.BaseTransitionPotential | list[abtem.inelastic.core_loss.BaseTransitionPotential], detectors: typing.Optional[abtem.detectors.BaseDetector | list[abtem.detectors.BaseDetector]] = None, sites: typing.Optional[abtem.slicing.SliceIndexedAtoms | ase.Atoms] = None, **multislice_func_kwargs) -> abtem.waves.Waves | abtem.measurements.BaseMeasurements
+````{py:method} transition_potential_multislice(...) -> abtem.waves.Waves | abtem.measurements.BaseMeasurements
 :canonical: abtem.waves.Waves.transition_potential_multislice
 
 ```{autodoc2-docstring} abtem.waves.Waves.transition_potential_multislice
@@ -628,14 +710,24 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
+````{py:property} wavelength
+:canonical: abtem.waves.Waves.wavelength
+:type: float
+
+```{autodoc2-docstring} abtem.waves.Waves.wavelength
+:parser: rst
+```
+
+````
+
 `````
 
-`````{py:class} WavesBuilder(ensemble_names: tuple[str, ...], device: str | None, tilt: abtem.tilt.TiltType2D = (0.0, 0.0))
+`````{py:class} WavesBuilder(...)
 :canonical: abtem.waves.WavesBuilder
 
 Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityMixin`
 
-````{py:method} apply_transform(transform, max_batch: int | str = 'auto', lazy: bool = True)
+````{py:method} apply_transform(...)
 :canonical: abtem.waves.WavesBuilder.apply_transform
 
 ```{autodoc2-docstring} abtem.waves.WavesBuilder.apply_transform
@@ -664,7 +756,7 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.core.ensemble.Ensemble`, 
 
 ````
 
-````{py:method} build(*args, **kwargs) -> abtem.waves.Waves
+````{py:method} build(...) -> abtem.waves.Waves
 :canonical: abtem.waves.WavesBuilder.build
 :abstractmethod:
 
@@ -733,10 +825,18 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.core.ensemble.Ensemble`, 
 
 `````
 
-````{py:function} reduce_ensemble(ensemble: Waves | abtem.measurements.BaseMeasurements | list[Waves | abtem.measurements.BaseMeasurements]) -> Waves | abtem.measurements.BaseMeasurements | list[Waves | abtem.measurements.BaseMeasurements]
+````{py:function} reduce_ensemble(...) -> Waves | abtem.measurements.BaseMeasurements | list[Waves | abtem.measurements.BaseMeasurements]
 :canonical: abtem.waves.reduce_ensemble
 
 ```{autodoc2-docstring} abtem.waves.reduce_ensemble
+:parser: rst
+```
+````
+
+````{py:function} validate_energy(...) -> abtem.waves.EnergyEnsemble
+:canonical: abtem.waves.validate_energy
+
+```{autodoc2-docstring} abtem.waves.validate_energy
 :parser: rst
 ```
 ````

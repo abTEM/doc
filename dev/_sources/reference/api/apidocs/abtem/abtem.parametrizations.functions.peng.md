@@ -35,7 +35,7 @@
 
 ### API
 
-````{py:function} finite_projected_scattering_factor(r, p, a, b)
+````{py:function} finite_projected_scattering_factor(...)
 :canonical: abtem.parametrizations.functions.peng.finite_projected_scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.peng.finite_projected_scattering_factor
@@ -43,7 +43,7 @@
 ```
 ````
 
-````{py:function} scattering_factor(k, p)
+````{py:function} scattering_factor(...)
 :canonical: abtem.parametrizations.functions.peng.scattering_factor
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.peng.scattering_factor
@@ -51,7 +51,7 @@
 ```
 ````
 
-````{py:function} scattering_factor_k2(k2, p)
+````{py:function} scattering_factor_k2(...)
 :canonical: abtem.parametrizations.functions.peng.scattering_factor_k2
 
 ```{autodoc2-docstring} abtem.parametrizations.functions.peng.scattering_factor_k2

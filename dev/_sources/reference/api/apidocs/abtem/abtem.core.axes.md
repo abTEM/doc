@@ -28,6 +28,16 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`EnergyAxis <abtem.core.axes.EnergyAxis>`
+  - ```{autodoc2-docstring} abtem.core.axes.EnergyAxis
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`EnergyLossAxis <abtem.core.axes.EnergyLossAxis>`
+  - ```{autodoc2-docstring} abtem.core.axes.EnergyLossAxis
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`FrozenPhononsAxis <abtem.core.axes.FrozenPhononsAxis>`
   - ```{autodoc2-docstring} abtem.core.axes.FrozenPhononsAxis
     :parser: rst
@@ -85,6 +95,11 @@
     ```
 * - {py:obj}`ScanAxis <abtem.core.axes.ScanAxis>`
   - ```{autodoc2-docstring} abtem.core.axes.ScanAxis
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`SpinAxis <abtem.core.axes.SpinAxis>`
+  - ```{autodoc2-docstring} abtem.core.axes.SpinAxis
     :parser: rst
     :summary:
     ```
@@ -173,7 +188,7 @@
 
 ### API
 
-```{py:class} AxesMetadataList(lst, shape)
+```{py:class} AxesMetadataList(...)
 :canonical: abtem.core.axes.AxesMetadataList
 
 Bases: {py:obj}`list`
@@ -201,7 +216,7 @@ Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
 
 ````
 
-````{py:method} item_metadata(item, metadata=None)
+````{py:method} item_metadata(...)
 :canonical: abtem.core.axes.AxisAlignedTiltAxis.item_metadata
 
 ````
@@ -236,7 +251,7 @@ Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
 :parser: rst
 ```
 
-````{py:method} concatenate(other: abtem.core.axes.AxisMetadata) -> abtem.core.axes.AxisMetadata
+````{py:method} concatenate(...) -> abtem.core.axes.AxisMetadata
 :canonical: abtem.core.axes.AxisMetadata.concatenate
 
 ```{autodoc2-docstring} abtem.core.axes.AxisMetadata.concatenate
@@ -245,7 +260,7 @@ Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
 
 ````
 
-````{py:method} coordinates(n: int) -> tuple
+````{py:method} coordinates(...) -> tuple
 :canonical: abtem.core.axes.AxisMetadata.coordinates
 
 ```{autodoc2-docstring} abtem.core.axes.AxisMetadata.coordinates
@@ -263,7 +278,7 @@ Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
 
 ````
 
-````{py:method} format_coordinates(n: typing.Optional[int] = None)
+````{py:method} format_coordinates(...)
 :canonical: abtem.core.axes.AxisMetadata.format_coordinates
 
 ```{autodoc2-docstring} abtem.core.axes.AxisMetadata.format_coordinates
@@ -272,7 +287,7 @@ Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
 
 ````
 
-````{py:method} format_label(units: typing.Optional[str] = None) -> str
+````{py:method} format_label(...) -> str
 :canonical: abtem.core.axes.AxisMetadata.format_label
 
 ```{autodoc2-docstring} abtem.core.axes.AxisMetadata.format_label
@@ -281,7 +296,7 @@ Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
 
 ````
 
-````{py:method} format_title(*args: typing.Any, **kwargs: typing.Any) -> str
+````{py:method} format_title(...) -> str
 :canonical: abtem.core.axes.AxisMetadata.format_title
 
 ```{autodoc2-docstring} abtem.core.axes.AxisMetadata.format_title
@@ -299,7 +314,7 @@ Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
 
 ````
 
-````{py:method} from_dict(d) -> abtem.core.axes.AxisMetadata
+````{py:method} from_dict(...) -> abtem.core.axes.AxisMetadata
 :canonical: abtem.core.axes.AxisMetadata.from_dict
 :staticmethod:
 
@@ -309,7 +324,7 @@ Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
 
 ````
 
-````{py:method} item_metadata(item, metadata=None) -> dict
+````{py:method} item_metadata(...) -> dict
 :canonical: abtem.core.axes.AxisMetadata.item_metadata
 
 ```{autodoc2-docstring} abtem.core.axes.AxisMetadata.item_metadata
@@ -329,7 +344,7 @@ Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
 
 ````
 
-````{py:method} limits(n=None) -> tuple
+````{py:method} limits(...) -> tuple
 :canonical: abtem.core.axes.AxisMetadata.limits
 
 ```{autodoc2-docstring} abtem.core.axes.AxisMetadata.limits
@@ -371,7 +386,7 @@ Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
 
 ````
 
-````{py:method} to_ordinal_axis(n)
+````{py:method} to_ordinal_axis(...)
 :canonical: abtem.core.axes.AxisMetadata.to_ordinal_axis
 
 ```{autodoc2-docstring} abtem.core.axes.AxisMetadata.to_ordinal_axis
@@ -387,6 +402,104 @@ Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
    None
 
 ```{autodoc2-docstring} abtem.core.axes.AxisMetadata.units
+:parser: rst
+```
+
+````
+
+`````
+
+`````{py:class} EnergyAxis
+:canonical: abtem.core.axes.EnergyAxis
+
+Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
+
+```{autodoc2-docstring} abtem.core.axes.EnergyAxis
+:parser: rst
+```
+
+````{py:method} format_title(...) -> str
+:canonical: abtem.core.axes.EnergyAxis.format_title
+
+```{autodoc2-docstring} abtem.core.axes.EnergyAxis.format_title
+:parser: rst
+```
+
+````
+
+````{py:method} item_metadata(...)
+:canonical: abtem.core.axes.EnergyAxis.item_metadata
+
+````
+
+````{py:attribute} label
+:canonical: abtem.core.axes.EnergyAxis.label
+:type: str
+:value: >
+   'Energy'
+
+```{autodoc2-docstring} abtem.core.axes.EnergyAxis.label
+:parser: rst
+```
+
+````
+
+````{py:attribute} units
+:canonical: abtem.core.axes.EnergyAxis.units
+:type: str
+:value: >
+   'eV'
+
+```{autodoc2-docstring} abtem.core.axes.EnergyAxis.units
+:parser: rst
+```
+
+````
+
+`````
+
+`````{py:class} EnergyLossAxis
+:canonical: abtem.core.axes.EnergyLossAxis
+
+Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
+
+```{autodoc2-docstring} abtem.core.axes.EnergyLossAxis
+:parser: rst
+```
+
+````{py:method} format_title(...) -> str
+:canonical: abtem.core.axes.EnergyLossAxis.format_title
+
+```{autodoc2-docstring} abtem.core.axes.EnergyLossAxis.format_title
+:parser: rst
+```
+
+````
+
+````{py:method} item_metadata(...)
+:canonical: abtem.core.axes.EnergyLossAxis.item_metadata
+
+````
+
+````{py:attribute} label
+:canonical: abtem.core.axes.EnergyLossAxis.label
+:type: str
+:value: >
+   'energy loss'
+
+```{autodoc2-docstring} abtem.core.axes.EnergyLossAxis.label
+:parser: rst
+```
+
+````
+
+````{py:attribute} units
+:canonical: abtem.core.axes.EnergyLossAxis.units
+:type: str
+:value: >
+   'eV'
+
+```{autodoc2-docstring} abtem.core.axes.EnergyLossAxis.units
 :parser: rst
 ```
 
@@ -426,7 +539,7 @@ Bases: {py:obj}`abtem.core.axes.AxisMetadata`
 :parser: rst
 ```
 
-````{py:method} convert_units(units: str, **kwargs)
+````{py:method} convert_units(...)
 :canonical: abtem.core.axes.LinearAxis.convert_units
 
 ```{autodoc2-docstring} abtem.core.axes.LinearAxis.convert_units
@@ -435,7 +548,7 @@ Bases: {py:obj}`abtem.core.axes.AxisMetadata`
 
 ````
 
-````{py:method} coordinates(n: int) -> tuple[float, ...]
+````{py:method} coordinates(...) -> tuple[float, ...]
 :canonical: abtem.core.axes.LinearAxis.coordinates
 
 ```{autodoc2-docstring} abtem.core.axes.LinearAxis.coordinates
@@ -444,7 +557,7 @@ Bases: {py:obj}`abtem.core.axes.AxisMetadata`
 
 ````
 
-````{py:method} format_coordinates(n: typing.Optional[int] = None) -> str
+````{py:method} format_coordinates(...) -> str
 :canonical: abtem.core.axes.LinearAxis.format_coordinates
 
 ```{autodoc2-docstring} abtem.core.axes.LinearAxis.format_coordinates
@@ -477,7 +590,7 @@ Bases: {py:obj}`abtem.core.axes.AxisMetadata`
 
 ````
 
-````{py:method} to_ordinal_axis(n)
+````{py:method} to_ordinal_axis(...)
 :canonical: abtem.core.axes.LinearAxis.to_ordinal_axis
 
 ```{autodoc2-docstring} abtem.core.axes.LinearAxis.to_ordinal_axis
@@ -508,7 +621,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 :parser: rst
 ```
 
-````{py:method} format_coordinates(n: typing.Optional[int] = None)
+````{py:method} format_coordinates(...)
 :canonical: abtem.core.axes.NonLinearAxis.format_coordinates
 
 ```{autodoc2-docstring} abtem.core.axes.NonLinearAxis.format_coordinates
@@ -517,7 +630,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 
 ````
 
-````{py:method} format_title(formatting: typing.Optional[str] = None, include_label: bool = True, **kwargs) -> str
+````{py:method} format_title(...) -> str
 :canonical: abtem.core.axes.NonLinearAxis.format_title
 
 ````
@@ -545,12 +658,12 @@ Bases: {py:obj}`abtem.core.axes.AxisMetadata`
 :parser: rst
 ```
 
-````{py:method} concatenate(other: abtem.core.axes.AxisMetadata) -> abtem.core.axes.OrdinalAxis
+````{py:method} concatenate(...) -> abtem.core.axes.OrdinalAxis
 :canonical: abtem.core.axes.OrdinalAxis.concatenate
 
 ````
 
-````{py:method} coordinates(n: int) -> tuple
+````{py:method} coordinates(...) -> tuple
 :canonical: abtem.core.axes.OrdinalAxis.coordinates
 
 ```{autodoc2-docstring} abtem.core.axes.OrdinalAxis.coordinates
@@ -568,17 +681,17 @@ Bases: {py:obj}`abtem.core.axes.AxisMetadata`
 
 ````
 
-````{py:method} format_title(formatting: typing.Optional[str] = None, include_label: bool = True, **kwargs) -> str
+````{py:method} format_title(...) -> str
 :canonical: abtem.core.axes.OrdinalAxis.format_title
 
 ````
 
-````{py:method} item_metadata(item, metadata=None)
+````{py:method} item_metadata(...)
 :canonical: abtem.core.axes.OrdinalAxis.item_metadata
 
 ````
 
-````{py:method} to_ordinal_axis(n) -> abtem.core.axes.OrdinalAxis
+````{py:method} to_ordinal_axis(...) -> abtem.core.axes.OrdinalAxis
 :canonical: abtem.core.axes.OrdinalAxis.to_ordinal_axis
 
 ```{autodoc2-docstring} abtem.core.axes.OrdinalAxis.to_ordinal_axis
@@ -632,7 +745,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 :parser: rst
 ```
 
-````{py:method} format_title(formatting: typing.Optional[str] = None, include_label: bool = True, **kwargs) -> str
+````{py:method} format_title(...) -> str
 :canonical: abtem.core.axes.PositionsAxis.format_title
 
 ````
@@ -843,6 +956,41 @@ Bases: {py:obj}`abtem.core.axes.RealSpaceAxis`
 
 ````
 
+`````{py:class} SpinAxis
+:canonical: abtem.core.axes.SpinAxis
+
+Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
+
+```{autodoc2-docstring} abtem.core.axes.SpinAxis
+:parser: rst
+```
+
+````{py:attribute} label
+:canonical: abtem.core.axes.SpinAxis.label
+:type: str
+:value: >
+   'spin'
+
+```{autodoc2-docstring} abtem.core.axes.SpinAxis.label
+:parser: rst
+```
+
+````
+
+````{py:attribute} values
+:canonical: abtem.core.axes.SpinAxis.values
+:type: tuple
+:value: >
+   ('up', 'down')
+
+```{autodoc2-docstring} abtem.core.axes.SpinAxis.values
+:parser: rst
+```
+
+````
+
+`````
+
 `````{py:class} ThicknessAxis
 :canonical: abtem.core.axes.ThicknessAxis
 
@@ -887,7 +1035,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 :parser: rst
 ```
 
-````{py:method} item_metadata(item, metadata=None)
+````{py:method} item_metadata(...)
 :canonical: abtem.core.axes.TiltAxis.item_metadata
 
 ````
@@ -962,7 +1110,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 
 `````
 
-````{py:function} axis_from_dict(d)
+````{py:function} axis_from_dict(...)
 :canonical: abtem.core.axes.axis_from_dict
 
 ```{autodoc2-docstring} abtem.core.axes.axis_from_dict
@@ -970,7 +1118,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 ```
 ````
 
-````{py:function} axis_to_dict(axis: abtem.core.axes.AxisMetadata)
+````{py:function} axis_to_dict(...)
 :canonical: abtem.core.axes.axis_to_dict
 
 ```{autodoc2-docstring} abtem.core.axes.axis_to_dict
@@ -1000,7 +1148,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 
 ````
 
-````{py:function} format_axes_metadata(axes_metadata, shape)
+````{py:function} format_axes_metadata(...)
 :canonical: abtem.core.axes.format_axes_metadata
 
 ```{autodoc2-docstring} abtem.core.axes.format_axes_metadata
@@ -1008,7 +1156,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 ```
 ````
 
-````{py:function} format_label(axes: AxisMetadata, units: typing.Optional[str] = None) -> str
+````{py:function} format_label(...) -> str
 :canonical: abtem.core.axes.format_label
 
 ```{autodoc2-docstring} abtem.core.axes.format_label
@@ -1016,7 +1164,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 ```
 ````
 
-````{py:function} format_title(axes: OrdinalAxis, formatting: typing.Optional[str] = None, units: typing.Optional[str] = None, include_label: bool = True) -> str
+````{py:function} format_title(...) -> str
 :canonical: abtem.core.axes.format_title
 
 ```{autodoc2-docstring} abtem.core.axes.format_title
@@ -1024,7 +1172,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 ```
 ````
 
-````{py:function} format_value(value: numbers.Number | tuple, formatting: str, tolerance: float = 1e-14) -> str
+````{py:function} format_value(...) -> str
 :canonical: abtem.core.axes.format_value
 
 ```{autodoc2-docstring} abtem.core.axes.format_value
@@ -1032,7 +1180,7 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 ```
 ````
 
-````{py:function} latex_float(number: float, formatting: str) -> str
+````{py:function} latex_float(...) -> str
 :canonical: abtem.core.axes.latex_float
 
 ```{autodoc2-docstring} abtem.core.axes.latex_float

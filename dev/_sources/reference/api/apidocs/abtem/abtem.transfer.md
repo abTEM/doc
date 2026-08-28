@@ -143,7 +143,7 @@
 
 ### API
 
-`````{py:class} Aberrations(aberration_coefficients: typing.Optional[typing.Mapping[str, str | float | abtem.distributions.BaseDistribution]] = None, energy: typing.Optional[float] = None, extent: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, **kwargs: typing.Any)
+`````{py:class} Aberrations(...)
 :canonical: abtem.transfer.Aberrations
 
 Bases: {py:obj}`abtem.transfer.BaseTransferFunction`, {py:obj}`abtem.transfer._HasAberrations`
@@ -177,7 +177,7 @@ Bases: {py:obj}`abtem.transfer.BaseTransferFunction`, {py:obj}`abtem.transfer._H
 
 `````
 
-`````{py:class} AnnularAperture(inner_cutoff: float, semiangle_cutoff: float, energy: typing.Optional[float] = None, extent: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None)
+`````{py:class} AnnularAperture(...)
 :canonical: abtem.transfer.AnnularAperture
 
 Bases: {py:obj}`abtem.transfer.BaseAperture`
@@ -215,7 +215,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 
 `````
 
-`````{py:class} Aperture(semiangle_cutoff: float | abtem.distributions.BaseDistribution, soft: bool = True, energy: typing.Optional[float] = None, extent: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None)
+`````{py:class} Aperture(...)
 :canonical: abtem.transfer.Aperture
 
 Bases: {py:obj}`abtem.transfer.BaseAperture`
@@ -249,7 +249,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 
 `````
 
-`````{py:class} BaseAperture(semiangle_cutoff: float | abtem.distributions.BaseDistribution = np.inf, energy: typing.Optional[float] = None, extent: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, distributions: tuple[str, ...] = ())
+`````{py:class} BaseAperture(...)
 :canonical: abtem.transfer.BaseAperture
 
 Bases: {py:obj}`abtem.transfer.BaseTransferFunction`
@@ -299,7 +299,7 @@ Bases: {py:obj}`abtem.transfer.BaseTransferFunction`
 
 `````
 
-`````{py:class} BaseTransferFunction(energy: typing.Optional[float] = None, extent: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, distributions: tuple[str, ...] = ())
+`````{py:class} BaseTransferFunction(...)
 :canonical: abtem.transfer.BaseTransferFunction
 
 Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`, {py:obj}`abtem.core.energy.HasAcceleratorMixin`, {py:obj}`abtem.core.grid.HasGrid2DMixin`
@@ -325,7 +325,17 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`, {py:obj}`abtem.c
 
 ````
 
-````{py:method} show(max_angle: typing.Optional[float] = None, **kwargs: typing.Any) -> abtem.visualize.Visualization
+````{py:property} energy
+:canonical: abtem.transfer.BaseTransferFunction.energy
+:type: float | abtem.distributions.BaseDistribution | None
+
+```{autodoc2-docstring} abtem.transfer.BaseTransferFunction.energy
+:parser: rst
+```
+
+````
+
+````{py:method} show(...) -> abtem.visualize.Visualization
 :canonical: abtem.transfer.BaseTransferFunction.show
 
 ```{autodoc2-docstring} abtem.transfer.BaseTransferFunction.show
@@ -334,7 +344,7 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`, {py:obj}`abtem.c
 
 ````
 
-````{py:method} to_diffraction_patterns(max_angle: typing.Optional[float] = None, gpts: typing.Optional[int | tuple[int, int]] = None) -> abtem.measurements.DiffractionPatterns
+````{py:method} to_diffraction_patterns(...) -> abtem.measurements.DiffractionPatterns
 :canonical: abtem.transfer.BaseTransferFunction.to_diffraction_patterns
 
 ```{autodoc2-docstring} abtem.transfer.BaseTransferFunction.to_diffraction_patterns
@@ -345,7 +355,7 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`, {py:obj}`abtem.c
 
 `````
 
-`````{py:class} Bullseye(num_spokes: int, spoke_width: float, num_rings: int, ring_width: float, semiangle_cutoff: float, energy: typing.Optional[float] = None, extent: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, edge_softness: float = 0.0, corner_radius: float = 0.0)
+`````{py:class} Bullseye(...)
 :canonical: abtem.transfer.Bullseye
 
 Bases: {py:obj}`abtem.transfer.BaseAperture`
@@ -443,7 +453,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 
 `````
 
-`````{py:class} CTF(semiangle_cutoff: float | abtem.distributions.BaseDistribution = np.inf, soft: bool = True, focal_spread: float | abtem.distributions.BaseDistribution = 0.0, angular_spread: float | abtem.distributions.BaseDistribution = 0.0, aberration_coefficients: typing.Optional[typing.Mapping[str, float | abtem.distributions.BaseDistribution]] = None, energy: typing.Optional[float] = None, extent: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, flip_phase: bool = False, wiener_snr: float = 0.0, **kwargs: typing.Any)
+`````{py:class} CTF(...)
 :canonical: abtem.transfer.CTF
 
 Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseAperture`
@@ -515,7 +525,7 @@ Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseApe
 
 ````
 
-````{py:method} profiles(gpts: int = 1000, max_angle: typing.Optional[float] = None, phi: float | numpy.ndarray = 0.0) -> abtem.measurements.ReciprocalSpaceLineProfiles
+````{py:method} profiles(...) -> abtem.measurements.ReciprocalSpaceLineProfiles
 :canonical: abtem.transfer.CTF.profiles
 
 ```{autodoc2-docstring} abtem.transfer.CTF.profiles
@@ -554,7 +564,7 @@ Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseApe
 
 ````
 
-````{py:method} to_point_spread_functions(gpts: int | tuple[int, int], extent: float | tuple[float, float]) -> abtem.measurements.Images
+````{py:method} to_point_spread_functions(...) -> abtem.measurements.Images
 :canonical: abtem.transfer.CTF.to_point_spread_functions
 
 ```{autodoc2-docstring} abtem.transfer.CTF.to_point_spread_functions
@@ -575,7 +585,7 @@ Bases: {py:obj}`abtem.transfer._HasAberrations`, {py:obj}`abtem.transfer.BaseApe
 
 `````
 
-`````{py:class} RadialPhasePlate(num_flips: int, semiangle_cutoff: float, phase_shift: float = np.pi, power_law: float = 2.0, shift_central_semiangle: float = 0.0, energy: typing.Optional[float] = None, extent: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None)
+`````{py:class} RadialPhasePlate(...)
 :canonical: abtem.transfer.RadialPhasePlate
 
 Bases: {py:obj}`abtem.transfer.BaseAperture`
@@ -632,7 +642,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 
 `````
 
-`````{py:class} SpatialEnvelope(angular_spread: float | abtem.distributions.BaseDistribution, aberration_coefficients: typing.Optional[typing.Mapping[str, str | float | abtem.distributions.BaseDistribution]] = None, energy: typing.Optional[float] = None, extent: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, **kwargs: str | float | abtem.distributions.BaseDistribution)
+`````{py:class} SpatialEnvelope(...)
 :canonical: abtem.transfer.SpatialEnvelope
 
 Bases: {py:obj}`abtem.transfer.BaseTransferFunction`, {py:obj}`abtem.transfer._HasAberrations`
@@ -666,7 +676,7 @@ Bases: {py:obj}`abtem.transfer.BaseTransferFunction`, {py:obj}`abtem.transfer._H
 
 `````
 
-`````{py:class} TemporalEnvelope(focal_spread: float | abtem.distributions.BaseDistribution, energy: typing.Optional[float] = None, extent: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None)
+`````{py:class} TemporalEnvelope(...)
 :canonical: abtem.transfer.TemporalEnvelope
 
 Bases: {py:obj}`abtem.transfer.BaseTransferFunction`
@@ -700,7 +710,7 @@ Bases: {py:obj}`abtem.transfer.BaseTransferFunction`
 
 `````
 
-`````{py:class} Vortex(quantum_number: int, semiangle_cutoff: float, energy: typing.Optional[float] = None, extent: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, soft: bool = False)
+`````{py:class} Vortex(...)
 :canonical: abtem.transfer.Vortex
 
 Bases: {py:obj}`abtem.transfer.BaseAperture`
@@ -738,7 +748,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 
 `````
 
-`````{py:class} Zernike(center_hole_cutoff: float, phase_shift: float, semiangle_cutoff: float, energy: typing.Optional[float] = None, extent: typing.Optional[float | tuple[float, float]] = None, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None)
+`````{py:class} Zernike(...)
 :canonical: abtem.transfer.Zernike
 
 Bases: {py:obj}`abtem.transfer.BaseAperture`
@@ -786,7 +796,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 
 `````
 
-````{py:function} cartesian2polar(cartesian: dict) -> dict
+````{py:function} cartesian2polar(...) -> dict
 :canonical: abtem.transfer.cartesian2polar
 
 ```{autodoc2-docstring} abtem.transfer.cartesian2polar
@@ -794,7 +804,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 ```
 ````
 
-````{py:function} hard_aperture(alpha: numpy.ndarray, semiangle_cutoff: float | abtem.distributions.BaseDistribution) -> numpy.ndarray
+````{py:function} hard_aperture(...) -> numpy.ndarray
 :canonical: abtem.transfer.hard_aperture
 
 ```{autodoc2-docstring} abtem.transfer.hard_aperture
@@ -802,7 +812,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 ```
 ````
 
-````{py:function} nyquist_sampling(semiangle_cutoff: float, energy: float) -> float
+````{py:function} nyquist_sampling(...) -> float
 :canonical: abtem.transfer.nyquist_sampling
 
 ```{autodoc2-docstring} abtem.transfer.nyquist_sampling
@@ -810,7 +820,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 ```
 ````
 
-````{py:function} point_resolution(Cs: float, energy: float) -> float
+````{py:function} point_resolution(...) -> float
 :canonical: abtem.transfer.point_resolution
 
 ```{autodoc2-docstring} abtem.transfer.point_resolution
@@ -818,7 +828,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 ```
 ````
 
-````{py:function} polar2cartesian(polar: dict) -> dict
+````{py:function} polar2cartesian(...) -> dict
 :canonical: abtem.transfer.polar2cartesian
 
 ```{autodoc2-docstring} abtem.transfer.polar2cartesian
@@ -848,7 +858,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 
 ````
 
-````{py:function} scherzer_defocus(Cs: float, energy: float) -> float
+````{py:function} scherzer_defocus(...) -> float
 :canonical: abtem.transfer.scherzer_defocus
 
 ```{autodoc2-docstring} abtem.transfer.scherzer_defocus
@@ -856,7 +866,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 ```
 ````
 
-````{py:function} soft_aperture(alpha: numpy.ndarray, phi: numpy.ndarray, semiangle_cutoff: float | numpy.ndarray, angular_sampling: tuple[float, float]) -> numpy.ndarray
+````{py:function} soft_aperture(...) -> numpy.ndarray
 :canonical: abtem.transfer.soft_aperture
 
 ```{autodoc2-docstring} abtem.transfer.soft_aperture
@@ -864,7 +874,7 @@ Bases: {py:obj}`abtem.transfer.BaseAperture`
 ```
 ````
 
-````{py:function} symbol_to_tex_symbol(symbol: str) -> str
+````{py:function} symbol_to_tex_symbol(...) -> str
 :canonical: abtem.transfer.symbol_to_tex_symbol
 
 ```{autodoc2-docstring} abtem.transfer.symbol_to_tex_symbol

@@ -83,7 +83,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`abtem.array.ArrayObjectType`\, {py:obj
 :parser: rst
 ```
 
-````{py:method} apply(array_object: abtem.array.ArrayObjectType, max_batch: int | str = 'auto') -> abtem.array.ArrayObjectType | abtem.array.ArrayObjectTypeAlt | list[abtem.array.ArrayObjectType | abtem.array.ArrayObjectTypeAlt]
+````{py:method} apply(...) -> abtem.array.ArrayObjectType | abtem.array.ArrayObjectTypeAlt | list[abtem.array.ArrayObjectType | abtem.array.ArrayObjectTypeAlt]
 :canonical: abtem.transform.ArrayObjectTransform.apply
 :abstractmethod:
 
@@ -134,7 +134,7 @@ Bases: {py:obj}`abtem.core.ensemble.EmptyEnsemble`, {py:obj}`abtem.transform.Arr
 :parser: rst
 ```
 
-````{py:method} apply(array_object: abtem.array.ArrayObject, max_batch: int | str = 'auto') -> abtem.array.ArrayObject
+````{py:method} apply(...) -> abtem.array.ArrayObject
 :canonical: abtem.transform.EmptyTransform.apply
 
 ```{autodoc2-docstring} abtem.transform.EmptyTransform.apply
@@ -145,14 +145,14 @@ Bases: {py:obj}`abtem.core.ensemble.EmptyEnsemble`, {py:obj}`abtem.transform.Arr
 
 `````
 
-```{py:class} EnsembleTransform(distributions: tuple[str, ...] = ())
+```{py:class} EnsembleTransform(...)
 :canonical: abtem.transform.EnsembleTransform
 
 Bases: {py:obj}`abtem.distributions.EnsembleFromDistributions`, {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.array.ArrayObjectType`\, {py:obj}`abtem.array.ArrayObjectTypeAlt`\]
 
 ```
 
-`````{py:class} ReciprocalSpaceMultiplication(in_place: bool = False, distributions: tuple[str, ...] = ())
+`````{py:class} ReciprocalSpaceMultiplication(...)
 :canonical: abtem.transform.ReciprocalSpaceMultiplication
 
 Bases: {py:obj}`abtem.transform.WavesToWavesTransform`
@@ -180,7 +180,7 @@ Bases: {py:obj}`abtem.transform.WavesToWavesTransform`
 
 `````
 
-`````{py:class} TransformFromFunc(func, func_kwargs)
+`````{py:class} TransformFromFunc(...)
 :canonical: abtem.transform.TransformFromFunc
 
 Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.array.ArrayObject`\, {py:obj}`abtem.array.ArrayObject`\]
@@ -196,7 +196,7 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.array.Arra
 :parser: rst
 ```
 
-````{py:method} apply(array_object: abtem.array.ArrayObjectType, max_batch: int | str = 'auto') -> abtem.array.ArrayObjectType
+````{py:method} apply(...) -> abtem.array.ArrayObjectType
 :canonical: abtem.transform.TransformFromFunc.apply
 
 ```{autodoc2-docstring} abtem.transform.TransformFromFunc.apply
@@ -231,12 +231,12 @@ Bases: {py:obj}`abtem.transform.ArrayObjectTransform`\[{py:obj}`abtem.array.Arra
 
 `````
 
-`````{py:class} WavesToMeasurementTransform(distributions: tuple[str, ...] = ())
+`````{py:class} WavesToMeasurementTransform(...)
 :canonical: abtem.transform.WavesToMeasurementTransform
 
 Bases: {py:obj}`abtem.transform.WavesTransform`\[{py:obj}`abtem.measurements.BaseMeasurements`\]
 
-````{py:method} apply(waves: abtem.waves.Waves, max_batch: int | str = 'auto') -> abtem.waves.Waves | abtem.measurements.BaseMeasurements | list[abtem.waves.Waves | abtem.measurements.BaseMeasurements]
+````{py:method} apply(...) -> abtem.waves.Waves | abtem.measurements.BaseMeasurements | list[abtem.waves.Waves | abtem.measurements.BaseMeasurements]
 :canonical: abtem.transform.WavesToMeasurementTransform.apply
 
 ```{autodoc2-docstring} abtem.transform.WavesToMeasurementTransform.apply
@@ -247,12 +247,12 @@ Bases: {py:obj}`abtem.transform.WavesTransform`\[{py:obj}`abtem.measurements.Bas
 
 `````
 
-`````{py:class} WavesToWavesTransform(distributions: tuple[str, ...] = ())
+`````{py:class} WavesToWavesTransform(...)
 :canonical: abtem.transform.WavesToWavesTransform
 
 Bases: {py:obj}`abtem.transform.WavesTransform`
 
-````{py:method} apply(waves: abtem.waves.Waves, max_batch: int | str = 'auto') -> abtem.waves.Waves
+````{py:method} apply(...) -> abtem.waves.Waves
 :canonical: abtem.transform.WavesToWavesTransform.apply
 
 ```{autodoc2-docstring} abtem.transform.WavesToWavesTransform.apply
@@ -263,12 +263,12 @@ Bases: {py:obj}`abtem.transform.WavesTransform`
 
 `````
 
-`````{py:class} WavesTransform(distributions: tuple[str, ...] = ())
+`````{py:class} WavesTransform(...)
 :canonical: abtem.transform.WavesTransform
 
 Bases: {py:obj}`abtem.transform.EnsembleTransform`\[{py:obj}`abtem.waves.Waves`\, {py:obj}`abtem.array.ArrayObjectType`\]
 
-````{py:method} apply(waves: abtem.waves.Waves, max_batch: int | str = 'auto') -> abtem.waves.Waves | abtem.array.ArrayObjectType | list[abtem.waves.Waves | abtem.array.ArrayObjectType]
+````{py:method} apply(...) -> abtem.waves.Waves | abtem.array.ArrayObjectType | list[abtem.waves.Waves | abtem.array.ArrayObjectType]
 :canonical: abtem.transform.WavesTransform.apply
 :abstractmethod:
 
@@ -301,7 +301,7 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`\[{py:obj}`abtem.waves.Waves`\
 
 ````
 
-````{py:function} join_tuples(tuples: tuple[tuple[typing.Any, ...], ...]) -> tuple[typing.Any, ...]
+````{py:function} join_tuples(...) -> tuple[typing.Any, ...]
 :canonical: abtem.transform.join_tuples
 
 ```{autodoc2-docstring} abtem.transform.join_tuples

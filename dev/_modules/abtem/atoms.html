@@ -113,7 +113,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, built from the latest main branch. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
 </aside>
 
   
@@ -1369,6 +1369,30 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_snap_scaled_positions_to_cell_boundary</span><span class="p">(</span><span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Snap scaled positions that are within `tolerance` (in Angstrom, along the</span>
+<span class="sd">    relevant lattice vector) of a cell boundary to exactly 0.</span>
+
+<span class="sd">    Relaxed structures from DFT or machine-learned potentials often leave atoms</span>
+<span class="sd">    that are physically on a cell boundary or corner with a tiny numerical</span>
+<span class="sd">    residual, e.g. a scaled coordinate of -1e-9 instead of exactly 0. Since</span>
+<span class="sd">    `ase.build.tools.cut` (used to build the orthogonal supercell) computes</span>
+<span class="sd">    scaled positions with a plain `% 1.0`, such a residual wraps to just below</span>
+<span class="sd">    1.0 rather than staying just above 0.0 depending on its sign, and is then</span>
+<span class="sd">    silently excluded by `cut`'s boundary mask. This makes `orthogonalize_cell`</span>
+<span class="sd">    non-deterministic under sub-tolerance numerical noise, dropping atoms for</span>
+<span class="sd">    some inputs but not others even though they represent the same structure.</span>
+<span class="sd">    """</span>
+    <span class="n">scaled</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_scaled_positions</span><span class="p">(</span><span class="n">wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">lengths</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">lengths</span><span class="p">()</span>
+    <span class="n">lengths</span><span class="p">[</span><span class="n">lengths</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">tolerance</span> <span class="o">/</span> <span class="n">lengths</span>
+    <span class="n">near_boundary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">scaled</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">scaled</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">eps</span>
+    <span class="n">scaled</span><span class="p">[</span><span class="n">near_boundary</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">scaled</span><span class="p">[</span><span class="n">near_boundary</span><span class="p">])</span>
+    <span class="n">atoms</span><span class="o">.</span><span class="n">set_scaled_positions</span><span class="p">(</span><span class="n">scaled</span> <span class="o">%</span> <span class="mf">1.0</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="orthogonalize_cell">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.atoms.html#abtem.atoms.orthogonalize_cell">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">orthogonalize_cell</span><span class="p">(</span>
@@ -1462,23 +1486,66 @@
         <span class="k">if</span> <span class="n">is_cell_orthogonal</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">return_transform</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">atoms</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">return_transform_matrix</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">atoms</span>
-        <span class="c1"># Early-exit bug: diag==box with non-orthogonal cell -&gt; GS fallback</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">return_transform</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">return_transform_matrix</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">dot</span>
-            <span class="n">_cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-            <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v3</span> <span class="o">=</span> <span class="n">_cell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">_cell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">_cell</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-            <span class="n">v2_new</span> <span class="o">=</span> <span class="n">v2</span> <span class="o">-</span> <span class="n">dot</span><span class="p">(</span><span class="n">v2</span><span class="p">,</span> <span class="n">v1</span><span class="p">)</span> <span class="o">/</span> <span class="n">dot</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v1</span><span class="p">)</span> <span class="o">*</span> <span class="n">v1</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atoms</span> <span class="k">as</span> <span class="n">_Atoms</span>
-            <span class="n">atoms</span> <span class="o">=</span> <span class="n">_Atoms</span><span class="p">(</span><span class="n">symbols</span><span class="o">=</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">(),</span>
-                           <span class="n">positions</span><span class="o">=</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-                           <span class="n">cell</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2_new</span><span class="p">,</span> <span class="n">v3</span><span class="p">]),</span> <span class="n">pbc</span><span class="o">=</span><span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span><span class="p">)</span>
-            <span class="n">atoms</span><span class="o">.</span><span class="n">wrap</span><span class="p">()</span>
+
+        <span class="c1"># `best_orthogonal_cell` computes box lengths as norms of (possibly</span>
+        <span class="c1"># repeated) lattice vectors. For a near-orthorhombic cell whose</span>
+        <span class="c1"># off-diagonal components are smaller than about 2e-8 relative to the</span>
+        <span class="c1"># corresponding diagonal entry, those norms round to the exact</span>
+        <span class="c1"># diagonal entries in float64, so `diag(cell) == box` can be True</span>
+        <span class="c1"># even though `is_cell_orthogonal` (tol=1e-12) still correctly</span>
+        <span class="c1"># reports the cell as non-orthogonal. This is a relative, not</span>
+        <span class="c1"># absolute, effect: a 5000 A cell can carry noise up to ~1e-4 A and</span>
+        <span class="c1"># still trip it, while a 5 A cell only does so below ~1e-7 A. No</span>
+        <span class="c1"># repetition is needed in this case, just removal of the numerical</span>
+        <span class="c1"># residual, so remove it by zeroing the off-diagonal components</span>
+        <span class="c1"># directly, rather than falling through to the general repeat-and-cut</span>
+        <span class="c1"># path below (which assumes real repetition is needed to reach</span>
+        <span class="c1"># `box`).</span>
+        <span class="c1">#</span>
+        <span class="c1"># A Gram-Schmidt process on the three vectors would only guarantee</span>
+        <span class="c1"># they end up mutually orthogonal, not axis-aligned: if the noise</span>
+        <span class="c1"># sits in the first vector (whose direction seeds the process), the</span>
+        <span class="c1"># result is a valid orthogonal box rotated slightly off the</span>
+        <span class="c1"># coordinate axes, which is not what the rest of this function</span>
+        <span class="c1"># assumes. Since reaching this branch already means every</span>
+        <span class="c1"># off-diagonal component is at or below float64's ~2e-8 relative</span>
+        <span class="c1"># rounding floor (see above), zeroing them directly is both simpler</span>
+        <span class="c1"># and correct; anything larger is guarded against below rather than</span>
+        <span class="c1"># silently discarded.</span>
+        <span class="n">cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">off_diagonal</span> <span class="o">=</span> <span class="n">cell</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)]</span>
+        <span class="n">max_off_diagonal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">off_diagonal</span><span class="p">))</span>
+        <span class="n">relative_off_diagonal</span> <span class="o">=</span> <span class="n">max_off_diagonal</span> <span class="o">/</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">lengths</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">relative_off_diagonal</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">"Cell is not orthogonal and the off-diagonal components "</span>
+                <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">max_off_diagonal</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2"> A, </span><span class="si">{</span><span class="n">relative_off_diagonal</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2"> "</span>
+                <span class="s2">"relative to the cell size) are too large to be numerical "</span>
+                <span class="s2">"noise; refusing to silently drop them. This should not "</span>
+                <span class="s2">"normally happen; please report this cell."</span>
+            <span class="p">)</span>
+
+        <span class="n">orthogonal_cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">cell</span><span class="p">))</span>
+
+        <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="n">orthogonal_cell</span><span class="p">)</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">wrap</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">return_transform</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">atoms</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">return_transform_matrix</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">atoms</span>
 
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">lengths</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">tolerance</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Cell vectors must have non-zero length."</span><span class="p">)</span>
+
+    <span class="n">_snap_scaled_positions_to_cell_boundary</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
 
     <span class="n">inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span>
     <span class="n">vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">box</span><span class="p">),</span> <span class="n">inv</span><span class="p">)</span>
@@ -1932,7 +1999,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10. Development build.</p>
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
 </div>
   </div>
   

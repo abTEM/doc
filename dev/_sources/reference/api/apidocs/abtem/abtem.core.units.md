@@ -48,7 +48,7 @@
 
 ### API
 
-````{py:function} format_units(units: typing.Optional[str], use_tex: typing.Optional[bool] = None) -> str
+````{py:function} format_units(...) -> str
 :canonical: abtem.core.units.format_units
 
 ```{autodoc2-docstring} abtem.core.units.format_units
@@ -56,7 +56,7 @@
 ```
 ````
 
-````{py:function} get_conversion_factor(units: typing.Optional[str] = None, old_units: typing.Optional[str] = None, energy: typing.Optional[float] = None) -> float
+````{py:function} get_conversion_factor(...) -> float
 :canonical: abtem.core.units.get_conversion_factor
 
 ```{autodoc2-docstring} abtem.core.units.get_conversion_factor
@@ -75,7 +75,7 @@
 
 ````
 
-````{py:function} validate_units(units: typing.Optional[str] = None, old_units: typing.Optional[str] = None) -> typing.Optional[str]
+````{py:function} validate_units(...) -> typing.Optional[str]
 :canonical: abtem.core.units.validate_units
 
 ```{autodoc2-docstring} abtem.core.units.validate_units

@@ -93,7 +93,7 @@
 
 ### API
 
-`````{py:class} FieldIntegrator(periodic: bool, finite: bool, retain_data: bool = False)
+`````{py:class} FieldIntegrator(...)
 :canonical: abtem.integrals.FieldIntegrator
 
 Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyMixin`
@@ -109,7 +109,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 :parser: rst
 ```
 
-````{py:method} cutoff(symbol: str) -> float
+````{py:method} cutoff(...) -> float
 :canonical: abtem.integrals.FieldIntegrator.cutoff
 :abstractmethod:
 
@@ -129,7 +129,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 
 ````
 
-````{py:method} integrate_on_grid(positions: numpy.ndarray, a: numpy.ndarray, b: numpy.ndarray, gpts: tuple[int, int], sampling: tuple[float, float], device: str = 'cpu') -> numpy.ndarray
+````{py:method} integrate_on_grid(...) -> numpy.ndarray
 :canonical: abtem.integrals.FieldIntegrator.integrate_on_grid
 :abstractmethod:
 
@@ -151,7 +151,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 
 `````
 
-`````{py:class} GaussianProjectionIntegrals(parametrization: str | abtem.parametrizations.Parametrization = 'lobato', gaussian_parametrization: str | abtem.parametrizations.Parametrization = 'peng', cutoff_tolerance: float = 0.001)
+`````{py:class} GaussianProjectionIntegrals(...)
 :canonical: abtem.integrals.GaussianProjectionIntegrals
 
 Bases: {py:obj}`abtem.integrals.FieldIntegrator`
@@ -176,7 +176,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 
 ````
 
-````{py:method} cutoff(symbol: str) -> float
+````{py:method} cutoff(...) -> float
 :canonical: abtem.integrals.GaussianProjectionIntegrals.cutoff
 
 ````
@@ -199,7 +199,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 
 ````
 
-````{py:method} get_corrections(symbol, gpts, sampling)
+````{py:method} get_corrections(...)
 :canonical: abtem.integrals.GaussianProjectionIntegrals.get_corrections
 
 ```{autodoc2-docstring} abtem.integrals.GaussianProjectionIntegrals.get_corrections
@@ -208,7 +208,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 
 ````
 
-````{py:method} get_gaussians(symbol, gpts, sampling)
+````{py:method} get_gaussians(...)
 :canonical: abtem.integrals.GaussianProjectionIntegrals.get_gaussians
 
 ```{autodoc2-docstring} abtem.integrals.GaussianProjectionIntegrals.get_gaussians
@@ -217,14 +217,14 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 
 ````
 
-````{py:method} integrate_on_grid(atoms: ase.Atoms, a: numpy.ndarray, b: numpy.ndarray, gpts: tuple[int, int], sampling: tuple[float, float], device: str = 'cpu', fourier_space: bool = False) -> numpy.ndarray
+````{py:method} integrate_on_grid(...) -> numpy.ndarray
 :canonical: abtem.integrals.GaussianProjectionIntegrals.integrate_on_grid
 
 ````
 
 `````
 
-`````{py:class} ProjectionIntegralTable(radial_gpts: numpy.ndarray, limits: numpy.ndarray, values: numpy.ndarray)
+`````{py:class} ProjectionIntegralTable(...)
 :canonical: abtem.integrals.ProjectionIntegralTable
 
 ```{autodoc2-docstring} abtem.integrals.ProjectionIntegralTable
@@ -238,7 +238,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :parser: rst
 ```
 
-````{py:method} integrate(a: float | numpy.ndarray, b: float | numpy.ndarray) -> numpy.ndarray
+````{py:method} integrate(...) -> numpy.ndarray
 :canonical: abtem.integrals.ProjectionIntegralTable.integrate
 
 ```{autodoc2-docstring} abtem.integrals.ProjectionIntegralTable.integrate
@@ -279,7 +279,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 
 `````
 
-`````{py:class} QuadratureProjectionIntegrals(parametrization: str | abtem.parametrizations.Parametrization = 'lobato', cutoff_tolerance: float = 0.0001, inner_cutoff_factor: float = 2.0, taper: float = 0.85, integration_step: float = 0.02, quad_order: int = 8)
+`````{py:class} QuadratureProjectionIntegrals(...)
 :canonical: abtem.integrals.QuadratureProjectionIntegrals
 
 Bases: {py:obj}`abtem.integrals.FieldIntegrator`
@@ -295,7 +295,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :parser: rst
 ```
 
-````{py:method} cutoff(symbol: str) -> float
+````{py:method} cutoff(...) -> float
 :canonical: abtem.integrals.QuadratureProjectionIntegrals.cutoff
 
 ````
@@ -310,7 +310,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 
 ````
 
-````{py:method} get_integral_table(symbol, sampling)
+````{py:method} get_integral_table(...)
 :canonical: abtem.integrals.QuadratureProjectionIntegrals.get_integral_table
 
 ```{autodoc2-docstring} abtem.integrals.QuadratureProjectionIntegrals.get_integral_table
@@ -319,7 +319,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 
 ````
 
-````{py:method} integrate_on_grid(atoms: ase.Atoms, a: float, b: float, gpts: tuple[int, int], sampling: tuple[float, float], device: str = 'cpu') -> numpy.ndarray
+````{py:method} integrate_on_grid(...) -> numpy.ndarray
 :canonical: abtem.integrals.QuadratureProjectionIntegrals.integrate_on_grid
 
 ````
@@ -363,7 +363,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 
 `````
 
-`````{py:class} ScatteringFactorProjectionIntegrals(parametrization: str | abtem.parametrizations.Parametrization = 'lobato')
+`````{py:class} ScatteringFactorProjectionIntegrals(...)
 :canonical: abtem.integrals.ScatteringFactorProjectionIntegrals
 
 Bases: {py:obj}`abtem.integrals.FieldIntegrator`
@@ -379,12 +379,12 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 :parser: rst
 ```
 
-````{py:method} cutoff(symbol: str) -> float
+````{py:method} cutoff(...) -> float
 :canonical: abtem.integrals.ScatteringFactorProjectionIntegrals.cutoff
 
 ````
 
-````{py:method} get_scattering_factor(symbol, gpts, sampling, device)
+````{py:method} get_scattering_factor(...)
 :canonical: abtem.integrals.ScatteringFactorProjectionIntegrals.get_scattering_factor
 
 ```{autodoc2-docstring} abtem.integrals.ScatteringFactorProjectionIntegrals.get_scattering_factor
@@ -393,7 +393,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 
 ````
 
-````{py:method} integrate_on_grid(atoms: ase.Atoms, a: numpy.ndarray, b: numpy.ndarray, gpts: tuple[int, int], sampling: tuple[float, float], device: str = 'cpu')
+````{py:method} integrate_on_grid(...)
 :canonical: abtem.integrals.ScatteringFactorProjectionIntegrals.integrate_on_grid
 
 ````
@@ -420,7 +420,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 
 `````
 
-````{py:function} correction_projected_scattering_factors(symbol, gpts, sampling, short_range='lobato', long_range='peng')
+````{py:function} correction_projected_scattering_factors(...)
 :canonical: abtem.integrals.correction_projected_scattering_factors
 
 ```{autodoc2-docstring} abtem.integrals.correction_projected_scattering_factors
@@ -428,7 +428,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 ```
 ````
 
-````{py:function} cutoff_taper(radial_gpts, cutoff, taper)
+````{py:function} cutoff_taper(...)
 :canonical: abtem.integrals.cutoff_taper
 
 ```{autodoc2-docstring} abtem.integrals.cutoff_taper
@@ -436,7 +436,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 ```
 ````
 
-````{py:function} gaussian_projected_scattering_factors(symbol, gpts, sampling, parametrization='peng')
+````{py:function} gaussian_projected_scattering_factors(...)
 :canonical: abtem.integrals.gaussian_projected_scattering_factors
 
 ```{autodoc2-docstring} abtem.integrals.gaussian_projected_scattering_factors
@@ -444,7 +444,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 ```
 ````
 
-````{py:function} gaussian_projection_weights(symbol, a, b, parametrization='peng')
+````{py:function} gaussian_projection_weights(...)
 :canonical: abtem.integrals.gaussian_projection_weights
 
 ```{autodoc2-docstring} abtem.integrals.gaussian_projection_weights
@@ -452,7 +452,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 ```
 ````
 
-````{py:function} interpolate_radial_functions(array: numpy.ndarray, positions: numpy.ndarray, disk_indices: numpy.ndarray, disk_counts: numpy.ndarray, sampling: tuple[float, float], radial_gpts: numpy.ndarray, radial_functions: numpy.ndarray, radial_derivative: numpy.ndarray)
+````{py:function} interpolate_radial_functions(...)
 :canonical: abtem.integrals.interpolate_radial_functions
 
 ```{autodoc2-docstring} abtem.integrals.interpolate_radial_functions
@@ -460,7 +460,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 ```
 ````
 
-````{py:function} optimize_cutoff(func: typing.Callable, tolerance: float, a: float, b: float) -> float
+````{py:function} optimize_cutoff(...) -> float
 :canonical: abtem.integrals.optimize_cutoff
 
 ```{autodoc2-docstring} abtem.integrals.optimize_cutoff
@@ -468,7 +468,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 ```
 ````
 
-````{py:function} sinc(gpts: tuple[int, int], sampling: tuple[float, float], device: str = 'cpu') -> numpy.ndarray
+````{py:function} sinc(...) -> numpy.ndarray
 :canonical: abtem.integrals.sinc
 
 ```{autodoc2-docstring} abtem.integrals.sinc
@@ -476,7 +476,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 ```
 ````
 
-````{py:function} superpose_deltas(positions: numpy.ndarray, array: numpy.ndarray, weights: typing.Optional[numpy.ndarray] = None, round_positions: bool = False) -> numpy.ndarray
+````{py:function} superpose_deltas(...) -> numpy.ndarray
 :canonical: abtem.integrals.superpose_deltas
 
 ```{autodoc2-docstring} abtem.integrals.superpose_deltas

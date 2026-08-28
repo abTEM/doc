@@ -132,7 +132,7 @@
 
 ````
 
-`````{py:class} ArrayObject(array: numpy.ndarray | dask.array.core.Array, ensemble_axes_metadata: list[abtem.core.axes.AxisMetadata] | None = None, metadata: dict | None = None, **kwargs)
+`````{py:class} ArrayObject(...)
 :canonical: abtem.array.ArrayObject
 
 Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyMixin`
@@ -148,7 +148,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 :parser: rst
 ```
 
-````{py:method} apply_func(func: typing.Callable, **kwargs) -> typing.Self
+````{py:method} apply_func(...) -> typing.Self
 :canonical: abtem.array.ArrayObject.apply_func
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.apply_func
@@ -157,7 +157,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} apply_transform(transform: abtem.transform.ArrayObjectTransform, max_batch: int | str = 'auto') -> abtem.array.ArrayObject | list[abtem.array.ArrayObject]
+````{py:method} apply_transform(...) -> abtem.array.ArrayObject | list[abtem.array.ArrayObject]
 :canonical: abtem.array.ArrayObject.apply_transform
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.apply_transform
@@ -212,7 +212,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} compute(progress_bar: bool | None = None, profiler: bool = False, resource_profiler: bool = False, **kwargs) -> typing.Self | tuple[typing.Self, tuple]
+````{py:method} compute(...) -> typing.Self | tuple[typing.Self, tuple]
 :canonical: abtem.array.ArrayObject.compute
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.compute
@@ -221,7 +221,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} copy_to_device(device: str) -> typing.Self
+````{py:method} copy_to_device(...) -> typing.Self
 :canonical: abtem.array.ArrayObject.copy_to_device
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.copy_to_device
@@ -280,7 +280,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} ensure_lazy(chunks: abtem.core.chunks.Chunks = 'auto') -> typing.Self
+````{py:method} ensure_lazy(...) -> typing.Self
 :canonical: abtem.array.ArrayObject.ensure_lazy
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.ensure_lazy
@@ -289,7 +289,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} expand_dims(axis: typing.Optional[int | tuple[int, ...]] = None, axis_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None) -> typing.Self
+````{py:method} expand_dims(...) -> typing.Self
 :canonical: abtem.array.ArrayObject.expand_dims
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.expand_dims
@@ -298,7 +298,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} from_array_and_metadata(array: numpy.ndarray | dask.array.core.Array, axes_metadata: list[abtem.core.axes.AxisMetadata], metadata: dict) -> typing.Self
+````{py:method} from_array_and_metadata(...) -> typing.Self
 :canonical: abtem.array.ArrayObject.from_array_and_metadata
 :abstractmethod:
 :classmethod:
@@ -309,7 +309,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} from_zarr(url: str, chunks: abtem.core.chunks.Chunks = 'auto') -> typing.Self
+````{py:method} from_zarr(...) -> typing.Self
 :canonical: abtem.array.ArrayObject.from_zarr
 :classmethod:
 
@@ -319,7 +319,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} get_from_metadata(name: str, broadcastable: bool = False)
+````{py:method} get_from_metadata(...)
 :canonical: abtem.array.ArrayObject.get_from_metadata
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.get_from_metadata
@@ -328,7 +328,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} get_items(items: abtem.array.ArrayItemType | tuple[abtem.array.ArrayItemType, ...], keepdims: bool = False) -> dict
+````{py:method} get_items(...) -> dict
 :canonical: abtem.array.ArrayObject.get_items
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.get_items
@@ -357,7 +357,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} lazy(chunks: str = 'auto') -> typing.Self
+````{py:method} lazy(...) -> typing.Self
 :canonical: abtem.array.ArrayObject.lazy
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.lazy
@@ -366,7 +366,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} max(axis: typing.Optional[int | tuple[int, ...]] = None, keepdims: bool = False, split_every: int = 2) -> abtem.array.ArrayObject
+````{py:method} max(...) -> abtem.array.ArrayObject
 :canonical: abtem.array.ArrayObject.max
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.max
@@ -375,7 +375,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} mean(axis: typing.Optional[int | tuple[int, ...]] = None, keepdims: bool = False, split_every: int = 2) -> typing.Self
+````{py:method} mean(...) -> typing.Self
 :canonical: abtem.array.ArrayObject.mean
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.mean
@@ -394,7 +394,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} min(axis: typing.Optional[int | tuple[int, ...]] = None, keepdims: bool = False, split_every: int = 2) -> abtem.array.ArrayObject
+````{py:method} min(...) -> abtem.array.ArrayObject
 :canonical: abtem.array.ArrayObject.min
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.min
@@ -412,7 +412,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} rechunk(chunks: abtem.core.chunks.Chunks, **kwargs) -> abtem.array.ArrayObject
+````{py:method} rechunk(...) -> abtem.array.ArrayObject
 :canonical: abtem.array.ArrayObject.rechunk
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.rechunk
@@ -421,7 +421,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} set_ensemble_axes_metadata(axes_metadata: abtem.core.axes.AxisMetadata, axis: int) -> typing.Self
+````{py:method} set_ensemble_axes_metadata(...) -> typing.Self
 :canonical: abtem.array.ArrayObject.set_ensemble_axes_metadata
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.set_ensemble_axes_metadata
@@ -440,7 +440,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} squeeze(axis: typing.Optional[tuple[int, ...]] = None) -> typing.Self
+````{py:method} squeeze(...) -> typing.Self
 :canonical: abtem.array.ArrayObject.squeeze
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.squeeze
@@ -449,7 +449,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} std(axis: typing.Optional[int | tuple[int, ...]] = None, keepdims: bool = False, split_every: int = 2) -> abtem.array.ArrayObject
+````{py:method} std(...) -> abtem.array.ArrayObject
 :canonical: abtem.array.ArrayObject.std
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.std
@@ -458,7 +458,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} sum(axis: typing.Optional[int | tuple[int, ...]] = None, keepdims: bool = False, split_every: int = 2) -> abtem.array.ArrayObject
+````{py:method} sum(...) -> abtem.array.ArrayObject
 :canonical: abtem.array.ArrayObject.sum
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.sum
@@ -485,7 +485,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} to_gpu(device: str = 'gpu') -> typing.Self
+````{py:method} to_gpu(...) -> typing.Self
 :canonical: abtem.array.ArrayObject.to_gpu
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.to_gpu
@@ -494,7 +494,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} to_hyperspy(transpose: bool = True)
+````{py:method} to_hyperspy(...)
 :canonical: abtem.array.ArrayObject.to_hyperspy
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.to_hyperspy
@@ -512,7 +512,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} to_tiff(filename: str, **kwargs)
+````{py:method} to_tiff(...)
 :canonical: abtem.array.ArrayObject.to_tiff
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.to_tiff
@@ -521,7 +521,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
-````{py:method} to_zarr(url: str, compute: bool = True, overwrite: bool = False, **kwargs)
+````{py:method} to_zarr(...)
 :canonical: abtem.array.ArrayObject.to_zarr
 
 ```{autodoc2-docstring} abtem.array.ArrayObject.to_zarr
@@ -570,7 +570,7 @@ Bases: {py:obj}`list`
 :parser: rst
 ```
 
-````{py:method} compute(**kwargs) -> list[abtem.array.ArrayObject] | tuple[list[abtem.array.ArrayObject], tuple]
+````{py:method} compute(...) -> list[abtem.array.ArrayObject] | tuple[list[abtem.array.ArrayObject], tuple]
 :canonical: abtem.array.ComputableList.compute
 
 ```{autodoc2-docstring} abtem.array.ComputableList.compute
@@ -579,7 +579,7 @@ Bases: {py:obj}`list`
 
 ````
 
-````{py:method} to_zarr(url: str, compute: bool = True, overwrite: bool = False, progress_bar: typing.Optional[bool] = None, compression_level: int | None = 4, **kwargs: typing.Any)
+````{py:method} to_zarr(...)
 :canonical: abtem.array.ComputableList.to_zarr
 
 ```{autodoc2-docstring} abtem.array.ComputableList.to_zarr
@@ -590,7 +590,7 @@ Bases: {py:obj}`list`
 
 `````
 
-````{py:function} concatenate(arrays: typing.Sequence[abtem.array.ArrayObject], axis: int = 0) -> abtem.array.ArrayObject
+````{py:function} concatenate(...) -> abtem.array.ArrayObject
 :canonical: abtem.array.concatenate
 
 ```{autodoc2-docstring} abtem.array.concatenate
@@ -610,7 +610,7 @@ Bases: {py:obj}`list`
 
 ````
 
-````{py:function} from_zarr(url: str, chunks: typing.Optional[abtem.core.chunks.Chunks] = None)
+````{py:function} from_zarr(...)
 :canonical: abtem.array.from_zarr
 
 ```{autodoc2-docstring} abtem.array.from_zarr
@@ -630,7 +630,7 @@ Bases: {py:obj}`list`
 
 ````
 
-````{py:function} moveaxis(array_object: abtem.array.ArrayObject, source: tuple[int, ...], destination: tuple[int, ...]) -> abtem.array.ArrayObject
+````{py:function} moveaxis(...) -> abtem.array.ArrayObject
 :canonical: abtem.array.moveaxis
 
 ```{autodoc2-docstring} abtem.array.moveaxis
@@ -638,7 +638,7 @@ Bases: {py:obj}`list`
 ```
 ````
 
-````{py:function} multi_output_blockwise(func: typing.Callable, array: dask.array.core.Array, chunks: tuple[tuple[int, ...], ...], array_axes: tuple[dask.array.core.Array, ...], new_axes: tuple[dask.array.core.Array, ...], out_metas: tuple, drop_axes: tuple[tuple[int, ...], ...], new_shapes: tuple[tuple[int, ...], ...], **kwargs) -> tuple[dask.array.core.Array, ...]
+````{py:function} multi_output_blockwise(...) -> tuple[dask.array.core.Array, ...]
 :canonical: abtem.array.multi_output_blockwise
 
 ```{autodoc2-docstring} abtem.array.multi_output_blockwise
@@ -646,7 +646,7 @@ Bases: {py:obj}`list`
 ```
 ````
 
-````{py:function} stack(arrays: typing.Sequence[abtem.array.ArrayObjectType], axis_metadata: typing.Optional[abtem.core.axes.AxisMetadata | typing.Sequence[str] | dict] = None, axis: int = 0) -> abtem.array.ArrayObjectType
+````{py:function} stack(...) -> abtem.array.ArrayObjectType
 :canonical: abtem.array.stack
 
 ```{autodoc2-docstring} abtem.array.stack
@@ -654,7 +654,7 @@ Bases: {py:obj}`list`
 ```
 ````
 
-````{py:function} swapaxes(array_object, axis1, axis2)
+````{py:function} swapaxes(...)
 :canonical: abtem.array.swapaxes
 
 ```{autodoc2-docstring} abtem.array.swapaxes
@@ -674,7 +674,7 @@ Bases: {py:obj}`list`
 
 ````
 
-````{py:function} validate_axis_metadata(axis_metadata: typing.Optional[abtem.core.axes.AxisMetadata | typing.Sequence[str] | dict]) -> abtem.core.axes.AxisMetadata
+````{py:function} validate_axis_metadata(...) -> abtem.core.axes.AxisMetadata
 :canonical: abtem.array.validate_axis_metadata
 
 ```{autodoc2-docstring} abtem.array.validate_axis_metadata
@@ -682,7 +682,7 @@ Bases: {py:obj}`list`
 ```
 ````
 
-````{py:function} validate_lazy(lazy: typing.Optional[bool]) -> bool
+````{py:function} validate_lazy(...) -> bool
 :canonical: abtem.array.validate_lazy
 
 ```{autodoc2-docstring} abtem.array.validate_lazy

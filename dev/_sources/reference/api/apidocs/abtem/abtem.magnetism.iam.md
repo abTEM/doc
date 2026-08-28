@@ -234,7 +234,7 @@ Bases: {py:obj}`abtem.potentials.iam.BaseField`
 
 ````
 
-````{py:class} MagneticField(atoms: ase.Atoms | abtem.inelastic.phonons.BaseFrozenPhonons, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, slice_thickness: float | tuple[float, ...] = 1, parametrization: str = 'lyon', exit_planes: typing.Optional[int | tuple[int, ...]] = None, plane: str | tuple[tuple[float, float, float], tuple[float, float, float]] = 'xy', origin: tuple[float, float, float] = (0.0, 0.0, 0.0), box: typing.Optional[tuple[float, float, float]] = None, periodic: bool = True, integrator=None, device: typing.Optional[str] = None)
+````{py:class} MagneticField(...)
 :canonical: abtem.magnetism.iam.MagneticField
 
 Bases: {py:obj}`abtem.potentials.iam._FieldBuilderFromAtoms`, {py:obj}`abtem.magnetism.iam.BaseMagneticField`
@@ -252,12 +252,12 @@ Bases: {py:obj}`abtem.potentials.iam._FieldBuilderFromAtoms`, {py:obj}`abtem.mag
 
 ````
 
-`````{py:class} MagneticFieldArray(array: numpy.ndarray | dask.array.core.Array, slice_thickness: float | typing.Sequence[float], extent: typing.Optional[float | tuple[float, float]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, exit_planes: typing.Optional[int | tuple[int, ...]] = None, ensemble_axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, metadata: typing.Optional[dict] = None)
+`````{py:class} MagneticFieldArray(...)
 :canonical: abtem.magnetism.iam.MagneticFieldArray
 
 Bases: {py:obj}`abtem.magnetism.iam.BaseMagneticField`, {py:obj}`abtem.potentials.iam.FieldArray`
 
-````{py:method} from_array_and_metadata(array: numpy.ndarray | dask.array.core.Array, axes_metadata: list[abtem.core.axes.AxisMetadata], metadata: dict) -> abtem.magnetism.iam.MagneticFieldArray
+````{py:method} from_array_and_metadata(...) -> abtem.magnetism.iam.MagneticFieldArray
 :canonical: abtem.magnetism.iam.MagneticFieldArray.from_array_and_metadata
 :abstractmethod:
 :classmethod:
@@ -266,7 +266,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseMagneticField`, {py:obj}`abtem.potential
 
 `````
 
-````{py:class} QuasiDipoleMagneticFieldProjections(parametrization: str = 'lyon', cutoff: float = CUTOFF, integration_steps: float = 0.01, sampling: float = 0.1, slice_thickness: float = 0.1)
+````{py:class} QuasiDipoleMagneticFieldProjections(...)
 :canonical: abtem.magnetism.iam.QuasiDipoleMagneticFieldProjections
 
 Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
@@ -284,7 +284,7 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 
 ````
 
-`````{py:class} QuasiDipoleProjections(interpolation_func, parametrization: str = 'lyon', cutoff: float = CUTOFF, integration_steps: float = 0.01, sampling: float = 0.1, slice_thickness: float = 0.1)
+`````{py:class} QuasiDipoleProjections(...)
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections
@@ -298,7 +298,7 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 :parser: rst
 ```
 
-````{py:method} cutoff(symbol)
+````{py:method} cutoff(...)
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections.cutoff
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.cutoff
@@ -316,7 +316,7 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 
 ````
 
-````{py:method} get_integral_table(symbol: str)
+````{py:method} get_integral_table(...)
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections.get_integral_table
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.get_integral_table
@@ -325,7 +325,7 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 
 ````
 
-````{py:method} integrate_on_grid(atoms: ase.Atoms, a: float, b: float, gpts: tuple[int, int], sampling: tuple[float, float], device: str = 'cpu')
+````{py:method} integrate_on_grid(...)
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections.integrate_on_grid
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.integrate_on_grid
@@ -372,7 +372,7 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 
 `````
 
-````{py:class} QuasiDipoleVectorPotentialProjections(parametrization: str = 'lyon', cutoff: float = CUTOFF, integration_steps: float = 0.01, sampling: float = 0.1, slice_thickness: float = 0.1)
+````{py:class} QuasiDipoleVectorPotentialProjections(...)
 :canonical: abtem.magnetism.iam.QuasiDipoleVectorPotentialProjections
 
 Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
@@ -390,7 +390,7 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 
 ````
 
-````{py:class} VectorPotential(atoms: ase.Atoms | abtem.inelastic.phonons.BaseFrozenPhonons, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, slice_thickness: float | tuple[float, ...] = 1, parametrization: str = 'lyon', exit_planes: typing.Optional[int | tuple[int, ...]] = None, plane: str | tuple[tuple[float, float, float], tuple[float, float, float]] = 'xy', origin: tuple[float, float, float] = (0.0, 0.0, 0.0), box: typing.Optional[tuple[float, float, float]] = None, periodic: bool = True, integrator=None, device: typing.Optional[str] = None)
+````{py:class} VectorPotential(...)
 :canonical: abtem.magnetism.iam.VectorPotential
 
 Bases: {py:obj}`abtem.potentials.iam._FieldBuilderFromAtoms`, {py:obj}`abtem.magnetism.iam.BaseMagneticField`
@@ -408,12 +408,12 @@ Bases: {py:obj}`abtem.potentials.iam._FieldBuilderFromAtoms`, {py:obj}`abtem.mag
 
 ````
 
-`````{py:class} VectorPotentialArray(array: numpy.ndarray | dask.array.core.Array, slice_thickness: float | typing.Sequence[float], extent: typing.Optional[float | tuple[float, float]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, exit_planes: typing.Optional[int | tuple[int, ...]] = None, ensemble_axes_metadata: typing.Optional[list[abtem.core.axes.AxisMetadata]] = None, metadata: typing.Optional[dict] = None)
+`````{py:class} VectorPotentialArray(...)
 :canonical: abtem.magnetism.iam.VectorPotentialArray
 
 Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potentials.iam.FieldArray`
 
-````{py:method} adjust_coulomb_potential(potential_array: abtem.potentials.iam.PotentialArray, energy: float)
+````{py:method} adjust_coulomb_potential(...)
 :canonical: abtem.magnetism.iam.VectorPotentialArray.adjust_coulomb_potential
 
 ```{autodoc2-docstring} abtem.magnetism.iam.VectorPotentialArray.adjust_coulomb_potential
@@ -422,7 +422,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 
 ````
 
-````{py:method} from_array_and_metadata(array: numpy.ndarray | dask.array.core.Array, axes_metadata: list[abtem.core.axes.AxisMetadata], metadata: dict) -> abtem.magnetism.iam.VectorPotentialArray
+````{py:method} from_array_and_metadata(...) -> abtem.magnetism.iam.VectorPotentialArray
 :canonical: abtem.magnetism.iam.VectorPotentialArray.from_array_and_metadata
 :abstractmethod:
 :classmethod:
@@ -431,7 +431,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 
 `````
 
-````{py:function} atomic_magnetic_field_3d(extent: tuple[float, float, float], gpts: tuple[int, int, int], origin: tuple[float, float, float], magnetic_moment: numpy.ndarray, parameters: numpy.ndarray, cutoff: float) -> numpy.ndarray
+````{py:function} atomic_magnetic_field_3d(...) -> numpy.ndarray
 :canonical: abtem.magnetism.iam.atomic_magnetic_field_3d
 
 ```{autodoc2-docstring} abtem.magnetism.iam.atomic_magnetic_field_3d
@@ -439,7 +439,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} atomic_vector_potential_3d(extent: tuple[float, float, float], gpts: tuple[int, int, int], origin: tuple[float, float, float], magnetic_moment: numpy.ndarray, parameters: numpy.ndarray, cutoff: float) -> numpy.ndarray
+````{py:function} atomic_vector_potential_3d(...) -> numpy.ndarray
 :canonical: abtem.magnetism.iam.atomic_vector_potential_3d
 
 ```{autodoc2-docstring} abtem.magnetism.iam.atomic_vector_potential_3d
@@ -447,7 +447,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} bilinear_weighted_sum(array: numpy.ndarray, x: int, y: int, wx0: float, wx1: float, wy0: float, wy1: float) -> float
+````{py:function} bilinear_weighted_sum(...) -> float
 :canonical: abtem.magnetism.iam.bilinear_weighted_sum
 
 ```{autodoc2-docstring} abtem.magnetism.iam.bilinear_weighted_sum
@@ -455,7 +455,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} cartesian2polar_3d(v: numpy.ndarray) -> tuple[float, float, float]
+````{py:function} cartesian2polar_3d(...) -> tuple[float, float, float]
 :canonical: abtem.magnetism.iam.cartesian2polar_3d
 
 ```{autodoc2-docstring} abtem.magnetism.iam.cartesian2polar_3d
@@ -463,7 +463,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} index_mask(indices, shape)
+````{py:function} index_mask(...)
 :canonical: abtem.magnetism.iam.index_mask
 
 ```{autodoc2-docstring} abtem.magnetism.iam.index_mask
@@ -471,7 +471,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} interpolate(array_out, array_in, position, sampling_out, sampling_in)
+````{py:function} interpolate(...)
 :canonical: abtem.magnetism.iam.interpolate
 
 ```{autodoc2-docstring} abtem.magnetism.iam.interpolate
@@ -479,7 +479,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} interpolate_quasi_dipole_field_projections(magnetic_field, sampling, positions, magnetic_moments, slice_limits, integral_limits, integral_sampling, tables)
+````{py:function} interpolate_quasi_dipole_field_projections(...)
 :canonical: abtem.magnetism.iam.interpolate_quasi_dipole_field_projections
 
 ```{autodoc2-docstring} abtem.magnetism.iam.interpolate_quasi_dipole_field_projections
@@ -487,7 +487,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} interpolate_quasi_dipole_vector_field_projections(magnetic_field, sampling, positions, magnetic_moments, slice_limits, integral_limits, integral_sampling, tables)
+````{py:function} interpolate_quasi_dipole_vector_field_projections(...)
 :canonical: abtem.magnetism.iam.interpolate_quasi_dipole_vector_field_projections
 
 ```{autodoc2-docstring} abtem.magnetism.iam.interpolate_quasi_dipole_vector_field_projections
@@ -495,7 +495,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} magnetic_field_3d(atoms: ase.Atoms, gpts: tuple[int, int, int], cutoff: float = 6.0)
+````{py:function} magnetic_field_3d(...)
 :canonical: abtem.magnetism.iam.magnetic_field_3d
 
 ```{autodoc2-docstring} abtem.magnetism.iam.magnetic_field_3d
@@ -503,7 +503,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} radial_cutoff(func: typing.Callable, tolerance: float = 0.001)
+````{py:function} radial_cutoff(...)
 :canonical: abtem.magnetism.iam.radial_cutoff
 
 ```{autodoc2-docstring} abtem.magnetism.iam.radial_cutoff
@@ -511,7 +511,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} radial_prefactor_a(r: numpy.ndarray, parameters: numpy.ndarray) -> typing.Callable
+````{py:function} radial_prefactor_a(...) -> typing.Callable
 :canonical: abtem.magnetism.iam.radial_prefactor_a
 
 ```{autodoc2-docstring} abtem.magnetism.iam.radial_prefactor_a
@@ -519,7 +519,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} radial_prefactor_b1(r: numpy.ndarray, parameters: numpy.ndarray) -> typing.Callable
+````{py:function} radial_prefactor_b1(...) -> typing.Callable
 :canonical: abtem.magnetism.iam.radial_prefactor_b1
 
 ```{autodoc2-docstring} abtem.magnetism.iam.radial_prefactor_b1
@@ -527,7 +527,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} radial_prefactor_b2(r: numpy.ndarray, parameters: numpy.ndarray) -> typing.Callable
+````{py:function} radial_prefactor_b2(...) -> typing.Callable
 :canonical: abtem.magnetism.iam.radial_prefactor_b2
 
 ```{autodoc2-docstring} abtem.magnetism.iam.radial_prefactor_b2
@@ -535,7 +535,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} rotate_points_2d(points, phi)
+````{py:function} rotate_points_2d(...)
 :canonical: abtem.magnetism.iam.rotate_points_2d
 
 ```{autodoc2-docstring} abtem.magnetism.iam.rotate_points_2d
@@ -543,7 +543,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} symmetric_arange(cutoff: float, sampling: float) -> numpy.ndarray
+````{py:function} symmetric_arange(...) -> numpy.ndarray
 :canonical: abtem.magnetism.iam.symmetric_arange
 
 ```{autodoc2-docstring} abtem.magnetism.iam.symmetric_arange
@@ -551,7 +551,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} unit_vector_from_angles(theta: numpy.ndarray, phi: numpy.ndarray) -> numpy.ndarray
+````{py:function} unit_vector_from_angles(...) -> numpy.ndarray
 :canonical: abtem.magnetism.iam.unit_vector_from_angles
 
 ```{autodoc2-docstring} abtem.magnetism.iam.unit_vector_from_angles
@@ -559,7 +559,7 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseVectorPotential`, {py:obj}`abtem.potenti
 ```
 ````
 
-````{py:function} vector_potential_3d(atoms: ase.Atoms, gpts: tuple[int, int, int], cutoff: float = 6.0)
+````{py:function} vector_potential_3d(...)
 :canonical: abtem.magnetism.iam.vector_potential_3d
 
 ```{autodoc2-docstring} abtem.magnetism.iam.vector_potential_3d

@@ -30,7 +30,7 @@
 
 ### API
 
-`````{py:class} AxesCollection(axes, caxes, cbar_mode='single')
+`````{py:class} AxesCollection(...)
 :canonical: abtem.visualize.axes_grid.AxesCollection
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesCollection
@@ -94,7 +94,7 @@
 
 `````
 
-`````{py:class} AxesGrid(fig, ncols: int, nrows: int, ncbars: int = 0, cbar_mode: str = 'single', cbar_loc: str = 'right', aspect: bool = True, anchor: str = 'NW', sharex: bool = True, sharey: bool = True, rect: tuple = (0.1, 0.1, 0.9, 0.9), origin: str = 'lower')
+`````{py:class} AxesGrid(...)
 :canonical: abtem.visualize.axes_grid.AxesGrid
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid
@@ -126,7 +126,7 @@
 
 ````
 
-````{py:method} axis_location_to_indices(axis_location)
+````{py:method} axis_location_to_indices(...)
 :canonical: abtem.visualize.axes_grid.AxesGrid.axis_location_to_indices
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.axis_location_to_indices
@@ -164,7 +164,7 @@
 
 ````
 
-````{py:method} set_cbar_layout(**kwargs)
+````{py:method} set_cbar_layout(...)
 :canonical: abtem.visualize.axes_grid.AxesGrid.set_cbar_layout
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.set_cbar_layout
@@ -173,7 +173,7 @@
 
 ````
 
-````{py:method} set_sizes(**kwargs)
+````{py:method} set_sizes(...)
 :canonical: abtem.visualize.axes_grid.AxesGrid.set_sizes
 
 ```{autodoc2-docstring} abtem.visualize.axes_grid.AxesGrid.set_sizes

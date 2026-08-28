@@ -23,6 +23,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`GPAWMagneticFields <abtem.magnetism.gpaw.GPAWMagneticFields>`
+  - ```{autodoc2-docstring} abtem.magnetism.gpaw.GPAWMagneticFields
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`GPAWVectorPotential <abtem.magnetism.gpaw.GPAWVectorPotential>`
   - ```{autodoc2-docstring} abtem.magnetism.gpaw.GPAWVectorPotential
     :parser: rst
@@ -61,6 +66,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`gpaw_magnetic_fields <abtem.magnetism.gpaw.gpaw_magnetic_fields>`
+  - ```{autodoc2-docstring} abtem.magnetism.gpaw.gpaw_magnetic_fields
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`rotate_vector_field <abtem.magnetism.gpaw.rotate_vector_field>`
   - ```{autodoc2-docstring} abtem.magnetism.gpaw.rotate_vector_field
     :parser: rst
@@ -96,7 +106,7 @@ Bases: {py:obj}`typing.Protocol`
 
 `````
 
-````{py:class} GPAWMagneticField(calculators: abtem.magnetism.gpaw.GPAW | list[abtem.magnetism.gpaw.GPAW] | list[str] | str, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, slice_thickness: float | tuple[float, ...] = 1.0, exit_planes: typing.Optional[int | tuple[int, ...]] = None, plane: str = 'xy', rotate_field: typing.Optional[tuple[float, float, float]] = None, origin: tuple[float, float, float] = (0.0, 0.0, 0.0), box: typing.Optional[tuple[float, float, float]] = None, periodic: bool = True, frozen_phonons: typing.Optional[abtem.inelastic.phonons.BaseFrozenPhonons] = None, repetitions: tuple[int, int, int] = (1, 1, 1), gridrefinement: int = 1, projection: str = 'fft', device: typing.Optional[str] = None)
+````{py:class} GPAWMagneticField(...)
 :canonical: abtem.magnetism.gpaw.GPAWMagneticField
 
 Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.iam.BaseMagneticField`
@@ -114,7 +124,79 @@ Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.i
 
 ````
 
-````{py:class} GPAWVectorPotential(calculators: abtem.magnetism.gpaw.GPAW | list[abtem.magnetism.gpaw.GPAW] | list[str] | str, gpts: typing.Optional[int | tuple[int, int]] = None, sampling: typing.Optional[float | tuple[float, float]] = None, slice_thickness: float | tuple[float, ...] = 1.0, exit_planes: typing.Optional[int | tuple[int, ...]] = None, plane: str = 'xy', rotate_field: typing.Optional[tuple[float, float, float]] = None, origin: tuple[float, float, float] = (0.0, 0.0, 0.0), box: typing.Optional[tuple[float, float, float]] = None, periodic: bool = True, frozen_phonons: typing.Optional[abtem.inelastic.phonons.BaseFrozenPhonons] = None, repetitions: tuple[int, int, int] = (1, 1, 1), gridrefinement: int = 1, projection: str = 'fft', device: typing.Optional[str] = None)
+`````{py:class} GPAWMagneticFields
+:canonical: abtem.magnetism.gpaw.GPAWMagneticFields
+
+```{autodoc2-docstring} abtem.magnetism.gpaw.GPAWMagneticFields
+:parser: rst
+```
+
+````{py:method} combined_potential(...) -> abtem.potentials.iam.PotentialArray
+:canonical: abtem.magnetism.gpaw.GPAWMagneticFields.combined_potential
+
+```{autodoc2-docstring} abtem.magnetism.gpaw.GPAWMagneticFields.combined_potential
+:parser: rst
+```
+
+````
+
+````{py:attribute} magnetic_field
+:canonical: abtem.magnetism.gpaw.GPAWMagneticFields.magnetic_field
+:type: typing.Optional[abtem.magnetism.iam.MagneticFieldArray]
+:value: >
+   None
+
+```{autodoc2-docstring} abtem.magnetism.gpaw.GPAWMagneticFields.magnetic_field
+:parser: rst
+```
+
+````
+
+````{py:attribute} potential
+:canonical: abtem.magnetism.gpaw.GPAWMagneticFields.potential
+:type: abtem.potentials.iam.PotentialArray
+:value: >
+   None
+
+```{autodoc2-docstring} abtem.magnetism.gpaw.GPAWMagneticFields.potential
+:parser: rst
+```
+
+````
+
+````{py:method} show(...)
+:canonical: abtem.magnetism.gpaw.GPAWMagneticFields.show
+
+```{autodoc2-docstring} abtem.magnetism.gpaw.GPAWMagneticFields.show
+:parser: rst
+```
+
+````
+
+````{py:method} tile(...) -> abtem.magnetism.gpaw.GPAWMagneticFields
+:canonical: abtem.magnetism.gpaw.GPAWMagneticFields.tile
+
+```{autodoc2-docstring} abtem.magnetism.gpaw.GPAWMagneticFields.tile
+:parser: rst
+```
+
+````
+
+````{py:attribute} vector_potential
+:canonical: abtem.magnetism.gpaw.GPAWMagneticFields.vector_potential
+:type: abtem.magnetism.iam.VectorPotentialArray
+:value: >
+   None
+
+```{autodoc2-docstring} abtem.magnetism.gpaw.GPAWMagneticFields.vector_potential
+:parser: rst
+```
+
+````
+
+`````
+
+````{py:class} GPAWVectorPotential(...)
 :canonical: abtem.magnetism.gpaw.GPAWVectorPotential
 
 Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.iam.BaseVectorPotential`
@@ -132,7 +214,7 @@ Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.i
 
 ````
 
-````{py:class} SpinDensityMagneticField(spin_density, cell)
+````{py:class} SpinDensityMagneticField(...)
 :canonical: abtem.magnetism.gpaw.SpinDensityMagneticField
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.SpinDensityMagneticField
@@ -156,7 +238,7 @@ Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.i
 ```
 ````
 
-````{py:function} calculate_magnetic_vector_potential(spin_density, cell)
+````{py:function} calculate_magnetic_vector_potential(...)
 :canonical: abtem.magnetism.gpaw.calculate_magnetic_vector_potential
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.calculate_magnetic_vector_potential
@@ -164,7 +246,7 @@ Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.i
 ```
 ````
 
-````{py:function} get_magnetic_field_from_gpaw(calc, gridrefinement=2, assume_colinear=True)
+````{py:function} get_magnetic_field_from_gpaw(...)
 :canonical: abtem.magnetism.gpaw.get_magnetic_field_from_gpaw
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.get_magnetic_field_from_gpaw
@@ -172,7 +254,7 @@ Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.i
 ```
 ````
 
-````{py:function} get_vector_potential_from_gpaw(calc, gridrefinement=2, assume_colinear=True)
+````{py:function} get_vector_potential_from_gpaw(...)
 :canonical: abtem.magnetism.gpaw.get_vector_potential_from_gpaw
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.get_vector_potential_from_gpaw
@@ -180,7 +262,15 @@ Bases: {py:obj}`abtem.magnetism.gpaw._GPAWMagnetics`, {py:obj}`abtem.magnetism.i
 ```
 ````
 
-````{py:function} rotate_vector_field(vector_field: numpy.ndarray, euler_angles: tuple[float, float, float]) -> numpy.ndarray
+````{py:function} gpaw_magnetic_fields(...) -> abtem.magnetism.gpaw.GPAWMagneticFields
+:canonical: abtem.magnetism.gpaw.gpaw_magnetic_fields
+
+```{autodoc2-docstring} abtem.magnetism.gpaw.gpaw_magnetic_fields
+:parser: rst
+```
+````
+
+````{py:function} rotate_vector_field(...) -> numpy.ndarray
 :canonical: abtem.magnetism.gpaw.rotate_vector_field
 
 ```{autodoc2-docstring} abtem.magnetism.gpaw.rotate_vector_field

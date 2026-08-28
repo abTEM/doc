@@ -71,7 +71,7 @@
 
 ### API
 
-`````{py:class} BaseScan(in_place: bool = False, distributions: tuple[str, ...] = ())
+`````{py:class} BaseScan(...)
 :canonical: abtem.scan.BaseScan
 
 Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`
@@ -93,7 +93,7 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`
 
 ````
 
-````{py:method} get_positions(*args, **kwargs) -> numpy.ndarray
+````{py:method} get_positions(...) -> numpy.ndarray
 :canonical: abtem.scan.BaseScan.get_positions
 :abstractmethod:
 
@@ -113,7 +113,7 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`
 
 ````
 
-````{py:method} match_probe(probe: abtem.waves.Probe | abtem.prism.s_matrix.BaseSMatrix)
+````{py:method} match_probe(...)
 :canonical: abtem.scan.BaseScan.match_probe
 :abstractmethod:
 
@@ -146,7 +146,7 @@ Bases: {py:obj}`abtem.transform.ReciprocalSpaceMultiplication`
 
 `````
 
-`````{py:class} CustomScan(positions: numpy.ndarray | typing.Sequence = (0.0, 0.0), squeeze: bool = False)
+`````{py:class} CustomScan(...)
 :canonical: abtem.scan.CustomScan
 
 Bases: {py:obj}`abtem.scan.BaseScan`
@@ -162,7 +162,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :parser: rst
 ```
 
-````{py:method} add_to_plot(ax, **kwargs)
+````{py:method} add_to_plot(...)
 :canonical: abtem.scan.CustomScan.add_to_plot
 
 ```{autodoc2-docstring} abtem.scan.CustomScan.add_to_plot
@@ -186,7 +186,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 
 ````
 
-````{py:method} match_probe(probe: abtem.waves.Probe | abtem.prism.s_matrix.BaseSMatrix)
+````{py:method} match_probe(...)
 :canonical: abtem.scan.CustomScan.match_probe
 
 ```{autodoc2-docstring} abtem.scan.CustomScan.match_probe
@@ -211,7 +211,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 
 `````
 
-`````{py:class} GridScan(start: typing.Union[float, typing.Tuple[float, float], ase.Atom] = (0.0, 0.0), end: tuple[float, float] | ase.Atom | None = None, gpts: int | tuple[int, int] | None = None, sampling: float | tuple[float, float] | None = None, endpoint: bool | tuple[bool, bool] = False, fractional: bool = False, potential: abtem.potentials.iam.BasePotential | ase.Atoms | None = None)
+`````{py:class} GridScan(...)
 :canonical: abtem.scan.GridScan
 
 Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.scan.BaseScan`
@@ -227,10 +227,20 @@ Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.scan.BaseScan`
 :parser: rst
 ```
 
-````{py:method} add_to_plot(ax, alpha: float = 0.33, facecolor: str = 'r', edgecolor: str = 'r', **kwargs)
+````{py:method} add_to_plot(...)
 :canonical: abtem.scan.GridScan.add_to_plot
 
 ```{autodoc2-docstring} abtem.scan.GridScan.add_to_plot
+:parser: rst
+```
+
+````
+
+````{py:method} commensurate(...) -> abtem.scan.GridScan
+:canonical: abtem.scan.GridScan.commensurate
+:classmethod:
+
+```{autodoc2-docstring} abtem.scan.GridScan.commensurate
 :parser: rst
 ```
 
@@ -276,7 +286,7 @@ Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.scan.BaseScan`
 
 ````
 
-````{py:method} match_probe(probe: abtem.waves.Probe | abtem.prism.s_matrix.BaseSMatrix)
+````{py:method} match_probe(...)
 :canonical: abtem.scan.GridScan.match_probe
 
 ```{autodoc2-docstring} abtem.scan.GridScan.match_probe
@@ -303,7 +313,7 @@ Bases: {py:obj}`abtem.core.grid.HasGrid2DMixin`, {py:obj}`abtem.scan.BaseScan`
 
 `````
 
-`````{py:class} LineScan(start: tuple[float, float] | ase.Atom = (0.0, 0.0), end: tuple[float, float] | ase.Atom | None = None, gpts: int | None = None, sampling: float | None = None, endpoint: bool = True, fractional: bool = False, potential: abtem.potentials.iam.BasePotential | ase.Atoms | None = None)
+`````{py:class} LineScan(...)
 :canonical: abtem.scan.LineScan
 
 Bases: {py:obj}`abtem.scan.BaseScan`
@@ -319,7 +329,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 :parser: rst
 ```
 
-````{py:method} add_margin(margin: float | tuple[float, float])
+````{py:method} add_margin(...)
 :canonical: abtem.scan.LineScan.add_margin
 
 ```{autodoc2-docstring} abtem.scan.LineScan.add_margin
@@ -328,7 +338,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 
 ````
 
-````{py:method} add_to_axes(*args, **kwargs)
+````{py:method} add_to_axes(...)
 :canonical: abtem.scan.LineScan.add_to_axes
 
 ```{autodoc2-docstring} abtem.scan.LineScan.add_to_axes
@@ -337,7 +347,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 
 ````
 
-````{py:method} add_to_plot(ax, width: float = 0.0, **kwargs)
+````{py:method} add_to_plot(...)
 :canonical: abtem.scan.LineScan.add_to_plot
 
 ```{autodoc2-docstring} abtem.scan.LineScan.add_to_plot
@@ -355,7 +365,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 
 ````
 
-````{py:method} at_position(center: tuple[float, float] | ase.Atom, extent: float = 1.0, angle: float = 0.0, gpts: int | None = None, sampling: float | None = None, endpoint: bool = True)
+````{py:method} at_position(...)
 :canonical: abtem.scan.LineScan.at_position
 :classmethod:
 
@@ -415,7 +425,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 
 ````
 
-````{py:method} get_positions(chunks: int | None = None, lazy: bool = False) -> numpy.ndarray
+````{py:method} get_positions(...) -> numpy.ndarray
 :canonical: abtem.scan.LineScan.get_positions
 
 ````
@@ -436,7 +446,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 
 ````
 
-````{py:method} match_probe(probe: abtem.waves.Probe | abtem.prism.s_matrix.BaseSMatrix)
+````{py:method} match_probe(...)
 :canonical: abtem.scan.LineScan.match_probe
 
 ```{autodoc2-docstring} abtem.scan.LineScan.match_probe
@@ -489,7 +499,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 
 ````
 
-````{py:function} validate_coordinate(coordinate: float | tuple[float, float] | ase.Atom | None, potential: abtem.potentials.iam.BasePotential | ase.Atoms | None = None, fractional: bool = False) -> tuple[float, float] | None
+````{py:function} validate_coordinate(...) -> tuple[float, float] | None
 :canonical: abtem.scan.validate_coordinate
 
 ```{autodoc2-docstring} abtem.scan.validate_coordinate
@@ -497,7 +507,7 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 ```
 ````
 
-````{py:function} validate_scan(scan: typing.Optional[typing.Sequence | numpy.ndarray | BaseScan], probe: abtem.waves.Probe | None = None) -> BaseScan
+````{py:function} validate_scan(...) -> BaseScan
 :canonical: abtem.scan.validate_scan
 
 ```{autodoc2-docstring} abtem.scan.validate_scan

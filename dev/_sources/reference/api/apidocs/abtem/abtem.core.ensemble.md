@@ -118,7 +118,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 
 ````
 
-````{py:method} ensemble_blocks(chunks: typing.Optional[abtem.core.chunks.Chunks] = None) -> dask.array.core.Array
+````{py:method} ensemble_blocks(...) -> dask.array.core.Array
 :canonical: abtem.core.ensemble.Ensemble.ensemble_blocks
 
 ```{autodoc2-docstring} abtem.core.ensemble.Ensemble.ensemble_blocks
@@ -137,7 +137,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 
 ````
 
-````{py:method} generate_blocks(chunks: abtem.core.chunks.Chunks = 1) -> typing.Generator[tuple[tuple[int, ...], tuple[slice, ...], numpy.ndarray], None, None]
+````{py:method} generate_blocks(...) -> typing.Generator[tuple[tuple[int, ...], tuple[slice, ...], numpy.ndarray], None, None]
 :canonical: abtem.core.ensemble.Ensemble.generate_blocks
 
 ```{autodoc2-docstring} abtem.core.ensemble.Ensemble.generate_blocks
@@ -158,7 +158,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 
 `````
 
-````{py:function} concatenate_array_blocks(blocks: numpy.ndarray) -> numpy.ndarray
+````{py:function} concatenate_array_blocks(...) -> numpy.ndarray
 :canonical: abtem.core.ensemble.concatenate_array_blocks
 
 ```{autodoc2-docstring} abtem.core.ensemble.concatenate_array_blocks
@@ -166,7 +166,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 ```
 ````
 
-````{py:function} unpack_blockwise_args(args) -> tuple
+````{py:function} unpack_blockwise_args(...) -> tuple
 :canonical: abtem.core.ensemble.unpack_blockwise_args
 
 ```{autodoc2-docstring} abtem.core.ensemble.unpack_blockwise_args

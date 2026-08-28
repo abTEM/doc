@@ -103,7 +103,7 @@
 
 ### API
 
-````{py:class} AreaIndicator(ax, xy, width, height, alpha: float = 0.33, facecolor: str = 'r', edgecolor: str = 'r', **kwargs)
+````{py:class} AreaIndicator(...)
 :canonical: abtem.visualize.artists.AreaIndicator
 
 ```{autodoc2-docstring} abtem.visualize.artists.AreaIndicator
@@ -119,7 +119,7 @@
 
 ````
 
-`````{py:class} Artist(ax, measurement)
+`````{py:class} Artist(...)
 :canonical: abtem.visualize.artists.Artist
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist
@@ -173,7 +173,7 @@
 
 ````
 
-````{py:method} set_data(data)
+````{py:method} set_data(...)
 :canonical: abtem.visualize.artists.Artist.set_data
 :abstractmethod:
 
@@ -192,7 +192,7 @@
 
 ````
 
-````{py:method} set_power(power=1.0)
+````{py:method} set_power(...)
 :canonical: abtem.visualize.artists.Artist.set_power
 :abstractmethod:
 
@@ -202,7 +202,7 @@
 
 ````
 
-````{py:method} set_value_limits(value_limits)
+````{py:method} set_value_limits(...)
 :canonical: abtem.visualize.artists.Artist.set_value_limits
 :abstractmethod:
 
@@ -212,7 +212,7 @@
 
 ````
 
-````{py:method} set_xlabel(label)
+````{py:method} set_xlabel(...)
 :canonical: abtem.visualize.artists.Artist.set_xlabel
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.set_xlabel
@@ -221,7 +221,7 @@
 
 ````
 
-````{py:method} set_xlim(xlim)
+````{py:method} set_xlim(...)
 :canonical: abtem.visualize.artists.Artist.set_xlim
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.set_xlim
@@ -230,7 +230,7 @@
 
 ````
 
-````{py:method} set_ylabel(label)
+````{py:method} set_ylabel(...)
 :canonical: abtem.visualize.artists.Artist.set_ylabel
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.set_ylabel
@@ -239,7 +239,7 @@
 
 ````
 
-````{py:method} set_ylim(ylim)
+````{py:method} set_ylim(...)
 :canonical: abtem.visualize.artists.Artist.set_ylim
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.set_ylim
@@ -250,7 +250,7 @@
 
 `````
 
-````{py:class} Artist1D(ax, measurement)
+````{py:class} Artist1D(...)
 :canonical: abtem.visualize.artists.Artist1D
 
 Bases: {py:obj}`abtem.visualize.artists.Artist`
@@ -268,7 +268,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 
 ````
 
-`````{py:class} Artist2D(ax, measurement)
+`````{py:class} Artist2D(...)
 :canonical: abtem.visualize.artists.Artist2D
 
 Bases: {py:obj}`abtem.visualize.artists.Artist`
@@ -284,7 +284,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :parser: rst
 ```
 
-````{py:method} add_area_indicator(area_indicator, panel='first', **kwargs)
+````{py:method} add_area_indicator(...)
 :canonical: abtem.visualize.artists.Artist2D.add_area_indicator
 :abstractmethod:
 
@@ -334,7 +334,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 
 ````
 
-````{py:method} set_cbars(cmap)
+````{py:method} set_cbars(...)
 :canonical: abtem.visualize.artists.Artist2D.set_cbars
 :abstractmethod:
 
@@ -344,7 +344,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 
 ````
 
-````{py:method} set_cmap(cmap)
+````{py:method} set_cmap(...)
 :canonical: abtem.visualize.artists.Artist2D.set_cmap
 :abstractmethod:
 
@@ -354,7 +354,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 
 ````
 
-````{py:method} set_data(data)
+````{py:method} set_data(...)
 :canonical: abtem.visualize.artists.Artist2D.set_data
 :abstractmethod:
 
@@ -373,7 +373,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 
 ````
 
-````{py:method} set_power(power: float = 1.0)
+````{py:method} set_power(...)
 :canonical: abtem.visualize.artists.Artist2D.set_power
 :abstractmethod:
 
@@ -383,7 +383,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 
 ````
 
-````{py:method} set_scale_bars(**kwargs)
+````{py:method} set_scale_bars(...)
 :canonical: abtem.visualize.artists.Artist2D.set_scale_bars
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D.set_scale_bars
@@ -392,7 +392,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 
 ````
 
-````{py:method} set_value_limits(value_limits)
+````{py:method} set_value_limits(...)
 :canonical: abtem.visualize.artists.Artist2D.set_value_limits
 :abstractmethod:
 
@@ -404,7 +404,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 
 `````
 
-`````{py:class} CircleAnnotations(circle_collection, annotations, fontsize: int = 8, placement: str = 'top', threshold: float = 0.0001, **kwargs)
+`````{py:class} CircleAnnotations(...)
 :canonical: abtem.visualize.artists.CircleAnnotations
 
 ```{autodoc2-docstring} abtem.visualize.artists.CircleAnnotations
@@ -418,7 +418,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 :parser: rst
 ```
 
-````{py:method} set_placement(placement)
+````{py:method} set_placement(...)
 :canonical: abtem.visualize.artists.CircleAnnotations.set_placement
 
 ```{autodoc2-docstring} abtem.visualize.artists.CircleAnnotations.set_placement
@@ -427,7 +427,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 
 ````
 
-````{py:method} set_threshold(threshold)
+````{py:method} set_threshold(...)
 :canonical: abtem.visualize.artists.CircleAnnotations.set_threshold
 
 ```{autodoc2-docstring} abtem.visualize.artists.CircleAnnotations.set_threshold
@@ -436,7 +436,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 
 ````
 
-````{py:method} set_visible(visible)
+````{py:method} set_visible(...)
 :canonical: abtem.visualize.artists.CircleAnnotations.set_visible
 
 ```{autodoc2-docstring} abtem.visualize.artists.CircleAnnotations.set_visible
@@ -456,7 +456,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 
 `````
 
-`````{py:class} DomainColoringArtist(ax: matplotlib.axes.Axes, measurement, caxes: list[matplotlib.axes.Axes] = None, cmap: str | matplotlib.colors.Colormap | None = None, vmin: float = None, vmax: float = None, power: float = 1.0, logscale: bool = False, units: str = None, **kwargs)
+`````{py:class} DomainColoringArtist(...)
 :canonical: abtem.visualize.artists.DomainColoringArtist
 
 Bases: {py:obj}`abtem.visualize.artists.Artist2D`
@@ -555,7 +555,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_cbars(caxes, label: str = None, **kwargs)
+````{py:method} set_cbars(...)
 :canonical: abtem.visualize.artists.DomainColoringArtist.set_cbars
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.set_cbars
@@ -564,7 +564,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_cmap(cmap)
+````{py:method} set_cmap(...)
 :canonical: abtem.visualize.artists.DomainColoringArtist.set_cmap
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.set_cmap
@@ -573,7 +573,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_data(data)
+````{py:method} set_data(...)
 :canonical: abtem.visualize.artists.DomainColoringArtist.set_data
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.set_data
@@ -582,7 +582,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_extent(extent)
+````{py:method} set_extent(...)
 :canonical: abtem.visualize.artists.DomainColoringArtist.set_extent
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.set_extent
@@ -591,7 +591,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_power(power: float = 1.0)
+````{py:method} set_power(...)
 :canonical: abtem.visualize.artists.DomainColoringArtist.set_power
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.set_power
@@ -600,7 +600,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_value_limits(value_limits: tuple[float, float] = (None, None))
+````{py:method} set_value_limits(...)
 :canonical: abtem.visualize.artists.DomainColoringArtist.set_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.set_value_limits
@@ -611,7 +611,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 `````
 
-`````{py:class} ImageArtist(ax: matplotlib.axes.Axes, measurement: abtem.measurements.Images | abtem.measurements.DiffractionPatterns | abtem.measurements.MeasurementsEnsemble, caxes: list[matplotlib.axes.Axes] = None, cmap: str | matplotlib.colors.Colormap | None = None, vmin: float = None, vmax: float = None, power: float = 1.0, logscale: bool = False, origin: typing.Literal[upper, lower] | None = 'lower', units: str = None, **kwargs)
+`````{py:class} ImageArtist(...)
 :canonical: abtem.visualize.artists.ImageArtist
 
 Bases: {py:obj}`abtem.visualize.artists.Artist2D`
@@ -701,7 +701,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_cbars(caxes, **kwargs)
+````{py:method} set_cbars(...)
 :canonical: abtem.visualize.artists.ImageArtist.set_cbars
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.set_cbars
@@ -710,7 +710,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_cmap(cmap)
+````{py:method} set_cmap(...)
 :canonical: abtem.visualize.artists.ImageArtist.set_cmap
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.set_cmap
@@ -719,7 +719,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_data(data)
+````{py:method} set_data(...)
 :canonical: abtem.visualize.artists.ImageArtist.set_data
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.set_data
@@ -728,7 +728,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_extent(extent)
+````{py:method} set_extent(...)
 :canonical: abtem.visualize.artists.ImageArtist.set_extent
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.set_extent
@@ -737,7 +737,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_logscale(logscale: bool = False)
+````{py:method} set_logscale(...)
 :canonical: abtem.visualize.artists.ImageArtist.set_logscale
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.set_logscale
@@ -746,7 +746,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_power(power: float = 1.0)
+````{py:method} set_power(...)
 :canonical: abtem.visualize.artists.ImageArtist.set_power
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.set_power
@@ -755,7 +755,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_value_limits(value_limits: tuple[float, float] = None)
+````{py:method} set_value_limits(...)
 :canonical: abtem.visualize.artists.ImageArtist.set_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.artists.ImageArtist.set_value_limits
@@ -766,7 +766,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 `````
 
-`````{py:class} LinesArtist(ax: matplotlib.axes.Axes, measurement, caxes: list[matplotlib.axes.Axes] = None, label=None, units: str = None, legend: bool = False, **kwargs)
+`````{py:class} LinesArtist(...)
 :canonical: abtem.visualize.artists.LinesArtist
 
 Bases: {py:obj}`abtem.visualize.artists.Artist1D`
@@ -847,7 +847,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 
 ````
 
-````{py:method} set_data(data)
+````{py:method} set_data(...)
 :canonical: abtem.visualize.artists.LinesArtist.set_data
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.set_data
@@ -856,7 +856,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 
 ````
 
-````{py:method} set_legend(**kwargs)
+````{py:method} set_legend(...)
 :canonical: abtem.visualize.artists.LinesArtist.set_legend
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.set_legend
@@ -874,7 +874,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 
 ````
 
-````{py:method} set_power(power: float = 1.0) -> None
+````{py:method} set_power(...) -> None
 :canonical: abtem.visualize.artists.LinesArtist.set_power
 :abstractmethod:
 
@@ -884,7 +884,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 
 ````
 
-````{py:method} set_value_limits(value_limits: list[float] = None)
+````{py:method} set_value_limits(...)
 :canonical: abtem.visualize.artists.LinesArtist.set_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.set_value_limits
@@ -895,7 +895,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 
 `````
 
-````{py:class} OverlayImshowArtist(ax, data, cmap, vmin: float = None, vmax: float = None, power: float = 1.0, logscale: bool = False)
+````{py:class} OverlayImshowArtist(...)
 :canonical: abtem.visualize.artists.OverlayImshowArtist
 
 Bases: {py:obj}`abtem.visualize.artists.Artist2D`
@@ -913,7 +913,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:class} ScaleBar(ax: matplotlib.axes.Axes, label: str = '', size: float = None, loc: str = 'lower right', borderpad: float = 0.5, size_vertical: float = None, sep: float = 6, pad: float = 0.3, label_top: bool = True, frameon: bool = False, **kwargs)
+````{py:class} ScaleBar(...)
 :canonical: abtem.visualize.artists.ScaleBar
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScaleBar
@@ -929,7 +929,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-`````{py:class} ScaledCircleCollection(array: numpy.ndarray, offsets: numpy.ndarray, scale: float = 1.0, threshold: float = 1e-06, **kwargs)
+`````{py:class} ScaledCircleCollection(...)
 :canonical: abtem.visualize.artists.ScaledCircleCollection
 
 Bases: {py:obj}`matplotlib.collections.Collection`
@@ -945,7 +945,7 @@ Bases: {py:obj}`matplotlib.collections.Collection`
 :parser: rst
 ```
 
-````{py:method} draw(renderer)
+````{py:method} draw(...)
 :canonical: abtem.visualize.artists.ScaledCircleCollection.draw
 
 ````
@@ -977,12 +977,12 @@ Bases: {py:obj}`matplotlib.collections.Collection`
 
 ````
 
-````{py:method} set_array(array)
+````{py:method} set_array(...)
 :canonical: abtem.visualize.artists.ScaledCircleCollection.set_array
 
 ````
 
-````{py:method} set_data(array, offsets)
+````{py:method} set_data(...)
 :canonical: abtem.visualize.artists.ScaledCircleCollection.set_data
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScaledCircleCollection.set_data
@@ -991,12 +991,12 @@ Bases: {py:obj}`matplotlib.collections.Collection`
 
 ````
 
-````{py:method} set_norm(norm)
+````{py:method} set_norm(...)
 :canonical: abtem.visualize.artists.ScaledCircleCollection.set_norm
 
 ````
 
-````{py:method} set_scale(scale)
+````{py:method} set_scale(...)
 :canonical: abtem.visualize.artists.ScaledCircleCollection.set_scale
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScaledCircleCollection.set_scale
@@ -1005,7 +1005,7 @@ Bases: {py:obj}`matplotlib.collections.Collection`
 
 ````
 
-````{py:method} set_threshold(threshold)
+````{py:method} set_threshold(...)
 :canonical: abtem.visualize.artists.ScaledCircleCollection.set_threshold
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScaledCircleCollection.set_threshold
@@ -1025,7 +1025,7 @@ Bases: {py:obj}`matplotlib.collections.Collection`
 
 `````
 
-`````{py:class} ScatterArtist(ax: matplotlib.axes.Axes, measurement: abtem.measurements.IndexedDiffractionPatterns, caxes: list[matplotlib.axes.Axes] = None, cmap: str | matplotlib.colors.Colormap | None = None, value_limits: tuple[float, float] = None, power: float = 1.0, logscale: bool = False, units: str = None, scale: float = 0.5, annotations: bool = True, annotation_kwargs: dict = None, **kwargs)
+`````{py:class} ScatterArtist(...)
 :canonical: abtem.visualize.artists.ScatterArtist
 
 Bases: {py:obj}`abtem.visualize.artists.Artist2D`
@@ -1135,7 +1135,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_annotation_kwargs(**kwargs)
+````{py:method} set_annotation_kwargs(...)
 :canonical: abtem.visualize.artists.ScatterArtist.set_annotation_kwargs
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_annotation_kwargs
@@ -1144,7 +1144,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_cbars(caxes=None, **kwargs)
+````{py:method} set_cbars(...)
 :canonical: abtem.visualize.artists.ScatterArtist.set_cbars
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_cbars
@@ -1153,7 +1153,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_cmap(cmap: str)
+````{py:method} set_cmap(...)
 :canonical: abtem.visualize.artists.ScatterArtist.set_cmap
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_cmap
@@ -1162,7 +1162,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_data(measurement: numpy.ndarray)
+````{py:method} set_data(...)
 :canonical: abtem.visualize.artists.ScatterArtist.set_data
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_data
@@ -1171,7 +1171,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_logscale(logscale: bool = False)
+````{py:method} set_logscale(...)
 :canonical: abtem.visualize.artists.ScatterArtist.set_logscale
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_logscale
@@ -1180,7 +1180,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_power(power: float = 1.0)
+````{py:method} set_power(...)
 :canonical: abtem.visualize.artists.ScatterArtist.set_power
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_power
@@ -1189,7 +1189,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_scale(scale: float)
+````{py:method} set_scale(...)
 :canonical: abtem.visualize.artists.ScatterArtist.set_scale
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_scale
@@ -1198,7 +1198,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 
 ````
 
-````{py:method} set_value_limits(value_limits: tuple[float, float] = None)
+````{py:method} set_value_limits(...)
 :canonical: abtem.visualize.artists.ScatterArtist.set_value_limits
 
 ```{autodoc2-docstring} abtem.visualize.artists.ScatterArtist.set_value_limits
@@ -1217,7 +1217,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 ```
 ````
 
-````{py:function} get_extent(measurement, units=None)
+````{py:function} get_extent(...)
 :canonical: abtem.visualize.artists.get_extent
 
 ```{autodoc2-docstring} abtem.visualize.artists.get_extent
@@ -1225,7 +1225,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 ```
 ````
 
-````{py:function} validate_cmap(cmap, measurement, complex_conversion='none')
+````{py:function} validate_cmap(...)
 :canonical: abtem.visualize.artists.validate_cmap
 
 ```{autodoc2-docstring} abtem.visualize.artists.validate_cmap

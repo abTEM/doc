@@ -73,7 +73,7 @@
 
 ### API
 
-`````{py:class} AxisAlignedBeamTilt(tilt: abtem.tilt.TiltType = 0.0, direction: str = 'x')
+`````{py:class} AxisAlignedBeamTilt(...)
 :canonical: abtem.tilt.AxisAlignedBeamTilt
 
 Bases: {py:obj}`abtem.distributions.DistributionFromValues`
@@ -130,12 +130,12 @@ Bases: {py:obj}`abtem.distributions.DistributionFromValues`
 
 `````
 
-`````{py:class} BaseBeamTilt(distributions: tuple[str, ...] = ())
+`````{py:class} BaseBeamTilt(...)
 :canonical: abtem.tilt.BaseBeamTilt
 
 Bases: {py:obj}`abtem.transform.WavesToWavesTransform`
 
-````{py:method} apply(waves: abtem.waves.Waves, max_batch: int | str = 'auto') -> abtem.waves.Waves
+````{py:method} apply(...) -> abtem.waves.Waves
 :canonical: abtem.tilt.BaseBeamTilt.apply
 
 ```{autodoc2-docstring} abtem.tilt.BaseBeamTilt.apply
@@ -146,7 +146,7 @@ Bases: {py:obj}`abtem.transform.WavesToWavesTransform`
 
 `````
 
-`````{py:class} BeamTilt(tilt: tuple[float, float] | abtem.distributions.BaseDistribution | numpy.ndarray)
+`````{py:class} BeamTilt(...)
 :canonical: abtem.tilt.BeamTilt
 
 Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
@@ -193,7 +193,7 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 
 `````
 
-`````{py:class} BeamTilt2D(tilt_x: abtem.distributions.BaseDistribution, tilt_y: abtem.distributions.BaseDistribution)
+`````{py:class} BeamTilt2D(...)
 :canonical: abtem.tilt.BeamTilt2D
 
 Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
@@ -276,7 +276,7 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 
 ````
 
-````{py:function} precession_tilts(precession_angle: float, num_samples: int, min_azimuth: float = 0.0, max_azimuth: float = 2 * np.pi, endpoint: bool = False)
+````{py:function} precession_tilts(...)
 :canonical: abtem.tilt.precession_tilts
 
 ```{autodoc2-docstring} abtem.tilt.precession_tilts
@@ -284,7 +284,7 @@ Bases: {py:obj}`abtem.tilt.BaseBeamTilt`
 ```
 ````
 
-````{py:function} validate_tilt(tilt: abtem.tilt.TiltType2D) -> BeamTilt | BeamTilt2D | AxisAlignedBeamTilt
+````{py:function} validate_tilt(...) -> BeamTilt | BeamTilt2D | AxisAlignedBeamTilt
 :canonical: abtem.tilt.validate_tilt
 
 ```{autodoc2-docstring} abtem.tilt.validate_tilt

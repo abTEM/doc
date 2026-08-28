@@ -59,12 +59,12 @@
 
 ### API
 
-`````{py:class} BaseGUI(sliders, canvas, *args)
+`````{py:class} BaseGUI(...)
 :canonical: abtem.visualize.widgets.BaseGUI
 
 Bases: {py:obj}`ipywidgets.HBox`
 
-````{py:method} attach_visualization(visualization)
+````{py:method} attach_visualization(...)
 :canonical: abtem.visualize.widgets.BaseGUI.attach_visualization
 
 ```{autodoc2-docstring} abtem.visualize.widgets.BaseGUI.attach_visualization
@@ -120,12 +120,12 @@ Bases: {py:obj}`ipywidgets.HBox`
 
 `````
 
-`````{py:class} ImageGUI(sliders, canvas, cmap_options=None)
+`````{py:class} ImageGUI(...)
 :canonical: abtem.visualize.widgets.ImageGUI
 
 Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 
-````{py:method} attach_visualization(visualization)
+````{py:method} attach_visualization(...)
 :canonical: abtem.visualize.widgets.ImageGUI.attach_visualization
 
 ```{autodoc2-docstring} abtem.visualize.widgets.ImageGUI.attach_visualization
@@ -154,12 +154,12 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 
 `````
 
-`````{py:class} LinesGUI(sliders, canvas)
+`````{py:class} LinesGUI(...)
 :canonical: abtem.visualize.widgets.LinesGUI
 
 Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 
-````{py:method} attach_visualization(visualization)
+````{py:method} attach_visualization(...)
 :canonical: abtem.visualize.widgets.LinesGUI.attach_visualization
 
 ```{autodoc2-docstring} abtem.visualize.widgets.LinesGUI.attach_visualization
@@ -179,7 +179,7 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 
 `````
 
-`````{py:class} ScatterGUI(sliders, canvas, cmap_options=None)
+`````{py:class} ScatterGUI(...)
 :canonical: abtem.visualize.widgets.ScatterGUI
 
 Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
@@ -193,7 +193,7 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 
 ````
 
-````{py:method} attach_visualization(visualization)
+````{py:method} attach_visualization(...)
 :canonical: abtem.visualize.widgets.ScatterGUI.attach_visualization
 
 ```{autodoc2-docstring} abtem.visualize.widgets.ScatterGUI.attach_visualization
@@ -233,7 +233,7 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 
 ````
 
-````{py:function} make_toggle_hkl_button(visualization)
+````{py:function} make_toggle_hkl_button(...)
 :canonical: abtem.visualize.widgets.make_toggle_hkl_button
 
 ```{autodoc2-docstring} abtem.visualize.widgets.make_toggle_hkl_button
@@ -241,7 +241,7 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 ```
 ````
 
-````{py:function} slider_from_axes_metadata(axis_metadata: abtem.core.axes.AxisMetadata, length, slider_type=None, continuous_update=None, default_value=None)
+````{py:function} slider_from_axes_metadata(...)
 :canonical: abtem.visualize.widgets.slider_from_axes_metadata
 
 ```{autodoc2-docstring} abtem.visualize.widgets.slider_from_axes_metadata
