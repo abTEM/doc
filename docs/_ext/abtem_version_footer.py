@@ -13,6 +13,7 @@ import os
 
 STABLE_URL = "https://abtem.github.io/doc/"
 DEV_URL = STABLE_URL + "dev/"
+ABTEM_DEV_BRANCH_URL = "https://github.com/abTEM/abTEM/tree/dev"
 
 
 def _is_dev():
@@ -28,20 +29,22 @@ def _set_abtem_version_footer(app, config):
         version = "unknown"
 
     theme_options = dict(config.html_theme_options or {})
-    footer = (
-        "<p>Tested against "
-        '<a href="https://github.com/abTEM/abTEM">abTEM</a>'
-        f" v{version}."
-    )
     if _is_dev():
         theme_options["announcement"] = (
-            "This is the <strong>development</strong> documentation, built from "
-            f'the latest main branch. <a href="{STABLE_URL}">Switch to the '
-            "stable version</a>."
+            "This is the <strong>development</strong> documentation, "
+            f'including unreleased work in <a href="{ABTEM_DEV_BRANCH_URL}">'
+            f'abTEM/dev</a>. <a href="{STABLE_URL}">Switch to the stable '
+            "version</a>."
         )
-        footer += " Development build."
+        footer = (
+            "<p>Tested against pre-release "
+            f'<a href="{ABTEM_DEV_BRANCH_URL}">abTEM v{version}</a>.'
+        )
     else:
-        footer += (
+        footer = (
+            "<p>Tested against "
+            '<a href="https://github.com/abTEM/abTEM">abTEM</a>'
+            f" v{version}."
             f' Also available: <a href="{DEV_URL}">development version</a>.'
         )
     footer += "</p>"
