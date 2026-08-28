@@ -7,6 +7,29 @@ from the abtem import rather than hardcoded in _config.yml.
 
 import os
 
+from autodoc2.render.myst_ import MystRenderer
+
+
+class AbtemMystRenderer(MystRenderer):
+    """MyST renderer that collapses argument lists in signature headings.
+
+    autodoc2 puts the full, fully-qualified argument list (and defaults) in
+    the heading of every function/method/class - e.g.
+    ``transition_potential_multislice_and_detect(waves: abtem.waves.Waves,
+    potential: abtem.potentials.iam.BasePotential, ...)``. That's redundant
+    with the Parameters field list rendered from the docstring immediately
+    below, and makes headings unreadably long for abTEM's many-argument
+    functions. Collapsing the heading to ``name(...)`` (or ``name()`` for
+    no-arg callables) keeps the heading scannable; full argument details
+    still live in the Parameters section.
+    """
+
+    def format_args(self, args_info, include_annotations=True, ignore_self=None):
+        args = list(args_info)
+        if args and ignore_self is not None and args[0][1] == ignore_self:
+            args = args[1:]
+        return "..." if args else ""
+
 
 def _set_autodoc2_packages(app, config):
     import abtem

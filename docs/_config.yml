@@ -39,13 +39,27 @@ sphinx:
   extra_extensions:
   - 'sphinx.ext.viewcode'
   - 'sphinx.ext.inheritance_diagram'
+  - 'sphinx.ext.intersphinx'
   - 'matplotlib.sphinxext.roles'
   - 'autodoc2'
   local_extensions:
     abtem_version_footer: _ext
     abtem_autodoc2: _ext
   config:
-    autodoc2_render_plugin: "myst"
+    # Lets return/parameter types like np.ndarray in docstrings resolve to a
+    # link instead of staying plain text.
+    intersphinx_mapping:
+      python: ["https://docs.python.org/3", null]
+      numpy: ["https://numpy.org/doc/stable/", null]
+    # Collapses the full argument list in autodoc2 headings down to
+    # `name(...)` - see AbtemMystRenderer in _ext/abtem_autodoc2.py. The
+    # full, per-argument detail is already rendered in the Parameters list
+    # just below each heading.
+    autodoc2_render_plugin: "abtem_autodoc2.AbtemMystRenderer"
+    # Strips leading module qualifiers (abtem.waves.Waves -> Waves) from
+    # the remaining return-type arrow in headings, since the args list
+    # itself is already collapsed by AbtemMystRenderer above.
+    python_use_unqualified_type_names: true
     autodoc2_output_dir: "reference/api/apidocs"
     autodoc2_sort_names: true
     # Docstrings are NumPy-style, converted to RST field lists by the
