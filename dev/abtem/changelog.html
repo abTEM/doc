@@ -62,6 +62,8 @@
     <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'abtem/changelog';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../_static/favicon.ico"/>
@@ -263,6 +265,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../user_guide/tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../user_guide/tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -570,7 +573,7 @@
             </div>
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#upcoming-major-features">Upcoming: major features</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#upcoming-1-1-0">Upcoming: 1.1.0</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1.0.10</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.0.9</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">1.0.8</a></li>
@@ -587,16 +590,144 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">#</a></h1>
-<section id="upcoming-major-features">
-<h2>Upcoming: major features<a class="headerlink" href="#upcoming-major-features" title="Link to this heading">#</a></h2>
+<section id="upcoming-1-1-0">
+<h2>Upcoming: 1.1.0<a class="headerlink" href="#upcoming-1-1-0" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">dev</span></code> branch is at version <code class="docutils literal notranslate"><span class="pre">1.1.0</span></code>. The entries below are merged into <code class="docutils literal notranslate"><span class="pre">dev</span></code> but not yet released.</p>
 <p>Features:</p>
 <ul class="simple">
-<li><p>Energy ensemble support across the codebase (PlaneWave, Probe, SMatrix, Bloch) (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/257">PR #257</a>)</p></li>
-<li><p>Significant improvements on simulating large potentials on GPU, alongside minor performance improvements (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/269">PR #269</a>)</p></li>
+<li><p>Energy ensemble support across the codebase: <code class="docutils literal notranslate"><span class="pre">PlaneWave</span></code>, <code class="docutils literal notranslate"><span class="pre">Probe</span></code>, <code class="docutils literal notranslate"><span class="pre">SMatrix</span></code>, <code class="docutils literal notranslate"><span class="pre">BlochWaves</span></code> and <code class="docutils literal notranslate"><span class="pre">CTF</span></code>
+accept a list of energies, and the resulting <code class="docutils literal notranslate"><span class="pre">EnergyAxis</span></code> propagates through indexing, angular sampling,
+unit conversion and diffraction-spot indexing (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/257">PR #257</a>)</p></li>
+<li><p>C-PRISM: <code class="docutils literal notranslate"><span class="pre">SMatrix(upsample=True)</span></code> reduces every probe from the complete plane-wave expansion of the
+aperture, so the interpolation factor only sets the number of multislice runs. Adds
+<code class="docutils literal notranslate"><span class="pre">CompressedSMatrixArray</span></code> and <code class="docutils literal notranslate"><span class="pre">GridScan.commensurate</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/318">PR #318</a>)</p></li>
+<li><p>Phonon-loss (thermal diffuse scattering) energy-loss workflow: <code class="docutils literal notranslate"><span class="pre">EnergyResolvedAtomsEnsemble</span></code>,
+<code class="docutils literal notranslate"><span class="pre">phonon_loss_diffraction_patterns</span></code>, <code class="docutils literal notranslate"><span class="pre">momentum_resolved_spectrum</span></code> and <code class="docutils literal notranslate"><span class="pre">MomentumResolvedSpectrum</span></code>,
+the <code class="docutils literal notranslate"><span class="pre">SpectralAnnularDetector</span></code> and <code class="docutils literal notranslate"><span class="pre">SpectralSlitDetector</span></code>, and detailed-balance thermal weighting that
+splits the classical TDS signal into loss and gain sides
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/324">PR #324</a>, <a class="reference external" href="https://github.com/abTEM/abTEM/pull/351">PR #351</a>)</p></li>
+<li><p>Linear-scaling PRISM-EELS for core-loss simulations: <code class="docutils literal notranslate"><span class="pre">SMatrix.transition_potential_scan</span></code>, with
+single- and double-channel scattering and an optional windowed inelastic crop
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/289">PR #289</a>)</p></li>
 <li><p>In addition to the Gaussian (G) distribution, now also implemented Lorentzian (L), Voigtian (convolution L * G) and
 pseudo-Voigtian (L + G) source-size distributions and filters (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/270">PR #270</a>)</p></li>
+<li><p>The exact free-space propagator is now the default for Fourier multislice,
+<code class="docutils literal notranslate"><span class="pre">FourierMultislice(order=&quot;exact&quot;)</span></code>, replacing the paraxial approximation. Spatial frequencies beyond
+<code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">&gt;</span> <span class="pre">1</span> <span class="pre">/</span> <span class="pre">lambda</span></code> are treated as evanescent rather than propagating; the paraxial propagator remains
+available as <code class="docutils literal notranslate"><span class="pre">order=1</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/298">PR #298</a>)</p></li>
+<li><p>Magnetic potentials and fields from collinear GPAW calculations: <code class="docutils literal notranslate"><span class="pre">gpaw_magnetic_fields</span></code> builds the
+electrostatic potential, vector potential and magnetic field from the same calculator(s) in one call,
+returning a <code class="docutils literal notranslate"><span class="pre">GPAWMagneticFields</span></code> bundle with <code class="docutils literal notranslate"><span class="pre">.tile()</span></code>, <code class="docutils literal notranslate"><span class="pre">.combined_potential()</span></code> and <code class="docutils literal notranslate"><span class="pre">.show()</span></code>;
+<code class="docutils literal notranslate"><span class="pre">rotate_field</span></code> now defaults to <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/326">PR #326</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GPAWParametrization</span></code> is now usable: it fits a Lobato-form IAM potential to the X-ray scattering factor
+of an all-electron GPAW calculation, with working ionization support and a regularized fit
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/329">PR #329</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Potential(sampling=&quot;auto&quot;,</span> <span class="pre">slice_thickness=&quot;auto&quot;)</span></code> automatically finds a grid commensurate with the atomic
+lattice — so translation-equivalent atoms discretize identically — near the usual default targets
+(<span class="math notranslate nohighlight">\(0.05 \ \mathrm{Å}\)</span>, <span class="math notranslate nohighlight">\(1 \ \mathrm{Å}\)</span>), preferring FFT-fast grid sizes wherever that is compatible with
+commensurability. New <code class="docutils literal notranslate"><span class="pre">grid.round-to-fast-fft</span></code> config key (<code class="docutils literal notranslate"><span class="pre">'auto'</span></code>/<code class="docutils literal notranslate"><span class="pre">True</span></code>/<code class="docutils literal notranslate"><span class="pre">False</span></code>), <code class="docutils literal notranslate"><span class="pre">Grid.round_to_fast_fft()</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">is_fast_fft_size</span></code>/<code class="docutils literal notranslate"><span class="pre">next_fast_fft_size</span></code> helpers in <code class="docutils literal notranslate"><span class="pre">abtem.core.fft</span></code>
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/274">PR #274</a>, <a class="reference external" href="https://github.com/abTEM/abTEM/pull/347">PR #347</a>)</p></li>
+<li><p>Significant improvements on simulating large potentials on GPU, alongside minor performance improvements
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/269">PR #269</a>)</p>
+<ul>
+<li><p>The potential is now built in chunks of contiguous slices instead of all at once, keeping peak VRAM
+bounded; new config key <code class="docutils literal notranslate"><span class="pre">potential.slice-chunk-size</span></code> (default <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>)</p></li>
+<li><p>Opt-in multi-GPU via the new config key <code class="docutils literal notranslate"><span class="pre">dask.multi-gpu</span></code> (requires <code class="docutils literal notranslate"><span class="pre">dask-cuda</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cupy.fft-cache-size</span></code>’s previous <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">MB</span></code> default silently disabled the cuFFT plan cache; changed to
+<code class="docutils literal notranslate"><span class="pre">-1</span></code> (unlimited) here, then to the device-relative <code class="docutils literal notranslate"><span class="pre">auto</span></code> default below once unbounded retention
+turned out to cost tens of GB on FFT-unfriendly grids</p></li>
+</ul>
+</li>
+</ul>
+<p>Performance:</p>
+<ul class="simple">
+<li><p>The projection integrator is shared by reference across ensemble members instead of being deep-copied
+(and re-uploaded to the GPU) for each (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/350">PR #350</a>)</p></li>
+<li><p>Removed a redundant potential rebuild on every scan chunk (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/340">PR #340</a>)</p></li>
+</ul>
+<p>Dependencies:</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">core-loss</span></code> extra is merged into a single <code class="docutils literal notranslate"><span class="pre">gpaw</span> <span class="pre">=</span> <span class="pre">[&quot;hankel&quot;,</span> <span class="pre">&quot;sympy&quot;]</span></code> extra, and a new <code class="docutils literal notranslate"><span class="pre">all</span></code> extra
+installs every optional runtime dependency (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/329">PR #329</a>)</p></li>
+</ul>
+<p>Bugfixes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">GPAWPotential</span></code> for the new-style GPAW calculator API (GPAW 26+), and <code class="docutils literal notranslate"><span class="pre">GPAWPotential.from_file</span></code> on
+old-style restarted calculators (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/325">PR #325</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GPAWPotential</span></code> single-calculator <code class="docutils literal notranslate"><span class="pre">frozen_phonons</span></code> ensemble building
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/327">PR #327</a>), plus removal of dead and broken code from
+<code class="docutils literal notranslate"><span class="pre">GPAWPotential</span></code> and <code class="docutils literal notranslate"><span class="pre">GPAWParametrization</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/328">PR #328</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FieldArray.tile()</span></code> for vector-valued fields, and unsupported <code class="docutils literal notranslate"><span class="pre">frozen_phonons</span></code>/<code class="docutils literal notranslate"><span class="pre">repetitions</span></code> on magnetic
+fields now raise instead of being silently ignored (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/326">PR #326</a>)</p></li>
+<li><p>Silent corruption in eager multislice for potentials with two or more ensemble axes
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/333">PR #333</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">numba</span></code> <code class="docutils literal notranslate"><span class="pre">TypingError</span></code> in quasi-dipole interpolation on some numba/numpy pairings
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/332">PR #332</a>)</p></li>
+<li><p>Single-point <code class="docutils literal notranslate"><span class="pre">GridScan</span></code> failing when built lazily (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/342">PR #342</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LinearAxis</span></code> losing its offset under dask ensemble chunk partitioning
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/344">PR #344</a>)</p></li>
+<li><p>Nondeterministic atom loss in <code class="docutils literal notranslate"><span class="pre">orthogonalize_cell</span></code>, and a hardened Gram-Schmidt fallback
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/345">PR #345</a>)</p></li>
+<li><p>Repeated axis labels and colorbar overlap in exploded spectrum panels, and silently returned zeros for
+single-configuration TDS (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/351">PR #351</a>)</p></li>
+<li><p>Azimuthal convention in <code class="docutils literal notranslate"><span class="pre">prism_coefficients</span></code>, which reflected azimuthally dependent aberrations in a PRISM
+reduction with a <code class="docutils literal notranslate"><span class="pre">CTF</span></code>, and exit planes not being remapped when slicing a <code class="docutils literal notranslate"><span class="pre">PotentialArray</span></code>
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/318">PR #318</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">numpy</span></code> 2.5 test failures caused by an ASE deprecation warning
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/343">PR #343</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Probe.transition_potential_scan</span></code> raised for a scan split into more than one chunk (for example through
+<code class="docutils literal notranslate"><span class="pre">max_batch</span></code>) unless the scattering sites were passed explicitly
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/353">PR #353</a>)</p></li>
+<li><p>Colorbars did not span multi-row exploded plots, and neighbouring panels could abut closely enough for
+their tick labels to collide (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/354">PR #354</a>)</p></li>
+<li><p>Multi-GPU hardening, and the configuration fix found while chasing it
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/346">PR #346</a>)</p>
+<ul>
+<li><p><strong>The client’s configuration now reaches <code class="docutils literal notranslate"><span class="pre">distributed</span></code> workers.</strong> <em>ab</em>TEM resolves configuration
+inside each task, and worker processes start fresh and previously saw only the YAML defaults, so
+any distributed computation with a non-default configuration silently used the defaults instead —
+most consequentially <code class="docutils literal notranslate"><span class="pre">precision</span></code>, which meant <code class="docutils literal notranslate"><span class="pre">float64</span></code> runs were computed in <code class="docutils literal notranslate"><span class="pre">float32</span></code>.
+Distributed results obtained with a non-default configuration are worth repeating. Applies to any
+distributed client, CPU clusters included</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">to_zarr()</span></code> on a lazy result honours <code class="docutils literal notranslate"><span class="pre">dask.multi-gpu</span></code>; it previously ignored the flag and ran the
+whole computation on a single device</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cupy.fft-cache-size</span></code> defaults to <code class="docutils literal notranslate"><span class="pre">auto</span></code> — 25 % of each device’s memory, resolved per device —
+rather than unlimited. <code class="docutils literal notranslate"><span class="pre">-1</span></code> restores unlimited, <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">MB</span></code> disables the cache, and a size such as
+<code class="docutils literal notranslate"><span class="pre">512</span> <span class="pre">MB</span></code> sets a fixed bound. A single plan larger than the bound runs uncached with a warning
+instead of raising</p></li>
+<li><p>New config keys <code class="docutils literal notranslate"><span class="pre">dask.multi-gpu-rmm-pool</span></code> and <code class="docutils literal notranslate"><span class="pre">dask.multi-gpu-devices</span></code>, for an RMM memory pool per
+worker and for restricting the cluster to a subset of GPUs</p></li>
+<li><p>Automatically sized scan batches are halved on grid sizes that force cuFFT’s Bluestein fallback,
+which needs a much larger FFT workspace</p></li>
+<li><p>Warnings replace silent fallbacks: multi-GPU requested but declined (with the reason), a missing
+<code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">&quot;__main__&quot;</span></code> guard, and a grid size that forces the Bluestein fallback (naming the
+next fast size)</p></li>
+</ul>
+</li>
+</ul>
+<p>Documentation:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sampling=&quot;auto&quot;</span></code>/<code class="docutils literal notranslate"><span class="pre">slice_thickness=&quot;auto&quot;</span></code> documented in detail in the potentials walkthrough, including a
+worked example of the commensurability artifact they remove; cross-referenced from the convergence appendix
+(manual commensurate sampling) and the performance-tips appendix (fast FFT sizes)</p></li>
+<li><p>New tutorial on phonon-loss spectroscopy: energy-resolved frozen phonons, the TDS decomposition, the
+momentum-resolved spectrum <span class="math notranslate nohighlight">\(S(q, E)\)</span>, the spectral detectors and detailed-balance thermal weighting</p></li>
+<li><p>Energy ensembles documented in the wave-function walkthrough, with an energy series added to the
+multislice walkthrough</p></li>
+<li><p>PRISM-EELS added to the core-loss tutorial, compared against the equivalent multislice scan</p></li>
+<li><p>The exact free-space propagator is documented in the multislice walkthrough and the real-space multislice
+tutorial, which now selects the paraxial propagator explicitly where it compares algorithms at equal order</p></li>
+<li><p>The installation page documents the optional pip extras (<code class="docutils literal notranslate"><span class="pre">gpaw</span></code>, <code class="docutils literal notranslate"><span class="pre">extra</span></code>, <code class="docutils literal notranslate"><span class="pre">all</span></code>) and why the GPU packages
+are not among them</p></li>
+<li><p>The configuration reference is synchronized with the new and changed config keys</p></li>
+<li><p>The multiple-GPUs section of the parallelization walkthrough is expanded to cover the multi-GPU
+hardening fixes above, and the FFT plan-cache documentation is corrected to match the shipped <code class="docutils literal notranslate"><span class="pre">auto</span></code>
+default (it previously described a stale <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">MB</span></code> default that was never shipped)</p></li>
+</ul>
+<p>Planned for this release (not yet merged):</p>
+<ul class="simple">
 <li><p>Support for skewed pixels (non-orthogonal x,y,z cell axes) (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/282">PR #282</a>)</p></li>
-<li><p>Linear-scaling PRISM-EELS for core-loss simulations (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/289">PR #289</a>)</p></li>
 <li><p>Radially variable detector sensitivity (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/283">PR #283</a>)</p></li>
 <li><p>Plasmons: fast <code class="docutils literal notranslate"><span class="pre">PhaseScramblePlasmons</span></code> for multislice and PRISM, and <code class="docutils literal notranslate"><span class="pre">MonteCarloPlasmons</span></code> for Bloch wave</p></li>
 <li><p>CBED patterns for Bloch waves (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/254">PR #254</a>)</p></li>
@@ -756,7 +887,7 @@ previously read a different, non-functional key) (<a class="reference external" 
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#upcoming-major-features">Upcoming: major features</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#upcoming-1-1-0">Upcoming: 1.1.0</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1.0.10</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.0.9</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">1.0.8</a></li>

@@ -161,6 +161,10 @@
   
 
   
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
 </div>
 
     </header>
@@ -262,6 +266,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -546,7 +551,9 @@
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
 </button>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -562,6 +569,43 @@
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#higher-order-fourier-and-real-space-formulations">Higher-order Fourier- and real-space formulations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#relativistic-electron-wavelength">1. Relativistic electron wavelength</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#helmholtz-equation">2. Helmholtz equation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fourier-decomposition-in-the-transverse-plane">3. Fourier decomposition in the transverse plane</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#exact-free-space-propagator-fourier-space">4. Exact free-space propagator (Fourier space)</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#a-evanescent-modes">4a. Evanescent modes</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#b-numerical-stability">4b. Numerical stability</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#taylor-approximations-of-the-fourier-space-propagator">5. Taylor approximations of the Fourier-space propagator</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#order-1-fresnel-paraxial">Order 1 (Fresnel / paraxial)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#order-2">Order 2</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#truncation-error-scaling">Truncation error scaling</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-exact-multislice-equation">6. The exact multislice equation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#two-independent-error-sources">7. Two independent error sources</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#error-source-1-split-step-trotter-factorization">Error source 1: split-step (Trotter) factorization</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#error-source-2-taylor-truncation-of-the-propagator">Error source 2: Taylor truncation of the propagator</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fourier-space-method-pr-298">8. Fourier-space method (PR #298)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#real-space-method-pr-236">9. Real-space method (PR #236)</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#propagator-scope-expansion-scope-propagator">Propagator scope (<code class="docutils literal notranslate"><span class="pre">expansion_scope="propagator"</span></code>)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#full-scope-expansion-scope-full">Full scope (<code class="docutils literal notranslate"><span class="pre">expansion_scope="full"</span></code>)</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#relationship-between-the-methods">10. Relationship between the methods</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -574,48 +618,277 @@
   <section class="tex2jax_ignore mathjax_ignore" id="deriving-the-multislice-algorithm">
 <span id="appendix-multislice"></span><h1>Deriving the Multislice Algorithm<a class="headerlink" href="#deriving-the-multislice-algorithm" title="Link to this heading">#</a></h1>
 <p>This is a short description on the theory of the multislice simulation method for electron scattering. For a more complete derivation including detailed theory, see Advanced Computing Computing in Electron Microscopy by EJ Kirkland<span class="bibtex-citation" id="id1">[<a class="reference internal" href="../bibliography.html#id5" title="Earl J. Kirkland. Advanced computing in electron microscopy. Springer, 2 edition, 2010. ISBN 978-1-4419-6532-5.">Kir10</a>]</span>.</p>
-<p>In electron microscopy, the energy of the incident electron waves (20 - 1000 keV) are generally much larger than the electrostatic potential wells of the atoms, which we will assume to only provide small perturbations on the forward motion of the electrons. Hence, we write the wave function, <span class="math notranslate nohighlight">\(\psi_{full}\)</span>, of the propagating electrons as a slowly varying plane wave along the optical axis, <span class="math notranslate nohighlight">\(z\)</span>, with a modulation in <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span> given by <span class="math notranslate nohighlight">\(\psi(x,y)\)</span></p>
+<p>In electron microscopy, the energy of the incident electron waves (20–1000 keV) are generally much larger than the electrostatic potential wells of the atoms, which we will assume to only provide small perturbations on the forward motion of the electrons. Hence, we write the wave function, <span class="math notranslate nohighlight">\(\psi_\mathrm{full}\)</span>, of the propagating electrons as a slowly varying plane wave along the optical axis, <span class="math notranslate nohighlight">\(z\)</span>, with a modulation in <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span> given by <span class="math notranslate nohighlight">\(\psi(x,y)\)</span></p>
 <div class="math notranslate nohighlight">
 \[
-    \psi_{full}(x,y,z) = \psi(x,y)\exp(2\pi iz/\lambda) \quad ,
+    \psi_\mathrm{full}(x,y,z) = \psi(x,y)\exp(2\pi iz/\lambda) ,
 \]</div>
 <p>where <span class="math notranslate nohighlight">\((x,y,z)\)</span> are the three real-space coordinates and <span class="math notranslate nohighlight">\(\lambda\)</span> is the de Broglie wavelength of the electrons. Substituting this into the Schrödinger equation we obtain</p>
 <div class="math notranslate nohighlight">
 \[
-    -\frac{\hbar^2}{2m} \left[\nabla_{xy}^2 + \frac{\partial^2}{\partial z^2} + \frac{4\pi i}{\lambda}\frac{\partial}{\partial z} + \frac{2meV(\vec{r})}{\hbar^2}  \right] \psi(\vec{r}) = 0 \qquad \nabla_{xy}^2 = \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2} \quad .
+    -\frac{\hbar^2}{2m} \left[\nabla_{xy}^2 + \frac{\partial^2}{\partial z^2} + \frac{4\pi i}{\lambda}\frac{\partial}{\partial z} + \frac{2meV(\vec{r})}{\hbar^2}  \right] \psi(\vec{r}) = 0 \qquad \nabla_{xy}^2 = \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2} .
 \]</div>
 <p>In the high energy approximation, we assume that the wavefunction varies slowly in the <span class="math notranslate nohighlight">\(z\)</span>-direction compared to the potential and that the wavelength is small, thus</p>
 <div class="math notranslate nohighlight">
 \[
-    \left| \frac{\partial^2 \psi}{\partial z^2} \right| \ll \left| \frac{1}{\lambda} \frac{\partial \psi}{\partial z} \right| \quad .
+    \left| \frac{\partial^2 \psi}{\partial z^2} \right| \ll \left| \frac{1}{\lambda} \frac{\partial \psi}{\partial z} \right| .
 \]</div>
 <p>Hence, the Schrödinger equation simplifies to a first order differential equation in <span class="math notranslate nohighlight">\(z\)</span></p>
 <div class="math notranslate nohighlight">
 \[
-    \frac{\partial \psi(\vec{r})}{\partial z} = \left[\frac{i\lambda}{4\pi} \nabla_{xy}^2 + i \sigma V(\vec{r}) \right] \psi(\vec{r}) \quad ,
+    \frac{\partial \psi(\vec{r})}{\partial z} = \left[\frac{i\lambda}{4\pi} \nabla_{xy}^2 + i \sigma V(\vec{r}) \right] \psi(\vec{r}) ,
 \]</div>
 <p>where <span class="math notranslate nohighlight">\(\sigma=2\pi me\lambda/h^2\)</span> is the interaction parameter. This equation is integrated numerically by slicing the potential into thin slices, such that the influence of each slice can be approximated as a simple phase shift of the wave function. The wave function is propagated between slices as a small angle outgoing wave (Fresnel diffraction). The transmission and propagation across a single slice can be written</p>
 <div class="math notranslate nohighlight">
 \[
-    \psi(x, y, z + \Delta z) = p(x,y,\Delta z) * [t(r) \psi(\vec{r})] + \mathcal{O}(\Delta z^2) \quad ,
+    \psi(x, y, z + \Delta z) = p(x,y,\Delta z) * [t(r) \psi(\vec{r})] + \mathcal{O}(\Delta z^2) ,
 \]</div>
 <p>where <span class="math notranslate nohighlight">\(*\)</span> represents a convolution. The transmission function, <span class="math notranslate nohighlight">\(t(r)\)</span>, for the portion of the potential between <span class="math notranslate nohighlight">\(z\)</span> and <span class="math notranslate nohighlight">\(z+\Delta z\)</span> is</p>
 <div class="math notranslate nohighlight">
 \[
-    t(x,y) = \exp\left[i\sigma \int_z^{z+\Delta z} V(x,y,z) dz'\right] \quad ,
+    t(x,y) = \exp\left[i\sigma \int_z^{z+\Delta z} V(x,y,z) dz'\right] ,
 \]</div>
-<p>and the Fresnel propagator <span class="math notranslate nohighlight">\(p(x, y, \Delta z)\)</span> is</p>
+<p>and the conventional paraxial Fresnel propagator <span class="math notranslate nohighlight">\(p(x, y, \Delta z)\)</span> (first-order term of the Taylor expansion, see below) is</p>
 <div class="math notranslate nohighlight">
 \[
-    p(x,y,\Delta z) = \frac{1}{i \lambda \Delta z}\exp\left[\frac{i\pi}{\lambda \Delta z}(x^2+y^2)\right] \, .
+    p(x,y,\Delta z) = \frac{1}{i \lambda \Delta z}\exp\left[\frac{i\pi}{\lambda \Delta z}(x^2+y^2)\right] .
 \]</div>
 <p>The wave at the exit plane of the specimen is obtained by sequentially propagating and transmitting the wave function starting with an assumed input wave.</p>
 <p>Convolutions can be performed efficiently by utilizing the Fast Fourier Transform (FFT). The implemented form of Eq. the single slice propagation is</p>
 <div class="math notranslate nohighlight">
 \[
-    \psi_{z + \Delta z}(x,y) = p(x,y) * \left[t(\vec{r}) \psi(\vec{r}) \right] = \mathcal{F}^{-1}\{P(k_x, k_y, \Delta z) \ \mathcal{F}[t(\vec{r}) \psi(\vec{r})] \} \quad ,
+    \psi_{z + \Delta z}(x,y) = p(x,y) * \left[t(\vec{r}) \psi(\vec{r}) \right] = \mathcal{F}^{-1}\{P(k_x, k_y, \Delta z) \ \mathcal{F}[t(\vec{r}) \psi(\vec{r})] \} ,
 \]</div>
 <p>where <span class="math notranslate nohighlight">\(P\)</span> is the Fourier transform of the fresnel propagator. The computational cost for the FFT scales as <span class="math notranslate nohighlight">\(N \log(N)\)</span> with the number of samples <span class="math notranslate nohighlight">\(N\)</span>.</p>
+<section id="higher-order-fourier-and-real-space-formulations">
+<h2>Higher-order Fourier- and real-space formulations<a class="headerlink" href="#higher-order-fourier-and-real-space-formulations" title="Link to this heading">#</a></h2>
+<section id="relativistic-electron-wavelength">
+<h3>1. Relativistic electron wavelength<a class="headerlink" href="#relativistic-electron-wavelength" title="Link to this heading">#</a></h3>
+<p>A fast electron accelerated through a potential <span class="math notranslate nohighlight">\(V\)</span> acquires kinetic energy <span class="math notranslate nohighlight">\(E = eV\)</span>. Its de Broglie wavelength must account for relativistic mass increase. Starting from the relativistic energy–momentum relation <span class="math notranslate nohighlight">\(E_\mathrm{tot}^2 = (pc)^2 + (m_0 c^2)^2\)</span> with total energy <span class="math notranslate nohighlight">\(E_\mathrm{tot} = m_0 c^2 + eV\)</span>, the momentum is</p>
+<div class="math notranslate nohighlight">
+\[p = \frac{1}{c}\sqrt{E_\mathrm{tot}^2 - (m_0 c^2)^2} = \sqrt{2m_0 eV\!\left(1 + \frac{eV}{2m_0 c^2}\right)}.\]</div>
+<p>The de Broglie relation <span class="math notranslate nohighlight">\(\lambda = h/p\)</span> then gives the relativistically corrected wavelength:</p>
+<div class="math notranslate nohighlight">
+\[\lambda = \frac{h}{\sqrt{2m_0 eV\!\left(1 + \dfrac{eV}{2m_0 c^2}\right)}}.\]</div>
+<p>At 200 keV the correction factor <span class="math notranslate nohighlight">\(1 + eV/(2m_0 c^2) \approx 1.20\)</span>, shortening <span class="math notranslate nohighlight">\(\lambda\)</span> by ~10% relative to the non-relativistic value. At 10 keV it is <span class="math notranslate nohighlight">\(\approx 1.01\)</span> and essentially negligible.</p>
+</section>
+<section id="helmholtz-equation">
+<h3>2. Helmholtz equation<a class="headerlink" href="#helmholtz-equation" title="Link to this heading">#</a></h3>
+<p>In free space (no crystal potential), the electron wavefunction satisfies the stationary Schrödinger equation, which reduces to the Helmholtz equation:</p>
+<div class="math notranslate nohighlight">
+\[\left(\nabla^2 + k_0^2\right)\psi(\mathbf{r}) = 0,\]</div>
+<p>where the total wavenumber is <span class="math notranslate nohighlight">\(k_0 = 1/\lambda\)</span> in the crystallographic convention (<span class="math notranslate nohighlight">\(k = 1/\lambda\)</span> rather than the physics convention <span class="math notranslate nohighlight">\(k = 2\pi/\lambda\)</span>, so plane waves are <span class="math notranslate nohighlight">\(e^{i2\pi\mathbf{k}\cdot\mathbf{r}}\)</span>). Writing the Laplacian in Cartesian coordinates with <span class="math notranslate nohighlight">\(z\)</span> along the optical axis:</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial^2 \psi}{\partial x^2} + \frac{\partial^2 \psi}{\partial y^2} + \frac{\partial^2 \psi}{\partial z^2} + \frac{1}{\lambda^2}\,\psi = 0.\]</div>
+</section>
+<section id="fourier-decomposition-in-the-transverse-plane">
+<h3>3. Fourier decomposition in the transverse plane<a class="headerlink" href="#fourier-decomposition-in-the-transverse-plane" title="Link to this heading">#</a></h3>
+<p>The multislice method treats the specimen as a stack of thin slices perpendicular to <span class="math notranslate nohighlight">\(z\)</span>. Within each slice the potential is projected onto a 2D plane (the projection approximation), and between slices the electron propagates through free space. Since the simulation cell is periodic in <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span>, we expand <span class="math notranslate nohighlight">\(\psi\)</span> in a discrete 2D Fourier series over transverse spatial frequencies <span class="math notranslate nohighlight">\(\mathbf{k}_\perp = (k_x, k_y)\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\psi(\mathbf{r}) = \sum_{\mathbf{k}_\perp} \hat{\psi}(\mathbf{k}_\perp, z)\; e^{i2\pi(k_x x + k_y y)}.\]</div>
+<p>Each Fourier component represents a plane wave tilted at angle <span class="math notranslate nohighlight">\(\theta \approx \lambda k_\perp\)</span> to the optical axis (small-angle regime). Substituting into the Helmholtz equation, the transverse derivatives act on the exponential giving <span class="math notranslate nohighlight">\(-4\pi^2(k_x^2 + k_y^2)\)</span>, while the <span class="math notranslate nohighlight">\(z\)</span> derivative acts on <span class="math notranslate nohighlight">\(\hat{\psi}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial^2 \hat{\psi}}{\partial z^2} + 4\pi^2\!\left(\frac{1}{\lambda^2} - k_x^2 - k_y^2\right)\hat{\psi} = 0.\]</div>
+<p>This is a 1D harmonic equation in <span class="math notranslate nohighlight">\(z\)</span> for each transverse frequency. The forward-propagating solution is <span class="math notranslate nohighlight">\(\hat{\psi}(\mathbf{k}_\perp, z) = \hat{\psi}(\mathbf{k}_\perp, 0)\,e^{i2\pi k_z z}\)</span>, where the longitudinal wavenumber <span class="math notranslate nohighlight">\(k_z\)</span> satisfies the <strong>dispersion relation</strong>:</p>
+<div class="math notranslate nohighlight">
+\[k_x^2 + k_y^2 + k_z^2 = \frac{1}{\lambda^2}.\]</div>
+<p>Solving for <span class="math notranslate nohighlight">\(k_z\)</span> (positive root for forward propagation):</p>
+<div class="math notranslate nohighlight">
+\[k_z = \sqrt{\frac{1}{\lambda^2} - k_\perp^2} = \frac{1}{\lambda}\sqrt{1 - \lambda^2 k_\perp^2}.\]</div>
+<p>The dispersion relation encodes the geometry: tilted plane waves (large <span class="math notranslate nohighlight">\(k_\perp\)</span>) have smaller <span class="math notranslate nohighlight">\(k_z\)</span> and advance more slowly along <span class="math notranslate nohighlight">\(z\)</span>, accumulating a phase lag relative to the axial wave (<span class="math notranslate nohighlight">\(k_\perp = 0\)</span>, <span class="math notranslate nohighlight">\(k_z = 1/\lambda\)</span>). This differential phase accumulation is exactly what the propagator must encode.</p>
+</section>
+<section id="exact-free-space-propagator-fourier-space">
+<h3>4. Exact free-space propagator (Fourier space)<a class="headerlink" href="#exact-free-space-propagator-fourier-space" title="Link to this heading">#</a></h3>
+<p>Propagation through a vacuum slab of thickness <span class="math notranslate nohighlight">\(\Delta z\)</span> multiplies each Fourier component by <span class="math notranslate nohighlight">\(e^{i2\pi k_z \Delta z}\)</span>. In the multislice formalism we work with the <strong>reduced wavefunction</strong> <span class="math notranslate nohighlight">\(\tilde{\psi}\)</span> that has the fast axial oscillation <span class="math notranslate nohighlight">\(e^{i2\pi z/\lambda}\)</span> factored out. The reduced propagator is:</p>
+<div class="math notranslate nohighlight">
+\[P(\mathbf{k}_\perp) = e^{i2\pi(k_z - 1/\lambda)\,\Delta z} = \exp\!\left[\frac{i2\pi\Delta z}{\lambda}\left(\sqrt{1 - \lambda^2 k_\perp^2} - 1\right)\right].\]</div>
+<p>Defining <span class="math notranslate nohighlight">\(x \equiv \lambda^2 k_\perp^2 = \lambda^2(k_x^2 + k_y^2)\)</span>, the phase argument is:</p>
+<div class="math notranslate nohighlight">
+\[\boxed{\varphi_\mathrm{exact} = \frac{2\pi\Delta z}{\lambda}\left(\sqrt{1 - x} - 1\right)}\]</div>
+<p>This is the exact free-space propagator phase. It is valid for all scattering angles and naturally handles both propagating (<span class="math notranslate nohighlight">\(x &lt; 1\)</span>) and evanescent (<span class="math notranslate nohighlight">\(x &gt; 1\)</span>) components.</p>
+<section id="a-evanescent-modes">
+<h4>4a. Evanescent modes<a class="headerlink" href="#a-evanescent-modes" title="Link to this heading">#</a></h4>
+<p>When <span class="math notranslate nohighlight">\(k_\perp &gt; k_0 = 1/\lambda\)</span> (i.e. <span class="math notranslate nohighlight">\(x &gt; 1\)</span>), <span class="math notranslate nohighlight">\(k_z\)</span> becomes purely imaginary and the wave decays exponentially:</p>
+<div class="math notranslate nohighlight">
+\[\left.\sqrt{1 - x}\;\right|_{x&gt;1} = i\sqrt{x - 1},\]</div>
+<div class="math notranslate nohighlight">
+\[P = \underbrace{e^{-2\pi\Delta z\sqrt{x-1}/\lambda}}_{\text{exponential decay}}\;\cdot\;\underbrace{e^{-i2\pi\Delta z/\lambda}}_{\text{constant phase}}.\]</div>
+<p>These modes carry no energy and decay rapidly. They are absent in the order 1 and 2 approximations, which implicitly assume <span class="math notranslate nohighlight">\(x \ll 1\)</span>. In practice the antialiasing aperture zeros most evanescent components, but the exact propagator handles them correctly regardless.</p>
+</section>
+<section id="b-numerical-stability">
+<h4>4b. Numerical stability<a class="headerlink" href="#b-numerical-stability" title="Link to this heading">#</a></h4>
+<p>For small <span class="math notranslate nohighlight">\(x\)</span> (paraxial regime, <span class="math notranslate nohighlight">\(k_\perp \ll 1/\lambda\)</span>), evaluating <span class="math notranslate nohighlight">\(\sqrt{1-x} - 1\)</span> directly subtracts two nearly equal numbers, losing significant digits. Multiplying numerator and denominator by the conjugate:</p>
+<div class="math notranslate nohighlight">
+\[\sqrt{1-x} - 1 = \frac{(\sqrt{1-x})^2 - 1^2}{\sqrt{1-x} + 1} = \frac{-x}{\sqrt{1-x} + 1},\]</div>
+<div class="math notranslate nohighlight">
+\[\boxed{\varphi_\mathrm{exact} = \frac{2\pi\Delta z}{\lambda}\cdot\frac{-x}{\sqrt{1-x} + 1}}\]</div>
+<p>This is the form used in the implementation. For <span class="math notranslate nohighlight">\(x \ll 1\)</span> the denominator is <span class="math notranslate nohighlight">\(\approx 2\)</span> and the expression smoothly gives <span class="math notranslate nohighlight">\(\varphi \approx -\pi\Delta z\lambda k_\perp^2\)</span> without cancellation. For <span class="math notranslate nohighlight">\(x\)</span> near 1 it remains exact.</p>
+</section>
+</section>
+<section id="taylor-approximations-of-the-fourier-space-propagator">
+<h3>5. Taylor approximations of the Fourier-space propagator<a class="headerlink" href="#taylor-approximations-of-the-fourier-space-propagator" title="Link to this heading">#</a></h3>
+<p>The binomial series gives:</p>
+<div class="math notranslate nohighlight">
+\[\sqrt{1-x} = 1 - \frac{x}{2} - \frac{x^2}{8} - \frac{x^3}{16} - \cdots\]</div>
+<section id="order-1-fresnel-paraxial">
+<h4>Order 1 (Fresnel / paraxial)<a class="headerlink" href="#order-1-fresnel-paraxial" title="Link to this heading">#</a></h4>
+<p>Keeping only the first correction term:</p>
+<div class="math notranslate nohighlight">
+\[\varphi_1 = -\frac{2\pi\Delta z}{\lambda}\cdot\frac{x}{2} = -\pi\Delta z\,\lambda\,k_\perp^2\]</div>
+<div class="math notranslate nohighlight">
+\[\boxed{P_1 = \exp\!\left(-i\pi\Delta z\,\lambda\,k_\perp^2\right)}\]</div>
+<p>Since <span class="math notranslate nohighlight">\(k_\perp^2 = k_x^2 + k_y^2\)</span> appears linearly in the exponent, this factorizes as <span class="math notranslate nohighlight">\(P_1 = e^{-i\pi\Delta z\lambda k_x^2}\cdot e^{-i\pi\Delta z\lambda k_y^2}\)</span> — the standard separable Fresnel propagator.</p>
+</section>
+<section id="order-2">
+<h4>Order 2<a class="headerlink" href="#order-2" title="Link to this heading">#</a></h4>
+<p>Keeping two correction terms:</p>
+<div class="math notranslate nohighlight">
+\[\varphi_2 = -\pi\Delta z\,\lambda\,k_\perp^2 - \frac{\pi\Delta z\,\lambda^3}{4}\,k_\perp^4\]</div>
+<div class="math notranslate nohighlight">
+\[\boxed{P_2 = P_1 \cdot \exp\!\left(-\frac{i\pi\Delta z\,\lambda^3}{4}\,k_\perp^4\right)}\]</div>
+<p>Note that <span class="math notranslate nohighlight">\(k_\perp^4 = (k_x^2 + k_y^2)^2 = k_x^4 + 2k_x^2 k_y^2 + k_y^4\)</span>. The cross-term <span class="math notranslate nohighlight">\(2k_x^2 k_y^2\)</span> is essential — the separable form <span class="math notranslate nohighlight">\(k_x^4 + k_y^4\)</span> is incorrect.</p>
+</section>
+<section id="truncation-error-scaling">
+<h4>Truncation error scaling<a class="headerlink" href="#truncation-error-scaling" title="Link to this heading">#</a></h4>
+<p>The per-slice phase error of the order-<span class="math notranslate nohighlight">\(n\)</span> approximation is dominated by the first dropped term. For order 1:</p>
+<div class="math notranslate nohighlight">
+\[\Delta\varphi_1 \approx \frac{\pi\Delta z\,\lambda^3}{4}\,k_\perp^4 \;\propto\; \lambda^3.\]</div>
+<p>For order 2:</p>
+<div class="math notranslate nohighlight">
+\[\Delta\varphi_2 \approx \frac{\pi\Delta z\,\lambda^5}{8}\,k_\perp^6 \;\propto\; \lambda^5.\]</div>
+<p>The steeper <span class="math notranslate nohighlight">\(\lambda\)</span> scaling explains why order 2 converges to exact much faster with increasing beam energy — the <span class="math notranslate nohighlight">\(\lambda^5\)</span> vs <span class="math notranslate nohighlight">\(\lambda^3\)</span> dependence gives roughly two additional orders of magnitude suppression at 200 keV compared to 10 keV.</p>
+</section>
+</section>
+<section id="the-exact-multislice-equation">
+<h3>6. The exact multislice equation<a class="headerlink" href="#the-exact-multislice-equation" title="Link to this heading">#</a></h3>
+<p>Sections 2–5 treated free-space propagation only. Inside the specimen, the wavefunction satisfies the Schrödinger equation with a crystal potential <span class="math notranslate nohighlight">\(V(\mathbf{r})\)</span>. In the high-energy (forward-scattering) approximation, the envelope <span class="math notranslate nohighlight">\(\tilde{\psi}\)</span> obeys:</p>
+<div class="math notranslate nohighlight">
+\[i\frac{\partial\tilde{\psi}}{\partial z} = \hat{H}\,\tilde{\psi}, \qquad \hat{H} = \underbrace{\frac{\nabla_\perp^2}{4\pi k_0}}_{\hat{K}} + \underbrace{\sigma V(x,y,z)}_{\hat{V}},\]</div>
+<p>where <span class="math notranslate nohighlight">\(\sigma = 2\pi m e\lambda / h^2\)</span> is the interaction parameter (relativistically corrected) and <span class="math notranslate nohighlight">\(k_0 = 1/\lambda\)</span>. Under the projection approximation (potential constant within each slice of thickness <span class="math notranslate nohighlight">\(\Delta z\)</span>), the exact solution for one slice is:</p>
+<div class="math notranslate nohighlight">
+\[\boxed{\psi(z + \Delta z) = \exp\!\left[i\Delta z\left(\hat{K} + \hat{V}\right)\right]\psi(z)}\]</div>
+<p>This is the exact multislice equation. All multislice methods approximate it; they differ in <strong>how</strong> they handle the exponential of the combined operator.</p>
+</section>
+<section id="two-independent-error-sources">
+<h3>7. Two independent error sources<a class="headerlink" href="#two-independent-error-sources" title="Link to this heading">#</a></h3>
+<section id="error-source-1-split-step-trotter-factorization">
+<h4>Error source 1: split-step (Trotter) factorization<a class="headerlink" href="#error-source-1-split-step-trotter-factorization" title="Link to this heading">#</a></h4>
+<p>The operators <span class="math notranslate nohighlight">\(\hat{K}\)</span> (kinetic, acts in Fourier space) and <span class="math notranslate nohighlight">\(\hat{V}\)</span> (potential, acts in real space) do not commute: <span class="math notranslate nohighlight">\([\hat{K}, \hat{V}] \neq 0\)</span>. The Fourier-space multislice method factorizes the combined exponential into separate steps:</p>
+<div class="math notranslate nohighlight">
+\[e^{i\Delta z(\hat{K} + \hat{V})} \approx e^{i\Delta z\hat{K}} \cdot e^{i\Delta z\hat{V}}.\]</div>
+<p>By the Baker–Campbell–Hausdorff formula, this Lie–Trotter splitting introduces an error:</p>
+<div class="math notranslate nohighlight">
+\[e^{i\Delta z\hat{K}} \cdot e^{i\Delta z\hat{V}} = \exp\!\left[i\Delta z(\hat{K} + \hat{V}) - \frac{\Delta z^2}{2}[\hat{K}, \hat{V}] + \cdots\right].\]</div>
+<p>The leading error term <span class="math notranslate nohighlight">\(O(\Delta z^2)\)</span> is present at every slice and can only be reduced by making <span class="math notranslate nohighlight">\(\Delta z\)</span> smaller.</p>
+</section>
+<section id="error-source-2-taylor-truncation-of-the-propagator">
+<h4>Error source 2: Taylor truncation of the propagator<a class="headerlink" href="#error-source-2-taylor-truncation-of-the-propagator" title="Link to this heading">#</a></h4>
+<p>Within <span class="math notranslate nohighlight">\(e^{i\Delta z\hat{K}}\)</span>, the exact kinetic phase <span class="math notranslate nohighlight">\(\sqrt{1 - \lambda^2 k_\perp^2} - 1\)</span> is approximated by a low-order Taylor polynomial, as described in Section 5.</p>
+</section>
+</section>
+<section id="fourier-space-method-pr-298">
+<h3>8. Fourier-space method (PR #298)<a class="headerlink" href="#fourier-space-method-pr-298" title="Link to this heading">#</a></h3>
+<p>The Fourier-space multislice uses the split-step approach: transmit in real space (multiply by the transmission function <span class="math notranslate nohighlight">\(T = e^{i\sigma V_z}\)</span>), then propagate in Fourier space (multiply by <span class="math notranslate nohighlight">\(P(\mathbf{k}_\perp)\)</span>):</p>
+<div class="math notranslate nohighlight">
+\[\tilde{\psi}(z + \Delta z) = \mathcal{F}^{-1}\!\left[P(\mathbf{k}_\perp) \cdot \mathcal{F}\!\left[T \cdot \tilde{\psi}(z)\right]\right].\]</div>
+<p>The three propagator options are:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Propagator</p></th>
+<th class="head"><p>Phase</p></th>
+<th class="head"><p>Error source 2</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Order 1</p></td>
+<td><p><span class="math notranslate nohighlight">\(-\pi\Delta z\lambda k_\perp^2\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(O(\lambda^3 k_\perp^4)\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Order 2</p></td>
+<td><p><span class="math notranslate nohighlight">\(-\pi\Delta z\lambda k_\perp^2 (1 - \frac{\lambda^2}{4}k_\perp^2)\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(O(\lambda^5 k_\perp^6)\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Exact</p></td>
+<td><p><span class="math notranslate nohighlight">\(\frac{2\pi\Delta z}{\lambda}\!\left(\sqrt{1-\lambda^2 k_\perp^2}-1\right)\)</span></p></td>
+<td><p><strong>none</strong></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The exact propagator (PR #298) <strong>eliminates error source 2</strong> but <strong>retains error source 1</strong> — the split-step factorization. It is fast because the propagator array is built once per unique slice geometry and reused as a simple Fourier-space multiply.</p>
+</section>
+<section id="real-space-method-pr-236">
+<h3>9. Real-space method (PR #236)<a class="headerlink" href="#real-space-method-pr-236" title="Link to this heading">#</a></h3>
+<p>The real-space multislice takes a fundamentally different approach. Instead of factorizing <span class="math notranslate nohighlight">\(e^{i\Delta z(\hat{K}+\hat{V})}\)</span> into separate transmission and propagation steps, it Taylor-expands the <strong>exponential of the combined operator</strong> directly:</p>
+<div class="math notranslate nohighlight">
+\[e^{i\Delta z\hat{H}}\psi = \sum_{n=0}^{N} \frac{(i\Delta z)^n}{n!}\,\hat{H}^n\,\psi, \qquad \hat{H} = \hat{K} + \hat{V}.\]</div>
+<p>Since <span class="math notranslate nohighlight">\(\hat{H}\)</span> is never factorized, the powers <span class="math notranslate nohighlight">\(\hat{H}^n\)</span> naturally contain all cross-terms between <span class="math notranslate nohighlight">\(\hat{K}\)</span> and <span class="math notranslate nohighlight">\(\hat{V}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\hat{H}^2 = \hat{K}^2 + \hat{K}\hat{V} + \hat{V}\hat{K} + \hat{V}^2.\]</div>
+<p>The commutator <span class="math notranslate nohighlight">\([\hat{K}, \hat{V}]\)</span> is automatically accounted for to all orders by the Taylor series. <strong>There is no split-step error.</strong></p>
+<p>The kinetic operator <span class="math notranslate nohighlight">\(\hat{K}\)</span> involves <span class="math notranslate nohighlight">\(\sqrt{1 - \lambda^2 k_\perp^2}\)</span>, which in real space becomes an infinite series of Laplacian powers. The <code class="docutils literal notranslate"><span class="pre">order</span></code> parameter controls how many terms are kept, and the <code class="docutils literal notranslate"><span class="pre">expansion_scope</span></code> parameter controls where the truncation is applied.</p>
+<section id="propagator-scope-expansion-scope-propagator">
+<h4>Propagator scope (<code class="docutils literal notranslate"><span class="pre">expansion_scope=&quot;propagator&quot;</span></code>)<a class="headerlink" href="#propagator-scope-expansion-scope-propagator" title="Link to this heading">#</a></h4>
+<p>Only the kinetic operator <span class="math notranslate nohighlight">\(\hat{K}\)</span> is expanded to order <span class="math notranslate nohighlight">\(n\)</span> in powers of <span class="math notranslate nohighlight">\(\nabla_\perp^2\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\hat{K}_n = \sum_{j=1}^{n} c_j\!\left(\frac{\nabla_\perp^2}{4\pi k_0}\right)^{\!j}, \qquad \hat{H} = \hat{K}_n + \hat{V}.\]</div>
+<p>The coefficients <span class="math notranslate nohighlight">\(c_j\)</span> are the same Taylor coefficients as in the Fourier-space orders. At order 1, <span class="math notranslate nohighlight">\(\hat{K}_1 = \nabla_\perp^2/(4\pi k_0)\)</span>, which is the Fresnel (paraxial) kinetic operator. At higher orders, additional powers of the Laplacian are included. The potential <span class="math notranslate nohighlight">\(\hat{V}\)</span> enters the operator once, but the outer exponential series mixes <span class="math notranslate nohighlight">\(\hat{K}_n\)</span> and <span class="math notranslate nohighlight">\(\hat{V}\)</span> through the repeated application of <span class="math notranslate nohighlight">\(\hat{H}\)</span>.</p>
+<p>The Laplacian is computed in real space using centered finite-difference stencils of configurable accuracy (default 6th order), avoiding the need for FFTs.</p>
+</section>
+<section id="full-scope-expansion-scope-full">
+<h4>Full scope (<code class="docutils literal notranslate"><span class="pre">expansion_scope=&quot;full&quot;</span></code>)<a class="headerlink" href="#full-scope-expansion-scope-full" title="Link to this heading">#</a></h4>
+<p>The full conventional operator <span class="math notranslate nohighlight">\(\hat{K}_1 + \hat{V}\)</span> is applied repeatedly at each order of the inner expansion:</p>
+<div class="math notranslate nohighlight">
+\[\hat{H}_\mathrm{full}^{(n)} = \sum_{j=1}^{n} c_j\,(\hat{K}_1 + \hat{V})^j.\]</div>
+<p>The higher-order terms already contain kinetic–potential cross-terms <em>within the operator itself</em>, not just in the outer exponential. At order 1 this reduces to the same operator as the propagator scope. At higher orders, the potential enters the repeated Laplacian applications, so even the representation of <span class="math notranslate nohighlight">\(\hat{H}\)</span> is more complete.</p>
+<p>This mode also enables computation of <strong>backscattered wave components</strong> by evaluating the correction term that arises from the difference between forward- and backward-propagating solutions at the slice boundary.</p>
+</section>
+</section>
+<section id="relationship-between-the-methods">
+<h3>10. Relationship between the methods<a class="headerlink" href="#relationship-between-the-methods" title="Link to this heading">#</a></h3>
+<p>The two approaches can be understood as addressing different layers of approximation in the multislice algorithm:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Propagator truncation</p></th>
+<th class="head"><p>Split-step error</p></th>
+<th class="head"><p>Backscatter</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Fourier, order 1</p></td>
+<td><p><span class="math notranslate nohighlight">\(O(\lambda^3)\)</span></p></td>
+<td><p><strong>yes</strong></p></td>
+<td><p>no</p></td>
+</tr>
+<tr class="row-odd"><td><p>Fourier, order 2</p></td>
+<td><p><span class="math notranslate nohighlight">\(O(\lambda^5)\)</span></p></td>
+<td><p><strong>yes</strong></p></td>
+<td><p>no</p></td>
+</tr>
+<tr class="row-even"><td><p>Fourier, exact</p></td>
+<td><p><strong>none</strong></p></td>
+<td><p><strong>yes</strong></p></td>
+<td><p>no</p></td>
+</tr>
+<tr class="row-odd"><td><p>Real-space, propagator scope, order <span class="math notranslate nohighlight">\(n\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(O(\lambda^{2n+1})\)</span></p></td>
+<td><p><strong>none</strong></p></td>
+<td><p>no</p></td>
+</tr>
+<tr class="row-even"><td><p>Real-space, full scope, order <span class="math notranslate nohighlight">\(n\)</span></p></td>
+<td><p>mixed to order <span class="math notranslate nohighlight">\(n\)</span></p></td>
+<td><p><strong>none</strong></p></td>
+<td><p><strong>yes</strong></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The exact Fourier-space propagator is the Fourier-space equivalent of the real-space method with <code class="docutils literal notranslate"><span class="pre">expansion_scope=&quot;propagator&quot;</span></code> at order <span class="math notranslate nohighlight">\(n \to \infty\)</span>. They would agree exactly in the limit of infinitely thin slices, where the Trotter splitting error vanishes. For any finite slice thickness, the real-space method is inherently more accurate because it exponentiates the combined operator rather than factorizing it.</p>
+<p>The fully-corrected real-space method (<code class="docutils literal notranslate"><span class="pre">expansion_scope=&quot;full&quot;</span></code>) goes further still: it mixes kinetic and potential contributions in the operator expansion itself, and can additionally capture backscattered wave components that are absent from all Fourier-space formulations.</p>
+<p>The tradeoff is computational cost. The Fourier-space method builds the propagator array once per unique slice geometry (a function of thickness, grid, sampling, and energy) and reuses it as a single Fourier-space multiply at every slice for every beam position. The real-space method must iterate a finite-difference Taylor series to convergence at every slice for every beam position, with each iteration requiring a stencil convolution over the full grid.</p>
+</section>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -672,6 +945,52 @@
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#higher-order-fourier-and-real-space-formulations">Higher-order Fourier- and real-space formulations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#relativistic-electron-wavelength">1. Relativistic electron wavelength</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#helmholtz-equation">2. Helmholtz equation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fourier-decomposition-in-the-transverse-plane">3. Fourier decomposition in the transverse plane</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#exact-free-space-propagator-fourier-space">4. Exact free-space propagator (Fourier space)</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#a-evanescent-modes">4a. Evanescent modes</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#b-numerical-stability">4b. Numerical stability</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#taylor-approximations-of-the-fourier-space-propagator">5. Taylor approximations of the Fourier-space propagator</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#order-1-fresnel-paraxial">Order 1 (Fresnel / paraxial)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#order-2">Order 2</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#truncation-error-scaling">Truncation error scaling</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-exact-multislice-equation">6. The exact multislice equation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#two-independent-error-sources">7. Two independent error sources</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#error-source-1-split-step-trotter-factorization">Error source 1: split-step (Trotter) factorization</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#error-source-2-taylor-truncation-of-the-propagator">Error source 2: Taylor truncation of the propagator</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fourier-space-method-pr-298">8. Fourier-space method (PR #298)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#real-space-method-pr-236">9. Real-space method (PR #236)</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#propagator-scope-expansion-scope-propagator">Propagator scope (<code class="docutils literal notranslate"><span class="pre">expansion_scope="propagator"</span></code>)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#full-scope-expansion-scope-full">Full scope (<code class="docutils literal notranslate"><span class="pre">expansion_scope="full"</span></code>)</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#relationship-between-the-methods">10. Relationship between the methods</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

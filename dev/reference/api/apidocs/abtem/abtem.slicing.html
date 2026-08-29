@@ -264,6 +264,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -594,6 +595,8 @@
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.slicing.SlicedAtoms.get_atoms_in_slices"><code class="docutils literal notranslate"><span class="pre">SlicedAtoms.get_atoms_in_slices()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.slicing.commensurate_gpts"><code class="docutils literal notranslate"><span class="pre">commensurate_gpts()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.slicing.commensurate_slice_thickness"><code class="docutils literal notranslate"><span class="pre">commensurate_slice_thickness()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.slicing.crystal_slice_thicknesses"><code class="docutils literal notranslate"><span class="pre">crystal_slice_thicknesses()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.slicing.is_number"><code class="docutils literal notranslate"><span class="pre">is_number()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.slicing.slice_limits"><code class="docutils literal notranslate"><span class="pre">slice_limits()</span></code></a></li>
@@ -639,6 +642,14 @@ a collection of slices along the z-direction.</p></td>
 <h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h3>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table table-left">
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#abtem.slicing.commensurate_gpts" title="abtem.slicing.commensurate_gpts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">commensurate_gpts</span></code></a></p></td>
+<td><p>Find grid points such that the sampling grid is commensurate with the atom
+positions in x and y, closest to a target sampling.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#abtem.slicing.commensurate_slice_thickness" title="abtem.slicing.commensurate_slice_thickness"><code class="xref py py-obj docutils literal notranslate"><span class="pre">commensurate_slice_thickness</span></code></a></p></td>
+<td><p>Find slice thicknesses commensurate with the crystal planes, closest to a target
+thickness.</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#abtem.slicing.crystal_slice_thicknesses" title="abtem.slicing.crystal_slice_thicknesses"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crystal_slice_thicknesses</span></code></a></p></td>
 <td><p>Calculates slice thicknesses to match the spacing between the crystal planes of a
 given collection of atoms.</p></td>
@@ -811,6 +822,84 @@ not equal to the height of the atoms.</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="abtem.slicing.commensurate_gpts">
+<span class="sig-prename descclassname"><span class="pre">abtem.slicing.</span></span><span class="sig-name descname"><span class="pre">commensurate_gpts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/slicing.html#commensurate_gpts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.slicing.commensurate_gpts" title="Link to this definition">#</a></dt>
+<dd><p>Find grid points such that the sampling grid is commensurate with the atom
+positions in x and y, closest to a target sampling.</p>
+<p>For each axis the function identifies the unique atom planes and computes the
+GCD of the spacings between them.  This gives the primitive lattice spacing
+and therefore the required grid period p (= number of grid points per unit
+cell of the primitive lattice).  The result is invariant under rigid
+translations of the structure: a crystal that has been centered or otherwise
+shifted within the cell always yields the same p as the unshifted version.</p>
+<p>When <cite>round_to_fast_fft</cite> is enabled the number of grid points additionally
+factorizes completely into the primes 2, 3, 5 and 7 whenever that is
+compatible with commensurability, so FFTs run on fast radix kernels instead
+of the slow, memory-hungry Bluestein fallback.  The multiple of p nearest
+the target sampling is kept when it is already such a length, and otherwise
+the next one up – so enabling this never coarsens the grid.  If p itself
+contains a prime factor larger than 7 no multiple of it can be fast, and
+commensurability takes precedence.</p>
+<p>Structures whose internal parameters are irrational (rutile, brookite) have
+no commensurate grid at all.  For those, <cite>round_to_fast_fft</cite> additionally
+selects among fast sizes within a few percent of the target the one whose
+grid the atom planes come closest to sitting on, subject to keeping the
+grid a multiple of the plane set’s translational period – without which
+symmetry-equivalent atoms in different unit cells would discretise
+differently.  This is the only case in which the returned grid is not the
+one closest to <cite>target_sampling</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Grid extent in x and y [Å].</p></li>
+<li><p><strong>positions</strong> (<em>np.ndarray</em>) – Atom positions with shape (N, 3) or (N, 2).</p></li>
+<li><p><strong>target_sampling</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Target grid sampling [Å].</p></li>
+<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Tolerance for identifying distinct atom planes [Å].</p></li>
+<li><p><strong>round_to_fast_fft</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True (default), prefer grids that are also fast FFT sizes (all prime
+factors in {2, 3, 5, 7}). The realized sampling is then never coarser
+than commensurability alone would give, and at most a few percent
+finer. Setting
+this to False reproduces the plain commensurate grid exactly, including
+for the incommensurate structures above, which then simply take the
+target size.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of grid points in x and y.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="abtem.slicing.commensurate_slice_thickness">
+<span class="sig-prename descclassname"><span class="pre">abtem.slicing.</span></span><span class="sig-name descname"><span class="pre">commensurate_slice_thickness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/slicing.html#commensurate_slice_thickness"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.slicing.commensurate_slice_thickness" title="Link to this definition">#</a></dt>
+<dd><p>Find slice thicknesses commensurate with the crystal planes, closest to a target
+thickness.</p>
+<p>Unique z-positions (within <cite>tolerance</cite>) define candidate slice boundaries between 0
+and the cell height.  Adjacent plane-level slices are merged so that each resulting
+slice thickness is as close as possible to <cite>target_thickness</cite> while keeping
+boundaries aligned with atomic planes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atoms</strong> (<em>Atoms</em>) – The atoms to be sliced. Must have an orthogonal cell.</p></li>
+<li><p><strong>target_thickness</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Target slice thickness [Å].</p></li>
+<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Tolerance for identifying distinct crystal planes [Å].</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Commensurate slice thicknesses.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="abtem.slicing.crystal_slice_thicknesses">
 <span class="sig-prename descclassname"><span class="pre">abtem.slicing.</span></span><span class="sig-name descname"><span class="pre">crystal_slice_thicknesses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/slicing.html#crystal_slice_thicknesses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.slicing.crystal_slice_thicknesses" title="Link to this definition">#</a></dt>
 <dd><p>Calculates slice thicknesses to match the spacing between the crystal planes of a
@@ -942,6 +1031,8 @@ an integer, or a float.</p>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.slicing.SlicedAtoms.get_atoms_in_slices"><code class="docutils literal notranslate"><span class="pre">SlicedAtoms.get_atoms_in_slices()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.slicing.commensurate_gpts"><code class="docutils literal notranslate"><span class="pre">commensurate_gpts()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.slicing.commensurate_slice_thickness"><code class="docutils literal notranslate"><span class="pre">commensurate_slice_thickness()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.slicing.crystal_slice_thicknesses"><code class="docutils literal notranslate"><span class="pre">crystal_slice_thicknesses()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.slicing.is_number"><code class="docutils literal notranslate"><span class="pre">is_number()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.slicing.slice_limits"><code class="docutils literal notranslate"><span class="pre">slice_limits()</span></code></a></li>

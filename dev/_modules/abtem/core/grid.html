@@ -259,6 +259,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -537,6 +538,46 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">CopyMixin</span><span class="p">,</span> <span class="n">EqualityMixin</span><span class="p">,</span> <span class="n">get_dtype</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_fast_fft_rounding_mode</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Normalize the ``grid.round-to-fast-fft`` configuration to a mode string.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        ``'never'``, ``'auto'`` (only grids abTEM derives on its own) or</span>
+<span class="sd">        ``'always'`` (additionally grids derived from a numeric sampling).</span>
+<span class="sd">    """</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"grid.round-to-fast-fft"</span><span class="p">,</span> <span class="s2">"auto"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">"always"</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">"never"</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">"auto"</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="s2">"configuration 'grid.round-to-fast-fft' must be True, False or 'auto', "</span>
+        <span class="sa">f</span><span class="s2">"got </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">"</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="round_auto_derived_gpts">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.grid.html#abtem.core.grid.round_auto_derived_gpts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">round_auto_derived_gpts</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Whether grids abTEM derives on its own are rounded to fast FFT lengths.</span>
+
+<span class="sd">    This covers grids abTEM chooses without a user-supplied sampling, such as</span>
+<span class="sd">    ``Potential(..., sampling='auto')``. Grids derived from a numeric sampling</span>
+<span class="sd">    are governed separately (they are only rounded in the ``'always'`` mode),</span>
+<span class="sd">    because rounding those changes the result of an existing script.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">_fast_fft_rounding_mode</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">"never"</span></div>
+
+
+
 <div class="viewcode-block" id="validate_gpts">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.grid.html#abtem.core.grid.validate_gpts">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">validate_gpts</span><span class="p">(</span><span class="n">gpts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
@@ -654,8 +695,13 @@
         <span class="n">lock_extent</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">lock_gpts</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">lock_sampling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">fft_grid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dimensions</span> <span class="o">=</span> <span class="n">dimensions</span>
+        <span class="c1"># Only a grid that is Fourier transformed benefits from a fast FFT</span>
+        <span class="c1"># length. A scan grid samples probe positions, so rounding it would</span>
+        <span class="c1"># silently change the number of probes and the scan step for nothing.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fft_grid</span> <span class="o">=</span> <span class="n">fft_grid</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
             <span class="n">endpoint</span> <span class="o">=</span> <span class="p">(</span><span class="n">endpoint</span><span class="p">,)</span> <span class="o">*</span> <span class="n">dimensions</span>
@@ -821,6 +867,17 @@
                 <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">extent</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span><span class="p">)</span>
             <span class="p">)</span>
 
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fft_grid</span> <span class="ow">and</span> <span class="n">_fast_fft_rounding_mode</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"always"</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">next_fast_fft_size</span>
+
+                <span class="c1"># Round upward only, so the realized sampling is never coarser</span>
+                <span class="c1"># than requested. Endpoint grids are not periodic FFT grids and</span>
+                <span class="c1"># keep the exact ceil-derived size.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_gpts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                    <span class="n">n</span> <span class="k">if</span> <span class="n">e</span> <span class="k">else</span> <span class="n">next_fast_fft_size</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_gpts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span><span class="p">)</span>
+                <span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_adjust_sampling</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">extent</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">gpts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="p">):</span>
@@ -931,14 +988,24 @@
         <span class="bp">self</span><span class="p">,</span> <span class="n">powers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Round the grid gpts up to the nearest value that is a power of n. Fourier</span>
-<span class="sd">        transforms are faster for arrays of whose size can be factored into small primes</span>
-<span class="sd">        (2, 3, 5 and 7).</span>
+<span class="sd">        Round the grid gpts up to a whole power of one of the given bases.</span>
+
+<span class="sd">        Each gpts becomes ``base ** k`` for whichever base gives the smallest</span>
+<span class="sd">        such value at or above it -- a *pure* power, not a product of several</span>
+<span class="sd">        bases, so 2623 rounds to 4096 rather than to 2625. That is a much</span>
+<span class="sd">        larger grid than fast FFTs actually require: see</span>
+<span class="sd">        :meth:`round_to_fast_fft`, which rounds to the nearest length whose</span>
+<span class="sd">        prime factors all lie in {2, 3, 5, 7} and is what "faster for arrays</span>
+<span class="sd">        whose size factorizes into small primes" normally means.</span>
+
+<span class="sd">        (For a handful of inputs that are already exact powers of 5 or 7 --</span>
+<span class="sd">        125, 15625, 16807 -- floating-point ``log`` rounds the exponent up and</span>
+<span class="sd">        the result overshoots to the next power.)</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        powers : int</span>
-<span class="sd">            The gpts will be a power of this number.</span>
+<span class="sd">        powers : int or list of int, optional</span>
+<span class="sd">            The bases to consider. Default [2, 3, 5, 7].</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">powers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">powers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">]</span>
@@ -954,6 +1021,53 @@
             <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">power</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">power</span><span class="p">))</span> <span class="k">for</span> <span class="n">power</span> <span class="ow">in</span> <span class="n">powers</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span>
         <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span> <span class="o">=</span> <span class="n">gpts</span>
+
+        <span class="k">return</span> <span class="n">gpts</span></div>
+
+
+<div class="viewcode-block" id="Grid.round_to_fast_fft">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.grid.html#abtem.core.grid.Grid.round_to_fast_fft">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">round_to_fast_fft</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Round the grid gpts up to the nearest fast FFT lengths.</span>
+
+<span class="sd">        Fast lengths factorize completely into the primes 2, 3, 5 and 7, for</span>
+<span class="sd">        which FFT libraries (FFTW, pocketfft, MKL and cuFFT) ship optimized</span>
+<span class="sd">        kernels; any other length falls back to a slower generic algorithm --</span>
+<span class="sd">        on cuFFT the Bluestein algorithm, which additionally allocates a</span>
+<span class="sd">        workspace of several times the transform size. Rounding is always</span>
+<span class="sd">        upward, so the realized sampling is never coarser than before.</span>
+
+<span class="sd">        Every gpts is rounded, including on an endpoint grid -- unlike the</span>
+<span class="sd">        automatic rounding, which leaves endpoint grids alone because they are</span>
+<span class="sd">        not periodic FFT grids.</span>
+
+<span class="sd">        Automatic rounding is governed by the configuration option</span>
+<span class="sd">        ``grid.round-to-fast-fft``: ``'auto'`` (the default) rounds the grids</span>
+<span class="sd">        abTEM derives on its own, such as ``Potential(sampling='auto')``;</span>
+<span class="sd">        ``True`` additionally rounds gpts derived from a numeric sampling;</span>
+<span class="sd">        ``False`` disables it everywhere.</span>
+
+<span class="sd">        Grids that are never Fourier transformed (``fft_grid=False``, e.g. the</span>
+<span class="sd">        probe positions of a ``GridScan``) are returned unchanged: a fast</span>
+<span class="sd">        length buys them nothing, and changing them would change what is</span>
+<span class="sd">        simulated rather than how fast it runs.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple of int</span>
+<span class="sd">            The rounded gpts.</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">next_fast_fft_size</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fft_grid</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span>
+
+        <span class="n">gpts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">next_fast_fft_size</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span> <span class="o">=</span> <span class="n">gpts</span>
 

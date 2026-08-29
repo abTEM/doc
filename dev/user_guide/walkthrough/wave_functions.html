@@ -266,6 +266,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -576,7 +577,10 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plane-wave-functions">Plane wave functions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#probe-wave-functions">Probe wave functions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizing-the-wave-function">Visualizing the wave function</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wave-function-ensembles">Wave-function ensembles</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wave-function-ensembles">Wave-function ensembles</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#energy-ensembles">Energy ensembles</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -1200,6 +1204,93 @@ RealSpaceAxis  y [Å]    0.00 0.10 ... 24.90
 </table></div></div>
 </div>
 <p>Be careful about running the <code class="docutils literal notranslate"><span class="pre">compute</span></code> method after adding ensemble dimensions before applying a reduction operation, such as taking an ensemble mean or applying a detector. The above ensemble would take <span class="math notranslate nohighlight">\(\sim 13 \ \mathrm{GB}\)</span> of memory.</p>
+<section id="energy-ensembles">
+<h3>Energy ensembles<a class="headerlink" href="#energy-ensembles" title="Link to this heading">#</a></h3>
+<p>Since version <code class="docutils literal notranslate"><span class="pre">1.1.0</span></code>, the acceleration energy is an ensemble parameter like any other: <code class="docutils literal notranslate"><span class="pre">PlaneWave</span></code>, <code class="docutils literal notranslate"><span class="pre">Probe</span></code>, <code class="docutils literal notranslate"><span class="pre">SMatrix</span></code> and <code class="docutils literal notranslate"><span class="pre">BlochWaves</span></code> all accept a list of energies instead of a single value, and the resulting ensemble dimension is an <code class="docutils literal notranslate"><span class="pre">EnergyAxis</span></code>.</p>
+<p>Energy differs from the other ensemble parameters in one important respect: it sets the wavelength, and hence everything derived from it. Below we build the same <span class="math notranslate nohighlight">\(20 \ \mathrm{mrad}\)</span> probe at three acceleration voltages.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">probe_energy_series</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Probe</span><span class="p">(</span>
+    <span class="n">gpts</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+    <span class="n">extent</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">energy</span><span class="o">=</span><span class="p">[</span><span class="mf">60e3</span><span class="p">,</span> <span class="mf">100e3</span><span class="p">,</span> <span class="mf">300e3</span><span class="p">],</span>
+    <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">waves_energy_series</span> <span class="o">=</span> <span class="n">probe_energy_series</span><span class="o">.</span><span class="n">build</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+
+<span class="n">waves_energy_series</span><span class="o">.</span><span class="n">axes_metadata</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>type           label        coordinates
+-------------  -----------  ----------------------------
+EnergyAxis     Energy [eV]  60000.00 100000.00 300000.00
+RealSpaceAxis  x [Å]        0.00 0.08 ... 19.92
+RealSpaceAxis  y [Å]        0.00 0.08 ... 19.92
+</pre></div>
+</div>
+</div>
+</div>
+<p>The probe is limited by the same convergence semiangle at every energy, so the shorter wavelength at higher energy produces a narrower probe.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">line_profiles</span> <span class="o">=</span> <span class="n">waves_energy_series</span><span class="o">.</span><span class="n">intensity</span><span class="p">()</span><span class="o">.</span><span class="n">interpolate_line_at_position</span><span class="p">(</span>
+    <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="mi">4</span>
+<span class="p">)</span>
+
+<span class="n">visualization</span> <span class="o">=</span> <span class="n">line_profiles</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">explode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">common_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/3df62510540f3713244d1deccf3d7ce41380654865cb23fd605bb9138e92cec5.png" src="../../_images/3df62510540f3713244d1deccf3d7ce41380654865cb23fd605bb9138e92cec5.png" />
+</div>
+</div>
+<p>Indexing an energy ensemble carries the energy of the selected member into its metadata, so energy-dependent properties are resolved for that member alone.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">waves</span> <span class="ow">in</span> <span class="n">waves_energy_series</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">waves</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">'energy'</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1e-3</span><span class="si">:</span><span class="s2">&gt;3.0f</span><span class="si">}</span><span class="s2"> keV: "</span>
+        <span class="sa">f</span><span class="s2">"wavelength = </span><span class="si">{</span><span class="n">waves</span><span class="o">.</span><span class="n">wavelength</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> Å, "</span>
+        <span class="sa">f</span><span class="s2">"angular sampling = </span><span class="si">{</span><span class="n">waves</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> mrad"</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 60 keV: wavelength = 0.0487 Å, angular sampling = 2.43 mrad
+100 keV: wavelength = 0.0370 Å, angular sampling = 1.85 mrad
+300 keV: wavelength = 0.0197 Å, angular sampling = 0.98 mrad
+</pre></div>
+</div>
+</div>
+</div>
+<p>The same convergence semiangle covers a different range of spatial frequencies at each energy: the shorter the wavelength, the further out in reciprocal space the aperture reaches, which is why the probe above narrows with energy.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">diffraction_patterns_energy_series</span> <span class="o">=</span> <span class="n">waves_energy_series</span><span class="o">.</span><span class="n">diffraction_patterns</span><span class="p">(</span>
+    <span class="n">max_angle</span><span class="o">=</span><span class="mi">40</span>
+<span class="p">)</span>
+
+<span class="n">visualization</span> <span class="o">=</span> <span class="n">diffraction_patterns_energy_series</span><span class="o">.</span><span class="n">show</span><span class="p">(</span>
+    <span class="n">explode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">common_color_scale</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/e11f0f6a4606f12c556dae1e8920f68206aa067bce3879bdbd428a9c7eb67e2b.png" src="../../_images/e11f0f6a4606f12c556dae1e8920f68206aa067bce3879bdbd428a9c7eb67e2b.png" />
+</div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>A <em>full</em> energy ensemble has no single energy, and <em>ab</em>TEM resolves the energy-dependent parts of it against one member: <code class="docutils literal notranslate"><span class="pre">angular_sampling</span></code> reports the value for the highest energy of the ensemble, and angular plot units (<code class="docutils literal notranslate"><span class="pre">units=&quot;mrad&quot;</span></code>) are converted with a single energy, giving every panel of an exploded plot the same angular scale. Show whole energy ensembles in reciprocal-space units (the default), and index the ensemble before switching to angular units.</p>
+</div>
+<p>Energy ensembles are supported by <code class="docutils literal notranslate"><span class="pre">PlaneWave.multislice</span></code>, <code class="docutils literal notranslate"><span class="pre">Probe.multislice</span></code> and <code class="docutils literal notranslate"><span class="pre">Probe.scan</span></code>, by <code class="docutils literal notranslate"><span class="pre">SMatrix.reduce</span></code> and <code class="docutils literal notranslate"><span class="pre">SMatrix.scan</span></code>, and by the <code class="docutils literal notranslate"><span class="pre">BlochWaves</span></code> methods; a <code class="docutils literal notranslate"><span class="pre">CTF</span></code> given several energies is applied per member. Two things still require a single energy: <code class="docutils literal notranslate"><span class="pre">SMatrix.build(upsample=True)</span></code>, where the compressed C-PRISM representation has no ensemble axis to carry the energies (use <code class="docutils literal notranslate"><span class="pre">reduce</span></code> or <code class="docutils literal notranslate"><span class="pre">scan</span></code> instead), and quantities that have to be resolved before the ensemble exists, such as <code class="docutils literal notranslate"><span class="pre">defocus=&quot;scherzer&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">CTF.profiles()</span></code>.</p>
+</section>
 </section>
 </section>
 
@@ -1272,7 +1363,10 @@ RealSpaceAxis  y [Å]    0.00 0.10 ... 24.90
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plane-wave-functions">Plane wave functions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#probe-wave-functions">Probe wave functions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizing-the-wave-function">Visualizing the wave function</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wave-function-ensembles">Wave-function ensembles</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wave-function-ensembles">Wave-function ensembles</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#energy-ensembles">Energy ensembles</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

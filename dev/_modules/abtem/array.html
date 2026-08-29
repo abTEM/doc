@@ -259,6 +259,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -571,6 +572,7 @@
     <span class="n">ensure_cuda_cluster</span><span class="p">,</span>
     <span class="n">get_array_module</span><span class="p">,</span>
     <span class="n">is_gpu_dask_client</span><span class="p">,</span>
+    <span class="n">push_config_to_workers</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chunks</span><span class="p">,</span> <span class="n">iterate_chunk_ranges</span><span class="p">,</span> <span class="n">validate_chunks</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ensemble</span><span class="p">,</span> <span class="n">_wrap_with_array</span><span class="p">,</span> <span class="n">unpack_blockwise_args</span>
@@ -772,6 +774,11 @@
 <span class="sd">            For directory stores, use .zarr extension or a directory path.</span>
 <span class="sd">        compute : bool</span>
 <span class="sd">            If true compute immediately; return dask.delayed.Delayed otherwise.</span>
+<span class="sd">            Note that the returned delayed write nests an ``array.compute()``</span>
+<span class="sd">            executed under whatever scheduler is active when the caller</span>
+<span class="sd">            finally computes it -- the multi-GPU bootstrap and the forced</span>
+<span class="sd">            synchronous GPU scheduler apply only to ``compute=True``. On GPU,</span>
+<span class="sd">            prefer ``compute=True`` or compute the result before saving.</span>
 <span class="sd">        overwrite : bool</span>
 <span class="sd">            If given array already exists, overwrite=False will cause an error, where</span>
 <span class="sd">            overwrite=True will replace the existing data.</span>
@@ -861,7 +868,6 @@
 
         <span class="k">if</span> <span class="n">is_zip</span><span class="p">:</span>
             <span class="c1"># Use ZipStore for .zip files</span>
-            <span class="nd">@dask</span><span class="o">.</span><span class="n">delayed</span>
             <span class="k">def</span><span class="w"> </span><span class="nf">write_to_zipstore</span><span class="p">(</span>
                 <span class="n">computed_arrays</span><span class="p">,</span>
                 <span class="n">url</span><span class="p">,</span>
@@ -902,16 +908,10 @@
 
                 <span class="k">return</span> <span class="n">url</span>
 
-            <span class="n">delayed_arrays</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">compute</span><span class="p">)())</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">arrays_to_write</span>
-            <span class="p">]</span>
-            <span class="n">delayed_write</span> <span class="o">=</span> <span class="n">write_to_zipstore</span><span class="p">(</span>
-                <span class="n">delayed_arrays</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">metadata_list</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">,</span> <span class="n">compressors</span><span class="o">=</span><span class="n">compressors</span>
-            <span class="p">)</span>
+            <span class="n">write_func</span> <span class="o">=</span> <span class="n">write_to_zipstore</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Use directory store for non-.zip files</span>
-            <span class="nd">@dask</span><span class="o">.</span><span class="n">delayed</span>
             <span class="k">def</span><span class="w"> </span><span class="nf">write_to_directory</span><span class="p">(</span><span class="n">computed_arrays</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">metadata_list</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">):</span>
                 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 
@@ -941,33 +941,44 @@
 
                 <span class="k">return</span> <span class="n">url</span>
 
+            <span class="n">write_func</span> <span class="o">=</span> <span class="n">write_to_directory</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">compute</span><span class="p">:</span>
             <span class="n">delayed_arrays</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">compute</span><span class="p">)())</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">arrays_to_write</span>
             <span class="p">]</span>
-            <span class="n">delayed_write</span> <span class="o">=</span> <span class="n">write_to_directory</span><span class="p">(</span>
+            <span class="k">return</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">write_func</span><span class="p">)(</span>
                 <span class="n">delayed_arrays</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">metadata_list</span><span class="p">,</span> <span class="n">overwrite</span>
             <span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">compute</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">delayed_write</span>
-
-        <span class="c1"># On GPU, force the synchronous scheduler to avoid multiple dask tasks</span>
-        <span class="c1"># running in parallel, each loading potential chunks + wave arrays into</span>
-        <span class="c1"># VRAM simultaneously. We must use dask.config.set() (via the guard) rather</span>
-        <span class="c1"># than just passing scheduler= to dask.compute(), because the delayed graph</span>
-        <span class="c1"># contains inner array.compute() calls that would otherwise use dask's</span>
-        <span class="c1"># default threaded scheduler. The guard makes an exception for an active</span>
-        <span class="c1"># single-threaded dask-cuda client, which already runs one task per GPU.</span>
+        <span class="c1"># Compute the arrays first -- resolving the GPU execution context the</span>
+        <span class="c1"># same way as ArrayObject.compute, so the opt-in multi-GPU cluster</span>
+        <span class="c1"># (``dask.multi-gpu``) is started on this path too -- then write the</span>
+        <span class="c1"># gathered results eagerly. Writing through a delayed task that itself</span>
+        <span class="c1"># calls array.compute() would nest a compute inside a scheduler task:</span>
+        <span class="c1"># the synchronous scheduler then needs a global config override to</span>
+        <span class="c1"># reach the nested call, and under a distributed client the nested</span>
+        <span class="c1"># compute would run on the local scheduler inside a single worker,</span>
+        <span class="c1"># serializing the whole computation onto one GPU.</span>
         <span class="n">is_gpu</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"device"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"gpu"</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
             <span class="n">_is_gpu_array_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span>
         <span class="p">)</span>
-        <span class="k">if</span> <span class="n">is_gpu</span><span class="p">:</span>
-            <span class="n">check_cupy_is_installed</span><span class="p">()</span>
+        <span class="n">_push_config_to_active_client</span><span class="p">()</span>
 
-        <span class="k">with</span> <span class="n">_gpu_scheduler_guard</span><span class="p">(</span><span class="n">is_gpu</span><span class="p">),</span> <span class="n">_compute_context</span><span class="p">(</span>
+        <span class="k">if</span> <span class="n">is_gpu</span><span class="p">:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_resolve_gpu_scheduler</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span>
+
+        <span class="k">with</span> <span class="n">_nested_compute_guard</span><span class="p">(</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_compute_context</span><span class="p">(</span>
             <span class="n">progress_bar</span><span class="p">,</span> <span class="n">profiler</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">resource_profiler</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span> <span class="k">as</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">profiler</span><span class="p">,</span> <span class="n">resource_profiler</span><span class="p">):</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">delayed_write</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">arrays</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">([</span><span class="n">array</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">arrays_to_write</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">write_func</span><span class="p">(</span>
+            <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span> <span class="n">array</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">arrays_to_write</span><span class="p">,</span> <span class="n">arrays</span><span class="p">)],</span>
+            <span class="n">url</span><span class="p">,</span>
+            <span class="n">metadata_list</span><span class="p">,</span>
+            <span class="n">overwrite</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="n">profilers</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">(</span><span class="n">profiler</span><span class="p">,</span> <span class="n">resource_profiler</span><span class="p">)</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">profilers</span><span class="p">:</span>
@@ -1053,20 +1064,30 @@
     <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">"device"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="s2">"gpu"</span>
 
 
-<span class="nd">@contextmanager</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_gpu_scheduler_guard</span><span class="p">(</span><span class="n">is_gpu</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Guard nested/implicit GPU computes against the threaded scheduler.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_gpu_scheduler</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Resolve the dask scheduler for a GPU computation.</span>
 
-<span class="sd">    On GPU, force the synchronous scheduler so that nested ``array.compute()``</span>
-<span class="sd">    calls cannot fall back to dask's default threaded scheduler and load multiple</span>
-<span class="sd">    potential/wave chunks into a single GPU's memory at once. When a single-</span>
-<span class="sd">    threaded dask-cuda client is active (one worker pinned per GPU), that per-GPU</span>
-<span class="sd">    exclusivity already holds inside each worker, so the work is left to the</span>
-<span class="sd">    client to distribute across the cluster instead of being forced synchronous.</span>
+<span class="sd">    Starts the opt-in multi-GPU cluster (``dask.multi-gpu``) when more than one</span>
+<span class="sd">    GPU is visible and no client or explicit scheduler is already in charge.</span>
+<span class="sd">    When no suitable single-threaded dask-cuda client ends up handling the</span>
+<span class="sd">    computation, the synchronous scheduler is selected instead: the threaded</span>
+<span class="sd">    scheduler and multi-threaded workers share a single CUDA context per</span>
+<span class="sd">    process, which cannot be used with CuPy, and concurrent tasks would load</span>
+<span class="sd">    multiple potential/wave chunks into a single GPU's memory at once.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    kwargs : dict</span>
+<span class="sd">        Keyword arguments destined for ``dask.compute``. A ``scheduler`` key</span>
+<span class="sd">        set by the caller is always respected.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        The keyword arguments, with ``scheduler="synchronous"`` injected when</span>
+<span class="sd">        no suitable client is available.</span>
 <span class="sd">    """</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_gpu</span><span class="p">:</span>
-        <span class="k">yield</span>
-        <span class="k">return</span>
+    <span class="n">check_cupy_is_installed</span><span class="p">()</span>
 
     <span class="kn">from</span><span class="w"> </span><span class="nn">distributed</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_client</span>
 
@@ -1075,11 +1096,74 @@
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="n">client</span> <span class="o">=</span> <span class="kc">None</span>
 
+    <span class="n">multi_gpu</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"dask.multi-gpu"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Start a dask-cuda cluster spanning all visible GPUs when multi-GPU is</span>
+    <span class="c1"># enabled, no client is already handling the computation, and the user has</span>
+    <span class="c1"># not explicitly requested a scheduler.</span>
+    <span class="k">if</span> <span class="n">client</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">"scheduler"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">multi_gpu</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">getDeviceCount</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="n">ensure_cuda_cluster</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">"dask.multi-gpu is enabled but only one GPU is visible; "</span>
+                <span class="s2">"computing on a single GPU with the synchronous scheduler."</span><span class="p">,</span>
+                <span class="ne">UserWarning</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_gpu_dask_client</span><span class="p">(</span><span class="n">client</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"scheduler"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">multi_gpu</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">"dask.multi-gpu is enabled but the active dask client is not a "</span>
+                <span class="s2">"single-threaded one-worker-per-GPU (dask-cuda) client; "</span>
+                <span class="s2">"falling back to the synchronous scheduler on a single GPU."</span><span class="p">,</span>
+                <span class="ne">UserWarning</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"scheduler"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"synchronous"</span>
+
     <span class="k">if</span> <span class="n">is_gpu_dask_client</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
-        <span class="k">yield</span>
-    <span class="k">else</span><span class="p">:</span>
+        <span class="n">push_config_to_workers</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">kwargs</span>
+
+
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_nested_compute_guard</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Extend a forced synchronous scheduler to nested computes.</span>
+
+<span class="sd">    Passing ``scheduler="synchronous"`` to ``dask.compute`` governs only that</span>
+<span class="sd">    call's graph. A task body may itself call ``.compute()`` -- e.g.</span>
+<span class="sd">    ``CrystalPotential.generate_slices`` pooling a lazy multi-configuration</span>
+<span class="sd">    ``potential_unit`` -- and a nested compute reads the process-wide default</span>
+<span class="sd">    scheduler: the threaded one, which must not execute CuPy tasks</span>
+<span class="sd">    concurrently. Mirror the forced choice into the dask configuration for the</span>
+<span class="sd">    duration of the outer compute. When no scheduler is forced (a distributed</span>
+<span class="sd">    client is in charge, or the caller chose one), the configuration is left</span>
+<span class="sd">    alone so client routing is unaffected.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"scheduler"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"synchronous"</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">dask</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">"synchronous"</span><span class="p">):</span>
             <span class="k">yield</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">yield</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_push_config_to_active_client</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Mirror the configuration onto an active distributed client's workers.</span>
+
+<span class="sd">    The silently-defaulted-configuration bug is not specific to the multi-GPU</span>
+<span class="sd">    cluster: any distributed client (a CPU LocalCluster, a SLURMCluster, ...)</span>
+<span class="sd">    executes tasks in worker processes that never saw the client's</span>
+<span class="sd">    ``abtem.config.set``. Deduplicated inside push_config_to_workers, so</span>
+<span class="sd">    calling this on every dispatch is cheap.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">distributed</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_client</span>
+
+        <span class="n">client</span> <span class="o">=</span> <span class="n">get_client</span><span class="p">()</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="k">return</span>
+    <span class="n">push_config_to_workers</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_compute</span><span class="p">(</span>
@@ -1093,34 +1177,12 @@
         <span class="n">_is_gpu_array_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">array_objects</span>
     <span class="p">)</span>
 
+    <span class="n">_push_config_to_active_client</span><span class="p">()</span>
+
     <span class="k">if</span> <span class="n">is_gpu</span><span class="p">:</span>
-        <span class="n">check_cupy_is_installed</span><span class="p">()</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_resolve_gpu_scheduler</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="kn">from</span><span class="w"> </span><span class="nn">distributed</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_client</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">client</span> <span class="o">=</span> <span class="n">get_client</span><span class="p">()</span>
-        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="n">client</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="c1"># Start a dask-cuda cluster spanning all visible GPUs when multi-GPU is</span>
-        <span class="c1"># enabled, no client is already handling the computation, and the user has</span>
-        <span class="c1"># not explicitly requested a scheduler.</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="n">client</span> <span class="ow">is</span> <span class="kc">None</span>
-            <span class="ow">and</span> <span class="s2">"scheduler"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span>
-            <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"dask.multi-gpu"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-            <span class="ow">and</span> <span class="n">cp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">getDeviceCount</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span>
-        <span class="p">):</span>
-            <span class="n">client</span> <span class="o">=</span> <span class="n">ensure_cuda_cluster</span><span class="p">()</span>
-
-        <span class="c1"># The threaded scheduler and multi-threaded workers cannot be used with CuPy;</span>
-        <span class="c1"># fall back to synchronous execution unless a suitable (dask-cuda) client is</span>
-        <span class="c1"># handling the computation.</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_gpu_dask_client</span><span class="p">(</span><span class="n">client</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"scheduler"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s2">"scheduler"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"synchronous"</span>
-
-    <span class="k">with</span> <span class="n">_compute_context</span><span class="p">(</span>
+    <span class="k">with</span> <span class="n">_nested_compute_guard</span><span class="p">(</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_compute_context</span><span class="p">(</span>
         <span class="n">progress_bar</span><span class="p">,</span> <span class="n">profiler</span><span class="o">=</span><span class="n">profiler</span><span class="p">,</span> <span class="n">resource_profiler</span><span class="o">=</span><span class="n">resource_profiler</span>
     <span class="p">)</span> <span class="k">as</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">profiler</span><span class="p">,</span> <span class="n">resource_profiler</span><span class="p">):</span>
         <span class="n">arrays</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">([</span><span class="n">wrapper</span><span class="o">.</span><span class="n">array</span> <span class="k">for</span> <span class="n">wrapper</span> <span class="ow">in</span> <span class="n">array_objects</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>

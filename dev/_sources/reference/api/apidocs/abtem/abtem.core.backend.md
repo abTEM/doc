@@ -46,6 +46,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`get_cuda_cluster_client <abtem.core.backend.get_cuda_cluster_client>`
+  - ```{autodoc2-docstring} abtem.core.backend.get_cuda_cluster_client
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`get_ndimage_module <abtem.core.backend.get_ndimage_module>`
   - ```{autodoc2-docstring} abtem.core.backend.get_ndimage_module
     :parser: rst
@@ -58,6 +63,11 @@
     ```
 * - {py:obj}`is_gpu_dask_client <abtem.core.backend.is_gpu_dask_client>`
   - ```{autodoc2-docstring} abtem.core.backend.is_gpu_dask_client
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`push_config_to_workers <abtem.core.backend.push_config_to_workers>`
+  - ```{autodoc2-docstring} abtem.core.backend.push_config_to_workers
     :parser: rst
     :summary:
     ```
@@ -76,6 +86,11 @@
 
 * - {py:obj}`ArrayModule <abtem.core.backend.ArrayModule>`
   - ```{autodoc2-docstring} abtem.core.backend.ArrayModule
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`logger <abtem.core.backend.logger>`
+  - ```{autodoc2-docstring} abtem.core.backend.logger
     :parser: rst
     :summary:
     ```
@@ -142,6 +157,14 @@
 ```
 ````
 
+````{py:function} get_cuda_cluster_client()
+:canonical: abtem.core.backend.get_cuda_cluster_client
+
+```{autodoc2-docstring} abtem.core.backend.get_cuda_cluster_client
+:parser: rst
+```
+````
+
 ````{py:function} get_ndimage_module(...) -> types.ModuleType
 :canonical: abtem.core.backend.get_ndimage_module
 
@@ -162,6 +185,25 @@
 :canonical: abtem.core.backend.is_gpu_dask_client
 
 ```{autodoc2-docstring} abtem.core.backend.is_gpu_dask_client
+:parser: rst
+```
+````
+
+````{py:data} logger
+:canonical: abtem.core.backend.logger
+:value: >
+   'getLogger(...)'
+
+```{autodoc2-docstring} abtem.core.backend.logger
+:parser: rst
+```
+
+````
+
+````{py:function} push_config_to_workers(...)
+:canonical: abtem.core.backend.push_config_to_workers
+
+```{autodoc2-docstring} abtem.core.backend.push_config_to_workers
 :parser: rst
 ```
 ````

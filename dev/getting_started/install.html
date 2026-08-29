@@ -264,6 +264,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../user_guide/tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../user_guide/tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -590,7 +591,7 @@
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h1>
+<span id="getting-started-install"></span><h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h1>
 <p>There are many ways to install the <em>ab</em>TEM package, for example conda or pip:</p>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
@@ -617,6 +618,24 @@ pip</label><div class="sd-tab-content docutils">
 </div>
 <section id="optional-dependencies">
 <h2>Optional dependencies<a class="headerlink" href="#optional-dependencies" title="Link to this heading">#</a></h2>
+<p>A few optional Python packages are bundled as pip <em>extras</em>, so they can be installed together with <em>ab</em>TEM:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">abtem[gpaw]</span></code> installs <a class="reference external" href="https://hankel.readthedocs.io/">hankel</a> and <a class="reference external" href="https://www.sympy.org/">sympy</a>, the Python-side requirements of the DFT-based features — the form factors for core-loss EELS, and the potential parametrization fitted to an all-electron calculation. GPAW itself is <em>not</em> installed by this extra, see below.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">abtem[extra]</span></code> installs <a class="reference external" href="https://bokeh.org/">bokeh</a>, <a class="reference external" href="https://ipycytoscape.readthedocs.io/">ipycytoscape</a> and the <a class="reference external" href="https://github.com/dask/dask-labextension">Dask labextension</a>, used for the task-graph visualizations and the diagnostics dashboard shown in the <a class="reference internal" href="../user_guide/walkthrough/parallelization.html#walkthrough-parallelization"><span class="std std-ref">parallelization walkthrough</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">abtem[all]</span></code> installs both of the above.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">abtem</span><span class="p">[</span><span class="nb">all</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>With conda, install the packages by name instead, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">hankel</span> <span class="n">sympy</span> <span class="n">bokeh</span> <span class="n">ipycytoscape</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Before version <code class="docutils literal notranslate"><span class="pre">1.1.0</span></code>, the <code class="docutils literal notranslate"><span class="pre">gpaw</span></code> extra was called <code class="docutils literal notranslate"><span class="pre">core-loss</span></code> and installed only <code class="docutils literal notranslate"><span class="pre">sympy</span></code>.</p>
+</div>
+<p>The GPU packages (<a class="reference external" href="https://cupy.dev/">CuPy</a> and, for several GPUs, <code class="docutils literal notranslate"><span class="pre">dask-cuda</span></code>) are deliberately left out of the extras: their wheels are specific to a CUDA version and have to match the toolkit installed on your machine, so they are installed separately as described below.</p>
 <section id="gpaw-not-available-on-windows">
 <h3>GPAW (not available on Windows)<a class="headerlink" href="#gpaw-not-available-on-windows" title="Link to this heading">#</a></h3>
 <p>Some features of <em>ab</em>TEM, such as calculating potentials from DFT, require a working installation
@@ -644,6 +663,7 @@ pip</label><div class="sd-tab-content docutils">
 </div>
 </div>
 </div>
+<p>The <code class="docutils literal notranslate"><span class="pre">hankel</span></code> and <code class="docutils literal notranslate"><span class="pre">sympy</span></code> packages that the DFT-based features need on top of GPAW itself come from the <code class="docutils literal notranslate"><span class="pre">abtem[gpaw]</span></code> extra above.</p>
 </section>
 <section id="gpu-only-nvidia">
 <h3>GPU (only NVIDIA)<a class="headerlink" href="#gpu-only-nvidia" title="Link to this heading">#</a></h3>
@@ -668,6 +688,23 @@ pip</label><div class="sd-tab-content docutils">
 </div>
 <p>where * should be substituted for the CUDA Toolkit version.</p>
 </div>
+</div>
+<p>To distribute a calculation across <strong>several GPUs</strong> on a node, also install
+<a class="reference external" href="https://docs.rapids.ai/api/dask-cuda/stable/install/"><code class="docutils literal notranslate"><span class="pre">dask-cuda</span></code></a> (NVIDIA GPUs,
+Linux only), matched to your CUDA/RAPIDS version. See
+<a class="reference internal" href="../user_guide/walkthrough/parallelization.html#walkthrough-parallelization-multigpu"><span class="std std-ref">Multiple GPUs</span></a> in the walkthrough.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">dask-cuda</span></code> pins <code class="docutils literal notranslate"><span class="pre">dask</span></code> and <code class="docutils literal notranslate"><span class="pre">distributed</span></code> to the versions of its own RAPIDS
+release, which may not be the versions <em>ab</em>TEM was installed with. If pip
+insists on downgrading <code class="docutils literal notranslate"><span class="pre">dask</span></code> (or refuses to resolve the environment at all),
+install <code class="docutils literal notranslate"><span class="pre">dask-cuda</span></code> without its dependencies and keep the versions you already
+have:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install --no-deps dask-cuda
+</pre></div>
+</div>
+<p>Both packages track <code class="docutils literal notranslate"><span class="pre">dask</span></code> closely, so it is worth checking that a simple
+multi-GPU computation runs after installing this way.</p>
 </div>
 </section>
 <section id="metal-on-apple-silicon-experimental">

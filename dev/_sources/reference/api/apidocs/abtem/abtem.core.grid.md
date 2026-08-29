@@ -64,6 +64,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`round_auto_derived_gpts <abtem.core.grid.round_auto_derived_gpts>`
+  - ```{autodoc2-docstring} abtem.core.grid.round_auto_derived_gpts
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`spatial_frequencies <abtem.core.grid.spatial_frequencies>`
   - ```{autodoc2-docstring} abtem.core.grid.spatial_frequencies
     :parser: rst
@@ -184,6 +189,15 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 :type: tuple[float, ...]
 
 ```{autodoc2-docstring} abtem.core.grid.Grid.reciprocal_space_sampling
+:parser: rst
+```
+
+````
+
+````{py:method} round_to_fast_fft() -> tuple[int, ...]
+:canonical: abtem.core.grid.Grid.round_to_fast_fft
+
+```{autodoc2-docstring} abtem.core.grid.Grid.round_to_fast_fft
 :parser: rst
 ```
 
@@ -371,6 +385,14 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.grid.real_space_grid
 
 ```{autodoc2-docstring} abtem.core.grid.real_space_grid
+:parser: rst
+```
+````
+
+````{py:function} round_auto_derived_gpts() -> bool
+:canonical: abtem.core.grid.round_auto_derived_gpts
+
+```{autodoc2-docstring} abtem.core.grid.round_auto_derived_gpts
 :parser: rst
 ```
 ````

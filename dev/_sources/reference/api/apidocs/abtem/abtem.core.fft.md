@@ -84,6 +84,21 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`is_fast_fft_size <abtem.core.fft.is_fast_fft_size>`
+  - ```{autodoc2-docstring} abtem.core.fft.is_fast_fft_size
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`next_fast_fft_size <abtem.core.fft.next_fast_fft_size>`
+  - ```{autodoc2-docstring} abtem.core.fft.next_fast_fft_size
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`warn_if_slow_gpu_fft <abtem.core.fft.warn_if_slow_gpu_fft>`
+  - ```{autodoc2-docstring} abtem.core.fft.warn_if_slow_gpu_fft
+    :parser: rst
+    :summary:
+    ```
 ````
 
 ### Data
@@ -212,6 +227,30 @@
 :canonical: abtem.core.fft.ifftn
 
 ```{autodoc2-docstring} abtem.core.fft.ifftn
+:parser: rst
+```
+````
+
+````{py:function} is_fast_fft_size(...) -> bool
+:canonical: abtem.core.fft.is_fast_fft_size
+
+```{autodoc2-docstring} abtem.core.fft.is_fast_fft_size
+:parser: rst
+```
+````
+
+````{py:function} next_fast_fft_size(...) -> int
+:canonical: abtem.core.fft.next_fast_fft_size
+
+```{autodoc2-docstring} abtem.core.fft.next_fast_fft_size
+:parser: rst
+```
+````
+
+````{py:function} warn_if_slow_gpu_fft(...)
+:canonical: abtem.core.fft.warn_if_slow_gpu_fft
+
+```{autodoc2-docstring} abtem.core.fft.warn_if_slow_gpu_fft
 :parser: rst
 ```
 ````

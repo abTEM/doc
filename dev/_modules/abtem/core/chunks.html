@@ -259,6 +259,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -1035,6 +1036,21 @@
     <span class="n">slice_bytes</span> <span class="o">=</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dtype</span><span class="o">.</span><span class="n">itemsize</span>
 
     <span class="k">if</span> <span class="n">device</span> <span class="o">==</span> <span class="s2">"gpu"</span><span class="p">:</span>
+        <span class="c1"># Deliberately no Bluestein-overhead factor here, unlike the sibling</span>
+        <span class="c1"># estimate_scan_batch_size.  Every FFT that touches a potential slice</span>
+        <span class="c1"># is a single, unbatched 2D transform: build() and generate_slices()</span>
+        <span class="c1"># emit one slice at a time (see _FieldBuilder.build), the projection</span>
+        <span class="c1"># integrals in integrals.py transform a bare (ny, nx) array, and</span>
+        <span class="c1"># multislice_step bandlimits one transmission function per step.  The</span>
+        <span class="c1"># cuFFT workspace for those transforms is therefore constant in</span>
+        <span class="c1"># chunk_size, while effective_per_slice below is multiplied by it --</span>
+        <span class="c1"># folding an FFT-unfriendliness factor in would halve the chunk on a</span>
+        <span class="c1"># Bluestein grid to pay for a cost that does not grow with it.  The</span>
+        <span class="c1"># probe batch is the only quantity whose FFT is batched over the</span>
+        <span class="c1"># dimension being sized, which is why the factor belongs to</span>
+        <span class="c1"># estimate_scan_batch_size alone.  What residual Bluestein cost there</span>
+        <span class="c1"># is (one cached plan) this function already sees: it runs at</span>
+        <span class="c1"># computation time and reads the live free-VRAM figure below.</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span><span class="w"> </span><span class="nn">cupy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cp</span>
 
@@ -1156,6 +1172,18 @@
     <span class="n">per_probe_bytes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">gpts</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">itemsize</span>
 
     <span class="k">if</span> <span class="n">device</span> <span class="o">==</span> <span class="s2">"gpu"</span><span class="p">:</span>
+        <span class="c1"># ``gpts`` is the wavefunction grid every probe lives on, not the scan</span>
+        <span class="c1"># grid: the scan positions form the FFT *batch* dimension, so only the</span>
+        <span class="c1"># transform lengths (ny, nx) decide whether cuFFT falls back to</span>
+        <span class="c1"># Bluestein.  The radix check cannot fail and needs no GPU -- keep it</span>
+        <span class="c1"># outside the try below, whose silent fallback is only for a</span>
+        <span class="c1"># missing/failing CUDA memory probe.</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_fast_fft_size</span>
+
+        <span class="n">overhead</span> <span class="o">=</span> <span class="mi">6</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">is_fast_fft_size</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">gpts</span><span class="p">):</span>
+            <span class="n">overhead</span> <span class="o">=</span> <span class="mi">12</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span><span class="w"> </span><span class="nn">cupy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cp</span>
 
@@ -1172,7 +1200,12 @@
             <span class="c1"># A 6× overhead factor accounts for transient copies during</span>
             <span class="c1"># transmission-function multiply, FFT workspaces, and cuFFT plan</span>
             <span class="c1"># buffers.  Empirically: 4096² uses ~756 MB/probe (5.6× raw</span>
-            <span class="c1"># wavefunction), 2048² uses ~147 MB/probe (4.4×).</span>
+            <span class="c1"># wavefunction), 2048² uses ~147 MB/probe (4.4×).  Those numbers</span>
+            <span class="c1"># hold for fast-radix grids; a grid length with a prime factor</span>
+            <span class="c1"># larger than 7 pushes cuFFT onto the Bluestein algorithm, whose</span>
+            <span class="c1"># power-of-two-padded internal buffers roughly double the</span>
+            <span class="c1"># transient footprint (observed &gt;13× raw per probe on a</span>
+            <span class="c1"># 2623×2271 complex128 grid), so the factor is doubled there.</span>
             <span class="c1">#</span>
             <span class="c1"># estimate_potential_chunk_size runs at *computation* time, when</span>
             <span class="c1"># the probe batch is already resident; it sees the reduced free</span>
@@ -1180,10 +1213,10 @@
             <span class="c1"># Both functions now use the same pool-aware effective_free so</span>
             <span class="c1"># the two estimates operate on a consistent VRAM picture.</span>
             <span class="n">probe_budget</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">effective_free</span> <span class="o">*</span> <span class="mf">0.50</span><span class="p">)</span>
-            <span class="n">per_probe_effective</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">per_probe_bytes</span> <span class="o">*</span> <span class="mi">6</span><span class="p">))</span>
+            <span class="n">per_probe_effective</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">per_probe_bytes</span> <span class="o">*</span> <span class="n">overhead</span><span class="p">))</span>
             <span class="n">n_probes</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">probe_budget</span> <span class="o">//</span> <span class="n">per_probe_effective</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">_nearest_power_of_two</span><span class="p">(</span><span class="n">n_probes</span><span class="p">)</span>
-        <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># noqa: BLE001 -- no CUDA memory probe available</span>
             <span class="n">chunk_bytes</span> <span class="o">=</span> <span class="n">parse_bytes</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"dask.chunk-size-gpu"</span><span class="p">,</span> <span class="s2">"512 MB"</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">chunk_bytes</span> <span class="o">=</span> <span class="n">parse_bytes</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"dask.chunk-size"</span><span class="p">,</span> <span class="s2">"128 MB"</span><span class="p">))</span>

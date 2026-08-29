@@ -266,6 +266,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -580,6 +581,11 @@
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#independent-atom-model">Independent atom model</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#potential"><code class="docutils literal notranslate"><span class="pre">Potential</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-and-saving-the-potential">Building and saving the potential</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-sampling-and-slice-thickness-automatically">Choosing sampling and slice thickness automatically</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-commensurability-matters">Why commensurability matters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#slice-thickness-auto"><code class="docutils literal notranslate"><span class="pre">slice_thickness="auto"</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#slicing-the-potential">Slicing the potential</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#finite-projection-integrals">Finite projection integrals</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#infinite-projection-integrals">Infinite projection integrals</a></li>
@@ -772,6 +778,103 @@ You can use our interactive features to scroll through all the slices in your po
 </div>
 </div>
 </div>
+</section>
+<section id="choosing-sampling-and-slice-thickness-automatically">
+<h2>Choosing sampling and slice thickness automatically<a class="headerlink" href="#choosing-sampling-and-slice-thickness-automatically" title="Link to this heading">#</a></h2>
+<p>Above we picked <code class="docutils literal notranslate"><span class="pre">sampling=0.05</span></code> and <code class="docutils literal notranslate"><span class="pre">slice_thickness=1</span></code> by hand, close to <em>ab</em>TEM’s own rule of thumb of a fine-enough sampling and a slice thickness between <span class="math notranslate nohighlight">\(0.5\)</span> and <span class="math notranslate nohighlight">\(2 \ \mathrm{Å}\)</span>. Since version <code class="docutils literal notranslate"><span class="pre">1.1.0</span></code>, passing <code class="docutils literal notranslate"><span class="pre">sampling=&quot;auto&quot;</span></code> and/or <code class="docutils literal notranslate"><span class="pre">slice_thickness=&quot;auto&quot;</span></code> lets <em>ab</em>TEM pick numbers near those same targets itself — not just close to a round number, but <em>commensurate</em> with the crystal: chosen so that atoms related by a lattice translation are discretized identically, and, where that leaves any freedom, sized so FFTs run on fast kernels.</p>
+<p>Rebuilding the same SrTiO<sub>3</sub> potential this way:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">potential_auto</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span>
+    <span class="n">repeated_srtio3</span><span class="p">,</span>
+    <span class="n">parametrization</span><span class="o">=</span><span class="s2">"lobato"</span><span class="p">,</span>
+    <span class="n">sampling</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
+    <span class="n">slice_thickness</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
+    <span class="n">projection</span><span class="o">=</span><span class="s2">"finite"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"manual: gpts=</span><span class="si">{</span><span class="n">potential</span><span class="o">.</span><span class="n">gpts</span><span class="si">}</span><span class="s2">, sampling=</span><span class="si">{</span><span class="n">potential</span><span class="o">.</span><span class="n">sampling</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="p">)</span><span class="si">}</span><span class="s2"> slices"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"auto:   gpts=</span><span class="si">{</span><span class="n">potential_auto</span><span class="o">.</span><span class="n">gpts</span><span class="si">}</span><span class="s2">, sampling=</span><span class="si">{</span><span class="n">potential_auto</span><span class="o">.</span><span class="n">sampling</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">potential_auto</span><span class="p">)</span><span class="si">}</span><span class="s2"> slices"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>manual: gpts=(158, 158), sampling=(0.04993835443037974, 0.04993835443037974), 24 slices
+auto:   gpts=(160, 160), sampling=(0.049314125, 0.049314125), 12 slices
+</pre></div>
+</div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">sampling=&quot;auto&quot;</span></code> targets a sampling near <span class="math notranslate nohighlight">\(0.05 \ \mathrm{Å}\)</span> (the same value we chose by hand above), but instead of simply dividing the extent by that number, it finds the grid period commensurate with the atomic positions — the greatest common divisor of the spacings between atomic planes — closest to the target, additionally preferring a size whose prime factors are all in <span class="math notranslate nohighlight">\(\{2, 3, 5, 7\}\)</span> where that is compatible with commensurability (FFT libraries run much faster, and use far less GPU memory, on such sizes than on an arbitrary length). This is governed by the <code class="docutils literal notranslate"><span class="pre">grid.round-to-fast-fft</span></code> configuration option, <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> by default; see the <a class="reference internal" href="../appendix/performance_tips.html#appendix-performance-tips"><span class="std std-ref">performance tips</span></a> for the FFT-speed side of this in more detail.</p>
+<section id="why-commensurability-matters">
+<h3>Why commensurability matters<a class="headerlink" href="#why-commensurability-matters" title="Link to this heading">#</a></h3>
+<p>The grid above came out finer (160 vs. 158 points) than the one we chose by hand, which looks like a minor difference. To see why it matters, take a more revealing case: a chain of 11 repeated unit cells along <span class="math notranslate nohighlight">\(x\)</span>, where the SrTiO<sub>3</sub> lattice constant divided into a hand-picked <span class="math notranslate nohighlight">\(0.05 \ \mathrm{Å}\)</span> sampling does not divide the chain’s grid into equal, whole-pixel unit cells.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">chain</span> <span class="o">=</span> <span class="n">srtio3</span> <span class="o">*</span> <span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">chain_manual</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">"infinite"</span><span class="p">)</span>
+<span class="n">chain_auto</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">"infinite"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"manual: gpts=</span><span class="si">{</span><span class="n">chain_manual</span><span class="o">.</span><span class="n">gpts</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"auto:   gpts=</span><span class="si">{</span><span class="n">chain_auto</span><span class="o">.</span><span class="n">gpts</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>manual: gpts=(868, 79)
+auto:   gpts=(858, 80)
+</pre></div>
+</div>
+</div>
+</div>
+<p>The 11 Sr atoms along the chain are physically identical, related by nothing more than translation by one unit cell — the discretized potential value at each of them should be the same. We read off the projected potential at the pixel nearest each Sr atom and compare:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">potential_at_sr</span><span class="p">(</span><span class="n">pot</span><span class="p">):</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">sampling_x</span><span class="p">,</span> <span class="n">sampling_y</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">pot</span><span class="o">.</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pot</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">pot</span><span class="o">.</span><span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">sr_positions</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">chain</span><span class="o">.</span><span class="n">symbols</span> <span class="o">==</span> <span class="s2">"Sr"</span><span class="p">]</span>
+    <span class="n">xi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">sr_positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling_x</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">%</span> <span class="n">pot</span><span class="o">.</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">sr_positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling_y</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">%</span> <span class="n">pot</span><span class="o">.</span><span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">array</span><span class="p">[</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">]</span>
+
+
+<span class="n">values_manual</span> <span class="o">=</span> <span class="n">potential_at_sr</span><span class="p">(</span><span class="n">chain_manual</span><span class="p">)</span>
+<span class="n">values_auto</span> <span class="o">=</span> <span class="n">potential_at_sr</span><span class="p">(</span><span class="n">chain_auto</span><span class="p">)</span>
+
+<span class="n">spread</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">v</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="n">v</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"manual: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">values_manual</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"        spread across the 11 identical Sr atoms: </span><span class="si">{</span><span class="n">spread</span><span class="p">(</span><span class="n">values_manual</span><span class="p">)</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"auto:   </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">values_auto</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"        spread across the 11 identical Sr atoms: </span><span class="si">{</span><span class="n">spread</span><span class="p">(</span><span class="n">values_auto</span><span class="p">)</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>manual: [2637.5 2536.6 2435.7 2334.9 2234.  2133.1 2133.1 2234.  2334.9 2435.7
+ 2536.6]
+        spread across the 11 identical Sr atoms: 21.3%
+auto:   [2637.7 2637.7 2637.7 2637.7 2637.7 2637.7 2637.7 2637.7 2637.7 2637.7
+ 2637.7]
+        spread across the 11 identical Sr atoms: 1.9e-07
+</pre></div>
+</div>
+</div>
+</div>
+<p>With the hand-picked sampling, the same atom’s discretized potential value drifts by over <span class="math notranslate nohighlight">\(20 \%\)</span> along the chain — an artifact of the grid slipping out of register with the lattice one fractional pixel at a time as it repeats, not a real physical effect. <code class="docutils literal notranslate"><span class="pre">sampling=&quot;auto&quot;</span></code> removes it entirely, down to floating-point noise, because 858 (the chosen grid size) is by construction an exact multiple of the commensurate per-unit-cell period. The effect is worse for larger, oddly-sized supercells and can show up as spurious asymmetry or broadening of diffraction spots that ought to be crystallographically identical — exactly the failure mode a fine but <em>arbitrary</em> sampling like <code class="docutils literal notranslate"><span class="pre">0.05</span></code> does not protect against.</p>
+</section>
+<section id="slice-thickness-auto">
+<h3><code class="docutils literal notranslate"><span class="pre">slice_thickness=&quot;auto&quot;</span></code><a class="headerlink" href="#slice-thickness-auto" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">slice_thickness=&quot;auto&quot;</span></code> applies the same idea along <span class="math notranslate nohighlight">\(z\)</span>: rather than dividing the cell height by a target thickness, it finds the crystal planes and merges adjacent ones to stay as close as possible to a target near <span class="math notranslate nohighlight">\(1 \ \mathrm{Å}\)</span>, without ever letting a slice boundary cut through the middle of a plane of atoms. For SrTiO<sub>3</sub>, whose only two atomic planes per unit cell (SrO and TiO<sub>2</sub>) sit <span class="math notranslate nohighlight">\(\approx 1.97 \ \mathrm{Å}\)</span> apart, that is exactly what <code class="docutils literal notranslate"><span class="pre">potential_auto</span></code> above already used — 12 slices of that thickness, instead of the 24 slices of (numerically convenient but plane-agnostic) <span class="math notranslate nohighlight">\(1 \ \mathrm{Å}\)</span> that <code class="docutils literal notranslate"><span class="pre">slice_thickness=1</span></code> produced. When a material’s planes happen to be spaced closer than the target, <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> merges several into one slice near <span class="math notranslate nohighlight">\(1 \ \mathrm{Å}\)</span> instead; either way the boundaries land exactly on planes of atoms, and the result stays within the <span class="math notranslate nohighlight">\(0.5\)</span>–<span class="math notranslate nohighlight">\(2 \ \mathrm{Å}\)</span> range recommended <a class="reference internal" href="#walkthrough-slicing"><span class="std std-ref">below</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">sampling='auto'</span></code>/<code class="docutils literal notranslate"><span class="pre">slice_thickness='auto'</span></code> are specific to <code class="docutils literal notranslate"><span class="pre">Potential</span></code>; classes that wrap it, such as <code class="docutils literal notranslate"><span class="pre">CrystalPotential</span></code>, don’t take <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> directly — apply it to the unit-cell <code class="docutils literal notranslate"><span class="pre">Potential</span></code> passed to them instead. Building the SrTiO<sub>3</sub> unit cell with <code class="docutils literal notranslate"><span class="pre">sampling='auto'</span></code> and repeating it with <code class="docutils literal notranslate"><span class="pre">CrystalPotential(unit_cell_potential,</span> <span class="pre">repetitions=(2,</span> <span class="pre">2,</span> <span class="pre">6))</span></code> reproduces <code class="docutils literal notranslate"><span class="pre">potential_auto</span></code> above, up to floating-point noise from tiling a single built slice rather than summing every atom directly.</p>
+<p>The commensurability search only applies where a shared lattice actually exists: it is skipped for structures that are not periodic in <span class="math notranslate nohighlight">\(x\)</span>/<span class="math notranslate nohighlight">\(y\)</span> (a rotated nanoparticle, say) and for a multi-configuration <code class="docutils literal notranslate"><span class="pre">AtomsEnsemble</span></code> (e.g. an MD trajectory), since each configuration is then an independent, generally non-commensurate snapshot. Both cases fall back to the target sampling directly, still rounded up to a fast FFT size.</p>
+</div>
+</section>
 </section>
 <section id="slicing-the-potential">
 <span id="walkthrough-slicing"></span><h2>Slicing the potential<a class="headerlink" href="#slicing-the-potential" title="Link to this heading">#</a></h2>
@@ -1146,6 +1249,11 @@ V_{n}(x, y) = \int_{z_n}^{z_n+\Delta z} V(x,y,z) dz \quad ,
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#independent-atom-model">Independent atom model</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#potential"><code class="docutils literal notranslate"><span class="pre">Potential</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-and-saving-the-potential">Building and saving the potential</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-sampling-and-slice-thickness-automatically">Choosing sampling and slice thickness automatically</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-commensurability-matters">Why commensurability matters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#slice-thickness-auto"><code class="docutils literal notranslate"><span class="pre">slice_thickness="auto"</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#slicing-the-potential">Slicing the potential</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#finite-projection-integrals">Finite projection integrals</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#infinite-projection-integrals">Infinite projection integrals</a></li>

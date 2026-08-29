@@ -259,6 +259,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -1276,11 +1277,18 @@
         <span class="n">enabled</span><span class="o">=</span><span class="n">pbar</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">n_slices</span><span class="p">),</span> <span class="n">leave</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"multislice"</span>
     <span class="p">)</span>
 
-    <span class="n">waves_input</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="c1"># Keep a pristine reference to the incoming batch. It is only ever read:</span>
+    <span class="c1"># each potential configuration below works on its own copy, so no copy is</span>
+    <span class="c1"># needed here -- copying would just hold a redundant duplicate of the</span>
+    <span class="c1"># batch in memory for the whole loop (a full extra batch of VRAM on GPU).</span>
+    <span class="n">waves_input</span> <span class="o">=</span> <span class="n">waves</span>
 
     <span class="k">for</span> <span class="n">potential_index</span><span class="p">,</span> <span class="n">potential_configuration</span> <span class="ow">in</span> <span class="n">_generate_potential_configurations</span><span class="p">(</span>
         <span class="n">potential</span>
     <span class="p">):</span>
+        <span class="c1"># The incoming batch may be a task input shared with other tasks</span>
+        <span class="c1"># (e.g. frozen-phonon configurations partitioned across tasks), so the</span>
+        <span class="c1"># in-place multislice steps must operate on a copy.</span>
         <span class="n">waves</span> <span class="o">=</span> <span class="n">waves_input</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">exit_plane_index</span> <span class="o">=</span> <span class="mi">0</span>
 

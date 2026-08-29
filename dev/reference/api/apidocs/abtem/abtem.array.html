@@ -264,6 +264,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -1342,7 +1343,12 @@ overwrite=True will replace the existing data.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>url</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Location of the data. For Zarr 3 zip stores, use a .zip extension.
 For directory stores, use .zarr extension or a directory path.</p></li>
-<li><p><strong>compute</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If true compute immediately; return dask.delayed.Delayed otherwise.</p></li>
+<li><p><strong>compute</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If true compute immediately; return dask.delayed.Delayed otherwise.
+Note that the returned delayed write nests an <code class="docutils literal notranslate"><span class="pre">array.compute()</span></code>
+executed under whatever scheduler is active when the caller
+finally computes it – the multi-GPU bootstrap and the forced
+synchronous GPU scheduler apply only to <code class="docutils literal notranslate"><span class="pre">compute=True</span></code>. On GPU,
+prefer <code class="docutils literal notranslate"><span class="pre">compute=True</span></code> or compute the result before saving.</p></li>
 <li><p><strong>overwrite</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If given array already exists, overwrite=False will cause an error, where
 overwrite=True will replace the existing data.</p></li>
 <li><p><strong>progress_bar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Display a progress bar in the terminal or notebook during computation. The

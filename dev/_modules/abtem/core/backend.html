@@ -259,6 +259,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -525,6 +526,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numbers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Number</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModuleType</span>
@@ -536,6 +538,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.ndimage</span>  <span class="c1"># type: ignore</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get</span> <span class="k">as</span> <span class="n">_config_get</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">cupy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cp</span>  <span class="c1"># type: ignore</span>
@@ -565,6 +568,8 @@
 
 
 <span class="n">ArrayModule</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ModuleType</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="check_cupy_is_installed">
@@ -630,9 +635,147 @@
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># noqa: BLE001 -- fall back to dask-cuda's default sizing</span>
         <span class="k">pass</span>
 
-    <span class="n">_cuda_cluster_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">LocalCUDACluster</span><span class="p">(</span><span class="o">**</span><span class="n">cluster_kwargs</span><span class="p">))</span>
+    <span class="c1"># Optional RMM memory pool per worker (e.g. "20 GB"), forwarded to</span>
+    <span class="c1"># dask-cuda; a pre-grown pool avoids allocator churn on memory-intensive</span>
+    <span class="c1"># workloads.</span>
+    <span class="n">rmm_pool</span> <span class="o">=</span> <span class="n">_config_get</span><span class="p">(</span><span class="s2">"dask.multi-gpu-rmm-pool"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rmm_pool</span><span class="p">:</span>
+        <span class="n">cluster_kwargs</span><span class="p">[</span><span class="s2">"rmm_pool_size"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rmm_pool</span>
+
+    <span class="c1"># Optional subset of GPUs to span, as a list of device indices or a</span>
+    <span class="c1"># comma-separated string. By default the cluster spans all visible GPUs.</span>
+    <span class="n">devices</span> <span class="o">=</span> <span class="n">_config_get</span><span class="p">(</span><span class="s2">"dask.multi-gpu-devices"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">devices</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">devices</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">devices</span> <span class="o">=</span> <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">devices</span><span class="p">)</span>
+        <span class="n">cluster_kwargs</span><span class="p">[</span><span class="s2">"CUDA_VISIBLE_DEVICES"</span><span class="p">]</span> <span class="o">=</span> <span class="n">devices</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_cuda_cluster_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">LocalCUDACluster</span><span class="p">(</span><span class="o">**</span><span class="n">cluster_kwargs</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="c1"># dask-cuda starts worker processes with the 'spawn' method (fork is</span>
+        <span class="c1"># unsafe with a live CUDA context), so the workers re-import the main</span>
+        <span class="c1"># module. Without an entry-point guard that re-runs the script in every</span>
+        <span class="c1"># worker, which multiprocessing reports with a cryptic bootstrapping</span>
+        <span class="c1"># error (typically alongside a port-8787-in-use complaint).</span>
+        <span class="k">if</span> <span class="s2">"bootstrapping phase"</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">"Starting the multi-GPU cluster failed because the worker "</span>
+                <span class="s2">"processes re-imported the main module before it finished "</span>
+                <span class="s2">"executing. dask-cuda starts workers with the 'spawn' method, "</span>
+                <span class="s2">"so the script's entry point must be guarded with "</span>
+                <span class="s2">"'if __name__ == </span><span class="se">\"</span><span class="s2">__main__</span><span class="se">\"</span><span class="s2">:'."</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="k">raise</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="s2">"dask.multi-gpu: started a dask-cuda LocalCUDACluster; computations "</span>
+        <span class="s2">"will be distributed with one worker per visible GPU."</span>
+    <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">_cuda_cluster_client</span></div>
+
+
+
+<div class="viewcode-block" id="get_cuda_cluster_client">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.backend.html#abtem.core.backend.get_cuda_cluster_client">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_cuda_cluster_client</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the dask-cuda cluster client started by ``ensure_cuda_cluster``.</span>
+
+<span class="sd">    Returns the running client, or None when no cluster has been started or the</span>
+<span class="sd">    previous one was shut down. Unlike ``ensure_cuda_cluster`` this never starts</span>
+<span class="sd">    a cluster, which makes it suitable for inspecting whether multi-GPU</span>
+<span class="sd">    execution is active (e.g. from benchmark or verification scripts).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    distributed.Client or None</span>
+<span class="sd">        The client connected to the running dask-cuda cluster, if any.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">_cuda_cluster_client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_cuda_cluster_client</span><span class="p">,</span> <span class="s2">"status"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"running"</span>
+    <span class="p">):</span>
+        <span class="k">return</span> <span class="n">_cuda_cluster_client</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="n">_pushed_config_token</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="n">_CONFIG_PLUGIN_NAME</span> <span class="o">=</span> <span class="s2">"abtem-config"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_apply_config_snapshot</span><span class="p">(</span><span class="n">snapshot</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span> <span class="k">as</span> <span class="n">config_dict</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">config_lock</span>
+
+    <span class="n">snapshot</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">config_lock</span><span class="p">:</span>
+        <span class="c1"># Update before pruning: readers that do not take the lock (config.get)</span>
+        <span class="c1"># then always observe a fully-populated dict, never the empty window a</span>
+        <span class="c1"># clear-then-update would open to a concurrently executing task.</span>
+        <span class="n">config_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">config_dict</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">snapshot</span><span class="p">]:</span>
+            <span class="k">del</span> <span class="n">config_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_make_config_plugin</span><span class="p">(</span><span class="n">snapshot</span><span class="p">):</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">distributed.diagnostics.plugin</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkerPlugin</span>
+
+    <span class="k">class</span><span class="w"> </span><span class="nc">_AbtemConfigPlugin</span><span class="p">(</span><span class="n">WorkerPlugin</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Apply the client's abTEM configuration snapshot on every worker.</span>
+
+<span class="sd">        Plugin ``setup`` runs on all current workers at registration time and</span>
+<span class="sd">        on every worker that joins or is restarted later (e.g. by a Nanny) --</span>
+<span class="sd">        coverage a one-shot ``client.run`` cannot provide.</span>
+<span class="sd">        """</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_CONFIG_PLUGIN_NAME</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">snapshot</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_snapshot</span> <span class="o">=</span> <span class="n">snapshot</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worker</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">_apply_config_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_snapshot</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_AbtemConfigPlugin</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="push_config_to_workers">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.backend.html#abtem.core.backend.push_config_to_workers">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">push_config_to_workers</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Mirror this process's abTEM configuration onto the client's workers.</span>
+
+<span class="sd">    abTEM resolves configuration inside tasks, in the worker process --</span>
+<span class="sd">    ``get_dtype`` reads ``precision`` at call time, for example -- but worker</span>
+<span class="sd">    processes only ever see the defaults: ``abtem.config.set`` in the client</span>
+<span class="sd">    does not reach them, silently changing results (a float64 computation</span>
+<span class="sd">    dispatched to default-configured workers runs in float32).</span>
+
+<span class="sd">    The snapshot is carried by a named worker plugin, so workers that join or</span>
+<span class="sd">    restart later also receive it; when the configuration changes,</span>
+<span class="sd">    re-registering under the same name replaces the plugin and re-runs its</span>
+<span class="sd">    setup on all workers. Repeated pushes of an unchanged configuration to the</span>
+<span class="sd">    same client (keyed on ``client.id``) are skipped.</span>
+<span class="sd">    """</span>
+    <span class="k">global</span> <span class="n">_pushed_config_token</span>
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+
+    <span class="n">snapshot</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="n">token</span> <span class="o">=</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="s2">"id"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">id</span><span class="p">(</span><span class="n">client</span><span class="p">),</span> <span class="nb">repr</span><span class="p">(</span><span class="n">snapshot</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">token</span> <span class="o">==</span> <span class="n">_pushed_config_token</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">plugin</span> <span class="o">=</span> <span class="n">_make_config_plugin</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">register_plugin</span><span class="p">(</span><span class="n">plugin</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">_CONFIG_PLUGIN_NAME</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>  <span class="c1"># distributed without Client.register_plugin</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">register_worker_plugin</span><span class="p">(</span><span class="n">plugin</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">_CONFIG_PLUGIN_NAME</span><span class="p">)</span>
+    <span class="n">_pushed_config_token</span> <span class="o">=</span> <span class="n">token</span></div>
 
 
 

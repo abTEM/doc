@@ -264,6 +264,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -1264,14 +1265,27 @@ independent atom model for calculating the electrostatic potential(s).</p></li>
 <li><p><strong>gpts</strong> (<em>one</em><em> or </em><em>two int</em><em>, </em><em>optional</em>) – Number of grid points in <cite>x</cite> and <cite>y</cite> describing each slice of the potential.
 Provide either “sampling” (spacing between consecutive grid points) or “gpts”
 (total number of grid points).</p></li>
-<li><p><strong>sampling</strong> (<em>one</em><em> or </em><em>two float</em><em>, </em><em>optional</em>) – Sampling of the potential in <cite>x</cite> and <cite>y</cite> [Å].
-Provide either “sampling” or “gpts”.</p></li>
-<li><p><strong>slice_thickness</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Thickness of the potential slices in the propagation direction in [Å]
+<li><p><strong>sampling</strong> (<em>one</em><em> or </em><em>two float</em><em> or </em><em>'auto'</em><em>, </em><em>optional</em>) – Sampling of the potential in <cite>x</cite> and <cite>y</cite> [Å].
+Provide either “sampling” or “gpts”. If ‘auto’, the grid points are chosen
+to be commensurate with the atom positions (closest to a default of 0.05 Å)
+and, whenever compatible with commensurability, a fast FFT size (all prime
+factors in {2, 3, 5, 7}); the commensurate grid nearest the target is kept
+when it is already such a size. Set the configuration option
+‘grid.round-to-fast-fft’ to False for the plain commensurate grid.
+For an <cite>AtomsEnsemble</cite> with more than one configuration (e.g. an MD
+trajectory), each configuration is an independent, generally
+non-commensurate snapshot, so commensurability is not attempted and the
+target sampling is used directly (rounded up to a fast FFT size).</p></li>
+<li><p><strong>slice_thickness</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>'auto'</em><em>, </em><em>optional</em>) – Thickness of the potential slices in the propagation direction in [Å]
 (default is 1 Å).
 If given as a float, the number of slices is calculated by dividing the slice
 thickness into the <cite>z</cite>-height of supercell. The slice thickness may be given as
 a sequence of values for each slice, in which case an error will be thrown if
-the sum of slice thicknesses is not equal to the height of the atoms.</p></li>
+the sum of slice thicknesses is not equal to the height of the atoms.
+If ‘auto’, slice boundaries are aligned with the crystal planes, with slices
+merged to stay close to a default of 1.0 Å. As with <cite>sampling</cite>, this
+commensurability search is skipped for an <cite>AtomsEnsemble</cite> with more than
+one configuration, which uses a uniform 1.0 Å target thickness instead.</p></li>
 <li><p><strong>parametrization</strong> (<em>'lobato'</em><em> or </em><em>'kirkland'</em><em>, </em><em>optional</em>) – The potential parametrization describes the radial dependence of the potential
 for each element. Two of the most accurate parametrizations are available
 (by Lobato et al. and Kirkland; default is ‘lobato’).

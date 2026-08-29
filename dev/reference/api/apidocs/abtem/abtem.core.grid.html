@@ -264,6 +264,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -585,6 +586,7 @@
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.Grid.gpts"><code class="docutils literal notranslate"><span class="pre">Grid.gpts</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.Grid.match"><code class="docutils literal notranslate"><span class="pre">Grid.match()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.Grid.reciprocal_space_sampling"><code class="docutils literal notranslate"><span class="pre">Grid.reciprocal_space_sampling</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.Grid.round_to_fast_fft"><code class="docutils literal notranslate"><span class="pre">Grid.round_to_fast_fft()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.Grid.round_to_power"><code class="docutils literal notranslate"><span class="pre">Grid.round_to_power()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.Grid.sampling"><code class="docutils literal notranslate"><span class="pre">Grid.sampling</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.Grid.spatial_frequencies"><code class="docutils literal notranslate"><span class="pre">Grid.spatial_frequencies()</span></code></a></li>
@@ -608,6 +610,7 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.disk_meshgrid_iter"><code class="docutils literal notranslate"><span class="pre">disk_meshgrid_iter()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.polar_spatial_frequencies"><code class="docutils literal notranslate"><span class="pre">polar_spatial_frequencies()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.real_space_grid"><code class="docutils literal notranslate"><span class="pre">real_space_grid()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.round_auto_derived_gpts"><code class="docutils literal notranslate"><span class="pre">round_auto_derived_gpts()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.spatial_frequencies"><code class="docutils literal notranslate"><span class="pre">spatial_frequencies()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.validate_gpts"><code class="docutils literal notranslate"><span class="pre">validate_gpts()</span></code></a></li>
 </ul>
@@ -667,10 +670,13 @@ potential are discretized.</p></td>
 <tr class="row-even"><td><p><a class="reference internal" href="#abtem.core.grid.real_space_grid" title="abtem.core.grid.real_space_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">real_space_grid</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#abtem.core.grid.spatial_frequencies" title="abtem.core.grid.spatial_frequencies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial_frequencies</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#abtem.core.grid.round_auto_derived_gpts" title="abtem.core.grid.round_auto_derived_gpts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">round_auto_derived_gpts</span></code></a></p></td>
+<td><p>Whether grids abTEM derives on its own are rounded to fast FFT lengths.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#abtem.core.grid.spatial_frequencies" title="abtem.core.grid.spatial_frequencies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial_frequencies</span></code></a></p></td>
 <td><p>Return the spatial frequencies of a grid.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#abtem.core.grid.validate_gpts" title="abtem.core.grid.validate_gpts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_gpts</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#abtem.core.grid.validate_gpts" title="abtem.core.grid.validate_gpts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_gpts</span></code></a></p></td>
 <td><p>Ensure that the prodived grid points are valid.</p></td>
 </tr>
 </tbody>
@@ -778,14 +784,54 @@ grid parameters.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="abtem.core.grid.Grid.round_to_fast_fft">
+<span class="sig-name descname"><span class="pre">round_to_fast_fft</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/core/grid.html#Grid.round_to_fast_fft"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.grid.Grid.round_to_fast_fft" title="Link to this definition">#</a></dt>
+<dd><p>Round the grid gpts up to the nearest fast FFT lengths.</p>
+<p>Fast lengths factorize completely into the primes 2, 3, 5 and 7, for
+which FFT libraries (FFTW, pocketfft, MKL and cuFFT) ship optimized
+kernels; any other length falls back to a slower generic algorithm –
+on cuFFT the Bluestein algorithm, which additionally allocates a
+workspace of several times the transform size. Rounding is always
+upward, so the realized sampling is never coarser than before.</p>
+<p>Every gpts is rounded, including on an endpoint grid – unlike the
+automatic rounding, which leaves endpoint grids alone because they are
+not periodic FFT grids.</p>
+<p>Automatic rounding is governed by the configuration option
+<code class="docutils literal notranslate"><span class="pre">grid.round-to-fast-fft</span></code>: <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> (the default) rounds the grids
+abTEM derives on its own, such as <code class="docutils literal notranslate"><span class="pre">Potential(sampling='auto')</span></code>;
+<code class="docutils literal notranslate"><span class="pre">True</span></code> additionally rounds gpts derived from a numeric sampling;
+<code class="docutils literal notranslate"><span class="pre">False</span></code> disables it everywhere.</p>
+<p>Grids that are never Fourier transformed (<code class="docutils literal notranslate"><span class="pre">fft_grid=False</span></code>, e.g. the
+probe positions of a <code class="docutils literal notranslate"><span class="pre">GridScan</span></code>) are returned unchanged: a fast
+length buys them nothing, and changing them would change what is
+simulated rather than how fast it runs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The rounded gpts.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="abtem.core.grid.Grid.round_to_power">
 <span class="sig-name descname"><span class="pre">round_to_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/core/grid.html#Grid.round_to_power"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.grid.Grid.round_to_power" title="Link to this definition">#</a></dt>
-<dd><p>Round the grid gpts up to the nearest value that is a power of n. Fourier
-transforms are faster for arrays of whose size can be factored into small primes
-(2, 3, 5 and 7).</p>
+<dd><p>Round the grid gpts up to a whole power of one of the given bases.</p>
+<p>Each gpts becomes <code class="docutils literal notranslate"><span class="pre">base</span> <span class="pre">**</span> <span class="pre">k</span></code> for whichever base gives the smallest
+such value at or above it – a <em>pure</em> power, not a product of several
+bases, so 2623 rounds to 4096 rather than to 2625. That is a much
+larger grid than fast FFTs actually require: see
+<a class="reference internal" href="#abtem.core.grid.Grid.round_to_fast_fft" title="abtem.core.grid.Grid.round_to_fast_fft"><code class="xref py py-meth docutils literal notranslate"><span class="pre">round_to_fast_fft()</span></code></a>, which rounds to the nearest length whose
+prime factors all lie in {2, 3, 5, 7} and is what “faster for arrays
+whose size factorizes into small primes” normally means.</p>
+<p>(For a handful of inputs that are already exact powers of 5 or 7 –
+125, 15625, 16807 – floating-point <code class="docutils literal notranslate"><span class="pre">log</span></code> rounds the exponent up and
+the result overshoots to the next power.)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>powers</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The gpts will be a power of this number.</p>
+<dd class="field-odd"><p><strong>powers</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The bases to consider. Default [2, 3, 5, 7].</p>
 </dd>
 </dl>
 </dd></dl>
@@ -959,6 +1005,16 @@ frequency and the second element is the azimuthal angle.</p>
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="abtem.core.grid.round_auto_derived_gpts">
+<span class="sig-prename descclassname"><span class="pre">abtem.core.grid.</span></span><span class="sig-name descname"><span class="pre">round_auto_derived_gpts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/core/grid.html#round_auto_derived_gpts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.grid.round_auto_derived_gpts" title="Link to this definition">#</a></dt>
+<dd><p>Whether grids abTEM derives on its own are rounded to fast FFT lengths.</p>
+<p>This covers grids abTEM chooses without a user-supplied sampling, such as
+<code class="docutils literal notranslate"><span class="pre">Potential(...,</span> <span class="pre">sampling='auto')</span></code>. Grids derived from a numeric sampling
+are governed separately (they are only rounded in the <code class="docutils literal notranslate"><span class="pre">'always'</span></code> mode),
+because rounding those changes the result of an existing script.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="abtem.core.grid.spatial_frequencies">
 <span class="sig-prename descclassname"><span class="pre">abtem.core.grid.</span></span><span class="sig-name descname"><span class="pre">spatial_frequencies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/abtem/core/grid.html#spatial_frequencies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.grid.spatial_frequencies" title="Link to this definition">#</a></dt>
 <dd><p>Return the spatial frequencies of a grid.</p>
@@ -1085,6 +1141,7 @@ frequency and the second element is the azimuthal angle.</p>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.Grid.gpts"><code class="docutils literal notranslate"><span class="pre">Grid.gpts</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.Grid.match"><code class="docutils literal notranslate"><span class="pre">Grid.match()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.Grid.reciprocal_space_sampling"><code class="docutils literal notranslate"><span class="pre">Grid.reciprocal_space_sampling</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.Grid.round_to_fast_fft"><code class="docutils literal notranslate"><span class="pre">Grid.round_to_fast_fft()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.Grid.round_to_power"><code class="docutils literal notranslate"><span class="pre">Grid.round_to_power()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.Grid.sampling"><code class="docutils literal notranslate"><span class="pre">Grid.sampling</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.Grid.spatial_frequencies"><code class="docutils literal notranslate"><span class="pre">Grid.spatial_frequencies()</span></code></a></li>
@@ -1108,6 +1165,7 @@ frequency and the second element is the azimuthal angle.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.disk_meshgrid_iter"><code class="docutils literal notranslate"><span class="pre">disk_meshgrid_iter()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.polar_spatial_frequencies"><code class="docutils literal notranslate"><span class="pre">polar_spatial_frequencies()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.real_space_grid"><code class="docutils literal notranslate"><span class="pre">real_space_grid()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.round_auto_derived_gpts"><code class="docutils literal notranslate"><span class="pre">round_auto_derived_gpts()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.spatial_frequencies"><code class="docutils literal notranslate"><span class="pre">spatial_frequencies()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.grid.validate_gpts"><code class="docutils literal notranslate"><span class="pre">validate_gpts()</span></code></a></li>
 </ul>

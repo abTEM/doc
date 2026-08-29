@@ -259,6 +259,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -563,6 +564,359 @@
 
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">slice_thickness</span><span class="p">),</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">slice_thickness</span></div>
+
+
+
+<div class="viewcode-block" id="commensurate_slice_thickness">
+<a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.slicing.html#abtem.slicing.commensurate_slice_thickness">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">commensurate_slice_thickness</span><span class="p">(</span>
+    <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span>
+    <span class="n">target_thickness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Find slice thicknesses commensurate with the crystal planes, closest to a target</span>
+<span class="sd">    thickness.</span>
+
+<span class="sd">    Unique z-positions (within `tolerance`) define candidate slice boundaries between 0</span>
+<span class="sd">    and the cell height.  Adjacent plane-level slices are merged so that each resulting</span>
+<span class="sd">    slice thickness is as close as possible to `target_thickness` while keeping</span>
+<span class="sd">    boundaries aligned with atomic planes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    atoms : Atoms</span>
+<span class="sd">        The atoms to be sliced. Must have an orthogonal cell.</span>
+<span class="sd">    target_thickness : float</span>
+<span class="sd">        Target slice thickness [Å].</span>
+<span class="sd">    tolerance : float</span>
+<span class="sd">        Tolerance for identifying distinct crystal planes [Å].</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple of float</span>
+<span class="sd">        Commensurate slice thicknesses.</span>
+<span class="sd">    """</span>
+    <span class="n">cell_z</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">%</span> <span class="n">cell_z</span>
+
+    <span class="c1"># Snap values at z ≈ cell_z back to 0 before deduplicating, so planes near</span>
+    <span class="c1"># the periodic boundary merge with planes near 0 instead of being treated</span>
+    <span class="c1"># as distinct. Identify unique planes by sorted-neighbor distance (as in</span>
+    <span class="c1"># commensurate_gpts) rather than rounding to a fixed tolerance-wide grid</span>
+    <span class="c1"># anchored at 0: fixed-grid rounding can split two atoms much closer</span>
+    <span class="c1"># together than `tolerance` into different bins when they straddle a bin</span>
+    <span class="c1"># edge, or merge genuinely distinct planes that land in the same bin.</span>
+    <span class="n">z</span><span class="p">[</span><span class="n">z</span> <span class="o">&gt;</span> <span class="n">cell_z</span> <span class="o">-</span> <span class="n">tolerance</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+    <span class="n">unique_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="kc">True</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tolerance</span><span class="p">])</span>
+    <span class="n">unique_z</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">unique_mask</span><span class="p">]</span>
+    <span class="n">unique_z</span> <span class="o">=</span> <span class="n">unique_z</span><span class="p">[(</span><span class="n">unique_z</span> <span class="o">&gt;</span> <span class="n">tolerance</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">unique_z</span> <span class="o">&lt;</span> <span class="n">cell_z</span> <span class="o">-</span> <span class="n">tolerance</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)]</span>
+
+    <span class="n">boundaries</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="mf">0.0</span><span class="p">],</span> <span class="n">unique_z</span><span class="p">,</span> <span class="p">[</span><span class="n">cell_z</span><span class="p">])))</span>
+    <span class="n">plane_thicknesses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">boundaries</span><span class="p">)</span>
+
+    <span class="n">merged</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">acc</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">plane_thicknesses</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">acc</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">acc</span> <span class="o">+</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="n">target_thickness</span> <span class="ow">and</span> <span class="n">acc</span> <span class="o">&gt;=</span> <span class="n">target_thickness</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="n">merged</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span>
+            <span class="n">acc</span> <span class="o">=</span> <span class="n">t</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">acc</span> <span class="o">+=</span> <span class="n">t</span>
+    <span class="k">if</span> <span class="n">acc</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># z is periodic, so the last slice and the first slice are also</span>
+        <span class="c1"># adjacent through the wrap at cell_z ≡ 0. Without this, a trailing</span>
+        <span class="c1"># remainder that is real (spacing ≥ tolerance) but well below half</span>
+        <span class="c1"># the target thickness would end up as its own near-degenerate final</span>
+        <span class="c1"># slice, since nothing follows it to trigger the merge guard above.</span>
+        <span class="k">if</span> <span class="n">merged</span> <span class="ow">and</span> <span class="n">acc</span> <span class="o">&lt;</span> <span class="n">target_thickness</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="n">merged</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">acc</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">merged</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">merged</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">result</span><span class="p">),</span> <span class="n">cell_z</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<span class="c1"># How far above the target grid size the incommensurate fallback may look for a</span>
+<span class="c1"># better-aligned fast size. Alignment is a tie-break among nearby candidates,</span>
+<span class="c1"># not something to optimise: how closely the grid samples an atom column is set</span>
+<span class="c1"># by the requested sampling, which is the user's to choose, whereas what this</span>
+<span class="c1"># fallback exists to guarantee is that symmetry-equivalent atoms are sampled</span>
+<span class="c1"># ALIKE -- and that follows from gpts being a multiple of the translational</span>
+<span class="c1"># period, which every candidate here satisfies. So the window stays tight;</span>
+<span class="c1"># chasing the best-aligned candidate without one costs up to 38 % extra pixels.</span>
+<span class="n">_FALLBACK_MAX_OVERSHOOT</span> <span class="o">=</span> <span class="mf">1.12</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_plane_set_invariant_under</span><span class="p">(</span>
+    <span class="n">unique_x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">L</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-3</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether shifting every atom plane by ``s`` maps the plane set onto itself."""</span>
+    <span class="c1"># Every plane, shifted by s, must land within tolerance of a plane.</span>
+    <span class="c1"># The plane set is periodic, so the nearest plane to a shifted point may</span>
+    <span class="c1"># lie across the wrap at 0 ≡ L: a point landing just below L is nearest</span>
+    <span class="c1"># to unique_x[0], and one landing below unique_x[0] is nearest to</span>
+    <span class="c1"># unique_x[-1]. Indexing modulo n picks up both; clipping the</span>
+    <span class="c1"># searchsorted index instead collapses the two neighbours onto the same</span>
+    <span class="c1"># end plane and silently misses the true nearest one. (The caller's</span>
+    <span class="c1"># `x &gt; L - tolerance -&gt; 0` snap bounds the input planes away from L, but</span>
+    <span class="c1"># not the shifted ones: floating-point cell transforms routinely put a</span>
+    <span class="c1"># shifted plane an ulp below L.)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_x</span><span class="p">)</span>
+    <span class="n">shifted</span> <span class="o">=</span> <span class="p">(</span><span class="n">unique_x</span> <span class="o">+</span> <span class="n">s</span><span class="p">)</span> <span class="o">%</span> <span class="n">L</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">unique_x</span><span class="p">,</span> <span class="n">shifted</span><span class="p">)</span>
+    <span class="n">neighbors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">unique_x</span><span class="p">[(</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">n</span><span class="p">],</span> <span class="n">unique_x</span><span class="p">[</span><span class="n">idx</span> <span class="o">%</span> <span class="n">n</span><span class="p">]])</span>
+    <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">neighbors</span> <span class="o">-</span> <span class="n">shifted</span><span class="p">)</span>
+    <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">L</span> <span class="o">-</span> <span class="n">distances</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">distances</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tolerance</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_translational_period_count</span><span class="p">(</span>
+    <span class="n">unique_x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">L</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-3</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The largest m for which the plane set is invariant under a shift of L / m."""</span>
+    <span class="c1"># Largest m such that the set of atom planes is invariant under a shift</span>
+    <span class="c1"># of L / m. Even when the intra-cell plane positions are irrational</span>
+    <span class="c1"># (no commensurate grid exists), a repeated unit cell still imposes</span>
+    <span class="c1"># this translational period, and symmetry-equivalent atoms only see</span>
+    <span class="c1"># identical discretised potentials if gpts is a multiple of m.</span>
+    <span class="c1">#</span>
+    <span class="c1"># A shift s mapping the plane set onto itself must map the first plane</span>
+    <span class="c1"># onto some plane, so the differences to the first plane are the only</span>
+    <span class="c1"># candidates -- and s must moreover be L / m for near-integer m. This</span>
+    <span class="c1"># prunes the search from every m in [2, n_planes] to the few</span>
+    <span class="c1"># difference-derived candidates, typically O(n log n) overall instead of</span>
+    <span class="c1"># O(n^2 log n). Candidates are tried in increasing s, so the first valid</span>
+    <span class="c1"># shift is the minimal period, i.e. the largest m.</span>
+    <span class="c1">#</span>
+    <span class="c1"># Each candidate is tested at the EXACT shift L / m rather than at the</span>
+    <span class="c1"># difference that suggested it: a period-m set is invariant under L / m by</span>
+    <span class="c1"># definition, while the difference carries the plane's own float noise and</span>
+    <span class="c1"># may sit up to 2.5 % away (the near-integer filter's width). Testing the</span>
+    <span class="c1"># exact shift also makes m the whole identity of a candidate, so distinct</span>
+    <span class="c1"># differences rounding to the same m can be collapsed -- without that, an</span>
+    <span class="c1"># off-period difference rounding to m could be tested and rejected first,</span>
+    <span class="c1"># suppressing the genuine L / m shift entirely.</span>
+    <span class="n">deltas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">((</span><span class="n">unique_x</span> <span class="o">-</span> <span class="n">unique_x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">%</span> <span class="n">L</span><span class="p">)</span>
+    <span class="n">tested</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">delta</span> <span class="ow">in</span> <span class="n">deltas</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">delta</span> <span class="o">&lt;</span> <span class="n">tolerance</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">delta</span> <span class="o">&gt;</span> <span class="n">L</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">tolerance</span><span class="p">:</span>
+            <span class="c1"># m = L / delta must be &gt;= 2, and deltas are sorted ascending.</span>
+            <span class="k">break</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">L</span> <span class="o">/</span> <span class="n">delta</span>
+        <span class="n">m_int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">m_int</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">m</span> <span class="o">-</span> <span class="n">m_int</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.05</span> <span class="ow">or</span> <span class="n">m_int</span> <span class="ow">in</span> <span class="n">tested</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">tested</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">m_int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_plane_set_invariant_under</span><span class="p">(</span><span class="n">unique_x</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">L</span> <span class="o">/</span> <span class="n">m_int</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">m_int</span>
+    <span class="k">return</span> <span class="mi">1</span>
+
+
+<div class="viewcode-block" id="commensurate_gpts">
+<a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.slicing.html#abtem.slicing.commensurate_gpts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">commensurate_gpts</span><span class="p">(</span>
+    <span class="n">extent</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">positions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">target_sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span>
+    <span class="n">round_to_fast_fft</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Find grid points such that the sampling grid is commensurate with the atom</span>
+<span class="sd">    positions in x and y, closest to a target sampling.</span>
+
+<span class="sd">    For each axis the function identifies the unique atom planes and computes the</span>
+<span class="sd">    GCD of the spacings between them.  This gives the primitive lattice spacing</span>
+<span class="sd">    and therefore the required grid period p (= number of grid points per unit</span>
+<span class="sd">    cell of the primitive lattice).  The result is invariant under rigid</span>
+<span class="sd">    translations of the structure: a crystal that has been centered or otherwise</span>
+<span class="sd">    shifted within the cell always yields the same p as the unshifted version.</span>
+
+<span class="sd">    When `round_to_fast_fft` is enabled the number of grid points additionally</span>
+<span class="sd">    factorizes completely into the primes 2, 3, 5 and 7 whenever that is</span>
+<span class="sd">    compatible with commensurability, so FFTs run on fast radix kernels instead</span>
+<span class="sd">    of the slow, memory-hungry Bluestein fallback.  The multiple of p nearest</span>
+<span class="sd">    the target sampling is kept when it is already such a length, and otherwise</span>
+<span class="sd">    the next one up -- so enabling this never coarsens the grid.  If p itself</span>
+<span class="sd">    contains a prime factor larger than 7 no multiple of it can be fast, and</span>
+<span class="sd">    commensurability takes precedence.</span>
+
+<span class="sd">    Structures whose internal parameters are irrational (rutile, brookite) have</span>
+<span class="sd">    no commensurate grid at all.  For those, `round_to_fast_fft` additionally</span>
+<span class="sd">    selects among fast sizes within a few percent of the target the one whose</span>
+<span class="sd">    grid the atom planes come closest to sitting on, subject to keeping the</span>
+<span class="sd">    grid a multiple of the plane set's translational period -- without which</span>
+<span class="sd">    symmetry-equivalent atoms in different unit cells would discretise</span>
+<span class="sd">    differently.  This is the only case in which the returned grid is not the</span>
+<span class="sd">    one closest to `target_sampling`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    extent : tuple of float</span>
+<span class="sd">        Grid extent in x and y [Å].</span>
+<span class="sd">    positions : np.ndarray</span>
+<span class="sd">        Atom positions with shape (N, 3) or (N, 2).</span>
+<span class="sd">    target_sampling : float</span>
+<span class="sd">        Target grid sampling [Å].</span>
+<span class="sd">    tolerance : float</span>
+<span class="sd">        Tolerance for identifying distinct atom planes [Å].</span>
+<span class="sd">    round_to_fast_fft : bool</span>
+<span class="sd">        If True (default), prefer grids that are also fast FFT sizes (all prime</span>
+<span class="sd">        factors in {2, 3, 5, 7}). The realized sampling is then never coarser</span>
+<span class="sd">        than commensurability alone would give, and at most a few percent</span>
+<span class="sd">        finer. Setting</span>
+<span class="sd">        this to False reproduces the plain commensurate grid exactly, including</span>
+<span class="sd">        for the incommensurate structures above, which then simply take the</span>
+<span class="sd">        target size.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple of int</span>
+<span class="sd">        Number of grid points in x and y.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_fast_fft_size</span><span class="p">,</span> <span class="n">next_fast_fft_size</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">fallback_gpts</span><span class="p">(</span><span class="n">n_target</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">unique_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="c1"># The GCD search found no commensurate period. With fast-FFT rounding</span>
+        <span class="c1"># off this is simply the target size (the base branch's behaviour).</span>
+        <span class="c1"># With it on, pick the fast size that (a) keeps gpts a multiple of the</span>
+        <span class="c1"># translational period count m of the plane set and (b) best aligns</span>
+        <span class="c1"># the planes with grid points: structures with an irrational internal</span>
+        <span class="c1"># parameter (e.g. rutile u = 0.306, brookite) have no exactly</span>
+        <span class="c1"># commensurate grid, but some fast sizes come much closer than others.</span>
+        <span class="c1"># Note this ties the period constraint in (a) to the rounding flag, so</span>
+        <span class="c1"># that `round_to_fast_fft=False` reproduces the base branch exactly.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">round_to_fast_fft</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">n_target</span>
+        <span class="k">if</span> <span class="n">unique_x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">L</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_x</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">next_fast_fft_size</span><span class="p">(</span><span class="n">n_target</span><span class="p">)</span>
+
+        <span class="n">m</span> <span class="o">=</span> <span class="n">_translational_period_count</span><span class="p">(</span><span class="n">unique_x</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_fast_fft_size</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="c1"># No multiple of m can be a fast FFT size; translational</span>
+            <span class="c1"># commensurability takes precedence, as in the main path.</span>
+            <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">n_target</span> <span class="o">/</span> <span class="n">m</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">m</span>
+
+        <span class="n">best</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">multiplier</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="o">-</span><span class="n">n_target</span> <span class="o">//</span> <span class="n">m</span><span class="p">)</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">multiplier</span> <span class="o">=</span> <span class="n">next_fast_fft_size</span><span class="p">(</span><span class="n">multiplier</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">multiplier</span> <span class="o">*</span> <span class="n">m</span>
+            <span class="k">if</span> <span class="n">best</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="n">n_target</span> <span class="o">*</span> <span class="n">_FALLBACK_MAX_OVERSHOOT</span><span class="p">:</span>
+                <span class="c1"># Candidates outside the window are not scored at all. Scoring</span>
+                <span class="c1"># the terminating candidate and only then stopping let the</span>
+                <span class="c1"># largest one -- often the best aligned, since a finer grid</span>
+                <span class="c1"># resolves more phases -- win from outside any window at all.</span>
+                <span class="k">break</span>
+            <span class="c1"># Score by ALIGNABILITY, not realized alignment: the smallest</span>
+            <span class="c1"># achievable max plane-to-gridpoint distance over all grid-origin</span>
+            <span class="c1"># phases. The plane residues x_i*n/L mod 1 must cluster near a</span>
+            <span class="c1"># common phase for the planes to sit near grid points; the tightest</span>
+            <span class="c1"># arc containing all residues is 1 - (largest circular gap), and</span>
+            <span class="c1"># centering the phase in that arc gives max distance (1 - gap)/2.</span>
+            <span class="c1"># Unlike distance-to-nearest-gridpoint at a fixed origin, this</span>
+            <span class="c1"># depends only on RELATIVE positions, so a rigidly translated</span>
+            <span class="c1"># structure gets the same grid (a tested invariant of the</span>
+            <span class="c1"># commensurate search that the fallback must preserve).</span>
+            <span class="n">residues</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">unique_x</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="n">L</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">))</span>
+            <span class="n">gaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">residues</span><span class="p">,</span> <span class="p">[</span><span class="n">residues</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">]]))</span>
+            <span class="n">alignability</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">gaps</span><span class="p">)))</span> <span class="o">/</span> <span class="mf">2.0</span>
+            <span class="c1"># Compare candidates by misalignment in ANGSTROM, not in fractions</span>
+            <span class="c1"># of a grid spacing: a finer grid has a smaller spacing, so the same</span>
+            <span class="c1"># fractional alignability is physically better there and the two are</span>
+            <span class="c1"># not comparable as they stand. Rounding to 0.001 A -- far below</span>
+            <span class="c1"># what a projected potential resolves -- makes indistinguishable</span>
+            <span class="c1"># candidates tie, and the tie-break then takes the smaller grid.</span>
+            <span class="n">misalignment</span> <span class="o">=</span> <span class="n">alignability</span> <span class="o">*</span> <span class="p">(</span><span class="n">L</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span>
+            <span class="n">score</span> <span class="o">=</span> <span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">misalignment</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">n</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">best</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">score</span> <span class="o">&lt;</span> <span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">best</span> <span class="o">=</span> <span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+            <span class="n">multiplier</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">assert</span> <span class="n">best</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">best</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">n_target</span> <span class="o">*</span> <span class="n">_FALLBACK_MAX_OVERSHOOT</span><span class="p">:</span>
+            <span class="c1"># Candidates ascend, so the first one already overshoots and there</span>
+            <span class="c1"># is no in-window candidate to find: every fast multiple of m is</span>
+            <span class="c1"># this far above the target or further. Being a fast size is not</span>
+            <span class="c1"># worth that many extra pixels, so keep the period constraint on</span>
+            <span class="c1"># its own -- exactly what the branch above does when m itself is</span>
+            <span class="c1"># not a fast size. Without this the window is not a bound at all</span>
+            <span class="c1"># (m = 64 against a target of 72 lands on 128, +78 %).</span>
+            <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">n_target</span> <span class="o">/</span> <span class="n">m</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">m</span>
+        <span class="k">return</span> <span class="n">best</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">gpts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="n">extent</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">n_target</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">L</span> <span class="o">/</span> <span class="n">target_sampling</span><span class="p">))</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">positions</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">%</span> <span class="n">L</span>
+        <span class="c1"># Snap values at x ≈ L back to 0: floating-point modulo can leave atoms</span>
+        <span class="c1"># from cell-transform at L−ε rather than 0, creating a spurious near-zero</span>
+        <span class="c1"># spacing that breaks the GCD calculation.</span>
+        <span class="n">x</span><span class="p">[</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">L</span> <span class="o">-</span> <span class="n">tolerance</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># De-duplicate: keep one representative per distinct atom plane</span>
+        <span class="n">unique_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="kc">True</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tolerance</span><span class="p">])</span>
+        <span class="n">unique_x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">unique_mask</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_x</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">gpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fallback_gpts</span><span class="p">(</span><span class="n">n_target</span><span class="p">,</span> <span class="n">unique_x</span><span class="p">,</span> <span class="n">L</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Spacings between consecutive unique planes, including the wrap-around gap</span>
+        <span class="n">spacings</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">unique_x</span><span class="p">),</span> <span class="p">[</span><span class="n">L</span> <span class="o">+</span> <span class="n">unique_x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">unique_x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]])</span>
+
+        <span class="n">min_spacing</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">spacings</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">min_spacing</span> <span class="o">&lt;</span> <span class="n">tolerance</span><span class="p">:</span>
+            <span class="n">gpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fallback_gpts</span><span class="p">(</span><span class="n">n_target</span><span class="p">,</span> <span class="n">unique_x</span><span class="p">,</span> <span class="n">L</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Check that every spacing is approximately an integer multiple of the</span>
+        <span class="c1"># minimum spacing (i.e. the minimum is the primitive spacing).</span>
+        <span class="n">ratios</span> <span class="o">=</span> <span class="n">spacings</span> <span class="o">/</span> <span class="n">min_spacing</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ratios</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ratios</span> <span class="o">-</span> <span class="n">k</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.05</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">k</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="c1"># No clear commensurability — take the incommensurate fallback</span>
+            <span class="n">gpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fallback_gpts</span><span class="p">(</span><span class="n">n_target</span><span class="p">,</span> <span class="n">unique_x</span><span class="p">,</span> <span class="n">L</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Primitive spacing refined as L / (total number of primitive periods).</span>
+        <span class="c1"># Using L / sum(k) is more accurate than min_spacing alone because it</span>
+        <span class="c1"># averages out any floating-point scatter in the individual spacings.</span>
+        <span class="n">n_periods</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+        <span class="c1"># The commensurate grid nearest the target, i.e. the grid chosen when</span>
+        <span class="c1"># fast-FFT rounding is off.</span>
+        <span class="n">nearest</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">n_target</span> <span class="o">/</span> <span class="n">n_periods</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">round_to_fast_fft</span> <span class="ow">and</span> <span class="n">is_fast_fft_size</span><span class="p">(</span><span class="n">n_periods</span><span class="p">):</span>
+            <span class="c1"># A multiple q * n_periods is a fast FFT size exactly when both</span>
+            <span class="c1"># factors are, so only the multiplier has to be moved -- and only</span>
+            <span class="c1"># when the nearest commensurate grid is not already fast. Enlarging</span>
+            <span class="c1"># an already-fast grid buys nothing: both are exactly commensurate,</span>
+            <span class="c1"># so the extra pixels improve no measurable quantity. When n_periods</span>
+            <span class="c1"># itself has a prime factor larger than 7 no multiple can be fast</span>
+            <span class="c1"># and commensurability takes precedence (handled below).</span>
+            <span class="c1"># Rounding the multiplier up rather than to the nearer fast value</span>
+            <span class="c1"># keeps the grid from ever coming out coarser than it would with</span>
+            <span class="c1"># rounding off, so enabling this can only refine the sampling.</span>
+            <span class="n">multiplier</span> <span class="o">=</span> <span class="n">nearest</span> <span class="k">if</span> <span class="n">is_fast_fft_size</span><span class="p">(</span><span class="n">nearest</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span>
+                <span class="n">next_fast_fft_size</span><span class="p">(</span><span class="n">nearest</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">n_multiple</span> <span class="o">=</span> <span class="n">multiplier</span> <span class="o">*</span> <span class="n">n_periods</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n_multiple</span> <span class="o">=</span> <span class="n">nearest</span> <span class="o">*</span> <span class="n">n_periods</span>
+        <span class="n">gpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_multiple</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">gpts</span><span class="p">)</span></div>
 
 
 

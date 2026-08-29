@@ -264,6 +264,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -589,6 +590,9 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.fft.get_fftw_object"><code class="docutils literal notranslate"><span class="pre">get_fftw_object()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.fft.ifft2"><code class="docutils literal notranslate"><span class="pre">ifft2()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.fft.ifftn"><code class="docutils literal notranslate"><span class="pre">ifftn()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.fft.is_fast_fft_size"><code class="docutils literal notranslate"><span class="pre">is_fast_fft_size()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.fft.next_fast_fft_size"><code class="docutils literal notranslate"><span class="pre">next_fast_fft_size()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.fft.warn_if_slow_gpu_fft"><code class="docutils literal notranslate"><span class="pre">warn_if_slow_gpu_fft()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -663,6 +667,15 @@ Using the FFT library specified in the configuration.</p></td>
 <tr class="row-odd"><td><p><a class="reference internal" href="#abtem.core.fft.ifftn" title="abtem.core.fft.ifftn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ifftn</span></code></a></p></td>
 <td><p>Compute the n-dimensional inverse discrete Fourier Transform.
 Using the FFT library specified in the configuration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#abtem.core.fft.is_fast_fft_size" title="abtem.core.fft.is_fast_fft_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_fast_fft_size</span></code></a></p></td>
+<td><p>Whether an FFT of length <code class="docutils literal notranslate"><span class="pre">n</span></code> runs on fast radix kernels.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#abtem.core.fft.next_fast_fft_size" title="abtem.core.fft.next_fast_fft_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">next_fast_fft_size</span></code></a></p></td>
+<td><p>The smallest length &gt;= <code class="docutils literal notranslate"><span class="pre">n</span></code> whose prime factors are all in {2, 3, 5, 7}.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#abtem.core.fft.warn_if_slow_gpu_fft" title="abtem.core.fft.warn_if_slow_gpu_fft"><code class="xref py py-obj docutils literal notranslate"><span class="pre">warn_if_slow_gpu_fft</span></code></a></p></td>
+<td><p>Emit the slow-FFT diagnostic for a transform run outside <code class="docutils literal notranslate"><span class="pre">_fft_dispatch</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -873,6 +886,62 @@ Using the FFT library specified in the configuration.</p>
 Using the FFT library specified in the configuration.</p>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="abtem.core.fft.is_fast_fft_size">
+<span class="sig-prename descclassname"><span class="pre">abtem.core.fft.</span></span><span class="sig-name descname"><span class="pre">is_fast_fft_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/core/fft.html#is_fast_fft_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.fft.is_fast_fft_size" title="Link to this definition">#</a></dt>
+<dd><p>Whether an FFT of length <code class="docutils literal notranslate"><span class="pre">n</span></code> runs on fast radix kernels.</p>
+<p>FFT libraries only ship optimized kernels for lengths whose prime factors
+are small (2, 3, 5 and 7 are supported everywhere). A length with a larger
+prime factor triggers a generic fallback – on cuFFT the Bluestein
+algorithm, which pads internally to a power of two, costing several times
+the arithmetic and, on GPU, a workspace of several times the transform
+size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The transform length.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if <code class="docutils literal notranslate"><span class="pre">n</span></code> factorizes completely into 2, 3, 5 and 7.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="abtem.core.fft.next_fast_fft_size">
+<span class="sig-prename descclassname"><span class="pre">abtem.core.fft.</span></span><span class="sig-name descname"><span class="pre">next_fast_fft_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/core/fft.html#next_fast_fft_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.fft.next_fast_fft_size" title="Link to this definition">#</a></dt>
+<dd><p>The smallest length &gt;= <code class="docutils literal notranslate"><span class="pre">n</span></code> whose prime factors are all in {2, 3, 5, 7}.</p>
+<p>Useful for choosing grid sizes (<code class="docutils literal notranslate"><span class="pre">gpts</span></code>) that avoid the slow
+large-workspace Bluestein fallback on GPU. Stricter than
+<code class="docutils literal notranslate"><span class="pre">scipy.fft.next_fast_len</span></code>, which returns 11-smooth lengths (fast for
+pocketfft on CPU, but off cuFFT’s documented fast path).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The minimum transform length.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The next fast transform length.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="abtem.core.fft.warn_if_slow_gpu_fft">
+<span class="sig-prename descclassname"><span class="pre">abtem.core.fft.</span></span><span class="sig-name descname"><span class="pre">warn_if_slow_gpu_fft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/abtem/core/fft.html#warn_if_slow_gpu_fft"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.fft.warn_if_slow_gpu_fft" title="Link to this definition">#</a></dt>
+<dd><p>Emit the slow-FFT diagnostic for a transform run outside <code class="docutils literal notranslate"><span class="pre">_fft_dispatch</span></code>.</p>
+<p>A few transforms call <code class="docutils literal notranslate"><span class="pre">xp.fft</span></code> directly rather than through the wrappers
+in this module – <code class="docutils literal notranslate"><span class="pre">structure_factor_to_potential</span></code> does, because the FFTW
+backend here only ever transforms the trailing two axes and would silently
+turn its 3D transform into a 2D one. They still deserve the diagnostic, so
+they can call this alongside. Only GPU arrays are considered: the Bluestein
+workspace this warns about is a cuFFT concern.</p>
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -961,6 +1030,9 @@ Using the FFT library specified in the configuration.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.fft.get_fftw_object"><code class="docutils literal notranslate"><span class="pre">get_fftw_object()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.fft.ifft2"><code class="docutils literal notranslate"><span class="pre">ifft2()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.fft.ifftn"><code class="docutils literal notranslate"><span class="pre">ifftn()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.fft.is_fast_fft_size"><code class="docutils literal notranslate"><span class="pre">is_fast_fft_size()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.fft.next_fast_fft_size"><code class="docutils literal notranslate"><span class="pre">next_fast_fft_size()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.core.fft.warn_if_slow_gpu_fft"><code class="docutils literal notranslate"><span class="pre">warn_if_slow_gpu_fft()</span></code></a></li>
 </ul>
 </li>
 </ul>

@@ -264,6 +264,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../user_guide/tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../user_guide/tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -605,7 +606,7 @@ defaults before they are used to configure the build.</p>
 <span class="nt">precision</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">float32</span>
 <span class="nt">diagnostics</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># Show the progress bar. Options are 'true', 'false' or 'tqdm'</span>
-<span class="w">  </span><span class="nt">progress_bar</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tqdm</span>
+<span class="w">  </span><span class="nt">progress_bar</span><span class="p">:</span><span class="w"> </span><span class="s">"tqdm"</span>
 <span class="w">  </span><span class="c1"># Show the progress of each task. Options are 'true' or 'false'</span>
 <span class="w">  </span><span class="nt">task_progress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="nt">dask</span><span class="p">:</span>
@@ -615,10 +616,30 @@ defaults before they are used to configure the build.</p>
 <span class="w">  </span><span class="nt">chunk-size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">128 MB</span>
 <span class="w">  </span><span class="c1"># The target chunk size to use for dask arrays on the gpu</span>
 <span class="w">  </span><span class="nt">chunk-size-gpu</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">512 MB</span>
+<span class="w">  </span><span class="c1"># Automatically distribute gpu computations over all visible gpus by starting a</span>
+<span class="w">  </span><span class="c1"># dask-cuda cluster. Requires the optional dask-cuda package.</span>
+<span class="w">  </span><span class="nt">multi-gpu</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="c1"># Optional RMM memory-pool size per multi-gpu worker (e.g. "20 GB").</span>
+<span class="w">  </span><span class="c1"># null disables the RMM pool.</span>
+<span class="w">  </span><span class="nt">multi-gpu-rmm-pool</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+<span class="w">  </span><span class="c1"># Optional subset of GPUs for the multi-gpu cluster, as a list of device</span>
+<span class="w">  </span><span class="c1"># indices (e.g. [0, 1]) or a comma-separated string (e.g. "0,1").</span>
+<span class="w">  </span><span class="c1"># null spans all visible GPUs.</span>
+<span class="w">  </span><span class="nt">multi-gpu-devices</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
 <span class="nt">cupy</span><span class="p">:</span>
-<span class="w">  </span><span class="c1"># The size of the fft cache in MB used by cupy</span>
+<span class="w">  </span><span class="c1"># Maximum GPU memory (bytes) used by the cuFFT plan cache.</span>
 <span class="w">  </span><span class="c1"># https://docs.cupy.dev/en/stable/user_guide/fft.html#fft-plan-cache</span>
-<span class="w">  </span><span class="nt">fft-cache-size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0 MB</span>
+<span class="w">  </span><span class="c1"># auto  — 25% of the device's total memory, resolved per device: scales</span>
+<span class="w">  </span><span class="c1">#          with the card like the auto-sized batches whose plans it holds,</span>
+<span class="w">  </span><span class="c1">#          keeping live plans hot while capping stale-plan retention. A</span>
+<span class="w">  </span><span class="c1">#          ceiling, not a reservation — unused headroom costs no memory.</span>
+<span class="w">  </span><span class="c1"># 0 MB  — disable caching entirely (workspace freed after every FFT call;</span>
+<span class="w">  </span><span class="c1">#          use when VRAM is tight and large-grid OOMs occur).</span>
+<span class="w">  </span><span class="c1"># &gt; 0   — bound cached workspace to this many bytes (e.g. "512 MB").</span>
+<span class="w">  </span><span class="c1"># -1    — unlimited (CuPy default; fastest but accumulates workspace,</span>
+<span class="w">  </span><span class="c1">#          which on Bluestein-fallback grid sizes can reach tens of GB).</span>
+<span class="w">  </span><span class="c1"># null  — same as -1 (no bound).</span>
+<span class="w">  </span><span class="nt">fft-cache-size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span>
 <span class="nt">mkl</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># The number of threads to use for mkl</span>
 <span class="w">  </span><span class="nt">threads</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
@@ -633,11 +654,24 @@ defaults before they are used to configure the build.</p>
 <span class="w">  </span><span class="nt">planning_timelimit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
 <span class="w">  </span><span class="c1"># Whether to allow falling back to not using wisdom if the cache fails</span>
 <span class="w">  </span><span class="nt">allow_fallback</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">grid</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># Round automatically derived gpts up to the next fast FFT length (all prime</span>
+<span class="w">  </span><span class="c1"># factors in {2, 3, 5, 7}). Fast lengths avoid the slow, memory-hungry</span>
+<span class="w">  </span><span class="c1"># Bluestein FFT fallback on GPU and speed up CPU FFTs as well. Rounding is</span>
+<span class="w">  </span><span class="c1"># upward only, so a grid derived from a numeric sampling never comes out</span>
+<span class="w">  </span><span class="c1"># coarser than requested. gpts given explicitly are never altered.</span>
+<span class="w">  </span><span class="c1">#   'auto'  round only grids abTEM derives on its own (sampling='auto')</span>
+<span class="w">  </span><span class="c1">#   true    additionally round gpts derived from a numeric sampling</span>
+<span class="w">  </span><span class="c1">#   false   never round</span>
+<span class="w">  </span><span class="nt">round-to-fast-fft</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span>
 <span class="nt">warnings</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># Show the dask warning about the blockwise performance when the number are increased dramatically</span>
 <span class="w">  </span><span class="nt">dask-blockwise-performance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="w">  </span><span class="c1"># Show a warning when the grid is overspecified</span>
 <span class="w">  </span><span class="nt">overspecified-grid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">potential</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># Number of slices to build at once during multislice. "auto" = memory-budget-aware.</span>
+<span class="w">  </span><span class="nt">slice-chunk-size</span><span class="p">:</span><span class="w"> </span><span class="s">"auto"</span>
 <span class="nt">antialias</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># The antialias cutoff in reciprocal space</span>
 <span class="w">  </span><span class="nt">cutoff</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.6666666</span>

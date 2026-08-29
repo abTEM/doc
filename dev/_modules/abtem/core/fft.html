@@ -259,6 +259,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -523,6 +524,8 @@
   <h1>Source code for abtem.core.fft</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""Module for handling Fourier transforms and convolution in *ab*TEM."""</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">product</span> <span class="k">as</span> <span class="n">_product</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">overload</span>
@@ -558,6 +561,190 @@
             <span class="s2">"change your configuration to use CPU."</span>
         <span class="p">)</span>
     <span class="n">cp</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="c1"># Deliberately NOT scipy.fft.next_fast_len's set: scipy targets pocketfft,</span>
+<span class="c1"># whose kernels go up to radix 11, so next_fast_len returns 11-smooth lengths</span>
+<span class="c1"># (next_fast_len(121) == 121 == 11**2). cuFFT documents optimized kernels only</span>
+<span class="c1"># for sizes of the form 2^a * 3^b * 5^c * 7^d, so a factor-11 length falls off</span>
+<span class="c1"># exactly the GPU fast path this module exists to protect. {2, 3, 5, 7} is the</span>
+<span class="c1"># intersection guaranteed fast on every backend abTEM uses (FFTW, pocketfft,</span>
+<span class="c1"># MKL, cuFFT, hipFFT).</span>
+<span class="n">_FAST_FFT_PRIMES</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="is_fast_fft_size">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.fft.html#abtem.core.fft.is_fast_fft_size">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_fast_fft_size</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Whether an FFT of length ``n`` runs on fast radix kernels.</span>
+
+<span class="sd">    FFT libraries only ship optimized kernels for lengths whose prime factors</span>
+<span class="sd">    are small (2, 3, 5 and 7 are supported everywhere). A length with a larger</span>
+<span class="sd">    prime factor triggers a generic fallback -- on cuFFT the Bluestein</span>
+<span class="sd">    algorithm, which pads internally to a power of two, costing several times</span>
+<span class="sd">    the arithmetic and, on GPU, a workspace of several times the transform</span>
+<span class="sd">    size.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        The transform length.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if ``n`` factorizes completely into 2, 3, 5 and 7.</span>
+<span class="sd">    """</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">_FAST_FFT_PRIMES</span><span class="p">:</span>
+        <span class="k">while</span> <span class="n">n</span> <span class="o">%</span> <span class="n">p</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">//=</span> <span class="n">p</span>
+    <span class="k">return</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span></div>
+
+
+
+<div class="viewcode-block" id="next_fast_fft_size">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.fft.html#abtem.core.fft.next_fast_fft_size">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">next_fast_fft_size</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The smallest length &gt;= ``n`` whose prime factors are all in {2, 3, 5, 7}.</span>
+
+<span class="sd">    Useful for choosing grid sizes (``gpts``) that avoid the slow</span>
+<span class="sd">    large-workspace Bluestein fallback on GPU. Stricter than</span>
+<span class="sd">    ``scipy.fft.next_fast_len``, which returns 11-smooth lengths (fast for</span>
+<span class="sd">    pocketfft on CPU, but off cuFFT's documented fast path).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        The minimum transform length.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        The next fast transform length.</span>
+<span class="sd">    """</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">is_fast_fft_size</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">n</span></div>
+
+
+
+<span class="n">_warned_slow_fft_shapes</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="c1"># _fft_dispatch runs concurrently in dask worker threads, so the check-then-add</span>
+<span class="c1"># on the shape set must be atomic or the same shape can warn more than once.</span>
+<span class="n">_warned_slow_fft_shapes_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+
+<span class="c1"># Bluestein overhead only matters for large transforms; small odd-sized arrays</span>
+<span class="c1"># (e.g. interpolated measurements) are not worth a warning.</span>
+<span class="n">_SLOW_FFT_WARN_MIN_ELEMENTS</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_transform_lengths</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">func_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"fft2"</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The array lengths a transform actually acts on.</span>
+
+<span class="sd">    Only the transformed axes matter for the Bluestein fallback: batch axes are</span>
+<span class="sd">    looped over, whatever their length. Which axes those are depends on the</span>
+<span class="sd">    function -- ``fftn`` transforms all of them unless ``axes`` says otherwise,</span>
+<span class="sd">    ``fft2`` the trailing two, ``fft`` a single one -- so reading the trailing</span>
+<span class="sd">    two axes unconditionally misreports every non-2D transform.</span>
+<span class="sd">    """</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="n">axes</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"axes"</span><span class="p">)</span>
+    <span class="c1"># An explicit `s` overrides the array lengths (None entries keep theirs).</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"s"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">axes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">func_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"fftn"</span><span class="p">):</span>
+            <span class="c1"># numpy and cupy apply `s` to the TRAILING len(s) axes when no axes</span>
+            <span class="c1"># are given, so deriving the axes from the array rank alone would</span>
+            <span class="c1"># pair `s` with the wrong ones.</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="n">count</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="n">func_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"fft2"</span><span class="p">):</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"axis"</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),)</span>
+
+    <span class="c1"># Drop axes the array does not have. cupy's fft2 quietly reduces the axes</span>
+    <span class="c1"># for arrays of fewer than two dimensions, and this runs ahead of every GPU</span>
+    <span class="c1"># transform: raising here would break a transform that would otherwise</span>
+    <span class="c1"># succeed, rather than merely skipping a diagnostic.</span>
+    <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">axis</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">axes</span> <span class="k">if</span> <span class="o">-</span><span class="n">ndim</span> <span class="o">&lt;=</span> <span class="n">axis</span> <span class="o">&lt;</span> <span class="n">ndim</span><span class="p">)</span>
+
+    <span class="n">lengths</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">axis</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axes</span><span class="p">):</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">shape</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">lengths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">length</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_slow_fft_size</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">func_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"fft2"</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Warn once per large transform whose transformed lengths force Bluestein."""</span>
+    <span class="n">lengths</span> <span class="o">=</span> <span class="n">_transform_lengths</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">lengths</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Test cheaply first, and record only shapes that actually warn: the</span>
+    <span class="c1"># memo then holds at most one entry per warning ever emitted, and a run</span>
+    <span class="c1"># whose grid is fast never touches the lock on the FFT hot path.</span>
+    <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">_SLOW_FFT_WARN_MIN_ELEMENTS</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">is_fast_fft_size</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">lengths</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="k">with</span> <span class="n">_warned_slow_fft_shapes_lock</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">lengths</span> <span class="ow">in</span> <span class="n">_warned_slow_fft_shapes</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">_warned_slow_fft_shapes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span>
+
+    <span class="n">shown</span> <span class="o">=</span> <span class="s2">" x "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">lengths</span><span class="p">)</span>
+    <span class="n">suggestion</span> <span class="o">=</span> <span class="s2">" x "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">next_fast_fft_size</span><span class="p">(</span><span class="n">n</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">lengths</span><span class="p">)</span>
+    <span class="c1"># Only a 2D transform of the trailing axes is the wave-function grid the</span>
+    <span class="c1"># user sets with gpts; for anything else (e.g. the 3D structure-factor</span>
+    <span class="c1"># grid, which follows from g_max and the cell) that advice would be wrong.</span>
+    <span class="n">remedy</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">", e.g. by setting gpts explicitly, or -- if this grid was derived from "</span>
+        <span class="s2">"a numeric sampling -- with "</span>
+        <span class="s2">"abtem.config.set({'grid.round-to-fast-fft': True})"</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span> <span class="o">==</span> <span class="n">lengths</span>
+        <span class="k">else</span> <span class="s2">""</span>
+    <span class="p">)</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"FFT size </span><span class="si">{</span><span class="n">shown</span><span class="si">}</span><span class="s2"> contains prime factors larger than 7; "</span>
+        <span class="s2">"cuFFT falls back to the Bluestein algorithm, which is several times "</span>
+        <span class="s2">"slower and allocates a workspace of several times the array size. "</span>
+        <span class="sa">f</span><span class="s2">"Consider adjusting the transformed grid to </span><span class="si">{</span><span class="n">suggestion</span><span class="si">}{</span><span class="n">remedy</span><span class="si">}</span><span class="s2">."</span><span class="p">,</span>
+        <span class="ne">UserWarning</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="warn_if_slow_gpu_fft">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.fft.html#abtem.core.fft.warn_if_slow_gpu_fft">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">warn_if_slow_gpu_fft</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">func_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"fft2"</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Emit the slow-FFT diagnostic for a transform run outside ``_fft_dispatch``.</span>
+
+<span class="sd">    A few transforms call ``xp.fft`` directly rather than through the wrappers</span>
+<span class="sd">    in this module -- ``structure_factor_to_potential`` does, because the FFTW</span>
+<span class="sd">    backend here only ever transforms the trailing two axes and would silently</span>
+<span class="sd">    turn its 3D transform into a 2D one. They still deserve the diagnostic, so</span>
+<span class="sd">    they can call this alongside. Only GPU arrays are considered: the Bluestein</span>
+<span class="sd">    workspace this warns about is a cuFFT concern.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">_warn_slow_fft_size</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_raise_fft_lib_not_present</span><span class="p">(</span><span class="n">lib_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -735,15 +922,33 @@
 <span class="sd">                     Plans are reused for repeated same-shape transforms but the</span>
 <span class="sd">                     total persistent workspace is bounded.</span>
 <span class="sd">    * ``-1``       — unlimited (CuPy default, plans cached indefinitely).</span>
+<span class="sd">    * ``auto``     — 25 % of the device's total memory, resolved per device.</span>
+
+<span class="sd">    The abTEM default is ``auto``. The bound must scale with the card: batch</span>
+<span class="sd">    auto-sizing targets ~8 % of VRAM per batch and the live plan workspace is</span>
+<span class="sd">    ~1x the batch bytes on fast-radix shapes (~2x on Bluestein shapes), so the</span>
+<span class="sd">    live working set of a production scan is ~10-17 % of VRAM on any card — a</span>
+<span class="sd">    fixed byte bound either evicts live plans on large cards (a flat 2 GB was</span>
+<span class="sd">    measured to cost ~7 % on a 40 GB A100) or is needlessly tight on small</span>
+<span class="sd">    ones. 25 % clears the live set with margin, while still capping the stale</span>
+<span class="sd">    workspace an unlimited cache accumulates across the distinct batch shapes</span>
+<span class="sd">    of successive computations. The limit is a ceiling, not a reservation —</span>
+<span class="sd">    unused headroom costs no memory.</span>
 <span class="sd">    """</span>
     <span class="k">global</span> <span class="n">_CUFFT_CACHE_STATE</span>
-    <span class="n">raw</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"cupy.fft-cache-size"</span><span class="p">,</span> <span class="s2">"0 MB"</span><span class="p">)</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"cupy.fft-cache-size"</span><span class="p">,</span> <span class="s2">"auto"</span><span class="p">)</span>
 
-    <span class="c1"># Fast path: config hasn't changed since we last applied it.</span>
-    <span class="k">if</span> <span class="n">_CUFFT_CACHE_STATE</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_CUFFT_CACHE_STATE</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">raw</span><span class="p">:</span>
+    <span class="c1"># The plan cache and the resolved "auto" limit are per device, so the</span>
+    <span class="c1"># applied state is keyed on the current device as well as the raw value.</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Device</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">_CUFFT_CACHE_STATE</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_CUFFT_CACHE_STATE</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">device</span><span class="o">.</span><span class="n">id</span><span class="p">):</span>
         <span class="k">return</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">raw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">limit</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># null = no bound, matching the sibling keys' convention</span>
+    <span class="k">elif</span> <span class="n">raw</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
+        <span class="n">limit</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">mem_info</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">4</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">dask.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_bytes</span>
         <span class="n">limit</span> <span class="o">=</span> <span class="n">parse_bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -753,10 +958,65 @@
     <span class="k">if</span> <span class="n">limit</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">cache</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>       <span class="c1"># disable caching entirely</span>
     <span class="k">elif</span> <span class="n">limit</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cache</span><span class="o">.</span><span class="n">get_size</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cache</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>  <span class="c1"># re-enable a previously disabled cache</span>
         <span class="n">cache</span><span class="o">.</span><span class="n">set_memsize</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
-    <span class="c1"># limit &lt; 0 → leave at CuPy default (unlimited)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Explicitly restore "unlimited": an earlier bound (e.g. from the</span>
+        <span class="c1"># "auto" default) must be undoable at runtime -- the oversized-plan</span>
+        <span class="c1"># warning recommends exactly this.</span>
+        <span class="k">if</span> <span class="n">cache</span><span class="o">.</span><span class="n">get_size</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cache</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
+        <span class="n">cache</span><span class="o">.</span><span class="n">set_memsize</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="n">_CUFFT_CACHE_STATE</span> <span class="o">=</span> <span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
+    <span class="n">_CUFFT_CACHE_STATE</span> <span class="o">=</span> <span class="p">((</span><span class="n">raw</span><span class="p">,</span> <span class="n">device</span><span class="o">.</span><span class="n">id</span><span class="p">),</span> <span class="n">limit</span><span class="p">)</span>
+
+
+<span class="n">_warned_plan_cache_bypass</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cupy_fft_with_cache_fallback</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Run a CuPy FFT, bypassing the plan cache for oversized plans.</span>
+
+<span class="sd">    A bounded plan cache refuses to admit a single plan larger than its</span>
+<span class="sd">    memsize bound, and CuPy raises instead of running the transform uncached</span>
+<span class="sd">    (CUDA only; the ROCm path does not track plan memsize). Retry such calls</span>
+<span class="sd">    with the cache temporarily disabled: the plan is built, used and</span>
+<span class="sd">    discarded, costing replanning time per call instead of a crash.</span>
+<span class="sd">    """</span>
+    <span class="k">global</span> <span class="n">_warned_plan_cache_bypass</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"plan memsize is too large"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="k">raise</span>
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_plan_cache</span><span class="p">()</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get_size</span><span class="p">()</span>
+    <span class="n">memsize</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get_memsize</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_warned_plan_cache_bypass</span><span class="p">:</span>
+        <span class="n">_warned_plan_cache_bypass</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># The exceeded bound is positive in practice (CuPy only raises the</span>
+        <span class="c1"># too-large error for bounded caches); guard the arithmetic anyway.</span>
+        <span class="n">bound</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">" of </span><span class="si">{</span><span class="n">memsize</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> GB"</span> <span class="k">if</span> <span class="n">memsize</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">""</span>
+        <span class="n">suggested</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">memsize</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> GB"</span> <span class="k">if</span> <span class="n">memsize</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">"32 GB"</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"A single cuFFT plan for shape </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> exceeds the plan-cache "</span>
+            <span class="sa">f</span><span class="s2">"bound</span><span class="si">{</span><span class="n">bound</span><span class="si">}</span><span class="s2">; running the transform uncached, which replans on "</span>
+            <span class="s2">"every call for this shape. To avoid the replanning cost, either "</span>
+            <span class="s2">"raise the bound, e.g. abtem.config.set({'cupy.fft-cache-size': "</span>
+            <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">suggested</span><span class="si">}</span><span class="s2">'"</span>
+            <span class="s2">"}) (-1 = unlimited), or reduce the wave-function batch size, "</span>
+            <span class="s2">"e.g. probe.scan(..., max_batch=8). Grid sizes with prime "</span>
+            <span class="s2">"factors larger than 7 (Bluestein fallback) make plans several "</span>
+            <span class="s2">"times larger -- an FFT-friendly gpts choice avoids this "</span>
+            <span class="s2">"entirely."</span>
+        <span class="p">)</span>
+    <span class="n">cache</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">cache</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">cache</span><span class="o">.</span><span class="n">set_memsize</span><span class="p">(</span><span class="n">memsize</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_fft_dispatch</span><span class="p">(</span>
@@ -791,7 +1051,10 @@
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="n">_configure_cufft_cache</span><span class="p">()</span>
-        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">fft</span><span class="p">,</span> <span class="n">func_name</span><span class="p">)(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">_warn_slow_fft_size</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_cupy_fft_with_cache_fallback</span><span class="p">(</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">fft</span><span class="p">,</span> <span class="n">func_name</span><span class="p">),</span> <span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
 
 
 <span class="nd">@overload</span>

@@ -39,6 +39,16 @@
 :class: autosummary longtable
 :align: left
 
+* - {py:obj}`commensurate_gpts <abtem.slicing.commensurate_gpts>`
+  - ```{autodoc2-docstring} abtem.slicing.commensurate_gpts
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`commensurate_slice_thickness <abtem.slicing.commensurate_slice_thickness>`
+  - ```{autodoc2-docstring} abtem.slicing.commensurate_slice_thickness
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`crystal_slice_thicknesses <abtem.slicing.crystal_slice_thicknesses>`
   - ```{autodoc2-docstring} abtem.slicing.crystal_slice_thicknesses
     :parser: rst
@@ -199,6 +209,22 @@ Bases: {py:obj}`abtem.slicing.BaseSlicedAtoms`
 ````
 
 `````
+
+````{py:function} commensurate_gpts(...) -> tuple[int, int]
+:canonical: abtem.slicing.commensurate_gpts
+
+```{autodoc2-docstring} abtem.slicing.commensurate_gpts
+:parser: rst
+```
+````
+
+````{py:function} commensurate_slice_thickness(...) -> tuple[float, ...]
+:canonical: abtem.slicing.commensurate_slice_thickness
+
+```{autodoc2-docstring} abtem.slicing.commensurate_slice_thickness
+:parser: rst
+```
+````
 
 ````{py:function} crystal_slice_thicknesses(...) -> numpy.ndarray
 :canonical: abtem.slicing.crystal_slice_thicknesses

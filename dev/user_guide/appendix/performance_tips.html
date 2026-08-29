@@ -264,6 +264,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/real_space.html">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -584,6 +585,7 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reduce-early">Reduce early</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lower-the-batch-size">Lower the batch size</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lower-the-number-of-workers">Lower the number of workers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#on-the-gpu">On the GPU</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#change-the-batch-size">Change the batch size</a></li>
@@ -723,6 +725,23 @@ once.</p>
 </pre></div>
 </div>
 </section>
+<section id="on-the-gpu">
+<h3>On the GPU<a class="headerlink" href="#on-the-gpu" title="Link to this heading">#</a></h3>
+<p>Device memory is usually the tighter constraint, and a few options apply only there.</p>
+<p><em>ab</em>TEM builds the potential in slice groups sized against the free VRAM it measures at computation time, rather than
+materializing every slice at once. If the automatic estimate is still too generous for your calculation, fix the group
+size yourself:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">abtem</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">({</span><span class="s2">"potential.slice-chunk-size"</span><span class="p">:</span> <span class="mi">8</span><span class="p">})</span>  <span class="c1"># "auto" (the default) sizes it against free VRAM</span>
+</pre></div>
+</div>
+<p>CuPy caches the workspace of every FFT shape it has seen. The cache is bounded to 25 % of device memory by default;
+lower the bound, or disable caching entirely, when VRAM is tight:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">abtem</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">({</span><span class="s2">"cupy.fft-cache-size"</span><span class="p">:</span> <span class="s2">"512 MB"</span><span class="p">})</span>  <span class="c1"># or "0 MB" to disable</span>
+</pre></div>
+</div>
+<p>Finally, more GPUs mean more <em>aggregate</em> device memory. A calculation that does not fit on one device may fit
+comfortably across several — see <a class="reference internal" href="../walkthrough/parallelization.html#walkthrough-parallelization-multigpu"><span class="std std-ref">Multiple GPUs</span></a>.</p>
+</section>
 </section>
 <section id="change-the-batch-size">
 <span id="appendix-performance-tips-batch-size"></span><h2>Change the batch size<a class="headerlink" href="#change-the-batch-size" title="Link to this heading">#</a></h2>
@@ -808,6 +827,29 @@ of two are the safest choice, while a large prime number is the worst case:</p>
 </div>
 </div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This matters more on the GPU than on the CPU. cuFFT has no optimized kernel for a length with a prime factor above 7
+and falls back to the Bluestein algorithm, which pads internally and needs a workspace several times the size of the
+transform — so an unlucky grid costs memory as well as time, and can turn a calculation that would fit on your card
+into one that does not. <em>ab</em>TEM warns you when it meets such a grid, naming the offending size and the next good one:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>UserWarning: FFT size 2623 x 2271 contains prime factors larger than 7; cuFFT falls back to the
+Bluestein algorithm, which is several times slower and allocates a workspace of several times the
+array size. Consider adjusting the transformed grid to 2625 x 2304, e.g. by setting gpts explicitly,
+or -- if this grid was derived from a numeric sampling -- with
+abtem.config.set({'grid.round-to-fast-fft': True}).
+</pre></div>
+</div>
+<p>The same test is available directly, which is useful when choosing <code class="docutils literal notranslate"><span class="pre">gpts</span></code> programmatically:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_fast_fft_size</span><span class="p">,</span> <span class="n">next_fast_fft_size</span>
+
+<span class="n">is_fast_fft_size</span><span class="p">(</span><span class="mi">2623</span><span class="p">)</span>  <span class="c1"># False</span>
+<span class="n">next_fast_fft_size</span><span class="p">(</span><span class="mi">2623</span><span class="p">)</span>  <span class="c1"># 2625</span>
+</pre></div>
+</div>
+</div>
+<p>Since version <code class="docutils literal notranslate"><span class="pre">1.1.0</span></code>, you rarely need to do this by hand: <code class="docutils literal notranslate"><span class="pre">Potential(...,</span> <span class="pre">sampling=&quot;auto&quot;)</span></code> picks a fast size automatically wherever that is compatible with matching the crystal lattice (see the <a class="reference internal" href="../walkthrough/potentials.html#walkthrough-potentials"><span class="std std-ref">walkthrough on potentials</span></a> for what “compatible” means and why it matters beyond speed). For a numeric <code class="docutils literal notranslate"><span class="pre">gpts</span></code>/<code class="docutils literal notranslate"><span class="pre">sampling</span></code> you choose yourself, <code class="docutils literal notranslate"><span class="pre">Grid.round_to_fast_fft()</span></code> applies <code class="docutils literal notranslate"><span class="pre">next_fast_fft_size</span></code> (shown above) to an existing grid in place, e.g. <code class="docutils literal notranslate"><span class="pre">potential.grid.round_to_fast_fft()</span></code>.</p>
+<p>This is also what the <code class="docutils literal notranslate"><span class="pre">grid.round-to-fast-fft</span></code> configuration option automates: <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> (the default) rounds only grids <em>ab</em>TEM derives itself (<code class="docutils literal notranslate"><span class="pre">sampling=&quot;auto&quot;</span></code>); <code class="docutils literal notranslate"><span class="pre">True</span></code> additionally rounds gpts derived from a numeric sampling, so a numeric <code class="docutils literal notranslate"><span class="pre">gpts</span></code>/<code class="docutils literal notranslate"><span class="pre">sampling</span></code> is left exactly as given unless you opt in — enabling this option never silently changes the result of an existing script. Rounding is always upward, so the realized sampling is never coarser than what you asked for.</p>
 </section>
 </section>
 <section id="float-precision">
@@ -817,6 +859,14 @@ double precision. If you suspect that numerical precision matters for your resul
 not — you can switch:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">abtem</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">({</span><span class="s2">"precision"</span><span class="p">:</span> <span class="s2">"float64"</span><span class="p">})</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><em>ab</em>TEM resolves the precision inside each task rather than at the point you set it, so in a distributed computation
+the setting has to reach the worker processes. It does: the client’s configuration is pushed to the workers on every
+dispatch. Before <em>ab</em>TEM 1.1 it was not, and a distributed run silently computed in the default <code class="docutils literal notranslate"><span class="pre">float32</span></code> no matter
+what the client had configured — so double-precision results obtained with a <code class="docutils literal notranslate"><span class="pre">distributed</span></code> cluster on an earlier
+version are worth repeating.</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -923,6 +973,7 @@ not — you can switch:</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reduce-early">Reduce early</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lower-the-batch-size">Lower the batch size</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lower-the-number-of-workers">Lower the number of workers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#on-the-gpu">On the GPU</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#change-the-batch-size">Change the batch size</a></li>

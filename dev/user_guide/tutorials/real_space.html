@@ -62,6 +62,8 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/tutorials/real_space';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../_static/favicon.ico"/>
@@ -264,6 +266,7 @@
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Real-space multislice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="phonon_loss.html">Phonon-loss spectroscopy</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -575,6 +578,7 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#focused-probe">Focused probe</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#multislice-algorithm-objects">Multislice algorithm objects</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#conventional-fourier-methods">Conventional Fourier methods</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#the-finite-difference-laplacian">The finite-difference Laplacian</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#real-space-methods">Real-space methods</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#coherent-backscattered-wave">Coherent backscattered wave</a></li>
 </ul>
@@ -655,11 +659,16 @@
 </div>
 </div>
 <p>The multislice algorithm is selected by passing an <code class="docutils literal notranslate"><span class="pre">algorithm</span></code> object to <code class="docutils literal notranslate"><span class="pre">multislice</span></code>: <code class="docutils literal notranslate"><span class="pre">FourierMultislice</span></code> (the default) or <code class="docutils literal notranslate"><span class="pre">RealSpaceMultislice</span></code>, both imported from <code class="docutils literal notranslate"><span class="pre">abtem.multislice</span></code>. For the real-space algorithm, you can set the order of the accuracy of the <a class="reference external" href="https://en.wikipedia.org/wiki/Finite_difference_coefficient">finite difference derivative stencil</a> using the <code class="docutils literal notranslate"><span class="pre">derivative_accuracy</span></code> keyword. The total number of terms in the series expansion is determined by a convergence criteria.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The default Fourier propagator
+As of <em>ab</em>TEM <code class="docutils literal notranslate"><span class="pre">1.1.0</span></code>, <code class="docutils literal notranslate"><span class="pre">FourierMultislice</span></code> propagates with the <em>exact</em> free-space propagator (<code class="docutils literal notranslate"><span class="pre">order=&quot;exact&quot;</span></code>), rather than the paraxial (Fresnel) approximation used previously. The two agree at small angles, but only the exact propagator treats spatial frequencies beyond <span class="math notranslate nohighlight">\(k &gt; 1 / \lambda\)</span> as evanescent instead of propagating. The paraxial propagator is still available as <code class="docutils literal notranslate"><span class="pre">FourierMultislice(order=1)</span></code>, which is what we use below so that the Fourier and real-space algorithms are compared at the same order.</p>
+</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">exit_wave_cms</span> <span class="o">=</span> <span class="n">plane_wave</span><span class="o">.</span><span class="n">multislice</span><span class="p">(</span>
     <span class="n">potential</span><span class="p">,</span>
-    <span class="n">algorithm</span><span class="o">=</span><span class="n">FourierMultislice</span><span class="p">(),</span> <span class="c1"># default, can omit</span>
+    <span class="n">algorithm</span><span class="o">=</span><span class="n">FourierMultislice</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>  <span class="c1"># paraxial propagator; the default is order="exact"</span>
 <span class="p">)</span>
 <span class="n">exit_wave_rms</span> <span class="o">=</span> <span class="n">plane_wave</span><span class="o">.</span><span class="n">multislice</span><span class="p">(</span>
     <span class="n">potential</span><span class="p">,</span>
@@ -790,7 +799,7 @@
 <p>There are two new algorithm objects, where the conventional multislice operator has been renamed to <code class="docutils literal notranslate"><span class="pre">FourierMultislice</span></code>, with the following signatures:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">FourierMultislice</span><span class="p">:</span>
-    <span class="n">order</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">order</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"exact"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"exact"</span>
     <span class="n">expansion_scope</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"propagator"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"propagator"</span>
     <span class="n">conjugate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">transpose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
@@ -804,6 +813,7 @@
     <span class="n">max_terms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span>
 </pre></div>
 </div>
+<p>The <code class="docutils literal notranslate"><span class="pre">order</span></code> of <code class="docutils literal notranslate"><span class="pre">FourierMultislice</span></code> selects the free-space propagator. Writing <span class="math notranslate nohighlight">\(x = \lambda^2 k^2\)</span>, and dropping the constant phase <span class="math notranslate nohighlight">\(\exp(2 \pi i \Delta z / \lambda)\)</span> common to all of them, the propagator is <span class="math notranslate nohighlight">\(P(\vec{k}) = \exp\left[ i \frac{2 \pi \Delta z}{\lambda} \left( \sqrt{1 - x} - 1 \right) \right]\)</span> for <code class="docutils literal notranslate"><span class="pre">order=&quot;exact&quot;</span></code> (the default since <code class="docutils literal notranslate"><span class="pre">1.1.0</span></code>), while <code class="docutils literal notranslate"><span class="pre">order=1</span></code> and <code class="docutils literal notranslate"><span class="pre">order=2</span></code> are its first- and second-order Taylor expansions in <span class="math notranslate nohighlight">\(x\)</span>, the first of which is the familiar paraxial (Fresnel) propagator <span class="math notranslate nohighlight">\(\exp(-i \pi \lambda k^2 \Delta z)\)</span>. For <span class="math notranslate nohighlight">\(\lambda k &gt; 1\)</span> the square root becomes imaginary and the exact propagator damps these evanescent components as <span class="math notranslate nohighlight">\(\exp\left[ -\frac{2 \pi \Delta z}{\lambda} \sqrt{x - 1} \right]\)</span>, whereas the Taylor expansions propagate them as if they were travelling waves. The truncated orders warn when their maximum phase error inside the antialiasing aperture exceeds <span class="math notranslate nohighlight">\(10^{-2} \ \mathrm{rad}\)</span>.</p>
 </section>
 <section id="conventional-fourier-methods">
 <h4>Conventional Fourier methods<a class="headerlink" href="#conventional-fourier-methods" title="Link to this heading">#</a></h4>
@@ -811,10 +821,12 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">abtem.multislice</span><span class="w"> </span><span class="kn">import</span> <span class="n">FourierMultislice</span><span class="p">,</span> <span class="n">RealSpaceMultislice</span>
 
-<span class="c1"># default is FourierMultislice(), i.e. Fourier MS of order 1</span>
+<span class="c1"># Fourier MS of order 1, i.e. the conventional paraxial propagator</span>
+<span class="c1"># (the default is FourierMultislice(order="exact"))</span>
 <span class="n">forward_exit_waves_fourier</span> <span class="o">=</span> <span class="n">converged_probe</span><span class="o">.</span><span class="n">multislice</span><span class="p">(</span>
     <span class="n">potential</span><span class="o">=</span><span class="n">potential</span><span class="p">,</span>
     <span class="n">scan</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]],</span>
+    <span class="n">algorithm</span><span class="o">=</span><span class="n">FourierMultislice</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="p">)</span>
 
 <span class="c1"># FourierMultislice also supports the spherical-propagator case, i.e. order 2</span>
@@ -824,7 +836,8 @@
     <span class="n">algorithm</span><span class="o">=</span><span class="n">FourierMultislice</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="p">)</span>
 
-<span class="c1"># # higher-orders give a ValueError</span>
+<span class="c1"># # higher orders give a ValueError; use order="exact" (the default) or the</span>
+<span class="c1"># # real-space algorithm below instead</span>
 <span class="c1"># forward_exit_waves_fourier = converged_probe.multislice(</span>
 <span class="c1">#     potential=potential,</span>
 <span class="c1">#     scan = [[0,0]],</span>
@@ -864,6 +877,76 @@
 <img alt="../../_images/f72faeb7dce0fd3789be341e839a942f2aadf02a0389f01e0f788472f19afe94.png" src="../../_images/f72faeb7dce0fd3789be341e839a942f2aadf02a0389f01e0f788472f19afe94.png" />
 </div>
 </div>
+</section>
+<section id="the-finite-difference-laplacian">
+<h4>The finite-difference Laplacian<a class="headerlink" href="#the-finite-difference-laplacian" title="Link to this heading">#</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">FourierMultislice</span></code> evaluates <span class="math notranslate nohighlight">\(\nabla_{xy}^2\)</span> by multiplying by <span class="math notranslate nohighlight">\(-4\pi^2 k^2\)</span> in reciprocal space — exact for a band-limited signal, but only ever a single multiplication: propagation and transmission remain two separate steps, alternating between Fourier and real space. <code class="docutils literal notranslate"><span class="pre">RealSpaceMultislice</span></code> instead evaluates <span class="math notranslate nohighlight">\(\nabla_{xy}^2\)</span> directly on the real-space grid, using a centered finite-difference stencil (<code class="docutils literal notranslate"><span class="pre">abtem.finite_difference.LaplaceOperator</span></code>). Treating the Laplacian as a differential operator lets propagation and transmission be combined and corrected together — the basis for <code class="docutils literal notranslate"><span class="pre">expansion_scope=&quot;full&quot;</span></code> above.</p>
+<p><code class="docutils literal notranslate"><span class="pre">derivative_accuracy</span></code> sets the order of that stencil. A centered second-derivative stencil of accuracy <span class="math notranslate nohighlight">\(a\)</span> reads <span class="math notranslate nohighlight">\(a + 1\)</span> neighboring pixels along each axis; a few orders, from <code class="docutils literal notranslate"><span class="pre">abtem.finite_difference.finite_difference_coefficients</span></code>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">abtem.finite_difference</span><span class="w"> </span><span class="kn">import</span> <span class="n">finite_difference_coefficients</span>
+
+<span class="k">for</span> <span class="n">accuracy</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
+    <span class="n">coefficients</span> <span class="o">=</span> <span class="n">finite_difference_coefficients</span><span class="p">(</span><span class="n">derivative</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="n">accuracy</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"accuracy=</span><span class="si">{</span><span class="n">accuracy</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">coefficients</span><span class="p">)</span><span class="si">}</span><span class="s2"> points, </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">coefficients</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>accuracy=2: 3 points, [ 1. -2.  1.]
+accuracy=4: 5 points, [-0.083  1.333 -2.5    1.333 -0.083]
+accuracy=6: 7 points, [ 0.011 -0.15   1.5   -2.722  1.5   -0.15   0.011]
+accuracy=8: 9 points, [-2.000e-03  2.500e-02 -2.000e-01  1.600e+00 -2.847e+00  1.600e+00
+ -2.000e-01  2.500e-02 -2.000e-03]
+</pre></div>
+</div>
+</div>
+</div>
+<p>A wider stencil approximates the derivative to a higher order in the pixel spacing, at the cost of reading more neighboring pixels. The accuracy/reach trade-off is visible directly: applying <code class="docutils literal notranslate"><span class="pre">LaplaceOperator</span></code> to plane waves of increasing spatial frequency and comparing against the exact eigenvalue <span class="math notranslate nohighlight">\(-4\pi^2 k^2\)</span> shows each order tolerating a larger scattering angle before its truncation error takes over.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">abtem.finite_difference</span><span class="w"> </span><span class="kn">import</span> <span class="n">LaplaceOperator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="n">Waves</span>
+
+<span class="n">gpts</span> <span class="o">=</span> <span class="mi">512</span>
+<span class="n">sampling</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">gpts</span><span class="p">)</span> <span class="o">*</span> <span class="n">sampling</span>
+<span class="n">wavelength</span> <span class="o">=</span> <span class="n">converged_probe</span><span class="o">.</span><span class="n">wavelength</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">plane_wave</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="n">x</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">gpts</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Waves</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="n">sampling</span><span class="p">),</span> <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">)</span>
+
+
+<span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>  <span class="c1"># mrad</span>
+<span class="n">wavevectors</span> <span class="o">=</span> <span class="n">angles</span> <span class="o">*</span> <span class="mf">1e-3</span> <span class="o">/</span> <span class="n">wavelength</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">accuracy</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
+    <span class="n">laplace</span> <span class="o">=</span> <span class="n">LaplaceOperator</span><span class="p">(</span><span class="n">accuracy</span><span class="o">=</span><span class="n">accuracy</span><span class="p">)</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">wavevectors</span><span class="p">:</span>
+        <span class="n">waves</span> <span class="o">=</span> <span class="n">plane_wave</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="n">original</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">gpts</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">laplace</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="n">exact</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">original</span>
+        <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">gpts</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">exact</span><span class="p">)</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">exact</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span> <span class="n">errors</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"accuracy=</span><span class="si">{</span><span class="n">accuracy</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"gray"</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">":"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"scattering angle [mrad]"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"relative error of the finite-difference Laplacian"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/83c18b5445addf9af1675a9f22b6bbe29632e6a5fa8722977d045048d330b2f1.png" src="../../_images/83c18b5445addf9af1675a9f22b6bbe29632e6a5fa8722977d045048d330b2f1.png" />
+</div>
+</div>
+<p>Each order’s error still grows with scattering angle; a higher order simply pushes that growth out further (the sharp dips are where a stencil’s truncation error crosses zero, not points of special accuracy). At this energy and sampling, <code class="docutils literal notranslate"><span class="pre">accuracy=2</span></code> crosses the <span class="math notranslate nohighlight">\(1\%\)</span> line — the same order of magnitude as the phase-error warning threshold <code class="docutils literal notranslate"><span class="pre">FourierMultislice</span></code>’s truncated orders use above — around <span class="math notranslate nohighlight">\(40 \ \mathrm{mrad}\)</span>, and <code class="docutils literal notranslate"><span class="pre">accuracy=4</span></code> around <span class="math notranslate nohighlight">\(113 \ \mathrm{mrad}\)</span>; the default <code class="docutils literal notranslate"><span class="pre">accuracy=6</span></code> stays under it out past <span class="math notranslate nohighlight">\(120 \ \mathrm{mrad}\)</span>, well beyond a typical convergence angle. The cost of a wider stencil falls on this one convolution per slice, and is modest next to the antialiasing FFTs <code class="docutils literal notranslate"><span class="pre">FourierMultislice</span></code> needs at every step instead — see the <a class="reference internal" href="../appendix/performance_tips.html#appendix-performance-tips"><span class="std std-ref">performance tips</span></a> for how the two compare on a full simulation.</p>
+<p><strong>When real-space propagation is preferable.</strong> Now that <code class="docutils literal notranslate"><span class="pre">FourierMultislice</span></code>’s free-space propagator is exact by default (see above), the reciprocal-space half of the split-operator scheme is no longer the limiting approximation at any energy or angle. The remaining reasons to reach for <code class="docutils literal notranslate"><span class="pre">RealSpaceMultislice</span></code> are: (1) <code class="docutils literal notranslate"><span class="pre">expansion_scope=&quot;full&quot;</span></code>, which corrects the <em>interaction</em> between propagation and transmission within a slice — an error the propagate-then-transmit split makes at any energy, growing for low-energy electrons where the phase advance per slice is larger; and (2) tracking the coherent backscattered wave, demonstrated next, which has no counterpart in a forward-only Fourier-space scheme.</p>
 </section>
 <section id="real-space-methods">
 <h4>Real-space methods<a class="headerlink" href="#real-space-methods" title="Link to this heading">#</a></h4>
@@ -1115,6 +1198,7 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#focused-probe">Focused probe</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#multislice-algorithm-objects">Multislice algorithm objects</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#conventional-fourier-methods">Conventional Fourier methods</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#the-finite-difference-laplacian">The finite-difference Laplacian</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#real-space-methods">Real-space methods</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#coherent-backscattered-wave">Coherent backscattered wave</a></li>
 </ul>
