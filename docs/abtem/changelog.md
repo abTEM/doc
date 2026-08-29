@@ -89,15 +89,27 @@ Bugfixes:
   ([PR #353](https://github.com/abTEM/abTEM/pull/353))
 - Colorbars did not span multi-row exploded plots, and neighbouring panels could abut closely enough for
   their tick labels to collide ([PR #354](https://github.com/abTEM/abTEM/pull/354))
-- Multi-GPU hardening: `to_zarr()` on a lazy result silently ignored `dask.multi-gpu` and ran the whole
-  computation on one device instead of distributing like `.compute()`; the client's configuration (e.g.
-  `precision`) never reached dask-cuda worker processes, so a distributed run could silently compute in
-  `float32` regardless of what was requested — this affected the existing single-GPU distributed path too,
-  not just multi-GPU. Also more conservative VRAM batch sizing on FFT-unfriendly grids, a device-relative
-  bound on the cuFFT plan cache (new `auto` default, 25% of device memory) with a safe fallback for
-  oversized single plans, warnings whenever abTEM falls back to something not requested (multi-GPU declined,
-  a missing `__main__` guard, an FFT-unfriendly grid), and new `dask.multi-gpu-rmm-pool`/
-  `dask.multi-gpu-devices` config keys ([PR #346](https://github.com/abTEM/abTEM/pull/346))
+- Multi-GPU hardening, and the configuration fix found while chasing it
+  ([PR #346](https://github.com/abTEM/abTEM/pull/346))
+    - **The client's configuration now reaches `distributed` workers.** *ab*TEM resolves configuration
+      inside each task, and worker processes start fresh and previously saw only the YAML defaults, so
+      any distributed computation with a non-default configuration silently used the defaults instead —
+      most consequentially `precision`, which meant `float64` runs were computed in `float32`.
+      Distributed results obtained with a non-default configuration are worth repeating. Applies to any
+      distributed client, CPU clusters included
+    - `to_zarr()` on a lazy result honours `dask.multi-gpu`; it previously ignored the flag and ran the
+      whole computation on a single device
+    - `cupy.fft-cache-size` defaults to `auto` — 25 % of each device's memory, resolved per device —
+      rather than unlimited. `-1` restores unlimited, `0 MB` disables the cache, and a size such as
+      `512 MB` sets a fixed bound. A single plan larger than the bound runs uncached with a warning
+      instead of raising
+    - New config keys `dask.multi-gpu-rmm-pool` and `dask.multi-gpu-devices`, for an RMM memory pool per
+      worker and for restricting the cluster to a subset of GPUs
+    - Automatically sized scan batches are halved on grid sizes that force cuFFT's Bluestein fallback,
+      which needs a much larger FFT workspace
+    - Warnings replace silent fallbacks: multi-GPU requested but declined (with the reason), a missing
+      `if __name__ == "__main__"` guard, and a grid size that forces the Bluestein fallback (naming the
+      next fast size)
 
 Documentation:
 
@@ -124,27 +136,6 @@ Planned for this release (not yet merged):
 - Radially variable detector sensitivity ([PR #283](https://github.com/abTEM/abTEM/pull/283))
 - Plasmons: fast `PhaseScramblePlasmons` for multislice and PRISM, and `MonteCarloPlasmons` for Bloch wave
 - CBED patterns for Bloch waves ([PR #254](https://github.com/abTEM/abTEM/pull/254))
-- Multi-GPU hardening, and the configuration fix found while chasing it
-  ([PR #346](https://github.com/abTEM/abTEM/pull/346))
-    - **The client's configuration now reaches `distributed` workers.** *ab*TEM resolves configuration
-      inside each task, and worker processes start fresh and previously saw only the YAML defaults, so
-      any distributed computation with a non-default configuration silently used the defaults instead —
-      most consequentially `precision`, which meant `float64` runs were computed in `float32`.
-      Distributed results obtained with a non-default configuration are worth repeating. Applies to any
-      distributed client, CPU clusters included
-    - `to_zarr()` on a lazy result honours `dask.multi-gpu`; it previously ignored the flag and ran the
-      whole computation on a single device
-    - `cupy.fft-cache-size` defaults to `auto` — 25 % of each device's memory, resolved per device —
-      rather than unlimited. `-1` restores unlimited, `0 MB` disables the cache, and a size such as
-      `512 MB` sets a fixed bound. A single plan larger than the bound runs uncached with a warning
-      instead of raising
-    - New config keys `dask.multi-gpu-rmm-pool` and `dask.multi-gpu-devices`, for an RMM memory pool per
-      worker and for restricting the cluster to a subset of GPUs
-    - Automatically sized scan batches are halved on grid sizes that force cuFFT's Bluestein fallback,
-      which needs a much larger FFT workspace
-    - Warnings replace silent fallbacks: multi-GPU requested but declined (with the reason), a missing
-      `if __name__ == "__main__"` guard, and a grid size that forces the Bluestein fallback (naming the
-      next fast size)
 
 ## 1.0.10
 
