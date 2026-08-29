@@ -33,6 +33,12 @@ Features:
 - `GPAWParametrization` is now usable: it fits a Lobato-form IAM potential to the X-ray scattering factor
   of an all-electron GPAW calculation, with working ionization support and a regularized fit
   ([PR #329](https://github.com/abTEM/abTEM/pull/329))
+- `Potential(sampling="auto", slice_thickness="auto")` automatically finds a grid commensurate with the atomic
+  lattice — so translation-equivalent atoms discretize identically — near the usual default targets
+  ($0.05 \ \mathrm{Å}$, $1 \ \mathrm{Å}$), preferring FFT-fast grid sizes wherever that is compatible with
+  commensurability. New `grid.round-to-fast-fft` config key (`'auto'`/`True`/`False`), `Grid.round_to_fast_fft()`,
+  and `is_fast_fft_size`/`next_fast_fft_size` helpers in `abtem.core.fft`
+  ([PR #274](https://github.com/abTEM/abTEM/pull/274), [PR #347](https://github.com/abTEM/abTEM/pull/347))
 - Significant improvements on simulating large potentials on GPU, alongside minor performance improvements
   ([PR #269](https://github.com/abTEM/abTEM/pull/269))
     - The potential is now built in chunks of contiguous slices instead of all at once, keeping peak VRAM
@@ -85,6 +91,9 @@ Bugfixes:
 
 Documentation:
 
+- `sampling="auto"`/`slice_thickness="auto"` documented in detail in the potentials walkthrough, including a
+  worked example of the commensurability artifact they remove; cross-referenced from the convergence appendix
+  (manual commensurate sampling) and the performance-tips appendix (fast FFT sizes)
 - New tutorial on phonon-loss spectroscopy: energy-resolved frozen phonons, the TDS decomposition, the
   momentum-resolved spectrum $S(q, E)$, the spectral detectors and detailed-balance thermal weighting
 - Energy ensembles documented in the wave-function walkthrough, with an energy series added to the
