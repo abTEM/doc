@@ -111,6 +111,27 @@ Planned for this release (not yet merged):
 - Radially variable detector sensitivity ([PR #283](https://github.com/abTEM/abTEM/pull/283))
 - Plasmons: fast `PhaseScramblePlasmons` for multislice and PRISM, and `MonteCarloPlasmons` for Bloch wave
 - CBED patterns for Bloch waves ([PR #254](https://github.com/abTEM/abTEM/pull/254))
+- Multi-GPU hardening, and the configuration fix found while chasing it
+  ([PR #346](https://github.com/abTEM/abTEM/pull/346))
+    - **The client's configuration now reaches `distributed` workers.** *ab*TEM resolves configuration
+      inside each task, and worker processes start fresh and previously saw only the YAML defaults, so
+      any distributed computation with a non-default configuration silently used the defaults instead —
+      most consequentially `precision`, which meant `float64` runs were computed in `float32`.
+      Distributed results obtained with a non-default configuration are worth repeating. Applies to any
+      distributed client, CPU clusters included
+    - `to_zarr()` on a lazy result honours `dask.multi-gpu`; it previously ignored the flag and ran the
+      whole computation on a single device
+    - `cupy.fft-cache-size` defaults to `auto` — 25 % of each device's memory, resolved per device —
+      rather than unlimited. `-1` restores unlimited, `0 MB` disables the cache, and a size such as
+      `512 MB` sets a fixed bound. A single plan larger than the bound runs uncached with a warning
+      instead of raising
+    - New config keys `dask.multi-gpu-rmm-pool` and `dask.multi-gpu-devices`, for an RMM memory pool per
+      worker and for restricting the cluster to a subset of GPUs
+    - Automatically sized scan batches are halved on grid sizes that force cuFFT's Bluestein fallback,
+      which needs a much larger FFT workspace
+    - Warnings replace silent fallbacks: multi-GPU requested but declined (with the reason), a missing
+      `if __name__ == "__main__"` guard, and a grid size that forces the Bluestein fallback (naming the
+      next fast size)
 
 ## 1.0.10
 
