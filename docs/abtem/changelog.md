@@ -44,8 +44,9 @@ Features:
     - The potential is now built in chunks of contiguous slices instead of all at once, keeping peak VRAM
       bounded; new config key `potential.slice-chunk-size` (default `"auto"`)
     - Opt-in multi-GPU via the new config key `dask.multi-gpu` (requires `dask-cuda`)
-    - `cupy.fft-cache-size` now defaults to `-1` (unlimited, the CuPy default); the previous `0 MB` default
-      silently disabled the cuFFT plan cache
+    - `cupy.fft-cache-size`'s previous `0 MB` default silently disabled the cuFFT plan cache; changed to
+      `-1` (unlimited) here, then to the device-relative `auto` default below once unbounded retention
+      turned out to cost tens of GB on FFT-unfriendly grids
 
 Performance:
 
@@ -88,6 +89,15 @@ Bugfixes:
   ([PR #353](https://github.com/abTEM/abTEM/pull/353))
 - Colorbars did not span multi-row exploded plots, and neighbouring panels could abut closely enough for
   their tick labels to collide ([PR #354](https://github.com/abTEM/abTEM/pull/354))
+- Multi-GPU hardening: `to_zarr()` on a lazy result silently ignored `dask.multi-gpu` and ran the whole
+  computation on one device instead of distributing like `.compute()`; the client's configuration (e.g.
+  `precision`) never reached dask-cuda worker processes, so a distributed run could silently compute in
+  `float32` regardless of what was requested — this affected the existing single-GPU distributed path too,
+  not just multi-GPU. Also more conservative VRAM batch sizing on FFT-unfriendly grids, a device-relative
+  bound on the cuFFT plan cache (new `auto` default, 25% of device memory) with a safe fallback for
+  oversized single plans, warnings whenever abTEM falls back to something not requested (multi-GPU declined,
+  a missing `__main__` guard, an FFT-unfriendly grid), and new `dask.multi-gpu-rmm-pool`/
+  `dask.multi-gpu-devices` config keys ([PR #346](https://github.com/abTEM/abTEM/pull/346))
 
 Documentation:
 
@@ -104,6 +114,9 @@ Documentation:
 - The installation page documents the optional pip extras (`gpaw`, `extra`, `all`) and why the GPU packages
   are not among them
 - The configuration reference is synchronized with the new and changed config keys
+- The multiple-GPUs section of the parallelization walkthrough is expanded to cover the multi-GPU
+  hardening fixes above, and the FFT plan-cache documentation is corrected to match the shipped `auto`
+  default (it previously described a stale `0 MB` default that was never shipped)
 
 Planned for this release (not yet merged):
 
