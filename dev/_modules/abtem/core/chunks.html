@@ -61,6 +61,33 @@
     <script async="async" src="../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/abtem/core/chunks';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../_static/favicon.ico"/>
@@ -113,7 +140,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -718,7 +745,7 @@
 <span class="sd">        The maximum number of elements in a chunk. If "auto", the maximum number of</span>
 <span class="sd">        elements will be determined based on the maximum number of bytes per chunk and</span>
 <span class="sd">        the dtype.</span>
-<span class="sd">    dtype : np.dtype</span>
+<span class="sd">    dtype : numpy.dtype</span>
 <span class="sd">        The dtype of the array.</span>
 <span class="sd">    device : str</span>
 <span class="sd">        The device the array will be stored on.</span>
@@ -790,7 +817,7 @@
 <span class="sd">        The maximum number of elements in a chunk. If "auto", the maximum number of</span>
 <span class="sd">        elements will be determined based on the maximum number of bytes per chunk and</span>
 <span class="sd">        the dtype.</span>
-<span class="sd">    dtype : np.dtype</span>
+<span class="sd">    dtype : numpy.dtype</span>
 <span class="sd">        The dtype of the array.</span>
 <span class="sd">    device : str</span>
 <span class="sd">        The device the array will be stored on.</span>
@@ -1014,7 +1041,7 @@
 <span class="sd">        The number of grid points (y, x).</span>
 <span class="sd">    device : str</span>
 <span class="sd">        The device ('cpu' or 'gpu').</span>
-<span class="sd">    dtype : np.dtype, optional</span>
+<span class="sd">    dtype : numpy.dtype, optional</span>
 <span class="sd">        The dtype of the potential array. If None, uses float32.</span>
 
 <span class="sd">    Returns</span>
@@ -1113,8 +1140,8 @@
 <span class="sd">    exceeding the VRAM budget, since the raw estimate already uses only</span>
 <span class="sd">    50 % of free VRAM as headroom.</span>
 
-<span class="sd">    Examples</span>
-<span class="sd">    --------</span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
 <span class="sd">    59 → 64  (int(59 * 1.25) = 73;  64 ≤ 73,  use upper)</span>
 <span class="sd">    14 → 16  (int(14 * 1.25) = 17;  16 ≤ 17,  use upper)</span>
 <span class="sd">    20 → 16  (int(20 * 1.25) = 25;  32 &gt; 25,  use lower)</span>

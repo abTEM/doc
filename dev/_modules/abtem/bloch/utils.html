@@ -61,6 +61,33 @@
     <script async="async" src="../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/abtem/bloch/utils';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../_static/favicon.ico"/>
@@ -113,7 +140,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -546,12 +573,12 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    cell : 3x3 np.ndarray</span>
+<span class="sd">    cell : 3x3 numpy.ndarray</span>
 <span class="sd">        The unit cell.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    3x3 np.ndarray</span>
+<span class="sd">    3x3 numpy.ndarray</span>
 <span class="sd">        The reciprocal cell.</span>
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span></div>
@@ -591,7 +618,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    vectors : np.array</span>
+<span class="sd">    vectors : numpy.array</span>
 <span class="sd">        Array of vectors.</span>
 <span class="sd">    coefficients : sequence of int</span>
 <span class="sd">        Coefficients to use in the linear combinations.</span>
@@ -600,7 +627,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.array</span>
+<span class="sd">    numpy.array</span>
 <span class="sd">        Array of linear combinations.</span>
 <span class="sd">    """</span>
     <span class="n">combinations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
@@ -714,7 +741,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    g : np.ndarray</span>
+<span class="sd">    g : numpy.ndarray</span>
 <span class="sd">        Reciprocal space vectors [1/Å], as an array of shape (N, 3).</span>
 <span class="sd">    energy : float</span>
 <span class="sd">        Electron energy [eV].</span>
@@ -724,7 +751,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
+<span class="sd">    numpy.ndarray</span>
 <span class="sd">        Excitation errors [1/Å].</span>
 <span class="sd">    """</span>
     <span class="k">assert</span> <span class="n">g</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span>
@@ -746,14 +773,14 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    hkl : np.ndarray</span>
+<span class="sd">    hkl : numpy.ndarray</span>
 <span class="sd">        Array of shape (N, 3) representing the Miller indices of reflections.</span>
 <span class="sd">    centering : str</span>
 <span class="sd">        The lattice centering type. Must be one of "P", "I", "F", "A", "B", or "C".</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
+<span class="sd">    numpy.ndarray</span>
 <span class="sd">        Boolean mask indicating which reflections satisfy the reflection condition.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">centering</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"f"</span><span class="p">:</span>
@@ -814,7 +841,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    hkl : np.ndarray</span>
+<span class="sd">    hkl : numpy.ndarray</span>
 <span class="sd">        Reciprocal space vectors.</span>
 <span class="sd">    cell : Cell</span>
 <span class="sd">        Unit cell.</span>
@@ -826,12 +853,12 @@
 <span class="sd">        Maximum scattering vector length [1/Å].</span>
 <span class="sd">    centering : str, optional</span>
 <span class="sd">        Crystal centering must be one of 'P', 'I', 'A', 'B', 'C' or 'F'. Default is 'P'.</span>
-<span class="sd">    orientation_matrices : np.ndarray, optional</span>
+<span class="sd">    orientation_matrices : numpy.ndarray, optional</span>
 <span class="sd">        Orientation matrices for each crystallographic direction.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
+<span class="sd">    numpy.ndarray</span>
 <span class="sd">        Mask for the reciprocal space vectors.</span>
 <span class="sd">    """</span>
     <span class="n">g</span> <span class="o">=</span> <span class="n">hkl</span> <span class="o">@</span> <span class="n">reciprocal_cell</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
@@ -888,18 +915,18 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        The raveled array.</span>
-<span class="sd">    hkl_source : np.ndarray</span>
+<span class="sd">    hkl_source : numpy.ndarray</span>
 <span class="sd">        The reciprocal space vectors as Miller indices for the source array.</span>
-<span class="sd">    hkl_destination : np.ndarray</span>
+<span class="sd">    hkl_destination : numpy.ndarray</span>
 <span class="sd">        The reciprocal space vectors as Miller indices for the destination array.</span>
 <span class="sd">    gpts : tuple of ints</span>
 <span class="sd">        The number of grid points in the 3D structure factor.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
+<span class="sd">    numpy.ndarray</span>
 <span class="sd">        The 3D array.</span>
 <span class="sd">    """</span>
 
@@ -930,16 +957,16 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check if two vectors are orthogonal within a given tolerance.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    v1 : np.ndarray</span>
+<span class="sd">    v1 : numpy.ndarray</span>
 <span class="sd">        The first vector.</span>
-<span class="sd">    v2 : np.ndarray</span>
+<span class="sd">    v2 : numpy.ndarray</span>
 <span class="sd">        The second vector.</span>
 <span class="sd">    tol : float</span>
 <span class="sd">        The tolerance for floating-point comparison.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    bool</span>
 <span class="sd">        True if the vectors are orthogonal within the given tolerance, False otherwise.</span>
@@ -955,14 +982,14 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check if three vectors are pairwise orthogonal within a given tolerance.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    vectors : np.ndarray</span>
+<span class="sd">    vectors : numpy.ndarray</span>
 <span class="sd">        A 2D array where each row is a vector.</span>
 <span class="sd">    tol : float</span>
 <span class="sd">        The tolerance for floating-point comparison.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    bool</span>
 <span class="sd">        True if all pairs of vectors are orthogonal within the given tolerance, False</span>
@@ -986,7 +1013,7 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Returns the relative positions for each lattice centering type.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    dict</span>
 <span class="sd">        A dictionary where the keys are the centering types and the values are the</span>
@@ -1049,14 +1076,14 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check if all positions have a relative periodic pair.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    positions : np.ndarray</span>
+<span class="sd">    positions : numpy.ndarray</span>
 <span class="sd">        The positions to check.</span>
-<span class="sd">    relative_positions : np.ndarray</span>
+<span class="sd">    relative_positions : numpy.ndarray</span>
 <span class="sd">        The possible relative shifts of each position.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    bool</span>
 <span class="sd">        True if all positions have a relative periodic pair, False otherwise.</span>
@@ -1087,14 +1114,14 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Automatically detect the lattice centering of a crystal structure.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    atoms : Atoms</span>
 <span class="sd">        The crystal structure.</span>
 <span class="sd">    centerings_to_check : set, optional</span>
 <span class="sd">        The centering types to check. If None, all centering types are checked.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    str</span>
 <span class="sd">        The detected lattice centering type.</span>

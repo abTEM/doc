@@ -61,6 +61,33 @@
     <script async="async" src="../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/abtem/prism/s_matrix';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../_static/favicon.ico"/>
@@ -113,7 +140,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -1319,12 +1346,12 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        Array defining the scattering matrix. Must be 3D or higher, dimensions before</span>
 <span class="sd">        the last three dimensions should represent ensemble dimensions, the next</span>
 <span class="sd">        dimension indexes the plane waves and the last two dimensions represent the</span>
 <span class="sd">        spatial extent of the plane waves.</span>
-<span class="sd">    wave_vectors : np.ndarray</span>
+<span class="sd">    wave_vectors : numpy.ndarray</span>
 <span class="sd">        Array defining the wave vectors corresponding to each plane wave.</span>
 <span class="sd">        Must have shape Nx2, where N is equal to the number of plane waves.</span>
 <span class="sd">    semiangle_cutoff : float</span>
@@ -1919,7 +1946,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        detected_waves : BaseMeasurements or list of BaseMeasurement</span>
+<span class="sd">        detected_waves : BaseMeasurements or list of BaseMeasurements</span>
 <span class="sd">            The detected measurement (if detector(s) given).</span>
 <span class="sd">        exit_waves : Waves</span>
 <span class="sd">            Wave functions at the exit plane(s) of the potential</span>
@@ -2057,15 +2084,15 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    u : np.ndarray</span>
+<span class="sd">    u : numpy.ndarray</span>
 <span class="sd">        Left singular vectors of the phase-removed scattering matrix of shape</span>
 <span class="sd">        (K, gpts_x, gpts_y), where K is the number of retained modes.</span>
-<span class="sd">    sigma : np.ndarray</span>
+<span class="sd">    sigma : numpy.ndarray</span>
 <span class="sd">        Retained singular values of shape (K,).</span>
-<span class="sd">    vh_dense : np.ndarray</span>
+<span class="sd">    vh_dense : numpy.ndarray</span>
 <span class="sd">        Right singular vectors interpolated to the dense plane-wave expansion of</span>
 <span class="sd">        shape (K, number of dense plane waves).</span>
-<span class="sd">    dense_indices : np.ndarray</span>
+<span class="sd">    dense_indices : numpy.ndarray</span>
 <span class="sd">        Integer Fourier-space indices of the dense plane waves of shape (N, 2).</span>
 <span class="sd">    semiangle_cutoff : float</span>
 <span class="sd">        The radial cutoff of the plane-wave expansion [mrad].</span>
@@ -5495,7 +5522,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        detected_waves : BaseMeasurements or list of BaseMeasurement</span>
+<span class="sd">        detected_waves : BaseMeasurements or list of BaseMeasurements</span>
 <span class="sd">            The detected measurement (if detector(s) given).</span>
 <span class="sd">        exit_waves : Waves</span>
 <span class="sd">            Wave functions at the exit plane(s) of the potential (if no detector(s)</span>

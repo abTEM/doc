@@ -61,6 +61,33 @@
     <script async="async" src="../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/abtem/magnetism/pauli';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../_static/favicon.ico"/>
@@ -113,7 +140,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -539,7 +566,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    X : np.ndarray</span>
+<span class="sd">    X : numpy.ndarray</span>
 <span class="sd">        Array of shape (..., N, M) where the last two dimensions are the 2D grid.</span>
 <span class="sd">    dx : float</span>
 <span class="sd">        Spacing between points in the x direction.</span>
@@ -548,9 +575,9 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    grad_x : np.ndarray</span>
+<span class="sd">    grad_x : numpy.ndarray</span>
 <span class="sd">        Gradient of X with respect to x.</span>
-<span class="sd">    grad_y : np.ndarray</span>
+<span class="sd">    grad_y : numpy.ndarray</span>
 <span class="sd">        Gradient of X with respect to y.</span>
 <span class="sd">    """</span>
     <span class="n">original_shape</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
@@ -586,7 +613,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    X : np.ndarray</span>
+<span class="sd">    X : numpy.ndarray</span>
 <span class="sd">        Array of shape (..., N, M) where the last two dimensions are the 2D grid.</span>
 <span class="sd">    dx : float</span>
 <span class="sd">        Spacing between points in the x direction.</span>
@@ -595,9 +622,9 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    grad_x : np.ndarray</span>
+<span class="sd">    grad_x : numpy.ndarray</span>
 <span class="sd">        Gradient of X with respect to x.</span>
-<span class="sd">    grad_y : np.ndarray</span>
+<span class="sd">    grad_y : numpy.ndarray</span>
 <span class="sd">        Gradient of X with respect to y.</span>
 <span class="sd">    """</span>
     <span class="n">original_shape</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
@@ -640,16 +667,16 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    A : np.ndarray</span>
+<span class="sd">    A : numpy.ndarray</span>
 <span class="sd">        Vector field of shape (2, N, M) representing the operator A.</span>
-<span class="sd">    wave_functions : np.ndarray</span>
+<span class="sd">    wave_functions : numpy.ndarray</span>
 <span class="sd">        Array of shape (..., N, M) representing the wave functions.</span>
 <span class="sd">    sampling : two floats</span>
 <span class="sd">        Spacing between points in the x and y directions.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    result : np.ndarray</span>
+<span class="sd">    result : numpy.ndarray</span>
 <span class="sd">        Result of the operation $A \cdot \nabla_{xy} \psi$.</span>
 <span class="sd">    """</span>
     <span class="n">grad_x</span><span class="p">,</span> <span class="n">grad_y</span> <span class="o">=</span> <span class="n">central_difference_gradient_pbc</span><span class="p">(</span>

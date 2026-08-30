@@ -64,6 +64,33 @@
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/api/apidocs/abtem/abtem.prism.s_matrix';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/favicon.ico"/>
@@ -118,7 +145,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -809,12 +836,12 @@ coefficients of each mode.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>u</strong> (<em>np.ndarray</em>) – Left singular vectors of the phase-removed scattering matrix of shape
+<li><p><strong>u</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Left singular vectors of the phase-removed scattering matrix of shape
 (K, gpts_x, gpts_y), where K is the number of retained modes.</p></li>
-<li><p><strong>sigma</strong> (<em>np.ndarray</em>) – Retained singular values of shape (K,).</p></li>
-<li><p><strong>vh_dense</strong> (<em>np.ndarray</em>) – Right singular vectors interpolated to the dense plane-wave expansion of
+<li><p><strong>sigma</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Retained singular values of shape (K,).</p></li>
+<li><p><strong>vh_dense</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Right singular vectors interpolated to the dense plane-wave expansion of
 shape (K, number of dense plane waves).</p></li>
-<li><p><strong>dense_indices</strong> (<em>np.ndarray</em>) – Integer Fourier-space indices of the dense plane waves of shape (N, 2).</p></li>
+<li><p><strong>dense_indices</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Integer Fourier-space indices of the dense plane waves of shape (N, 2).</p></li>
 <li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The radial cutoff of the plane-wave expansion [mrad].</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Electron energy [eV].</p></li>
 <li><p><strong>extent</strong> (<em>two float</em>) – Lateral extent of the scattering matrix [Å].</p></li>
@@ -1336,7 +1363,7 @@ If None, this defaults to the value set in the configuration file.</p></li>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>detected_waves</strong> (<em>BaseMeasurements or list of BaseMeasurement</em>) – The detected measurement (if detector(s) given).</p></li>
+<li><p><strong>detected_waves</strong> (<em>BaseMeasurements or list of BaseMeasurements</em>) – The detected measurement (if detector(s) given).</p></li>
 <li><p><strong>exit_waves</strong> (<em>Waves</em>) – Wave functions at the exit plane(s) of the potential (if no detector(s)
 given).</p></li>
 </ul>
@@ -1466,11 +1493,11 @@ the probe plane waves and the latter two are the <cite>y</cite> and <cite>x</cit
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>array</strong> (<em>np.ndarray</em>) – Array defining the scattering matrix. Must be 3D or higher, dimensions before
+<li><p><strong>array</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Array defining the scattering matrix. Must be 3D or higher, dimensions before
 the last three dimensions should represent ensemble dimensions, the next
 dimension indexes the plane waves and the last two dimensions represent the
 spatial extent of the plane waves.</p></li>
-<li><p><strong>wave_vectors</strong> (<em>np.ndarray</em>) – Array defining the wave vectors corresponding to each plane wave.
+<li><p><strong>wave_vectors</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Array defining the wave vectors corresponding to each plane wave.
 Must have shape Nx2, where N is equal to the number of plane waves.</p></li>
 <li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The radial cutoff of the plane-wave expansion [mrad].</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Electron energy [eV].</p></li>
@@ -1606,7 +1633,7 @@ interpolation factor.</p></li>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>detected_waves</strong> (<em>BaseMeasurements or list of BaseMeasurement</em>) – The detected measurement (if detector(s) given).</p></li>
+<li><p><strong>detected_waves</strong> (<em>BaseMeasurements or list of BaseMeasurements</em>) – The detected measurement (if detector(s) given).</p></li>
 <li><p><strong>exit_waves</strong> (<em>Waves</em>) – Wave functions at the exit plane(s) of the potential
 (if no detector(s) given).</p></li>
 </ul>

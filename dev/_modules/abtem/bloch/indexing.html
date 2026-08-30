@@ -61,6 +61,33 @@
     <script async="async" src="../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/abtem/bloch/indexing';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../_static/favicon.ico"/>
@@ -113,7 +140,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -540,16 +567,16 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the pixel edges of an array.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    -----------</span>
 <span class="sd">    shape : tuple[int, int]</span>
 <span class="sd">        The shape of the array.</span>
 <span class="sd">    sampling : tuple[float, float]</span>
 <span class="sd">        The sampling rate of the array in the x and y directions [Å].</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    --------</span>
-<span class="sd">    tuple[np.ndarray, np.ndarray]</span>
+<span class="sd">    tuple[numpy.ndarray, numpy.ndarray]</span>
 <span class="sd">        The pixel edges in reciprocal</span>
 <span class="sd">    """</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">d</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
@@ -590,12 +617,12 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Validate the cell input.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    cell : Atoms | Cell | float | tuple[float, float, float]</span>
 <span class="sd">        The unit cell of the crystal structure.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    Cell</span>
 <span class="sd">        The validated cell.</span>
@@ -657,16 +684,16 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Create an ellipse with semi-major and semi-minor axes.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    a : int</span>
 <span class="sd">        The semi-major axis of the ellipse.</span>
 <span class="sd">    b : int</span>
 <span class="sd">        The semi-minor axis of the ellipse.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    --------</span>
-<span class="sd">    np.ndarray</span>
+<span class="sd">    numpy.ndarray</span>
 <span class="sd">        The ellipse.</span>
 <span class="sd">    """</span>
     <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ogrid</span><span class="p">[</span><span class="o">-</span><span class="n">a</span> <span class="p">:</span> <span class="n">a</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="n">b</span> <span class="p">:</span> <span class="n">b</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
@@ -681,16 +708,16 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Create an array representing disk with antialiased edges.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    r : float</span>
 <span class="sd">        The radius of the disk.</span>
 <span class="sd">    sampling : two float</span>
 <span class="sd">        The sampling rate of the array in the x and y directions. Units are arbitrary.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    --------</span>
-<span class="sd">    np.ndarray</span>
+<span class="sd">    numpy.ndarray</span>
 <span class="sd">        A 2D array representing the disk.</span>
 <span class="sd">    """</span>
     <span class="n">gpts</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">r</span> <span class="o">/</span> <span class="n">sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">r</span> <span class="o">/</span> <span class="n">sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">1</span>
@@ -720,16 +747,16 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Integrate an ellipse around pixels in an array.</span>
 
-<span class="sd">    Parameters:</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        The input array containing diffraction spot intensities.</span>
-<span class="sd">    nm : np.ndarray</span>
+<span class="sd">    nm : numpy.ndarray</span>
 <span class="sd">        The pixel coordinates of the diffraction spots.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    --------</span>
-<span class="sd">    np.ndarray</span>
+<span class="sd">    numpy.ndarray</span>
 <span class="sd">        The integrated intensities around the pixels.</span>
 <span class="sd">    """</span>
     <span class="n">weights</span> <span class="o">=</span> <span class="n">antialiased_disk</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
@@ -781,24 +808,24 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        The input array containing diffraction spot intensities.</span>
-<span class="sd">    hkl : np.ndarray</span>
+<span class="sd">    hkl : numpy.ndarray</span>
 <span class="sd">        The Miller indices to index.</span>
 <span class="sd">    sampling : tuple[float, float]</span>
 <span class="sd">        The sampling rate of the array in the x and y directions [Å].</span>
-<span class="sd">    cell : Cell | np.ndarray</span>
+<span class="sd">    cell : Cell | numpy.ndarray</span>
 <span class="sd">        The unit cell of the crystal structure.</span>
 <span class="sd">    energy : float</span>
 <span class="sd">        The energy of the incident electrons [eV].</span>
-<span class="sd">    orientation_matrices : np.ndarray, optional</span>
+<span class="sd">    orientation_matrices : numpy.ndarray, optional</span>
 <span class="sd">        The orientation matrices of the crystal structure. Defaults to None.</span>
 <span class="sd">    radius : float, optional</span>
 <span class="sd">        The radius of the diffraction spots to integrate. Defaults to None.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]</span>
+<span class="sd">    tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, numpy.ndarray]</span>
 <span class="sd">        A tuple containing the indexed hkl values, wavevector transfer values, pixel</span>
 <span class="sd">        coordinates, and intensities.</span>
 <span class="sd">    """</span>

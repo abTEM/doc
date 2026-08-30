@@ -61,6 +61,33 @@
     <script async="async" src="../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/abtem/core/fft';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../_static/favicon.ico"/>
@@ -113,7 +140,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -522,7 +549,7 @@
                 <article class="bd-article">
                   
   <h1>Source code for abtem.core.fft</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Module for handling Fourier transforms and convolution in *ab*TEM."""</span>
+<span></span><span class="sd">"""Module for handling Fourier transforms and convolution in abTEM."""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
@@ -828,7 +855,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        Array to create the FFT object for.</span>
 <span class="sd">    name : str</span>
 <span class="sd">        Name of the FFT function.</span>
@@ -1170,16 +1197,16 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    x : np.ndarray or da.core.Array</span>
+<span class="sd">    x : numpy.ndarray or da.core.Array</span>
 <span class="sd">        Array to convolve.</span>
-<span class="sd">    kernel : np.ndarray</span>
+<span class="sd">    kernel : numpy.ndarray</span>
 <span class="sd">        Convolution kernel.</span>
 <span class="sd">    overwrite_x : bool, optional</span>
 <span class="sd">        Overwrite the input array.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray or da.core.Array</span>
+<span class="sd">    numpy.ndarray or da.core.Array</span>
 <span class="sd">        Convolved array.</span>
 <span class="sd">    """</span>
     <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -1211,7 +1238,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    positions : np.ndarray</span>
+<span class="sd">    positions : numpy.ndarray</span>
 <span class="sd">        Array of positions to shift the array to. The last dimension should be the</span>
 <span class="sd">        number of dimensions to shift.</span>
 <span class="sd">    shape : tuple</span>
@@ -1219,7 +1246,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
+<span class="sd">    numpy.ndarray</span>
 <span class="sd">        Array representing the phase ramp(s).</span>
 <span class="sd">    """</span>
     <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
@@ -1259,15 +1286,15 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        Array to shift.</span>
-<span class="sd">    positions : np.ndarray</span>
+<span class="sd">    positions : numpy.ndarray</span>
 <span class="sd">        Array of positions to shift the array to. The last dimension should be</span>
 <span class="sd">        the number of dimensions to shift.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
+<span class="sd">    numpy.ndarray</span>
 <span class="sd">        Shifted array</span>
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">fft2</span><span class="p">(</span><span class="n">array</span><span class="p">)</span> <span class="o">*</span> <span class="n">fft_shift_kernel</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]))</span></div>
@@ -1322,7 +1349,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    tuple of np.ndarray</span>
+<span class="sd">    tuple of numpy.ndarray</span>
 <span class="sd">        Masks for the input and output arrays.</span>
 <span class="sd">    """</span>
     <span class="n">mask1_1d</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1382,7 +1409,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        Array to crop.</span>
 <span class="sd">    new_shape : tuple of int</span>
 <span class="sd">        New shape of the array. If the new shape is smaller than the input array,</span>
@@ -1392,7 +1419,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
+<span class="sd">    numpy.ndarray</span>
 <span class="sd">        Cropped array.</span>
 <span class="sd">    """</span>
     <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
@@ -1440,7 +1467,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        Array to interpolate.</span>
 <span class="sd">    new_shape : tuple of int</span>
 <span class="sd">        New shape of the array.</span>
@@ -1451,7 +1478,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    np.ndarray</span>
+<span class="sd">    numpy.ndarray</span>
 <span class="sd">        Interpolated array.</span>
 <span class="sd">    """</span>
     <span class="n">old_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span> <span class="p">:])</span>

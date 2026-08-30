@@ -62,6 +62,33 @@
     <script async="async" src="../../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/api/apidocs/abtem/abtem.core.config';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/favicon.ico"/>
@@ -116,7 +143,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -676,31 +703,12 @@
 <li><p><strong>deprecations</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – The mapping of aliases</p></li>
 </ul>
 </dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deprecations</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"old_key"</span><span class="p">:</span> <span class="s2">"new_key"</span><span class="p">,</span> <span class="s2">"invalid"</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">check_deprecations</span><span class="p">(</span><span class="s2">"old_key"</span><span class="p">,</span> <span class="n">deprecations</span><span class="o">=</span><span class="n">deprecations</span><span class="p">)</span>  
-<span class="go">UserWarning: Configuration key "old_key" has been deprecated. Please use "new_key"</span>
-<span class="go">instead.</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">check_deprecations</span><span class="p">(</span><span class="s2">"invalid"</span><span class="p">,</span> <span class="n">deprecations</span><span class="o">=</span><span class="n">deprecations</span><span class="p">)</span>
-<span class="gt">Traceback (most recent call last):</span>
-<span class="w">    </span><span class="o">...</span>
-<span class="gr">ValueError</span>: <span class="n">Configuration value "invalid" has been removed</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">check_deprecations</span><span class="p">(</span><span class="s2">"another_key"</span><span class="p">,</span> <span class="n">deprecations</span><span class="o">=</span><span class="n">deprecations</span><span class="p">)</span>
-<span class="go">'another_key'</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>new</strong> – The proper key, whether the original (if no deprecation) or the aliased
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>new</strong> – The proper key, whether the original (if no deprecation) or the aliased
 value</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a></p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a></p>
 </dd>
 </dl>
 </dd></dl>

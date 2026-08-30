@@ -61,6 +61,33 @@
     <script async="async" src="../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/abtem/potentials/charge_density';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../_static/favicon.ico"/>
@@ -113,7 +140,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -588,7 +615,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    vector_field : np.ndarray</span>
+<span class="sd">    vector_field : numpy.ndarray</span>
 <span class="sd">        Array representing a vector field of dimension 3.</span>
 <span class="sd">    cell : ase.cell.Cell</span>
 <span class="sd">        ASE `Cell` object defining the region of space where the vector field is</span>
@@ -596,7 +623,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    curl : np.ndarray</span>
+<span class="sd">    curl : numpy.ndarray</span>
 <span class="sd">        Array representing the curl of the vector field.</span>
 <span class="sd">    """</span>
 
@@ -626,7 +653,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        Array representing a gradient of dimension 3.</span>
 <span class="sd">    cell : ase.cell.Cell</span>
 <span class="sd">        ASE `Cell` object defining the region of space where the gradient is integrated.</span>
@@ -637,7 +664,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    integrated : np.ndarray</span>
+<span class="sd">    integrated : numpy.ndarray</span>
 <span class="sd">        Integrated gradient.</span>
 <span class="sd">    """</span>
 
@@ -720,7 +747,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        Array representing 3D charge density to which the point charges are added.</span>
 <span class="sd">    atoms : ase.Atoms</span>
 <span class="sd">        Atoms from which the nuclear charges with magnitudes and positions are</span>
@@ -730,7 +757,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    density : np.ndarray</span>
+<span class="sd">    density : numpy.ndarray</span>
 <span class="sd">        3D charge density with added nuclear charges in reciprocal space.</span>
 <span class="sd">    """</span>
     <span class="n">pixel_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
@@ -856,7 +883,7 @@
 <span class="sd">    atoms : Atoms or FrozenPhonons</span>
 <span class="sd">        Atomic configuration(s) used in the independent atom model for calculating the</span>
 <span class="sd">        electrostatic potential(s).</span>
-<span class="sd">    charge_density : np.ndarray</span>
+<span class="sd">    charge_density : numpy.ndarray</span>
 <span class="sd">        Charge density as a 3D NumPy array [electrons / Å^3].</span>
 <span class="sd">    gpts : one or two int, optional</span>
 <span class="sd">        Number of grid points in `x` and `y` describing each slice of the potential</span>
@@ -1132,7 +1159,7 @@
 <span class="sd">            Index of the last slice of the generated potential.</span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        slices : generator of np.ndarray</span>
+<span class="sd">        slices : generator of numpy.ndarray</span>
 <span class="sd">            Generator for the array of slices.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>

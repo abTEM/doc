@@ -62,6 +62,33 @@
     <script async="async" src="../../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/api/apidocs/abtem/abtem.reconstruct';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/favicon.ico"/>
@@ -116,7 +143,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -734,16 +761,16 @@ probes dimensions           : (K,R,S)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>diffraction_patterns</strong> (<em>np.ndarray</em><em> or </em><em>Measurement</em>) – Input 3D or 4D CBED pattern intensities with dimensions (M,N)</p></li>
+<li><p><strong>diffraction_patterns</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em> or </em><em>Measurement</em>) – Input 3D or 4D CBED pattern intensities with dimensions (M,N)</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Electron energy [eV]</p></li>
 <li><p><strong>num_probes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of mixed-state probes</p></li>
 <li><p><strong>region_of_interest_shape</strong> (<em>(</em><em>2</em><em>,</em><em>) </em><em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – Pixel dimensions (R,S) of the region of interest (ROI)
 If None, the ROI dimensions are taken as the CBED dimensions (M,N)</p></li>
-<li><p><strong>objects</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Initial objects guess with dimensions (P,Q) - Useful for restarting reconstructions
+<li><p><strong>objects</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em>, </em><em>optional</em>) – Initial objects guess with dimensions (P,Q) - Useful for restarting reconstructions
 If None, an array with 1.0j is initialized</p></li>
-<li><p><strong>probes</strong> (<em>np.ndarray</em><em> or </em><a class="reference internal" href="abtem.waves.html#abtem.waves.Probe" title="abtem.waves.Probe"><em>Probe</em></a><em>, </em><em>optional</em>) – Initial probes guess with dimensions/gpts (R,S) - Useful for restarting reconstructions
+<li><p><strong>probes</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em> or </em><a class="reference internal" href="abtem.waves.html#abtem.waves.Probe" title="abtem.waves.Probe"><em>Probe</em></a><em>, </em><em>optional</em>) – Initial probes guess with dimensions/gpts (R,S) - Useful for restarting reconstructions
 If None, a Probe with CTF given by the polar_parameters dictionary is initialized</p></li>
-<li><p><strong>positions</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Initial positions guess [Å]
+<li><p><strong>positions</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em>, </em><em>optional</em>) – Initial positions guess [Å]
 If None, a raster scan with step sizes given by the experimental_parameters dictionary is initialized</p></li>
 <li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Semiangle cutoff for the initial Probe guess</p></li>
 <li><p><strong>preprocess</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, it runs the preprocess method after initialization</p></li>
@@ -798,7 +825,7 @@ Additionally, these can also be specified using kwargs</p></li>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>reconstructed_object_measurement</strong> (<em>Measurement or Sequence[Measurement]</em>) – If return_iterations, a list of Measurements for the objects estimate at each iteration is returned</p></li>
 <li><p><strong>reconstructed_probes_measurement</strong> (<em>Measurement or Sequence[Measurement]</em>) – If return_iterations, a list of Measurements for the probes estimate at each iteration is returned</p></li>
-<li><p><strong>reconstructed_position_measurement</strong> (<em>np.ndarray or Sequence[np.ndarray]</em>) – If return_iterations, a list of position estimates at each iteration is returned</p></li>
+<li><p><strong>reconstructed_position_measurement</strong> (<em>numpy.ndarray or Sequence[numpy.ndarray]</em>) – If return_iterations, a list of position estimates at each iteration is returned</p></li>
 <li><p><strong>reconstruction_error</strong> (<em>float or Sequence[float]</em>) – If return_iterations, a list of the reconstruction error at each iteration is returned</p></li>
 </ul>
 </p>
@@ -821,17 +848,17 @@ probes dimensions           : (T,R,S)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>diffraction_patterns</strong> (<em>np.ndarray</em><em> or </em><em>Measurement</em>) – Input 3D or 4D CBED pattern intensities with dimensions (M,N)</p></li>
+<li><p><strong>diffraction_patterns</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em> or </em><em>Measurement</em>) – Input 3D or 4D CBED pattern intensities with dimensions (M,N)</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Electron energy [eV]</p></li>
 <li><p><strong>num_slices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of slices to use</p></li>
 <li><p><strong>slice_thicknesses</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>]</em>) – Slice thicknesses. If a float, all slices are assigned the same thickness</p></li>
 <li><p><strong>region_of_interest_shape</strong> (<em>(</em><em>2</em><em>,</em><em>) </em><em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – Pixel dimensions (R,S) of the region of interest (ROI)
 If None, the ROI dimensions are taken as the CBED dimensions (M,N)</p></li>
-<li><p><strong>objects</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Initial objects guess with dimensions (P,Q) - Useful for restarting reconstructions
+<li><p><strong>objects</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em>, </em><em>optional</em>) – Initial objects guess with dimensions (P,Q) - Useful for restarting reconstructions
 If None, an array with 1.0j is initialized</p></li>
-<li><p><strong>probes</strong> (<em>np.ndarray</em><em> or </em><a class="reference internal" href="abtem.waves.html#abtem.waves.Probe" title="abtem.waves.Probe"><em>Probe</em></a><em>, </em><em>optional</em>) – Initial probes guess with dimensions/gpts (R,S) - Useful for restarting reconstructions
+<li><p><strong>probes</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em> or </em><a class="reference internal" href="abtem.waves.html#abtem.waves.Probe" title="abtem.waves.Probe"><em>Probe</em></a><em>, </em><em>optional</em>) – Initial probes guess with dimensions/gpts (R,S) - Useful for restarting reconstructions
 If None, a Probe with CTF given by the polar_parameters dictionary is initialized</p></li>
-<li><p><strong>positions</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Initial positions guess [Å]
+<li><p><strong>positions</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em>, </em><em>optional</em>) – Initial positions guess [Å]
 If None, a raster scan with step sizes given by the experimental_parameters dictionary is initialized</p></li>
 <li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Semiangle cutoff for the initial Probe guess</p></li>
 <li><p><strong>preprocess</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, it runs the preprocess method after initialization</p></li>
@@ -883,7 +910,7 @@ Additionally, these can also be specified using kwargs</p></li>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>reconstructed_object_measurement</strong> (<em>Measurement or Sequence[Measurement]</em>) – If return_iterations, a list of Measurements for the objects estimate at each iteration is returned</p></li>
 <li><p><strong>reconstructed_probes_measurement</strong> (<em>Measurement or Sequence[Measurement]</em>) – If return_iterations, a list of Measurements for the probes estimate at each iteration is returned</p></li>
-<li><p><strong>reconstructed_position_measurement</strong> (<em>np.ndarray or Sequence[np.ndarray]</em>) – If return_iterations, a list of position estimates at each iteration is returned</p></li>
+<li><p><strong>reconstructed_position_measurement</strong> (<em>numpy.ndarray or Sequence[numpy.ndarray]</em>) – If return_iterations, a list of position estimates at each iteration is returned</p></li>
 <li><p><strong>reconstruction_error</strong> (<em>float or Sequence[float]</em>) – If return_iterations, a list of the reconstruction error at each iteration is returned</p></li>
 </ul>
 </p>
@@ -942,15 +969,15 @@ probes dimensions           : (R,S)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>diffraction_patterns</strong> (<em>np.ndarray</em><em> or </em><em>Measurement</em>) – Input 3D or 4D CBED pattern intensities with dimensions (M,N)</p></li>
+<li><p><strong>diffraction_patterns</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em> or </em><em>Measurement</em>) – Input 3D or 4D CBED pattern intensities with dimensions (M,N)</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>,</em>) – Electron energy [eV]</p></li>
 <li><p><strong>region_of_interest_shape</strong> (<em>(</em><em>2</em><em>,</em><em>) </em><em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – Pixel dimensions (R,S) of the region of interest (ROI)
 If None, the ROI dimensions are taken as the CBED dimensions (M,N)</p></li>
-<li><p><strong>objects</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Initial objects guess with dimensions (P,Q) - Useful for restarting reconstructions
+<li><p><strong>objects</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em>, </em><em>optional</em>) – Initial objects guess with dimensions (P,Q) - Useful for restarting reconstructions
 If None, an array with 1.0j is initialized</p></li>
-<li><p><strong>probes</strong> (<em>np.ndarray</em><em> or </em><a class="reference internal" href="abtem.waves.html#abtem.waves.Probe" title="abtem.waves.Probe"><em>Probe</em></a><em>, </em><em>optional</em>) – Initial probes guess with dimensions/gpts (R,S) - Useful for restarting reconstructions
+<li><p><strong>probes</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em> or </em><a class="reference internal" href="abtem.waves.html#abtem.waves.Probe" title="abtem.waves.Probe"><em>Probe</em></a><em>, </em><em>optional</em>) – Initial probes guess with dimensions/gpts (R,S) - Useful for restarting reconstructions
 If None, a Probe with CTF given by the polar_parameters dictionary is initialized</p></li>
-<li><p><strong>positions</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Initial positions guess [Å]
+<li><p><strong>positions</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em>, </em><em>optional</em>) – Initial positions guess [Å]
 If None, a raster scan with step sizes given by the experimental_parameters dictionary is initialized</p></li>
 <li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Semiangle cutoff for the initial Probe guess</p></li>
 <li><p><strong>preprocess</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, it runs the preprocess method after initialization</p></li>
@@ -1002,7 +1029,7 @@ Additionally, these can also be specified using kwargs</p></li>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>reconstructed_object_measurement</strong> (<em>DiffractionPatterns or Sequence[DiffractionPatterns]</em>) – If return_iterations, a list of DiffractionPatternss for the objects estimate at each iteration is returned</p></li>
 <li><p><strong>reconstructed_probes_measurement</strong> (<em>DiffractionPatterns or Sequence[DiffractionPatterns]</em>) – If return_iterations, a list of DiffractionPatternss for the probes estimate at each iteration is returned</p></li>
-<li><p><strong>reconstructed_position_measurement</strong> (<em>np.ndarray or Sequence[np.ndarray]</em>) – If return_iterations, a list of position estimates at each iteration is returned</p></li>
+<li><p><strong>reconstructed_position_measurement</strong> (<em>numpy.ndarray or Sequence[numpy.ndarray]</em>) – If return_iterations, a list of position estimates at each iteration is returned</p></li>
 <li><p><strong>reconstruction_error</strong> (<em>float or Sequence[float]</em>) – If return_iterations, a list of the reconstruction error at each iteration is returned</p></li>
 </ul>
 </p>
@@ -1025,15 +1052,15 @@ probes dimensions           : (2,) Sequence of dimensions (R,S) each</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>diffraction_patterns</strong> (<em>(</em><em>2</em><em>,</em><em>) </em><em>Sequence</em><em>[</em><em>np.ndarray</em><em>] or </em><em>(</em><em>2</em><em>,</em><em>) </em><em>Sequence</em><em>[</em><em>Measurement</em><em>]</em>) – Two sets of 3D or 4D CBED pattern intensities with dimensions (M,N)</p></li>
+<li><p><strong>diffraction_patterns</strong> (<em>(</em><em>2</em><em>,</em><em>) </em><em>Sequence</em><em>[</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em>] or </em><em>(</em><em>2</em><em>,</em><em>) </em><em>Sequence</em><em>[</em><em>Measurement</em><em>]</em>) – Two sets of 3D or 4D CBED pattern intensities with dimensions (M,N)</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>,</em>) – Electron energy [eV]</p></li>
 <li><p><strong>region_of_interest_shape</strong> (<em>(</em><em>2</em><em>,</em><em>) </em><em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – Pixel dimensions (R,S) of the region of interest (ROI)
 If None, the ROI dimensions are taken as the CBED dimensions (M,N)</p></li>
-<li><p><strong>objects</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Initial objects guess with dimensions (P,Q) - Useful for restarting reconstructions
+<li><p><strong>objects</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em>, </em><em>optional</em>) – Initial objects guess with dimensions (P,Q) - Useful for restarting reconstructions
 If None, an array with 1.0j is initialized</p></li>
-<li><p><strong>probes</strong> (<em>np.ndarray</em><em> or </em><a class="reference internal" href="abtem.waves.html#abtem.waves.Probe" title="abtem.waves.Probe"><em>Probe</em></a><em>, </em><em>optional</em>) – Initial probes guess with dimensions/gpts (R,S) - Useful for restarting reconstructions
+<li><p><strong>probes</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em> or </em><a class="reference internal" href="abtem.waves.html#abtem.waves.Probe" title="abtem.waves.Probe"><em>Probe</em></a><em>, </em><em>optional</em>) – Initial probes guess with dimensions/gpts (R,S) - Useful for restarting reconstructions
 If None, a Probe with CTF given by the polar_parameters dictionary is initialized</p></li>
-<li><p><strong>positions</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Initial positions guess [Å]
+<li><p><strong>positions</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em>, </em><em>optional</em>) – Initial positions guess [Å]
 If None, a raster scan with step sizes given by the experimental_parameters dictionary is initialized</p></li>
 <li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Semiangle cutoff for the initial Probe guess</p></li>
 <li><p><strong>preprocess</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, it runs the preprocess method after initialization</p></li>
@@ -1087,7 +1114,7 @@ Additionally, these can also be specified using kwargs</p></li>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>reconstructed_object_measurement</strong> (<em>Measurement or Sequence[Measurement]</em>) – If return_iterations, a list of Measurements for the objects estimate at each iteration is returned</p></li>
 <li><p><strong>reconstructed_probes_measurement</strong> (<em>Measurement or Sequence[Measurement]</em>) – If return_iterations, a list of Measurements for the probes estimate at each iteration is returned</p></li>
-<li><p><strong>reconstructed_position_measurement</strong> (<em>np.ndarray or Sequence[np.ndarray]</em>) – If return_iterations, a list of position estimates at each iteration is returned</p></li>
+<li><p><strong>reconstructed_position_measurement</strong> (<em>numpy.ndarray or Sequence[numpy.ndarray]</em>) – If return_iterations, a list of position estimates at each iteration is returned</p></li>
 <li><p><strong>reconstruction_error</strong> (<em>float or Sequence[float]</em>) – If return_iterations, a list of the reconstruction error at each iteration is returned</p></li>
 </ul>
 </p>

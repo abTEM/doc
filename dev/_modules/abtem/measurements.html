@@ -61,6 +61,33 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/abtem/measurements';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../_static/favicon.ico"/>
@@ -113,7 +140,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -755,7 +782,7 @@
 <span class="sd">    routed through dask's own implementation whenever ``array`` is still a</span>
 <span class="sd">    lazy dask array, regardless of device.</span>
 
-<span class="sd">    NumPy dispatches a top-level call like ``np.concatenate([dask_array])``</span>
+<span class="sd">    NumPy dispatches a top-level call like ``numpy.concatenate([dask_array])``</span>
 <span class="sd">    to dask automatically via ``__array_function__``, but CuPy does not: its</span>
 <span class="sd">    functions raise ``TypeError`` when given a ``dask.array.core.Array``</span>
 <span class="sd">    rather than a genuine ``cupy.ndarray``. Any code that resolves ``xp`` via</span>
@@ -2183,7 +2210,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        2D or greater array containing data of type `float` or `complex`. The</span>
 <span class="sd">        second-to-last and last</span>
 <span class="sd">        dimensions are the image `y`- and `x`-axis, respectively.</span>
@@ -2980,7 +3007,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        1D or greater array containing data of type `float` or `complex`.</span>
 <span class="sd">    sampling : float</span>
 <span class="sd">        Sampling of line profiles [Å].</span>
@@ -3064,7 +3091,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        1D or greater array containing data of type `float` or `complex`.</span>
 <span class="sd">    sampling : float</span>
 <span class="sd">        Sampling of line profiles [1 / Å].</span>
@@ -3563,7 +3590,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        2D or greater array containing data with `float` type. The second-to-last and</span>
 <span class="sd">        last dimensions are the reciprocal space `y`- and `x`-axis of the diffraction</span>
 <span class="sd">        pattern.</span>
@@ -3786,7 +3813,7 @@
 <span class="sd">            The assumed unit cell with respect to the diffraction pattern should be</span>
 <span class="sd">            indexed. Must be one of ASE `Cell` object, float (for a cubic unit cell) or</span>
 <span class="sd">            three floats (for orthorhombic unit cells).</span>
-<span class="sd">        orientation_matrices : np.ndarray, optional</span>
+<span class="sd">        orientation_matrices : numpy.ndarray, optional</span>
 <span class="sd">            Orientation matrices used for indexing the diffraction spots. The shape of</span>
 <span class="sd">            the orientation matrices must be broadcastable with the ensemble shape of</span>
 <span class="sd">            the diffraction patterns.</span>
@@ -5023,7 +5050,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        Array containing the measurement.</span>
 <span class="sd">    radial_sampling : float</span>
 <span class="sd">        Sampling of the radial bins [mrad].</span>
@@ -5829,15 +5856,15 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray</span>
+<span class="sd">    array : numpy.ndarray</span>
 <span class="sd">        1D or greater array of type `float` or `complex`. The last axis represents the</span>
 <span class="sd">        diffraction spots and should have the same length as the number of miller</span>
 <span class="sd">        indices, any preceding axis represents an ensemble axis.</span>
-<span class="sd">    miller_indices : np.ndarray</span>
+<span class="sd">    miller_indices : numpy.ndarray</span>
 <span class="sd">        The miller indices of the diffraction spots as an N x 3 array where N is the</span>
 <span class="sd">        number of miller indices. The order of the miller indices must correspond to the</span>
 <span class="sd">        array of intensities. The second axis represents each hkl miller index.</span>
-<span class="sd">    reciprocal_lattice_vectors : np.ndarray</span>
+<span class="sd">    reciprocal_lattice_vectors : numpy.ndarray</span>
 <span class="sd">        The reciprocal lattice vectors of the crystal as a 3 x 3 array. The first axis</span>
 <span class="sd">        represents miller indices and the order of the items must correspond to the</span>
 <span class="sd">        array of intensities. The second axis represents the reciprocal space positions</span>
@@ -6574,7 +6601,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    array : np.ndarray or dask array</span>
+<span class="sd">    array : numpy.ndarray or dask array</span>
 <span class="sd">        Array of shape ``(..., n_q, n_E)``.</span>
 <span class="sd">    q_values : sequence of float</span>
 <span class="sd">        Scattering-vector values [mrad] for each q bin.</span>

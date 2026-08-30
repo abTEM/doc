@@ -61,6 +61,33 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/abtem/reconstruct';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../_static/favicon.ico"/>
@@ -113,7 +140,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -629,7 +656,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    center_position: (2,) np.ndarray</span>
+<span class="sd">    center_position: (2,) numpy.ndarray</span>
 <span class="sd">        The window center positions in pixels</span>
 <span class="sd">    window_shape: (2,) Sequence[int]</span>
 <span class="sd">        The pixel dimensions of the window</span>
@@ -683,7 +710,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    propagator: FresnelPropagator</span>
 <span class="sd">        Near-field (Fresnel diffraction) propagation operator</span>
-<span class="sd">    waves_array: np.ndarray</span>
+<span class="sd">    waves_array: numpy.ndarray</span>
 <span class="sd">        The wavefunction array to propagate</span>
 <span class="sd">    wavelength: float</span>
 <span class="sd">        The relativistic electron wavelength [Å]</span>
@@ -696,7 +723,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    propagated_array: np.ndarray</span>
+<span class="sd">    propagated_array: numpy.ndarray</span>
 <span class="sd">        Propagated array</span>
 <span class="sd">    """</span>
     <span class="n">propagator_array</span> <span class="o">=</span> <span class="n">propagator</span><span class="o">.</span><span class="n">_evaluate_propagator_array</span><span class="p">(</span>
@@ -844,7 +871,7 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        diffraction_patterns: (J,M,N) np.ndarray</span>
+<span class="sd">        diffraction_patterns: (J,M,N) numpy.ndarray</span>
 <span class="sd">            Flat array of CBED patterns to be zero-padded</span>
 <span class="sd">        region_of_interest_shape: (2,) Sequence[int]</span>
 <span class="sd">            Pixel dimensions (R,S) the CBED patterns will be padded to</span>
@@ -852,7 +879,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        padded_diffraction_patterns: (J,R,S) np.ndarray</span>
+<span class="sd">        padded_diffraction_patterns: (J,R,S) numpy.ndarray</span>
 <span class="sd">            Zero-padded CBED patterns</span>
 <span class="sd">        """</span>
 
@@ -898,7 +925,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        diffraction_patterns: np.ndarray</span>
+<span class="sd">        diffraction_patterns: numpy.ndarray</span>
 <span class="sd">            CBED patterns from Measurement object</span>
 <span class="sd">        angular_sampling: (2,) Sequence[float]</span>
 <span class="sd">            Measurement angular sampling in mrad</span>
@@ -924,7 +951,7 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        positions: (J,2) np.ndarray or None</span>
+<span class="sd">        positions: (J,2) numpy.ndarray or None</span>
 <span class="sd">            Input experimental positions [Å].</span>
 <span class="sd">            If None, a raster scan using experimental parameters is constructed.</span>
 <span class="sd">        sampling: (2,) Sequence[float]</span>
@@ -936,7 +963,7 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 
-<span class="sd">        positions_in_px: (J,2) np.ndarray</span>
+<span class="sd">        positions_in_px: (J,2) numpy.ndarray</span>
 <span class="sd">            Initial guess of scan positions in pixels</span>
 <span class="sd">        updated_experimental_parameters:</span>
 <span class="sd">            Updated experimental parameters dataset</span>
@@ -1033,20 +1060,20 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    diffraction_patterns: np.ndarray or Measurement</span>
+<span class="sd">    diffraction_patterns: numpy.ndarray or Measurement</span>
 <span class="sd">        Input 3D or 4D CBED pattern intensities with dimensions (M,N)</span>
 <span class="sd">    energy: float,</span>
 <span class="sd">        Electron energy [eV]</span>
 <span class="sd">    region_of_interest_shape: (2,) Sequence[int], optional</span>
 <span class="sd">        Pixel dimensions (R,S) of the region of interest (ROI)</span>
 <span class="sd">        If None, the ROI dimensions are taken as the CBED dimensions (M,N)</span>
-<span class="sd">    objects: np.ndarray, optional</span>
+<span class="sd">    objects: numpy.ndarray, optional</span>
 <span class="sd">        Initial objects guess with dimensions (P,Q) - Useful for restarting reconstructions</span>
 <span class="sd">        If None, an array with 1.0j is initialized</span>
-<span class="sd">    probes: np.ndarray or Probe, optional</span>
+<span class="sd">    probes: numpy.ndarray or Probe, optional</span>
 <span class="sd">        Initial probes guess with dimensions/gpts (R,S) - Useful for restarting reconstructions</span>
 <span class="sd">        If None, a Probe with CTF given by the polar_parameters dictionary is initialized</span>
-<span class="sd">    positions: np.ndarray, optional</span>
+<span class="sd">    positions: numpy.ndarray, optional</span>
 <span class="sd">        Initial positions guess [Å]</span>
 <span class="sd">        If None, a raster scan with step sizes given by the experimental_parameters dictionary is initialized</span>
 <span class="sd">    semiangle_cutoff: float, optional</span>
@@ -1257,13 +1284,13 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Object array to be illuminated</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Probe window array to illuminate object with</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Center position of probe window</span>
-<span class="sd">        old_position: np.ndarray</span>
+<span class="sd">        old_position: numpy.ndarray</span>
 <span class="sd">            Old center position of probe window</span>
 <span class="sd">            Used for fractionally shifting probe sequentially</span>
 <span class="sd">        xp</span>
@@ -1271,9 +1298,9 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Fractionally shifted probe window array</span>
-<span class="sd">        exit_wave: np.ndarray</span>
+<span class="sd">        exit_wave: numpy.ndarray</span>
 <span class="sd">            Overlap projection of illuminated probe</span>
 <span class="sd">        """</span>
 
@@ -1305,9 +1332,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        exit_waves: np.ndarray</span>
+<span class="sd">        exit_waves: numpy.ndarray</span>
 <span class="sd">            Exit waves array given by RegularizedPtychographicOperator._overlap_projection method</span>
-<span class="sd">        diffraction_patterns: np.ndarray</span>
+<span class="sd">        diffraction_patterns: numpy.ndarray</span>
 <span class="sd">            Square-root of CBED intensities array used to modify exit_waves amplitude</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Current sum of squares error estimate</span>
@@ -1316,7 +1343,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        modified_exit_wave: np.ndarray</span>
+<span class="sd">        modified_exit_wave: numpy.ndarray</span>
 <span class="sd">            Fourier projection of illuminated probe</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Updated sum of squares error estimate</span>
@@ -1357,17 +1384,17 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Current objects array estimate</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Current probes array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Current probe position estimate</span>
-<span class="sd">        exit_waves: np.ndarray</span>
+<span class="sd">        exit_waves: numpy.ndarray</span>
 <span class="sd">            Exit waves array given by RegularizedPtychographicOperator._overlap_projection method</span>
-<span class="sd">        modified_exit_waves: np.ndarray</span>
+<span class="sd">        modified_exit_waves: numpy.ndarray</span>
 <span class="sd">            Modified exit waves array given by RegularizedPtychographicOperator._fourier_projection method</span>
-<span class="sd">        diffraction_patterns: np.ndarray</span>
+<span class="sd">        diffraction_patterns: numpy.ndarray</span>
 <span class="sd">            Square-root of CBED intensities array used to modify exit_waves amplitude</span>
 <span class="sd">        fix_probe: bool, optional</span>
 <span class="sd">            If True, the probe will not be updated by the algorithm. Default is False</span>
@@ -1382,11 +1409,11 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Updated objects array estimate</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Updated probes array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Updated probe position estimate</span>
 <span class="sd">        """</span>
 
@@ -1456,17 +1483,17 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Current objects array estimate</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Current probes array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Current probe position estimate</span>
-<span class="sd">        exit_wave: np.ndarray</span>
+<span class="sd">        exit_wave: numpy.ndarray</span>
 <span class="sd">            Exit wave array given by RegularizedPtychographicOperator._overlap_projection method</span>
-<span class="sd">        modified_exit_wave: np.ndarray</span>
+<span class="sd">        modified_exit_wave: numpy.ndarray</span>
 <span class="sd">            Modified exit wave array given by RegularizedPtychographicOperator._fourier_projection method</span>
-<span class="sd">        diffraction_patterns: np.ndarray</span>
+<span class="sd">        diffraction_patterns: numpy.ndarray</span>
 <span class="sd">            Square-root of CBED intensities array used to modify exit_waves amplitude</span>
 <span class="sd">        sobel: Callable, optional</span>
 <span class="sd">            The scipy.ndimage module used to compute the object gradients. Passed to the position correction function</span>
@@ -1477,7 +1504,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Updated probe position estimate</span>
 <span class="sd">        """</span>
 
@@ -1512,7 +1539,7 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Current probes array estimate</span>
 <span class="sd">        center_of_mass: Callable</span>
 <span class="sd">            The scipy.ndimage module used to compute the array center of mass</span>
@@ -1521,7 +1548,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Center-of-mass corrected probes array</span>
 <span class="sd">        """</span>
 
@@ -1647,7 +1674,7 @@
 <span class="sd">            If return_iterations, a list of DiffractionPatternss for the objects estimate at each iteration is returned</span>
 <span class="sd">        reconstructed_probes_measurement: DiffractionPatterns or Sequence[DiffractionPatterns]</span>
 <span class="sd">            If return_iterations, a list of DiffractionPatternss for the probes estimate at each iteration is returned</span>
-<span class="sd">        reconstructed_position_measurement: np.ndarray or Sequence[np.ndarray]</span>
+<span class="sd">        reconstructed_position_measurement: numpy.ndarray or Sequence[numpy.ndarray]</span>
 <span class="sd">            If return_iterations, a list of position estimates at each iteration is returned</span>
 <span class="sd">        reconstruction_error: float or Sequence[float]</span>
 <span class="sd">            If return_iterations, a list of the reconstruction error at each iteration is returned</span>
@@ -1876,11 +1903,11 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Reconstructed objects array</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Reconstructed probes array</span>
-<span class="sd">        positions: np.ndarray</span>
+<span class="sd">        positions: numpy.ndarray</span>
 <span class="sd">            Reconstructed positions array</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Reconstruction error</span>
@@ -1891,7 +1918,7 @@
 <span class="sd">            Reconstructed objects DiffractionPatterns</span>
 <span class="sd">        probes_measurement: DiffractionPatterns</span>
 <span class="sd">            Reconstructed probes DiffractionPatterns</span>
-<span class="sd">        positions: np.ndarray</span>
+<span class="sd">        positions: numpy.ndarray</span>
 <span class="sd">            Reconstructed positions array</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Reconstruction error</span>
@@ -1924,20 +1951,20 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    diffraction_patterns: (2,) Sequence[np.ndarray] or (2,) Sequence[Measurement]</span>
+<span class="sd">    diffraction_patterns: (2,) Sequence[numpy.ndarray] or (2,) Sequence[Measurement]</span>
 <span class="sd">        Two sets of 3D or 4D CBED pattern intensities with dimensions (M,N)</span>
 <span class="sd">    energy: float,</span>
 <span class="sd">        Electron energy [eV]</span>
 <span class="sd">    region_of_interest_shape: (2,) Sequence[int], optional</span>
 <span class="sd">        Pixel dimensions (R,S) of the region of interest (ROI)</span>
 <span class="sd">        If None, the ROI dimensions are taken as the CBED dimensions (M,N)</span>
-<span class="sd">    objects: np.ndarray, optional</span>
+<span class="sd">    objects: numpy.ndarray, optional</span>
 <span class="sd">        Initial objects guess with dimensions (P,Q) - Useful for restarting reconstructions</span>
 <span class="sd">        If None, an array with 1.0j is initialized</span>
-<span class="sd">    probes: np.ndarray or Probe, optional</span>
+<span class="sd">    probes: numpy.ndarray or Probe, optional</span>
 <span class="sd">        Initial probes guess with dimensions/gpts (R,S) - Useful for restarting reconstructions</span>
 <span class="sd">        If None, a Probe with CTF given by the polar_parameters dictionary is initialized</span>
-<span class="sd">    positions: np.ndarray, optional</span>
+<span class="sd">    positions: numpy.ndarray, optional</span>
 <span class="sd">        Initial positions guess [Å]</span>
 <span class="sd">        If None, a raster scan with step sizes given by the experimental_parameters dictionary is initialized</span>
 <span class="sd">    semiangle_cutoff: float, optional</span>
@@ -2152,13 +2179,13 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: Sequence[np.ndarray]</span>
+<span class="sd">        objects: Sequence[numpy.ndarray]</span>
 <span class="sd">            Electrostatic and magnetic object arrays to be illuminated</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Forward and reverse probe window array to illuminate objects with</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Center position of probe window</span>
-<span class="sd">        old_position: np.ndarray</span>
+<span class="sd">        old_position: numpy.ndarray</span>
 <span class="sd">            Old center position of probe window</span>
 <span class="sd">            Used for fractionally shifting probe sequentially</span>
 <span class="sd">        xp</span>
@@ -2166,9 +2193,9 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Fractionally shifted forward probe window array, reverse probe array</span>
-<span class="sd">        exit_waves: Sequence[np.ndarray]</span>
+<span class="sd">        exit_waves: Sequence[numpy.ndarray]</span>
 <span class="sd">            Overlap projection of electrostatic object with forward probe, dummy reverse exit wave</span>
 <span class="sd">        """</span>
 
@@ -2209,13 +2236,13 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: Sequence[np.ndarray]</span>
+<span class="sd">        objects: Sequence[numpy.ndarray]</span>
 <span class="sd">            Electrostatic and magnetic object arrays to be illuminated</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Forward and reverse probe window array to illuminate objects with</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Center position of probe window</span>
-<span class="sd">        old_position: np.ndarray</span>
+<span class="sd">        old_position: numpy.ndarray</span>
 <span class="sd">            Old center position of probe window</span>
 <span class="sd">            Used for fractionally shifting probe sequentially</span>
 <span class="sd">        xp</span>
@@ -2223,9 +2250,9 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Fractionally shifted probe window arrays</span>
-<span class="sd">        exit_waves: Sequence[np.ndarray]</span>
+<span class="sd">        exit_waves: Sequence[numpy.ndarray]</span>
 <span class="sd">            Overlap projection of objects with forward and reverse probes</span>
 <span class="sd">        """</span>
 
@@ -2271,13 +2298,13 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: Sequence[np.ndarray]</span>
+<span class="sd">        objects: Sequence[numpy.ndarray]</span>
 <span class="sd">            Electrostatic and magnetic object arrays to be illuminated</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Forward and reverse probe window array to illuminate objects with</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Center position of probe window</span>
-<span class="sd">        old_position: np.ndarray</span>
+<span class="sd">        old_position: numpy.ndarray</span>
 <span class="sd">            Old center position of probe window</span>
 <span class="sd">            Used for fractionally shifting probe sequentially</span>
 <span class="sd">        xp</span>
@@ -2285,9 +2312,9 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Fractionally shifted forward probe window array, reverse probe array</span>
-<span class="sd">        exit_waves: Sequence[np.ndarray]</span>
+<span class="sd">        exit_waves: Sequence[numpy.ndarray]</span>
 <span class="sd">            Overlap projection of objects with forward probe</span>
 <span class="sd">        """</span>
 
@@ -2328,9 +2355,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        exit_waves: Sequence[np.ndarray]</span>
+<span class="sd">        exit_waves: Sequence[numpy.ndarray]</span>
 <span class="sd">            Exit waves array given by SimultaneousPtychographicOperator._warmup_overlap_projection method</span>
-<span class="sd">        diffraction_patterns: Sequence[np.ndarray]</span>
+<span class="sd">        diffraction_patterns: Sequence[numpy.ndarray]</span>
 <span class="sd">            Square-root of forward and reverse CBED intensities arrays used to modify exit_waves amplitude</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Current sum of squares error estimate</span>
@@ -2339,7 +2366,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        modified_exit_wave: Sequence[np.ndarray]</span>
+<span class="sd">        modified_exit_wave: Sequence[numpy.ndarray]</span>
 <span class="sd">            Fourier projection of forward illuminated probe, dummy projection of reverse illuminated probe</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Updated sum of squares error estimate</span>
@@ -2374,9 +2401,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        exit_waves: Sequence[np.ndarray]</span>
+<span class="sd">        exit_waves: Sequence[numpy.ndarray]</span>
 <span class="sd">            Exit waves array given by SimultaneousPtychographicOperator._overlap_projection method</span>
-<span class="sd">        diffraction_patterns: Sequence[np.ndarray]</span>
+<span class="sd">        diffraction_patterns: Sequence[numpy.ndarray]</span>
 <span class="sd">            Square-root of forward and reverse CBED intensities arrays used to modify exit_waves amplitude</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Current sum of squares error estimate</span>
@@ -2385,7 +2412,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        modified_exit_wave: Sequence[np.ndarray]</span>
+<span class="sd">        modified_exit_wave: Sequence[numpy.ndarray]</span>
 <span class="sd">            Fourier projection of forward and reverse illuminated probes</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Updated sum of squares error estimate</span>
@@ -2442,17 +2469,17 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: Sequence[np.ndarray]</span>
+<span class="sd">        objects: Sequence[numpy.ndarray]</span>
 <span class="sd">            Current objects array estimate</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Current probes array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Current probe position estimate</span>
-<span class="sd">        exit_waves: Sequence[np.ndarray]</span>
+<span class="sd">        exit_waves: Sequence[numpy.ndarray]</span>
 <span class="sd">            Exit waves array given by SimultaneousPtychographicOperator._warmup_overlap_projection method</span>
-<span class="sd">        modified_exit_waves: Sequence[np.ndarray]</span>
+<span class="sd">        modified_exit_waves: Sequence[numpy.ndarray]</span>
 <span class="sd">            Modified exit waves array given by SimultaneousPtychographicOperator._fourier_projection method</span>
-<span class="sd">        diffraction_patterns: Sequence[np.ndarray]</span>
+<span class="sd">        diffraction_patterns: Sequence[numpy.ndarray]</span>
 <span class="sd">            Square-root of CBED intensities array used to modify exit_waves amplitude</span>
 <span class="sd">        fix_probe: bool, optional</span>
 <span class="sd">            If True, the probe will not be updated by the algorithm. Default is False</span>
@@ -2467,11 +2494,11 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        objects: Sequence[np.ndarray]</span>
+<span class="sd">        objects: Sequence[numpy.ndarray]</span>
 <span class="sd">            Updated electrostatic object array estimate, dummy magnetic object array estimate</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Updated forward probe array estimate, dummy reverse probe array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Updated probe position estimate</span>
 <span class="sd">        """</span>
         <span class="n">exit_wave_forward</span><span class="p">,</span> <span class="n">exit_wave_reverse</span> <span class="o">=</span> <span class="n">exit_waves</span>
@@ -2558,17 +2585,17 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: Sequence[np.ndarray]</span>
+<span class="sd">        objects: Sequence[numpy.ndarray]</span>
 <span class="sd">            Current objects array estimate</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Current probes array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Current probe position estimate</span>
-<span class="sd">        exit_waves: Sequence[np.ndarray]</span>
+<span class="sd">        exit_waves: Sequence[numpy.ndarray]</span>
 <span class="sd">            Exit waves array given by SimultaneousPtychographicOperator._overlap_projection method</span>
-<span class="sd">        modified_exit_waves: Sequence[np.ndarray]</span>
+<span class="sd">        modified_exit_waves: Sequence[numpy.ndarray]</span>
 <span class="sd">            Modified exit waves array given by SimultaneousPtychographicOperator._fourier_projection method</span>
-<span class="sd">        diffraction_patterns: Sequence[np.ndarray]</span>
+<span class="sd">        diffraction_patterns: Sequence[numpy.ndarray]</span>
 <span class="sd">            Square-root of CBED intensities array used to modify exit_waves amplitude</span>
 <span class="sd">        fix_probe: bool, optional</span>
 <span class="sd">            If True, the probe will not be updated by the algorithm. Default is False</span>
@@ -2583,11 +2610,11 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        objects: Sequence[np.ndarray]</span>
+<span class="sd">        objects: Sequence[numpy.ndarray]</span>
 <span class="sd">            Updated electrostatic and magnetic object array estimates</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Updated forward and reverse probe array estimates</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Updated probe position estimate</span>
 <span class="sd">        """</span>
         <span class="n">exit_wave_forward</span><span class="p">,</span> <span class="n">exit_wave_reverse</span> <span class="o">=</span> <span class="n">exit_waves</span>
@@ -2736,17 +2763,17 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: Sequence[np.ndarray]</span>
+<span class="sd">        objects: Sequence[numpy.ndarray]</span>
 <span class="sd">            Current objects array estimate</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Current probes array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Current probe position estimate</span>
-<span class="sd">        exit_waves: Sequence[np.ndarray]</span>
+<span class="sd">        exit_waves: Sequence[numpy.ndarray]</span>
 <span class="sd">            Exit waves array given by SimultaneousPtychographicOperator._overlap_projection method</span>
-<span class="sd">        modified_exit_waves: Sequence[np.ndarray]</span>
+<span class="sd">        modified_exit_waves: Sequence[numpy.ndarray]</span>
 <span class="sd">            Modified exit waves array given by SimultaneousPtychographicOperator._fourier_projection method</span>
-<span class="sd">        diffraction_patterns: Sequence[np.ndarray]</span>
+<span class="sd">        diffraction_patterns: Sequence[numpy.ndarray]</span>
 <span class="sd">            Square-root of CBED intensities array used to modify exit_waves amplitude</span>
 <span class="sd">        fix_probe: bool, optional</span>
 <span class="sd">            If True, the probe will not be updated by the algorithm. Default is False</span>
@@ -2761,11 +2788,11 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        objects: Sequence[np.ndarray]</span>
+<span class="sd">        objects: Sequence[numpy.ndarray]</span>
 <span class="sd">            Updated electrostatic and magnetic object array estimates</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Updated forward probe array estimate, dummy reverse probe array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Updated probe position estimate</span>
 <span class="sd">        """</span>
         <span class="n">exit_wave_forward</span><span class="p">,</span> <span class="n">exit_wave_reverse</span> <span class="o">=</span> <span class="n">exit_waves</span>
@@ -2907,17 +2934,17 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: Sequence[np.ndarray]</span>
+<span class="sd">        objects: Sequence[numpy.ndarray]</span>
 <span class="sd">            Current objects array estimate</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Current probes array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Current probe position estimate</span>
-<span class="sd">        exit_wave: Sequence[np.ndarray]</span>
+<span class="sd">        exit_wave: Sequence[numpy.ndarray]</span>
 <span class="sd">            Exit wave array given by SimultaneousPtychographicOperator._overlap_projection method</span>
-<span class="sd">        modified_exit_wave: Sequence[np.ndarray]</span>
+<span class="sd">        modified_exit_wave: Sequence[numpy.ndarray]</span>
 <span class="sd">            Modified exit wave array given by SimultaneousPtychographicOperator._fourier_projection method</span>
-<span class="sd">        diffraction_patterns: Sequence[np.ndarray]</span>
+<span class="sd">        diffraction_patterns: Sequence[numpy.ndarray]</span>
 <span class="sd">            Square-root of CBED intensities array used to modify exit_waves amplitude</span>
 <span class="sd">        sobel: Callable, optional</span>
 <span class="sd">            The scipy.ndimage module used to compute the object gradients. Passed to the position correction function</span>
@@ -2928,7 +2955,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Updated probe position estimate</span>
 <span class="sd">        """</span>
 
@@ -2969,7 +2996,7 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Current probes arrays estimate</span>
 <span class="sd">        center_of_mass: Callable</span>
 <span class="sd">            The scipy.ndimage module used to compute the array center of mass</span>
@@ -2978,7 +3005,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Center-of-mass corrected probes array</span>
 <span class="sd">        """</span>
 
@@ -3181,7 +3208,7 @@
 <span class="sd">            If return_iterations, a list of Measurements for the objects estimate at each iteration is returned</span>
 <span class="sd">        reconstructed_probes_measurement: Measurement or Sequence[Measurement]</span>
 <span class="sd">            If return_iterations, a list of Measurements for the probes estimate at each iteration is returned</span>
-<span class="sd">        reconstructed_position_measurement: np.ndarray or Sequence[np.ndarray]</span>
+<span class="sd">        reconstructed_position_measurement: numpy.ndarray or Sequence[numpy.ndarray]</span>
 <span class="sd">            If return_iterations, a list of position estimates at each iteration is returned</span>
 <span class="sd">        reconstruction_error: float or Sequence[float]</span>
 <span class="sd">            If return_iterations, a list of the reconstruction error at each iteration is returned</span>
@@ -3414,11 +3441,11 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: Sequence[np.ndarray]</span>
+<span class="sd">        objects: Sequence[numpy.ndarray]</span>
 <span class="sd">            Reconstructed objects array</span>
-<span class="sd">        probes: Sequence[np.ndarray]</span>
+<span class="sd">        probes: Sequence[numpy.ndarray]</span>
 <span class="sd">            Reconstructed probes array</span>
-<span class="sd">        positions: np.ndarray</span>
+<span class="sd">        positions: numpy.ndarray</span>
 <span class="sd">            Reconstructed positions array</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Reconstruction error</span>
@@ -3429,7 +3456,7 @@
 <span class="sd">            Reconstructed objects Measurement</span>
 <span class="sd">        probes_measurement: Sequence[Measurement]</span>
 <span class="sd">            Reconstructed probes Measurement</span>
-<span class="sd">        positions: np.ndarray</span>
+<span class="sd">        positions: numpy.ndarray</span>
 <span class="sd">            Reconstructed positions array</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Reconstruction error</span>
@@ -3460,7 +3487,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    diffraction_patterns: np.ndarray or Measurement</span>
+<span class="sd">    diffraction_patterns: numpy.ndarray or Measurement</span>
 <span class="sd">        Input 3D or 4D CBED pattern intensities with dimensions (M,N)</span>
 <span class="sd">    energy: float</span>
 <span class="sd">        Electron energy [eV]</span>
@@ -3469,13 +3496,13 @@
 <span class="sd">    region_of_interest_shape: (2,) Sequence[int], optional</span>
 <span class="sd">        Pixel dimensions (R,S) of the region of interest (ROI)</span>
 <span class="sd">        If None, the ROI dimensions are taken as the CBED dimensions (M,N)</span>
-<span class="sd">    objects: np.ndarray, optional</span>
+<span class="sd">    objects: numpy.ndarray, optional</span>
 <span class="sd">        Initial objects guess with dimensions (P,Q) - Useful for restarting reconstructions</span>
 <span class="sd">        If None, an array with 1.0j is initialized</span>
-<span class="sd">    probes: np.ndarray or Probe, optional</span>
+<span class="sd">    probes: numpy.ndarray or Probe, optional</span>
 <span class="sd">        Initial probes guess with dimensions/gpts (R,S) - Useful for restarting reconstructions</span>
 <span class="sd">        If None, a Probe with CTF given by the polar_parameters dictionary is initialized</span>
-<span class="sd">    positions: np.ndarray, optional</span>
+<span class="sd">    positions: numpy.ndarray, optional</span>
 <span class="sd">        Initial positions guess [Å]</span>
 <span class="sd">        If None, a raster scan with step sizes given by the experimental_parameters dictionary is initialized</span>
 <span class="sd">    semiangle_cutoff: float, optional</span>
@@ -3683,13 +3710,13 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Object array to be illuminated</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Probe window array to illuminate object with</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Center position of probe window</span>
-<span class="sd">        old_position: np.ndarray</span>
+<span class="sd">        old_position: numpy.ndarray</span>
 <span class="sd">            Old center position of probe window</span>
 <span class="sd">            Used for fractionally shifting probe sequentially</span>
 <span class="sd">        xp</span>
@@ -3697,9 +3724,9 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Fractionally shifted probe window array</span>
-<span class="sd">        exit_wave: np.ndarray</span>
+<span class="sd">        exit_wave: numpy.ndarray</span>
 <span class="sd">            Overlap projection of illuminated probe</span>
 <span class="sd">        """</span>
 
@@ -3732,13 +3759,13 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Object array to be illuminated</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Probe window array to illuminate object with</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Center position of probe window</span>
-<span class="sd">        old_position: np.ndarray</span>
+<span class="sd">        old_position: numpy.ndarray</span>
 <span class="sd">            Old center position of probe window</span>
 <span class="sd">            Used for fractionally shifting probe sequentially</span>
 <span class="sd">        xp</span>
@@ -3746,9 +3773,9 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Fractionally shifted probes window array</span>
-<span class="sd">        exit_waves: np.ndarray</span>
+<span class="sd">        exit_waves: numpy.ndarray</span>
 <span class="sd">            Overlap projection of illuminated probes</span>
 <span class="sd">        """</span>
 
@@ -3783,9 +3810,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        exit_waves: np.ndarray</span>
+<span class="sd">        exit_waves: numpy.ndarray</span>
 <span class="sd">            Exit waves array given by MixedStatePtychographicOperator._warmup_overlap_projection method</span>
-<span class="sd">        diffraction_patterns: np.ndarray</span>
+<span class="sd">        diffraction_patterns: numpy.ndarray</span>
 <span class="sd">            Square-root of CBED intensities array used to modify exit_waves amplitude</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Current sum of squares error estimate</span>
@@ -3794,7 +3821,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        modified_exit_wave: np.ndarray</span>
+<span class="sd">        modified_exit_wave: numpy.ndarray</span>
 <span class="sd">            Fourier projection of illuminated probe</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Updated sum of squares error estimate</span>
@@ -3825,9 +3852,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        exit_waves: np.ndarray</span>
+<span class="sd">        exit_waves: numpy.ndarray</span>
 <span class="sd">            Exit waves array given by MixedStatePtychographicOperator._overlap_projection method</span>
-<span class="sd">        diffraction_patterns: np.ndarray</span>
+<span class="sd">        diffraction_patterns: numpy.ndarray</span>
 <span class="sd">            Square-root of CBED intensities array used to modify exit_waves amplitude</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Current sum of squares error estimate</span>
@@ -3836,7 +3863,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        modified_exit_wave: np.ndarray</span>
+<span class="sd">        modified_exit_wave: numpy.ndarray</span>
 <span class="sd">            Fourier projection of illuminated probe</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Updated sum of squares error estimate</span>
@@ -3880,17 +3907,17 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Current objects array estimate</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Current probes array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Current probe position estimate</span>
-<span class="sd">        exit_waves: np.ndarray</span>
+<span class="sd">        exit_waves: numpy.ndarray</span>
 <span class="sd">            Exit waves array given by MixedStatePtychographicOperator._warmup_overlap_projection method</span>
-<span class="sd">        modified_exit_waves: np.ndarray</span>
+<span class="sd">        modified_exit_waves: numpy.ndarray</span>
 <span class="sd">            Modified exit waves array given by MixedStatePtychographicOperator._warmup_fourier_projection method</span>
-<span class="sd">        diffraction_patterns: np.ndarray</span>
+<span class="sd">        diffraction_patterns: numpy.ndarray</span>
 <span class="sd">            Square-root of CBED intensities array used to modify exit_waves amplitude</span>
 <span class="sd">        fix_probe: bool, optional</span>
 <span class="sd">            If True, the probe will not be updated by the algorithm. Default is False</span>
@@ -3905,11 +3932,11 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Updated objects array estimate</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Updated probes array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Updated probe position estimate</span>
 <span class="sd">        """</span>
 
@@ -3988,17 +4015,17 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Current objects array estimate</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Current probes array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Current probe position estimate</span>
-<span class="sd">        exit_waves: np.ndarray</span>
+<span class="sd">        exit_waves: numpy.ndarray</span>
 <span class="sd">            Exit waves array given by MixedStatePtychographicOperator._overlap_projection method</span>
-<span class="sd">        modified_exit_waves: np.ndarray</span>
+<span class="sd">        modified_exit_waves: numpy.ndarray</span>
 <span class="sd">            Modified exit waves array given by MixedStatePtychographicOperator._fourier_projection method</span>
-<span class="sd">        diffraction_patterns: np.ndarray</span>
+<span class="sd">        diffraction_patterns: numpy.ndarray</span>
 <span class="sd">            Square-root of CBED intensities array used to modify exit_waves amplitude</span>
 <span class="sd">        fix_probe: bool, optional</span>
 <span class="sd">            If True, the probe will not be updated by the algorithm. Default is False</span>
@@ -4013,11 +4040,11 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Updated objects array estimate</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Updated probes array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Updated probe position estimate</span>
 <span class="sd">        """</span>
 
@@ -4093,17 +4120,17 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Current objects array estimate</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Current probes array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Current probe position estimate</span>
-<span class="sd">        exit_wave: np.ndarray</span>
+<span class="sd">        exit_wave: numpy.ndarray</span>
 <span class="sd">            Exit wave array given by MixedStatePtychographicOperator._warmup_overlap_projection method</span>
-<span class="sd">        modified_exit_wave: np.ndarray</span>
+<span class="sd">        modified_exit_wave: numpy.ndarray</span>
 <span class="sd">            Modified exit wave array given by MixedStatePtychographicOperator._warmup_fourier_projection method</span>
-<span class="sd">        diffraction_patterns: np.ndarray</span>
+<span class="sd">        diffraction_patterns: numpy.ndarray</span>
 <span class="sd">            Square-root of CBED intensities array used to modify exit_waves amplitude</span>
 <span class="sd">        sobel: Callable, optional</span>
 <span class="sd">            The scipy.ndimage module used to compute the object gradients. Passed to the position correction function</span>
@@ -4114,7 +4141,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Updated probe position estimate</span>
 <span class="sd">        """</span>
 
@@ -4149,7 +4176,7 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Current probes array estimate</span>
 <span class="sd">        center_of_mass: Callable</span>
 <span class="sd">            The scipy.ndimage module used to compute the array center of mass</span>
@@ -4158,7 +4185,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Center-of-mass corrected probes array</span>
 <span class="sd">        """</span>
 
@@ -4344,7 +4371,7 @@
 <span class="sd">            If return_iterations, a list of Measurements for the objects estimate at each iteration is returned</span>
 <span class="sd">        reconstructed_probes_measurement: Measurement or Sequence[Measurement]</span>
 <span class="sd">            If return_iterations, a list of Measurements for the probes estimate at each iteration is returned</span>
-<span class="sd">        reconstructed_position_measurement: np.ndarray or Sequence[np.ndarray]</span>
+<span class="sd">        reconstructed_position_measurement: numpy.ndarray or Sequence[numpy.ndarray]</span>
 <span class="sd">            If return_iterations, a list of position estimates at each iteration is returned</span>
 <span class="sd">        reconstruction_error: float or Sequence[float]</span>
 <span class="sd">            If return_iterations, a list of the reconstruction error at each iteration is returned</span>
@@ -4579,11 +4606,11 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Reconstructed objects array</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Reconstructed probes array</span>
-<span class="sd">        positions: np.ndarray</span>
+<span class="sd">        positions: numpy.ndarray</span>
 <span class="sd">            Reconstructed positions array</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Reconstruction error</span>
@@ -4594,7 +4621,7 @@
 <span class="sd">            Reconstructed objects Measurement</span>
 <span class="sd">        probes_measurement: Measurement</span>
 <span class="sd">            Reconstructed probes Measurement</span>
-<span class="sd">        positions: np.ndarray</span>
+<span class="sd">        positions: numpy.ndarray</span>
 <span class="sd">            Reconstructed positions array</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Reconstruction error</span>
@@ -4624,7 +4651,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    diffraction_patterns: np.ndarray or Measurement</span>
+<span class="sd">    diffraction_patterns: numpy.ndarray or Measurement</span>
 <span class="sd">        Input 3D or 4D CBED pattern intensities with dimensions (M,N)</span>
 <span class="sd">    energy: float</span>
 <span class="sd">        Electron energy [eV]</span>
@@ -4635,13 +4662,13 @@
 <span class="sd">    region_of_interest_shape: (2,) Sequence[int], optional</span>
 <span class="sd">        Pixel dimensions (R,S) of the region of interest (ROI)</span>
 <span class="sd">        If None, the ROI dimensions are taken as the CBED dimensions (M,N)</span>
-<span class="sd">    objects: np.ndarray, optional</span>
+<span class="sd">    objects: numpy.ndarray, optional</span>
 <span class="sd">        Initial objects guess with dimensions (P,Q) - Useful for restarting reconstructions</span>
 <span class="sd">        If None, an array with 1.0j is initialized</span>
-<span class="sd">    probes: np.ndarray or Probe, optional</span>
+<span class="sd">    probes: numpy.ndarray or Probe, optional</span>
 <span class="sd">        Initial probes guess with dimensions/gpts (R,S) - Useful for restarting reconstructions</span>
 <span class="sd">        If None, a Probe with CTF given by the polar_parameters dictionary is initialized</span>
-<span class="sd">    positions: np.ndarray, optional</span>
+<span class="sd">    positions: numpy.ndarray, optional</span>
 <span class="sd">        Initial positions guess [Å]</span>
 <span class="sd">        If None, a raster scan with step sizes given by the experimental_parameters dictionary is initialized</span>
 <span class="sd">    semiangle_cutoff: float, optional</span>
@@ -4860,13 +4887,13 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Object array to be illuminated</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Probe window array to illuminate object with</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Center position of probe window</span>
-<span class="sd">        old_position: np.ndarray</span>
+<span class="sd">        old_position: numpy.ndarray</span>
 <span class="sd">            Old center position of probe window</span>
 <span class="sd">            Used for fractionally shifting probe sequentially</span>
 <span class="sd">        xp</span>
@@ -4874,9 +4901,9 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Fractionally shifted probe window array</span>
-<span class="sd">        exit_wave: np.ndarray</span>
+<span class="sd">        exit_wave: numpy.ndarray</span>
 <span class="sd">            Overlap projection of illuminated probe</span>
 <span class="sd">        """</span>
 
@@ -4924,9 +4951,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        exit_waves: np.ndarray</span>
+<span class="sd">        exit_waves: numpy.ndarray</span>
 <span class="sd">            Exit waves array given by MultislicePtychographicOperator._overlap_projection method</span>
-<span class="sd">        diffraction_patterns: np.ndarray</span>
+<span class="sd">        diffraction_patterns: numpy.ndarray</span>
 <span class="sd">            Square-root of CBED intensities array used to modify exit_waves amplitude</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Current sum of squares error estimate</span>
@@ -4935,7 +4962,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        modified_exit_wave: np.ndarray</span>
+<span class="sd">        modified_exit_wave: numpy.ndarray</span>
 <span class="sd">            Fourier projection of illuminated probe</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Updated sum of squares error estimate</span>
@@ -4981,17 +5008,17 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Current objects array estimate</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Current probes array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Current probe position estimate</span>
-<span class="sd">        exit_waves: np.ndarray</span>
+<span class="sd">        exit_waves: numpy.ndarray</span>
 <span class="sd">            Exit waves array given by MultislicePtychographicOperator._overlap_projection method</span>
-<span class="sd">        modified_exit_waves: np.ndarray</span>
+<span class="sd">        modified_exit_waves: numpy.ndarray</span>
 <span class="sd">            Modified exit waves array given by MultislicePtychographicOperator._fourier_projection method</span>
-<span class="sd">        diffraction_patterns: np.ndarray</span>
+<span class="sd">        diffraction_patterns: numpy.ndarray</span>
 <span class="sd">            Square-root of CBED intensities array used to modify exit_waves amplitude</span>
 <span class="sd">        fix_probe: bool, optional</span>
 <span class="sd">            If True, the probe will not be updated by the algorithm. Default is False</span>
@@ -5006,11 +5033,11 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Updated objects array estimate</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Updated probes array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Updated probe position estimate</span>
 <span class="sd">        """</span>
 
@@ -5093,17 +5120,17 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Current objects array estimate</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Current probes array estimate</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Current probe position estimate</span>
-<span class="sd">        exit_wave: np.ndarray</span>
+<span class="sd">        exit_wave: numpy.ndarray</span>
 <span class="sd">            Exit wave array given by MultislicePtychographicOperator._overlap_projection method</span>
-<span class="sd">        modified_exit_wave: np.ndarray</span>
+<span class="sd">        modified_exit_wave: numpy.ndarray</span>
 <span class="sd">            Modified exit wave array given by MultislicePtychographicOperator._fourier_projection method</span>
-<span class="sd">        diffraction_patterns: np.ndarray</span>
+<span class="sd">        diffraction_patterns: numpy.ndarray</span>
 <span class="sd">            Square-root of CBED intensities array used to modify exit_waves amplitude</span>
 <span class="sd">        sobel: Callable, optional</span>
 <span class="sd">            The scipy.ndimage module used to compute the object gradients. Passed to the position correction function</span>
@@ -5114,7 +5141,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        position: np.ndarray</span>
+<span class="sd">        position: numpy.ndarray</span>
 <span class="sd">            Updated probe position estimate</span>
 <span class="sd">        """</span>
 
@@ -5149,7 +5176,7 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Current probes array estimate</span>
 <span class="sd">        center_of_mass: Callable</span>
 <span class="sd">            The scipy.ndimage module used to compute the array center of mass</span>
@@ -5158,7 +5185,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Center-of-mass corrected probes array</span>
 <span class="sd">        """</span>
 
@@ -5285,7 +5312,7 @@
 <span class="sd">            If return_iterations, a list of Measurements for the objects estimate at each iteration is returned</span>
 <span class="sd">        reconstructed_probes_measurement: Measurement or Sequence[Measurement]</span>
 <span class="sd">            If return_iterations, a list of Measurements for the probes estimate at each iteration is returned</span>
-<span class="sd">        reconstructed_position_measurement: np.ndarray or Sequence[np.ndarray]</span>
+<span class="sd">        reconstructed_position_measurement: numpy.ndarray or Sequence[numpy.ndarray]</span>
 <span class="sd">            If return_iterations, a list of position estimates at each iteration is returned</span>
 <span class="sd">        reconstruction_error: float or Sequence[float]</span>
 <span class="sd">            If return_iterations, a list of the reconstruction error at each iteration is returned</span>
@@ -5525,11 +5552,11 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        objects: np.ndarray</span>
+<span class="sd">        objects: numpy.ndarray</span>
 <span class="sd">            Reconstructed objects array</span>
-<span class="sd">        probes: np.ndarray</span>
+<span class="sd">        probes: numpy.ndarray</span>
 <span class="sd">            Reconstructed probes array</span>
-<span class="sd">        positions: np.ndarray</span>
+<span class="sd">        positions: numpy.ndarray</span>
 <span class="sd">            Reconstructed positions array</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Reconstruction error</span>
@@ -5542,7 +5569,7 @@
 <span class="sd">            Reconstructed objects Measurement</span>
 <span class="sd">        probes_measurement: Measurement</span>
 <span class="sd">            Reconstructed probes Measurement</span>
-<span class="sd">        positions: np.ndarray</span>
+<span class="sd">        positions: numpy.ndarray</span>
 <span class="sd">            Reconstructed positions array</span>
 <span class="sd">        sse: float</span>
 <span class="sd">            Reconstruction error</span>

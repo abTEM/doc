@@ -62,6 +62,33 @@
     <script async="async" src="../../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/api/apidocs/abtem/abtem.bloch.dynamical';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/favicon.ico"/>
@@ -116,7 +143,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -904,7 +931,7 @@ all energies; beams that are inactive at a given energy are set to
 zero. The output gains a leading <a class="reference internal" href="abtem.core.axes.html#abtem.core.axes.EnergyAxis" title="abtem.core.axes.EnergyAxis"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnergyAxis</span></code></a> dimension.</p></li>
 <li><p><strong>sg_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The maximum excitation error [1/Å].</p></li>
 <li><p><strong>g_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The maximum scattering vector length [1/Å].</p></li>
-<li><p><strong>orientation_matrix</strong> (<em>np.ndarray</em>) – An optional orientation matrix given as a (3, 3) array. If provided, the unit
+<li><p><strong>orientation_matrix</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – An optional orientation matrix given as a (3, 3) array. If provided, the unit
 cell is rotated.
 Instead of providing an orientation matrix, the <cite>.rotate</cite> method can be used.</p></li>
 <li><p><strong>centering</strong> (<em>{'auto'</em><em>, </em><em>'P'</em><em>, </em><em>'I'</em><em>, </em><em>'A'</em><em>, </em><em>'B'</em><em>, </em><em>'C'</em><em>, </em><em>'F'}</em>) – Lattice centering.</p></li>
@@ -974,7 +1001,7 @@ calculation is done eagerly.</p></li>
 <dd class="field-even"><p>The scattering matrix.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1068,47 +1095,13 @@ structure factor intensities [1/Å].</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>args</strong> (<em>sequence</em><em> of </em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>)</em>) – <dl class="simple">
-<dt>The rotation axes and angles. The axes must be given as a string of ‘x’, ‘y’</dt><dd><p>or ‘z’,</p>
-</dd>
-</dl>
-<p>representing a sequence of rotation axes.</p>
-</p></li>
+<li><p><strong>args</strong> (<em>sequence</em><em> of </em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>)</em>) – The rotation axes and angles. The axes must be given as a string of ‘x’,
+‘y’ or ‘z’, representing a sequence of rotation axes.</p></li>
 <li><p><strong>degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, the angles are given in degrees. Default is False.</p></li>
 </ul>
 </dd>
-</dl>
-<p class="rubric">Examples</p>
-<p>Rotate the unit cell by 45 degrees around the x-axis:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rotated</span> <span class="o">=</span> <span class="n">bloch</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="s1">'x'</span><span class="p">,</span> <span class="mi">45</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">rotated</span>
-<span class="go">BlochWaves</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">rotated</span><span class="o">.</span><span class="n">ensemble_shape</span>
-<span class="go">()</span>
-</pre></div>
-</div>
-<dl class="simple">
-<dt>Rotate the unit cell by 0 and 45 degrees around the x-axis. For each x-rotation,</dt><dd><p>do the same around the y-axis:</p>
-</dd>
-</dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rotated</span> <span class="o">=</span> <span class="n">bloch</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="s1">'x'</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">45</span><span class="p">],</span> <span class="s1">'y'</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">45</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"deg"</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">rotated</span>
-<span class="go">BlochWavesEnsemble</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">rotated</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span>
-<span class="go">(2, 2)</span>
-</pre></div>
-</div>
-<p>Rotate the unit cell by (0, 0) and (45, 45) degress in (x, y).</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bloch</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="s1">'xy'</span><span class="p">,</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">45</span><span class="p">,</span> <span class="mi">45</span><span class="p">]],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"deg"</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">rotated</span>
-<span class="go">BlochWavesEnsemble</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">rotated</span><span class="o">.</span><span class="n">ensemble_shape</span>
-<span class="go">(2,)</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><ul class="simple">
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
 <li><p><em>BlochWaves</em> – The rotated Bloch waves.</p></li>
 <li><p><em>BlochWavesEnsemble</em> – The rotated Bloch waves ensemble.</p></li>
 </ul>
@@ -1251,7 +1244,7 @@ ensemble.</p>
 <dd class="field-odd"><p>The mask selecting the reciprocal space vectors.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>np.ndarray</p>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1265,7 +1258,7 @@ ensemble.</p>
 <dd class="field-odd"><p>The orientation matrices. The shape is the ensemble shape + (3, 3).</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>np.ndarray</p>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1376,7 +1369,7 @@ calculation is done eagerly.</p>
 <dd class="field-even"><p>The 3D potential.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1429,8 +1422,8 @@ calculation is done eagerly.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>array</strong> (<em>np.ndarray</em>) – The structure factors as a 1D array.</p></li>
-<li><p><strong>hkl</strong> (<em>np.ndarray</em>) – The reciprocal space vectors as Miller indices as a (N, 3) array. N must be the
+<li><p><strong>array</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The structure factors as a 1D array.</p></li>
+<li><p><strong>hkl</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The reciprocal space vectors as Miller indices as a (N, 3) array. N must be the
 same as the length of the structure factor.</p></li>
 <li><p><strong>cell</strong> (<em>Cell</em>) – The unit cell.</p></li>
 <li><p><strong>g_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Maximum scattering vector length [1/Å].</p></li>
@@ -1459,7 +1452,7 @@ same as the length of the structure factor.</p></li>
 <dd class="field-odd"><p>The 3D potential.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>np.ndarray</p>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1505,7 +1498,7 @@ same as the length of the structure factor.</p></li>
 <dd class="field-odd"><p>The 3D structure factors.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>np.ndarray</p>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1523,22 +1516,20 @@ and the values are the structure factors.</p>
 <dt class="sig sig-object py" id="abtem.bloch.dynamical.allowed_chars">
 <span class="sig-prename descclassname"><span class="pre">abtem.bloch.dynamical.</span></span><span class="sig-name descname"><span class="pre">allowed_chars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/bloch/dynamical.html#allowed_chars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.bloch.dynamical.allowed_chars" title="Link to this definition">#</a></dt>
 <dd><p>Check if the string <cite>s</cite> only contains characters from <cite>allowed_chars</cite>.</p>
-<section id="parameters">
-<h4>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h4>
-<dl class="simple">
-<dt>s<span class="classifier">str</span></dt><dd><p>The string to check.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The string to check.</p></li>
+<li><p><strong>allowed_chars</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – A string containing all allowed characters.</p></li>
+</ul>
 </dd>
-<dt>allowed_chars<span class="classifier">str</span></dt><dd><p>A string containing all allowed characters.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if <cite>s</cite> only contains characters from <cite>allowed_chars</cite>, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a></p>
 </dd>
 </dl>
-</section>
-<section id="returns">
-<h4>Returns:<a class="headerlink" href="#returns" title="Link to this heading">#</a></h4>
-<dl class="simple">
-<dt>bool</dt><dd><p>True if <cite>s</cite> only contains characters from <cite>allowed_chars</cite>, False otherwise.</p>
-</dd>
-</dl>
-</section>
 </dd></dl>
 
 <dl class="py function">
@@ -1548,7 +1539,7 @@ and the values are the structure factors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>hkl</strong> (<em>np.ndarray</em>) – The reciprocal space vectors as Miller indices. Given as a (N, 3) array.</p></li>
+<li><p><strong>hkl</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The reciprocal space vectors as Miller indices. Given as a (N, 3) array.</p></li>
 <li><p><strong>cell</strong> (<em>Cell</em>) – The unit cell.</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The energy of the electrons [eV].</p></li>
 </ul>
@@ -1557,7 +1548,7 @@ and the values are the structure factors.</p>
 <dd class="field-even"><p>The M matrix.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1569,8 +1560,8 @@ and the values are the structure factors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>structure_matrix</strong> (<em>np.ndarray</em>) – The structure matrix as a (N, N) array.</p></li>
-<li><p><strong>hkl</strong> (<em>np.ndarray</em>) – The reciprocal space vectors as Miller indices. Given as a (N, 3) array.</p></li>
+<li><p><strong>structure_matrix</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The structure matrix as a (N, N) array.</p></li>
+<li><p><strong>hkl</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The reciprocal space vectors as Miller indices. Given as a (N, 3) array.</p></li>
 <li><p><strong>cell</strong> (<em>Cell</em>) – The unit cell.</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The energy of the electrons [eV].</p></li>
 <li><p><strong>thicknesses</strong> (<em>sequence</em><em> of </em><em>floats</em>) – The thicknesses of the sample [Å].</p></li>
@@ -1581,7 +1572,7 @@ and the values are the structure factors.</p>
 (len(thicknesses), len(hkl)).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1593,7 +1584,7 @@ and the values are the structure factors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>g_vec</strong> (<em>np.ndarray</em>) – Scattering vectors [1/Å]. Either Cartesian vectors with shape (N_g, 3), or
+<li><p><strong>g_vec</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Scattering vectors [1/Å]. Either Cartesian vectors with shape (N_g, 3), or
 plain magnitudes with shape (N_g,). Anisotropic Debye-Waller factors require
 shape (N_g, 3); passing magnitudes with anisotropic sigmas raises an error.</p></li>
 <li><p><strong>atoms</strong> (<em>Atoms</em>) – Atoms object.</p></li>
@@ -1616,8 +1607,8 @@ is a hard cutoff.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>A</strong> (<em>np.ndarray</em>) – The structure matrix. The last two dimensions must be square.</p></li>
-<li><p><strong>hkl</strong> (<em>np.ndarray</em>) – The reciprocal space vectors as Miller indices. Given as a (N, 3) array.</p></li>
+<li><p><strong>A</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The structure matrix. The last two dimensions must be square.</p></li>
+<li><p><strong>hkl</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The reciprocal space vectors as Miller indices. Given as a (N, 3) array.</p></li>
 <li><p><strong>cell</strong> (<em>Cell</em>) – The unit cell.</p></li>
 <li><p><strong>z</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The thickness of the sample [Å].</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The energy of the electrons [eV].</p></li>
@@ -1637,7 +1628,7 @@ is a hard cutoff.</p></li>
 <dd class="field-even"><p>The scattering matrix.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1649,7 +1640,7 @@ is a hard cutoff.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>hkl</strong> (<em>np.ndarray</em>) – The reciprocal space vectors as Miller indices. Given as a (N, 3) array.</p></li>
+<li><p><strong>hkl</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The reciprocal space vectors as Miller indices. Given as a (N, 3) array.</p></li>
 <li><p><strong>atoms</strong> (<em>Atoms</em>) – The Atoms object.</p></li>
 <li><p><strong>parametrization</strong> (<em>{'lobato'</em><em>, </em><em>'kirkland'</em><em>, </em><em>'peng'}</em>) – Parametrization for the scattering factors.</p></li>
 <li><p><strong>g_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Maximum scattering vector length [1/Å]. The scattering factors are set to zero
@@ -1664,7 +1655,7 @@ is a hard cutoff.</p></li>
 <dd class="field-even"><p>The structure factors.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1676,10 +1667,10 @@ is a hard cutoff.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>structure_factor</strong> (<em>np.ndarray</em>) – The structure factors as a 1D array.</p></li>
-<li><p><strong>hkl</strong> (<em>np.ndarray</em>) – The reciprocal space vectors as Miller indices corresponding to the structure
+<li><p><strong>structure_factor</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The structure factors as a 1D array.</p></li>
+<li><p><strong>hkl</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The reciprocal space vectors as Miller indices corresponding to the structure
 factors. Given as a (N, 3) array.</p></li>
-<li><p><strong>hkl_selected</strong> (<em>np.ndarray</em>) – The reciprocal space vectors as Miller indices for which the structure matrix is
+<li><p><strong>hkl_selected</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The reciprocal space vectors as Miller indices for which the structure matrix is
 calculated. Given as a (N, 3) array.</p></li>
 <li><p><strong>cell</strong> (<em>Cell</em>) – The unit cell.</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The energy of the electrons [eV].</p></li>
@@ -1692,7 +1683,7 @@ Otherwise standard Bloch wave is used.</p></li>
 <dd class="field-even"><p>The structure matrix.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1719,13 +1710,13 @@ Otherwise standard Bloch wave is used.</p></li>
 <p>This is a device agnostic version of the scipy.linalg.expm function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>A</strong> (<em>np.ndarray</em>) – Input with last two dimensions are square.</p>
+<dd class="field-odd"><p><strong>A</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Input with last two dimensions are square.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The resulting matrix exponential with the same shape of A.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1758,17 +1749,17 @@ at a set of real space positions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>g</strong> (<em>np.ndarray</em>) – The reciprocal space vectors as an Nx3 array [1 / Å].</p></li>
-<li><p><strong>x</strong> (<em>np.ndarray</em>) – The x positions as a 1D array [Å].</p></li>
-<li><p><strong>y</strong> (<em>np.ndarray</em>) – The y positions as a 1D array [Å].</p></li>
-<li><p><strong>z</strong> (<em>np.ndarray</em>) – The z positions as a 1D array [Å].</p></li>
+<li><p><strong>g</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The reciprocal space vectors as an Nx3 array [1 / Å].</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The x positions as a 1D array [Å].</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The y positions as a 1D array [Å].</p></li>
+<li><p><strong>z</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The z positions as a 1D array [Å].</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The plane wave basis at the given positions.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1795,8 +1786,8 @@ at a set of real space positions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>structure_factor</strong> (<em>np.ndarray</em>) – The structure factors as a 1D array.</p></li>
-<li><p><strong>hkl</strong> (<em>np.ndarray</em>) – The reciprocal space vectors as Miller indices as a (N, 3) array. N must be the
+<li><p><strong>structure_factor</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The structure factors as a 1D array.</p></li>
+<li><p><strong>hkl</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The reciprocal space vectors as Miller indices as a (N, 3) array. N must be the
 same as the length of the structure factor.</p></li>
 <li><p><strong>gpts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>ints</em>) – The number of grid points in the 3D structure factor.</p></li>
 </ul>
@@ -1805,7 +1796,7 @@ same as the length of the structure factor.</p></li>
 <dd class="field-even"><p>The 3D structure factors.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1817,8 +1808,8 @@ same as the length of the structure factor.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>structure_factor</strong> (<em>np.ndarray</em>) – The structure factors as a 1D array.</p></li>
-<li><p><strong>hkl</strong> (<em>np.ndarray</em>) – The reciprocal space vectors as Miller indices as a (N, 3) array. N must be the
+<li><p><strong>structure_factor</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The structure factors as a 1D array.</p></li>
+<li><p><strong>hkl</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The reciprocal space vectors as Miller indices as a (N, 3) array. N must be the
 same as the length of the structure factor.</p></li>
 <li><p><strong>gpts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>ints</em>) – The number of grid points in the 3D structure factor.</p></li>
 </ul>
@@ -1827,7 +1818,7 @@ same as the length of the structure factor.</p></li>
 <dd class="field-even"><p>The potential.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>

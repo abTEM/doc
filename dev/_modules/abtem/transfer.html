@@ -61,6 +61,33 @@
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/abtem/transfer';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../_static/favicon.ico"/>
@@ -113,7 +140,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -656,7 +683,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        kernel : np.ndarray or dask.array.Array</span>
+<span class="sd">        kernel : numpy.ndarray or dask.array.Array</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
             <span class="n">arrays</span> <span class="o">=</span> <span class="p">[]</span>
@@ -850,7 +877,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    soft_aperture_array : 2D or 3D np.ndarray</span>
+<span class="sd">    soft_aperture_array : 2D or 3D numpy.ndarray</span>
 <span class="sd">    """</span>
     <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
 
@@ -907,7 +934,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    hard_aperture_array : 2D or 3D np.ndarray</span>
+<span class="sd">    hard_aperture_array : 2D or 3D numpy.ndarray</span>
 <span class="sd">    """</span>
     <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alpha</span> <span class="o">&lt;=</span> <span class="n">semiangle_cutoff</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span></div>
@@ -2222,13 +2249,13 @@
 <span class="sd">    in HRTEM and specifies how the condenser system shapes the probe in STEM.</span>
 
 <span class="sd">    abTEM implements phase aberrations up to 5th order using polar coefficients.</span>
-<span class="sd">    See Eq. 2.22 in the reference [1]_.</span>
+<span class="sd">    See Eq. 2.22 in Kirkland (2010).</span>
 
 <span class="sd">    Cartesian coefficients can be converted to polar using the utility function</span>
 <span class="sd">    `abtem.transfer.cartesian2polar`.</span>
 
 <span class="sd">    Partial coherence is included as envelopes in the quasi-coherent approximation.</span>
-<span class="sd">    See Chapter 3.2 in reference [1]_.</span>
+<span class="sd">    See Chapter 3.2 in Kirkland (2010).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2270,8 +2297,8 @@
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    .. [1] Kirkland, E. J. (2010). Advanced Computing in Electron Microscopy (2nd ed.).</span>
-<span class="sd">       Springer.</span>
+<span class="sd">    Kirkland, E. J. (2010). Advanced Computing in Electron Microscopy (2nd ed.).</span>
+<span class="sd">        Springer.</span>
 
 <span class="sd">    """</span>
 

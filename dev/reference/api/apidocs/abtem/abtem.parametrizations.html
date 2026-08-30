@@ -62,6 +62,33 @@
     <script async="async" src="../../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/api/apidocs/abtem/abtem.parametrizations';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/favicon.ico"/>
@@ -116,7 +143,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -668,7 +695,7 @@
 <td><p>Base class for potential parametrizations.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#abtem.parametrizations.PengParametrization" title="abtem.parametrizations.PengParametrization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PengParametrization</span></code></a></p></td>
-<td></td>
+<td><p>Potential parametrization by Lian-Mao Peng.</p></td>
 </tr>
 </tbody>
 </table>
@@ -771,9 +798,9 @@ the displacements is assumed to be identical for all atoms.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Z</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Atomic number the fit is stored under.</p></li>
-<li><p><strong>k</strong> (<em>np.ndarray</em>) – Sample points in reciprocal space [1/Å].</p></li>
-<li><p><strong>f</strong> (<em>np.ndarray</em>) – Scattering factor values at <cite>k</cite>.</p></li>
-<li><p><strong>guess</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Initial parameter guess. Defaults to this element’s own tabulated
+<li><p><strong>k</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Sample points in reciprocal space [1/Å].</p></li>
+<li><p><strong>f</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Scattering factor values at <cite>k</cite>.</p></li>
+<li><p><strong>guess</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em>, </em><em>optional</em>) – Initial parameter guess. Defaults to this element’s own tabulated
 parameters if already present, else the reference <cite>lobato.json</cite>
 values.</p></li>
 <li><p><strong>regularization</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Weight of an L2 penalty pulling the fit towards <cite>guess</cite>. The
@@ -1005,7 +1032,7 @@ function.</p>
 <dd class="field-even"><p><strong>scaled_parameters</strong></p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1068,6 +1095,22 @@ radial distance to the core [1/Å^2].</p>
 <dt class="sig sig-object py" id="abtem.parametrizations.PengParametrization">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abtem.parametrizations.</span></span><span class="sig-name descname"><span class="pre">PengParametrization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/abtem/parametrizations.html#PengParametrization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.parametrizations.PengParametrization" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#abtem.parametrizations.Parametrization" title="abtem.parametrizations.Parametrization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">abtem.parametrizations.Parametrization</span></code></a></p>
+<p>Potential parametrization by Lian-Mao Peng.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameters</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – A given string must be either the full path to a valid <code class="docutils literal notranslate"><span class="pre">.json</span></code> file or the
+name of a valid <code class="docutils literal notranslate"><span class="pre">.json</span></code> file in the <code class="docutils literal notranslate"><span class="pre">abtem/parametrizations/data/</span></code> folder.
+A given dictionary must be a mapping from chemical symbols to anything that can
+converted to a NumPy array of shape (2, 5).</p></li>
+<li><p><strong>sigmas</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The standard deviation of isotropic displacements for each element as a mapping
+from chemical symbols to a number. If given as a float the standard deviation of
+the displacements is assumed to be identical for all atoms.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>Peng, L. Micron, 30(6):625–648, 1999.</p>
 <p class="rubric">Initialization</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="abtem.parametrizations.PengParametrization.scaled_parameters">

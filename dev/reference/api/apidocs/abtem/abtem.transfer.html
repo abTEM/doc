@@ -62,6 +62,33 @@
     <script async="async" src="../../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/api/apidocs/abtem/abtem.transfer';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/favicon.ico"/>
@@ -116,7 +143,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -1070,11 +1097,11 @@ ignored.</p></li>
 <p>The contrast transfer function (CTF) describes the aberrations of the objective lens
 in HRTEM and specifies how the condenser system shapes the probe in STEM.</p>
 <p>abTEM implements phase aberrations up to 5th order using polar coefficients.
-See Eq. 2.22 in the reference <a href="#id1"><span class="problematic" id="id1">[1]_</span></a>.</p>
+See Eq. 2.22 in Kirkland (2010).</p>
 <p>Cartesian coefficients can be converted to polar using the utility function
 <cite>abtem.transfer.cartesian2polar</cite>.</p>
 <p>Partial coherence is included as envelopes in the quasi-coherent approximation.
-See Chapter 3.2 in reference <a href="#id2"><span class="problematic" id="id2">[1]_</span></a>.</p>
+See Chapter 3.2 in Kirkland (2010).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1105,13 +1132,10 @@ that no filter is applied.</p></li>
 </dd>
 </dl>
 <p class="rubric">References</p>
-<aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id3" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
-<p>Kirkland, E. J. (2010). Advanced Computing in Electron Microscopy (2nd ed.).
-Springer.</p>
-</aside>
-</aside>
+<dl class="simple">
+<dt>Kirkland, E. J. (2010). Advanced Computing in Electron Microscopy (2nd ed.).</dt><dd><p>Springer.</p>
+</dd>
+</dl>
 <p class="rubric">Initialization</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="abtem.transfer.CTF.angular_spread">
@@ -1425,7 +1449,7 @@ item in the array of semiangle cutoffs.</p></li>
 <dd class="field-even"><p><strong>hard_aperture_array</strong></p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>2D or 3D np.ndarray</p>
+<dd class="field-odd"><p>2D or 3D numpy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1520,7 +1544,7 @@ item in the array of semiangle cutoffs.</p></li>
 <dd class="field-even"><p><strong>soft_aperture_array</strong></p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>2D or 3D np.ndarray</p>
+<dd class="field-odd"><p>2D or 3D numpy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1530,7 +1554,6 @@ item in the array of semiangle cutoffs.</p></li>
 <span class="sig-prename descclassname"><span class="pre">abtem.transfer.</span></span><span class="sig-name descname"><span class="pre">symbol_to_tex_symbol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/transfer.html#symbol_to_tex_symbol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.transfer.symbol_to_tex_symbol" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
-<hr class="footnotes docutils" />
 </section>
 </section>
 </section>

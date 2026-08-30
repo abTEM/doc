@@ -62,6 +62,33 @@
     <script async="async" src="../../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/api/apidocs/abtem/abtem.measurements';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/favicon.ico"/>
@@ -116,7 +143,7 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 <aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>.</div>
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
 </aside>
 
   
@@ -1005,7 +1032,7 @@ the relative difference.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>array</strong> (<em>np.ndarray</em>) – 2D or greater array containing data with <cite>float</cite> type. The second-to-last and
+<li><p><strong>array</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – 2D or greater array containing data with <cite>float</cite> type. The second-to-last and
 last dimensions are the reciprocal space <cite>y</cite>- and <cite>x</cite>-axis of the diffraction
 pattern.</p></li>
 <li><p><strong>sampling</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>two float</em>) – The reciprocal-space sampling of the diffraction patterns [1 / Å].</p></li>
@@ -1235,7 +1262,7 @@ as a single number, the standard deviation is equal for both axes.</p>
 <li><p><strong>cell</strong> (<em>ase.cell.Cell</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The assumed unit cell with respect to the diffraction pattern should be
 indexed. Must be one of ASE <cite>Cell</cite> object, float (for a cubic unit cell) or
 three floats (for orthorhombic unit cells).</p></li>
-<li><p><strong>orientation_matrices</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Orientation matrices used for indexing the diffraction spots. The shape of
+<li><p><strong>orientation_matrices</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em>, </em><em>optional</em>) – Orientation matrices used for indexing the diffraction spots. The shape of
 the orientation matrices must be broadcastable with the ensemble shape of
 the diffraction patterns.</p></li>
 <li><p><strong>sg_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Maximum excitation error [1/Å] of the indexed diffraction spots.
@@ -1568,7 +1595,7 @@ represent a reconstructed phase.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>array</strong> (<em>np.ndarray</em>) – 2D or greater array containing data of type <cite>float</cite> or <cite>complex</cite>. The
+<li><p><strong>array</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – 2D or greater array containing data of type <cite>float</cite> or <cite>complex</cite>. The
 second-to-last and last
 dimensions are the image <cite>y</cite>- and <cite>x</cite>-axis, respectively.</p></li>
 <li><p><strong>sampling</strong> (<em>two float</em>) – Lateral sampling of images in <cite>x</cite> and <cite>y</cite> [Å].</p></li>
@@ -1806,13 +1833,13 @@ respectively.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>array</strong> (<em>np.ndarray</em>) – 1D or greater array of type <cite>float</cite> or <cite>complex</cite>. The last axis represents the
+<li><p><strong>array</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – 1D or greater array of type <cite>float</cite> or <cite>complex</cite>. The last axis represents the
 diffraction spots and should have the same length as the number of miller
 indices, any preceding axis represents an ensemble axis.</p></li>
-<li><p><strong>miller_indices</strong> (<em>np.ndarray</em>) – The miller indices of the diffraction spots as an N x 3 array where N is the
+<li><p><strong>miller_indices</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The miller indices of the diffraction spots as an N x 3 array where N is the
 number of miller indices. The order of the miller indices must correspond to the
 array of intensities. The second axis represents each hkl miller index.</p></li>
-<li><p><strong>reciprocal_lattice_vectors</strong> (<em>np.ndarray</em>) – The reciprocal lattice vectors of the crystal as a 3 x 3 array. The first axis
+<li><p><strong>reciprocal_lattice_vectors</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – The reciprocal lattice vectors of the crystal as a 3 x 3 array. The first axis
 represents miller indices and the order of the items must correspond to the
 array of intensities. The second axis represents the reciprocal space positions
 in x, y and z [1/Å].</p></li>
@@ -2144,7 +2171,7 @@ scale) to the cropped region instead of the full data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>array</strong> (<em>np.ndarray</em><em> or </em><em>dask array</em>) – Array of shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">n_q,</span> <span class="pre">n_E)</span></code>.</p></li>
+<li><p><strong>array</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em> or </em><em>dask array</em>) – Array of shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">n_q,</span> <span class="pre">n_E)</span></code>.</p></li>
 <li><p><strong>q_values</strong> (<em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Scattering-vector values [mrad] for each q bin.</p></li>
 <li><p><strong>e_values</strong> (<em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Energy-loss values [eV] for each energy bin.</p></li>
 <li><p><strong>ensemble_axes_metadata</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference internal" href="abtem.core.axes.html#abtem.core.axes.AxisMetadata" title="abtem.core.axes.AxisMetadata"><em>AxisMetadata</em></a><em>, </em><em>optional</em>)</p></li>
@@ -2255,7 +2282,7 @@ center may be shifted from the origin.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>array</strong> (<em>np.ndarray</em>) – Array containing the measurement.</p></li>
+<li><p><strong>array</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Array containing the measurement.</p></li>
 <li><p><strong>radial_sampling</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Sampling of the radial bins [mrad].</p></li>
 <li><p><strong>azimuthal_sampling</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Sampling of the azimuthal bins [rad].</p></li>
 <li><p><strong>radial_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Offset of the bins from the origin [mrad] (default is 0.0).</p></li>
@@ -2666,7 +2693,7 @@ FWHM_L = 2γ.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>array</strong> (<em>np.ndarray</em>) – 1D or greater array containing data of type <cite>float</cite> or <cite>complex</cite>.</p></li>
+<li><p><strong>array</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – 1D or greater array containing data of type <cite>float</cite> or <cite>complex</cite>.</p></li>
 <li><p><strong>sampling</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Sampling of line profiles [Å].</p></li>
 <li><p><strong>ensemble_axes_metadata</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference internal" href="abtem.core.axes.html#abtem.core.axes.AxisMetadata" title="abtem.core.axes.AxisMetadata"><em>AxisMetadata</em></a><em>, </em><em>optional</em>) – List of metadata associated with the ensemble axes. The length and item order
 must match the ensemble axes.</p></li>
@@ -2707,7 +2734,7 @@ must match the ensemble axes.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>array</strong> (<em>np.ndarray</em>) – 1D or greater array containing data of type <cite>float</cite> or <cite>complex</cite>.</p></li>
+<li><p><strong>array</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – 1D or greater array containing data of type <cite>float</cite> or <cite>complex</cite>.</p></li>
 <li><p><strong>sampling</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Sampling of line profiles [1 / Å].</p></li>
 <li><p><strong>ensemble_axes_metadata</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference internal" href="abtem.core.axes.html#abtem.core.axes.AxisMetadata" title="abtem.core.axes.AxisMetadata"><em>AxisMetadata</em></a><em>, </em><em>optional</em>) – List of metadata associated with the ensemble axes. The length and item order
 must match the ensemble axes.</p></li>
