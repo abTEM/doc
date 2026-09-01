@@ -67,17 +67,35 @@ def _add_noindex(app, pagename, templatename, context, doctree):
 
 
 # Configuring an `announcement` (which only dev builds do, above) makes
-# sphinx-book-theme also render pydata-sphinx-theme's own navbar - needed to
-# host the banner - alongside its own separate article-header toggle button.
-# That leaves two elements matching `.primary-toggle`/`.secondary-toggle` in
-# the DOM; on mobile the navbar one is CSS-hidden but pydata-sphinx-theme.js
-# wires its dialog-opening click handler to it anyway, since it looks it up
-# with a plain (singular) `querySelector`. The one actually visible on
-# mobile - sphinx-book-theme's article-header button - is left with no
-# listener at all, so tapping it does nothing. Forwarding clicks from any
-# extra duplicate to the first (the one the theme's own script wired up)
-# fixes this without touching their minified code; a no-op when there's only
-# one of each, i.e. on stable builds without the banner.
+# sphinx-book-theme fall back to also rendering pydata-sphinx-theme's own
+# full default navbar - complete with its own search bar and icons - to
+# have somewhere to host the banner, alongside its own separate, normally-
+# sufficient article-header bar. The two aren't just redundant visually
+# (a second search bar, duplicate icons, on desktop where both show): they
+# also leave two elements matching `.primary-toggle`/`.secondary-toggle` in
+# the DOM, and pydata-sphinx-theme.js wires its dialog-opening click handler
+# to whichever one a plain (singular) `querySelector` finds first - the
+# navbar copy, which mobile's CSS hides. The one actually visible on
+# mobile - sphinx-book-theme's article-header button - was then left with
+# no listener at all, so tapping it did nothing.
+#
+# Tried removing the redundant navbar outright instead of working around
+# this, so there'd only ever be one `.primary-toggle` for querySelector to
+# find - but pydata-sphinx-theme.js loads with `defer`, so by spec it runs
+# right after parsing finishes and BEFORE DOMContentLoaded fires; waiting
+# for that event to do the removal was always too late; the theme had
+# already wired the copy being removed, orphaning the survivor exactly as
+# before. Inline scripts can't be deferred to force a specific order
+# either (the attribute is spec'd to have no effect on them). So: hide the
+# navbar with plain CSS instead (no timing dependency - the element simply
+# never paints) and let the theme wire whatever it finds; forwarding
+# clicks from the visible button to that (hidden but correctly wired) one
+# makes tapping it work regardless of which element got the listener.
+# Both are no-ops when the navbar was never rendered, i.e. on stable
+# builds without the banner.
+_HIDE_DUPLICATE_NAVBAR_CSS = (
+    "<style>header.bd-header.navbar{display:none!important}</style>"
+)
 _SIDEBAR_TOGGLE_DUPLICATE_FIX = """
 document.addEventListener("DOMContentLoaded", () => {
   for (const cls of [".primary-toggle", ".secondary-toggle"]) {
@@ -115,8 +133,14 @@ document.addEventListener("DOMContentLoaded", () => {{
 """
 
 
-def _add_dev_banner_scripts(app, pagename, templatename, context, doctree):
+def _add_dev_banner_extras(app, pagename, templatename, context, doctree):
     if _is_dev():
+        # add_css_file() only accepts a real file, not inline content, so
+        # this rides along on the same head-injection point as the
+        # noindex meta tag above.
+        context["metatags"] = (
+            context.get("metatags", "") + "\n    " + _HIDE_DUPLICATE_NAVBAR_CSS
+        )
         app.add_js_file(None, body=_SIDEBAR_TOGGLE_DUPLICATE_FIX)
         app.add_js_file(None, body=_ANNOUNCEMENT_CLOSE_FIX)
 
@@ -124,5 +148,5 @@ def _add_dev_banner_scripts(app, pagename, templatename, context, doctree):
 def setup(app):
     app.connect("config-inited", _set_abtem_version_footer)
     app.connect("html-page-context", _add_noindex)
-    app.connect("html-page-context", _add_dev_banner_scripts)
+    app.connect("html-page-context", _add_dev_banner_extras)
     return {"parallel_read_safe": True, "parallel_write_safe": True}
