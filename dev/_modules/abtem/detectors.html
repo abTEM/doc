@@ -8,6 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex">
+    <style>header.bd-header.navbar{display:none!important}</style>
     <title>abtem.detectors</title>
   
   
@@ -382,7 +383,6 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.reconstruct.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.reconstruct</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.slicing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.slicing</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.tilt.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.tilt</span></code></a></li>
@@ -568,7 +568,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">_wrap_with_array</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">fft_interpolate</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">units_type</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">cos_sin_deg</span><span class="p">,</span> <span class="n">get_dtype</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.measurements</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">BaseMeasurements</span><span class="p">,</span>
     <span class="n">DiffractionPatterns</span><span class="p">,</span>
@@ -595,25 +595,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_energy_from_waves</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Return a scalar electron energy [eV] from *waves*.</span>
+<span class="w">    </span><span class="sd">"""Return a scalar electron energy [eV] from *waves*, or ``None`` for a</span>
+<span class="sd">    full, un-indexed multi-energy ensemble. Uses the same resolution order as</span>
+<span class="sd">    ``Waves._valid_energy`` (see :func:`abtem.core.energy.resolve_energy`),</span>
+<span class="sd">    but returns ``None`` instead of raising when unresolved."""</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_energy</span>
 
-<span class="sd">    Resolution order mirrors ``Waves._valid_energy``:</span>
-<span class="sd">    1. ``waves.energy`` — set for ordinary single-energy waves.</span>
-<span class="sd">    2. ``waves.metadata["energy"]`` — populated by ``EnergyAxis.item_metadata``</span>
-<span class="sd">       when *waves* was produced by indexing an energy-ensemble.</span>
-<span class="sd">    3. First value of an ``EnergyAxis`` in ``ensemble_axes_metadata`` — used as</span>
-<span class="sd">       a fallback when the full multi-member ensemble has not been indexed yet.</span>
-<span class="sd">    """</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnergyAxis</span>
-
-    <span class="n">energy</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">energy</span>
-    <span class="k">if</span> <span class="n">energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">energy</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="n">EnergyAxis</span><span class="p">):</span>
-                <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">axis</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="k">return</span> <span class="n">energy</span>
+    <span class="k">return</span> <span class="n">resolve_energy</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">waves</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_gpts_and_sampling_from_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
@@ -1409,8 +1397,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">kx2d</span> <span class="o">=</span> <span class="n">kx</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
     <span class="n">ky2d</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="n">ky</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
 
-    <span class="n">angle_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
-    <span class="n">cos_a</span><span class="p">,</span> <span class="n">sin_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle_rad</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle_rad</span><span class="p">)</span>
+    <span class="n">cos_a</span><span class="p">,</span> <span class="n">sin_a</span> <span class="o">=</span> <span class="n">cos_sin_deg</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
     <span class="n">dx</span> <span class="o">=</span> <span class="n">kx2d</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">dy</span> <span class="o">=</span> <span class="n">ky2d</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">local_x</span> <span class="o">=</span> <span class="n">dx</span> <span class="o">*</span> <span class="n">cos_a</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">*</span> <span class="n">sin_a</span>
@@ -1452,8 +1439,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">corners_local</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
         <span class="p">[[</span><span class="o">-</span><span class="n">half_e</span><span class="p">,</span> <span class="o">-</span><span class="n">half_w</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="n">half_e</span><span class="p">,</span> <span class="n">half_w</span><span class="p">],</span> <span class="p">[</span><span class="n">half_e</span><span class="p">,</span> <span class="o">-</span><span class="n">half_w</span><span class="p">],</span> <span class="p">[</span><span class="n">half_e</span><span class="p">,</span> <span class="n">half_w</span><span class="p">]]</span>
     <span class="p">)</span>
-    <span class="n">angle_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
-    <span class="n">cos_a</span><span class="p">,</span> <span class="n">sin_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle_rad</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle_rad</span><span class="p">)</span>
+    <span class="n">cos_a</span><span class="p">,</span> <span class="n">sin_a</span> <span class="o">=</span> <span class="n">cos_sin_deg</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
     <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">cos_a</span><span class="p">,</span> <span class="o">-</span><span class="n">sin_a</span><span class="p">],</span> <span class="p">[</span><span class="n">sin_a</span><span class="p">,</span> <span class="n">cos_a</span><span class="p">]])</span>
     <span class="n">corners_world</span> <span class="o">=</span> <span class="n">corners_local</span> <span class="o">@</span> <span class="n">R</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
     <span class="n">kx_min</span><span class="p">,</span> <span class="n">ky_min</span> <span class="o">=</span> <span class="n">corners_world</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -1603,8 +1589,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="bp">self</span><span class="o">.</span><span class="n">_angle</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
             <span class="c1"># Physical slit extent and centre: spans from q_min to q_max along</span>
             <span class="c1"># the slit direction, centred at offset + (q_min+q_max)/2 * direction.</span>
-            <span class="n">angle_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span>
-            <span class="n">cos_a</span><span class="p">,</span> <span class="n">sin_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle_rad</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle_rad</span><span class="p">)</span>
+            <span class="n">cos_a</span><span class="p">,</span> <span class="n">sin_a</span> <span class="o">=</span> <span class="n">cos_sin_deg</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span>
             <span class="n">slit_center</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">q_min</span> <span class="o">+</span> <span class="n">q_max</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">cos_a</span><span class="p">,</span>
                 <span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">q_min</span> <span class="o">+</span> <span class="n">q_max</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">sin_a</span><span class="p">,</span>
@@ -1659,6 +1644,22 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">corners</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""Axis-aligned bounding rectangle (kx_min, kx_max, ky_min, ky_max) [mrad]."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_corners</span>
+
+<div class="viewcode-block" id="SpectralSlitDetector.angular_limits">
+<a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.detectors.html#abtem.detectors.SpectralSlitDetector.angular_limits">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">angular_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Radial bounds [mrad] of the acceptance region, for grid-sufficiency</span>
+<span class="sd">        checks. The slit has no rotationally-symmetric inner exclusion, so</span>
+<span class="sd">        the inner bound is 0; the outer bound is the farthest distance from</span>
+<span class="sd">        the origin reached by the bounding rectangle's corners."""</span>
+        <span class="n">kx_min</span><span class="p">,</span> <span class="n">kx_max</span><span class="p">,</span> <span class="n">ky_min</span><span class="p">,</span> <span class="n">ky_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">corners</span>
+        <span class="n">outer</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+            <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">kx</span><span class="p">,</span> <span class="n">ky</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">kx</span> <span class="ow">in</span> <span class="p">(</span><span class="n">kx_min</span><span class="p">,</span> <span class="n">kx_max</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">ky</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ky_min</span><span class="p">,</span> <span class="n">ky_max</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">outer</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_out_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array_object</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
         <span class="n">metadata</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_out_metadata</span><span class="p">(</span><span class="n">array_object</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -1809,8 +1810,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">mx</span><span class="p">,</span> <span class="n">my</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_show_pattern_bg</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">waves</span><span class="p">,</span> <span class="n">power</span><span class="p">)</span>
 
         <span class="c1"># Compute world-space corners of the rotated rectangle.</span>
-        <span class="n">angle_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_angle</span><span class="p">)</span>
-        <span class="n">cos_a</span><span class="p">,</span> <span class="n">sin_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle_rad</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle_rad</span><span class="p">)</span>
+        <span class="n">cos_a</span><span class="p">,</span> <span class="n">sin_a</span> <span class="o">=</span> <span class="n">cos_sin_deg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_angle</span><span class="p">)</span>
         <span class="n">half_e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extent</span> <span class="o">/</span> <span class="mf">2.0</span>
         <span class="n">half_w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_width</span> <span class="o">/</span> <span class="mf">2.0</span>
         <span class="c1"># Centre of the slit rectangle in world coords</span>
@@ -2058,8 +2058,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">n_steps</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">round</span><span class="p">((</span><span class="n">q_max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_min</span><span class="p">)</span> <span class="o">/</span> <span class="n">step</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">q_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q_min</span><span class="p">,</span> <span class="n">q_max</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">)</span>
 
-        <span class="n">angle_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sweep_angle</span><span class="p">)</span>
-        <span class="n">cos_a</span><span class="p">,</span> <span class="n">sin_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle_rad</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle_rad</span><span class="p">)</span>
+        <span class="n">cos_a</span><span class="p">,</span> <span class="n">sin_a</span> <span class="o">=</span> <span class="n">cos_sin_deg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sweep_angle</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">q_vals</span><span class="p">:</span>
             <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span> <span class="o">=</span> <span class="n">q</span> <span class="o">*</span> <span class="n">cos_a</span><span class="p">,</span> <span class="n">q</span> <span class="o">*</span> <span class="n">sin_a</span>

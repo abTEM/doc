@@ -8,6 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex">
+    <style>header.bd-header.navbar{display:none!important}</style>
     <title>abtem.distributions</title>
   
   
@@ -382,7 +383,6 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.reconstruct.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.reconstruct</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.slicing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.slicing</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.tilt.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.tilt</span></code></a></li>
@@ -893,6 +893,57 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_distribution_from_kernel</span><span class="p">(</span>
+    <span class="n">dimension</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">num_samples</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">center</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">ensemble_mean</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">range_width</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">sampling_limit</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">normalize</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">kernel</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultidimensionalDistribution</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Shared per-axis grid construction, weighting and normalization used by</span>
+<span class="sd">    :func:`gaussian`, :func:`lorentzian`, :func:`voigtian` and</span>
+<span class="sd">    :func:`pseudo_voigtian`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    range_width : tuple of float</span>
+<span class="sd">        Per-axis half-width of the sampled range before scaling by</span>
+<span class="sd">        ``sampling_limit`` (e.g. the standard deviation for a Gaussian, or</span>
+<span class="sd">        the Voigt HWHM estimate for a Voigt profile).</span>
+<span class="sd">    kernel : callable</span>
+<span class="sd">        ``kernel(i, x)`` returning the (un-normalized) weights for axis *i*</span>
+<span class="sd">        given the coordinate array ``x = values - center[i]``.</span>
+<span class="sd">    """</span>
+    <span class="n">distributions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseDistribution</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimension</span><span class="p">):</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+            <span class="o">-</span><span class="n">range_width</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">range_width</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">values</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"intensity"</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"amplitude"</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">/=</span> <span class="n">weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown normalization method: </span><span class="si">{</span><span class="n">normalize</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="n">distributions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">DistributionFromValues</span><span class="p">(</span>
+                <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">ensemble_mean</span><span class="o">=</span><span class="n">ensemble_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">MultidimensionalDistribution</span><span class="p">(</span><span class="n">distributions</span><span class="o">=</span><span class="n">distributions</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="gaussian">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.distributions.html#abtem.distributions.gaussian">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">gaussian</span><span class="p">(</span>
@@ -949,30 +1000,19 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">sampling_limit</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">sampling_limit</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
     <span class="n">num_samples</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
 
-    <span class="n">distributions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseDistribution</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimension</span><span class="p">):</span>
-        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
-            <span class="o">-</span><span class="n">standard_deviation</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-            <span class="n">standard_deviation</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-            <span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-        <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">kernel</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">standard_deviation</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
 
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">values</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">standard_deviation</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"intensity"</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-        <span class="k">elif</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"amplitude"</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">/=</span> <span class="n">weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown normalization method: </span><span class="si">{</span><span class="n">normalize</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-
-        <span class="n">distributions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="n">DistributionFromValues</span><span class="p">(</span>
-                <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">ensemble_mean</span><span class="o">=</span><span class="n">ensemble_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">MultidimensionalDistribution</span><span class="p">(</span><span class="n">distributions</span><span class="o">=</span><span class="n">distributions</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_distribution_from_kernel</span><span class="p">(</span>
+        <span class="n">dimension</span><span class="p">,</span>
+        <span class="n">num_samples</span><span class="p">,</span>
+        <span class="n">center</span><span class="p">,</span>
+        <span class="n">ensemble_mean</span><span class="p">,</span>
+        <span class="n">range_width</span><span class="o">=</span><span class="n">standard_deviation</span><span class="p">,</span>
+        <span class="n">sampling_limit</span><span class="o">=</span><span class="n">sampling_limit</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+        <span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 
@@ -1043,30 +1083,19 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">sampling_limit</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">sampling_limit</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
     <span class="n">num_samples</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
 
-    <span class="n">distributions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseDistribution</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimension</span><span class="p">):</span>
-        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
-            <span class="o">-</span><span class="n">half_width</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-            <span class="n">half_width</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-            <span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-        <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">kernel</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">half_width</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
 
-        <span class="n">weights</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">((</span><span class="n">values</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">half_width</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"intensity"</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-        <span class="k">elif</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"amplitude"</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">/=</span> <span class="n">weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown normalization method: </span><span class="si">{</span><span class="n">normalize</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-
-        <span class="n">distributions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="n">DistributionFromValues</span><span class="p">(</span>
-                <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">ensemble_mean</span><span class="o">=</span><span class="n">ensemble_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">MultidimensionalDistribution</span><span class="p">(</span><span class="n">distributions</span><span class="o">=</span><span class="n">distributions</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_distribution_from_kernel</span><span class="p">(</span>
+        <span class="n">dimension</span><span class="p">,</span>
+        <span class="n">num_samples</span><span class="p">,</span>
+        <span class="n">center</span><span class="p">,</span>
+        <span class="n">ensemble_mean</span><span class="p">,</span>
+        <span class="n">range_width</span><span class="o">=</span><span class="n">half_width</span><span class="p">,</span>
+        <span class="n">sampling_limit</span><span class="o">=</span><span class="n">sampling_limit</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+        <span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 
@@ -1148,7 +1177,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">sampling_limit</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">sampling_limit</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
     <span class="n">num_samples</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
 
-    <span class="n">distributions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseDistribution</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">voigt_hwhm</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimension</span><span class="p">):</span>
         <span class="n">sigma</span> <span class="o">=</span> <span class="n">gaussian_sigma</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="n">gamma</span> <span class="o">=</span> <span class="n">lorentzian_gamma</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -1169,36 +1198,30 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="o">+</span> <span class="mf">0.07842</span> <span class="o">*</span> <span class="n">fG</span> <span class="o">*</span> <span class="n">fL</span><span class="o">**</span><span class="mi">4</span>
             <span class="o">+</span> <span class="n">fL</span><span class="o">**</span><span class="mi">5</span>
         <span class="p">)</span>
-        <span class="n">voigt_hwhm</span> <span class="o">=</span> <span class="n">f5</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">5.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="n">voigt_hwhm</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f5</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">5.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
 
-        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
-            <span class="o">-</span><span class="n">voigt_hwhm</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-            <span class="n">voigt_hwhm</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-            <span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-        <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">kernel</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="n">gaussian_sigma</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="n">lorentzian_gamma</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">sigma</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">((</span><span class="n">values</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">gamma</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">values</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">z</span> <span class="o">=</span> <span class="p">((</span><span class="n">values</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">sigma</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="p">))</span>
-            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">wofz</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">sigma</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">wofz</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"intensity"</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-        <span class="k">elif</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"amplitude"</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">/=</span> <span class="n">weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown normalization method: </span><span class="si">{</span><span class="n">normalize</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-
-        <span class="n">distributions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="n">DistributionFromValues</span><span class="p">(</span>
-                <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">ensemble_mean</span><span class="o">=</span><span class="n">ensemble_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">MultidimensionalDistribution</span><span class="p">(</span><span class="n">distributions</span><span class="o">=</span><span class="n">distributions</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_distribution_from_kernel</span><span class="p">(</span>
+        <span class="n">dimension</span><span class="p">,</span>
+        <span class="n">num_samples</span><span class="p">,</span>
+        <span class="n">center</span><span class="p">,</span>
+        <span class="n">ensemble_mean</span><span class="p">,</span>
+        <span class="n">range_width</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">voigt_hwhm</span><span class="p">),</span>
+        <span class="n">sampling_limit</span><span class="o">=</span><span class="n">sampling_limit</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+        <span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 
@@ -1288,54 +1311,48 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">sampling_limit</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">sampling_limit</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
     <span class="n">num_samples</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
 
-    <span class="n">distributions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseDistribution</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">hw</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dimension</span><span class="p">):</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">gaussian_sigma</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">lorentzian_gamma</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">h</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"At least one of gaussian_sigma or lorentzian_gamma must be non-zero."</span>
+            <span class="p">)</span>
+        <span class="n">hw</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">kernel</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="n">sigma</span> <span class="o">=</span> <span class="n">gaussian_sigma</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="n">gamma</span> <span class="o">=</span> <span class="n">lorentzian_gamma</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="n">eta_i</span> <span class="o">=</span> <span class="n">eta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
-        <span class="n">hw</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">hw</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">"At least one of gaussian_sigma or lorentzian_gamma must be non-zero."</span>
-            <span class="p">)</span>
-
-        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
-            <span class="o">-</span><span class="n">hw</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-            <span class="n">hw</span> <span class="o">*</span> <span class="n">sampling_limit</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-            <span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-        <span class="p">)</span>
-
-        <span class="n">x</span> <span class="o">=</span> <span class="n">values</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-
         <span class="k">if</span> <span class="n">sigma</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">g_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="n">g_weights</span><span class="p">[</span><span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">g_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="c1"># For an even num_samples the symmetric grid has no sample</span>
+            <span class="c1"># exactly at x=0 (it falls between index n//2-1 and n//2), so</span>
+            <span class="c1"># use the grid point closest to the center rather than assuming</span>
+            <span class="c1"># index n//2 lands on it.</span>
+            <span class="n">g_weights</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))]</span> <span class="o">=</span> <span class="mf">1.0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">g_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">gamma</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">l_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="n">l_weights</span><span class="p">[</span><span class="n">num_samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">l_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">l_weights</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))]</span> <span class="o">=</span> <span class="mf">1.0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">l_weights</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
 
-        <span class="n">weights</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">eta_i</span><span class="p">)</span> <span class="o">*</span> <span class="n">g_weights</span> <span class="o">+</span> <span class="n">eta_i</span> <span class="o">*</span> <span class="n">l_weights</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">eta_i</span><span class="p">)</span> <span class="o">*</span> <span class="n">g_weights</span> <span class="o">+</span> <span class="n">eta_i</span> <span class="o">*</span> <span class="n">l_weights</span>
 
-        <span class="k">if</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"intensity"</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-        <span class="k">elif</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"amplitude"</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">/=</span> <span class="n">weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown normalization method: </span><span class="si">{</span><span class="n">normalize</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-
-        <span class="n">distributions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="n">DistributionFromValues</span><span class="p">(</span>
-                <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">ensemble_mean</span><span class="o">=</span><span class="n">ensemble_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">MultidimensionalDistribution</span><span class="p">(</span><span class="n">distributions</span><span class="o">=</span><span class="n">distributions</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_distribution_from_kernel</span><span class="p">(</span>
+        <span class="n">dimension</span><span class="p">,</span>
+        <span class="n">num_samples</span><span class="p">,</span>
+        <span class="n">center</span><span class="p">,</span>
+        <span class="n">ensemble_mean</span><span class="p">,</span>
+        <span class="n">range_width</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">hw</span><span class="p">),</span>
+        <span class="n">sampling_limit</span><span class="o">=</span><span class="n">sampling_limit</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+        <span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 

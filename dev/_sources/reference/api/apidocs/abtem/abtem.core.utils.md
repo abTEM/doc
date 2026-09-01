@@ -39,6 +39,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`cos_sin_deg <abtem.core.utils.cos_sin_deg>`
+  - ```{autodoc2-docstring} abtem.core.utils.cos_sin_deg
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`ensure_list <abtem.core.utils.ensure_list>`
   - ```{autodoc2-docstring} abtem.core.utils.ensure_list
     :parser: rst
@@ -183,6 +188,14 @@
 :canonical: abtem.core.utils.array_row_intersection
 
 ```{autodoc2-docstring} abtem.core.utils.array_row_intersection
+:parser: rst
+```
+````
+
+````{py:function} cos_sin_deg(...) -> tuple[float, float]
+:canonical: abtem.core.utils.cos_sin_deg
+
+```{autodoc2-docstring} abtem.core.utils.cos_sin_deg
 :parser: rst
 ```
 ````

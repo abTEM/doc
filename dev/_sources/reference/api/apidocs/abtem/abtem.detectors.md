@@ -493,6 +493,15 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 
 ````
 
+````{py:method} angular_limits(...) -> tuple[float, float]
+:canonical: abtem.detectors.SpectralSlitDetector.angular_limits
+
+```{autodoc2-docstring} abtem.detectors.SpectralSlitDetector.angular_limits
+:parser: rst
+```
+
+````
+
 ````{py:property} corners
 :canonical: abtem.detectors.SpectralSlitDetector.corners
 :type: tuple[float, float, float, float]

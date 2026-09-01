@@ -59,6 +59,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`resolve_energy <abtem.core.energy.resolve_energy>`
+  - ```{autodoc2-docstring} abtem.core.energy.resolve_energy
+    :parser: rst
+    :summary:
+    ```
 ````
 
 ### Data
@@ -255,6 +260,14 @@ Bases: {py:obj}`Exception`
 :canonical: abtem.core.energy.relativistic_mass_correction
 
 ```{autodoc2-docstring} abtem.core.energy.relativistic_mass_correction
+:parser: rst
+```
+````
+
+````{py:function} resolve_energy(...) -> typing.Optional[float]
+:canonical: abtem.core.energy.resolve_energy
+
+```{autodoc2-docstring} abtem.core.energy.resolve_energy
 :parser: rst
 ```
 ````

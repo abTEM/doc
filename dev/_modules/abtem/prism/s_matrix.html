@@ -8,6 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex">
+    <style>header.bd-header.navbar{display:none!important}</style>
     <title>abtem.prism.s_matrix</title>
   
   
@@ -382,7 +383,6 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.reconstruct.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.reconstruct</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.slicing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.slicing</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.tilt.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.tilt</span></code></a></li>
@@ -696,6 +696,38 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""The device where the S-Matrix is created and reduced."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_device</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_xp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The array module (numpy or cupy) for this S-matrix's device."""</span>
+        <span class="k">return</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_complex_dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The complex dtype to use, honouring ``config['precision']``."""</span>
+        <span class="k">return</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># element budget (independent of dtype) for the plane-wave expansion and</span>
+    <span class="c1"># compression row/pixel batching in CompressedSMatrixArray and SMatrix;</span>
+    <span class="c1"># a fixed ceiling rather than a device-VRAM-aware limit (unlike</span>
+    <span class="c1"># CompressedSMatrixArray._reduce_memory_budget, which is `inf` on the</span>
+    <span class="c1"># host and would disable batching there entirely).</span>
+    <span class="n">_EXPANSION_BATCH_ELEMENTS</span> <span class="o">=</span> <span class="mi">256</span><span class="o">**</span><span class="mi">3</span>
+    <span class="c1"># byte budget for the fixed intermediate-block ceilings that scale with</span>
+    <span class="c1"># dtype size (see :meth:`_row_batch_size`), independently tuned from</span>
+    <span class="c1"># `_EXPANSION_BATCH_ELEMENTS` above.</span>
+    <span class="n">_EXPANSION_BATCH_BYTES</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">30</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_row_batch_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elements_per_row</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">budget_bytes</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Rows of *elements_per_row* elements each (of *dtype*) that fit in</span>
+<span class="sd">        *budget_bytes*."""</span>
+        <span class="n">bytes_per_row</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">elements_per_row</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">itemsize</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">budget_bytes</span> <span class="o">//</span> <span class="n">bytes_per_row</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_expansion_batch_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elements_per_row</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Rows of *elements_per_row* elements each that fit in</span>
+<span class="sd">        :attr:`_EXPANSION_BATCH_ELEMENTS`, independent of dtype."""</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_EXPANSION_BATCH_ELEMENTS</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">elements_per_row</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
@@ -1575,7 +1607,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">positions</span><span class="p">,</span>
         <span class="n">position_coefficients</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_device</span> <span class="o">==</span> <span class="s2">"gpu"</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
@@ -1659,7 +1691,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">extra_ensemble_axes_metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">waves</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
         <span class="p">)</span>
 
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_device</span> <span class="o">==</span> <span class="s2">"gpu"</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
@@ -2280,7 +2312,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_ctf_coefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctf</span><span class="p">:</span> <span class="n">CTF</span><span class="p">):</span>
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
         <span class="n">wave_vectors</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wave_vectors</span><span class="p">)</span>
 
         <span class="n">alpha</span> <span class="o">=</span> <span class="p">(</span>
@@ -2293,8 +2325,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_coefficient_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""The dense plane-wave amplitudes of each mode of the expansion."""</span>
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
-        <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complex_dtype</span>
 
         <span class="n">values</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vh_dense</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">values</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coefficients</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)[</span><span class="kc">None</span><span class="p">]</span>
@@ -2307,7 +2339,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        reducing with the restricted (and renormalized) coefficients yields the</span>
 <span class="sd">        wave functions of the PRISM algorithm from the same compressed factors.</span>
 <span class="sd">        """</span>
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
 
         <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dense_indices</span><span class="p">)</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">indices</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolation</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span>
@@ -2329,7 +2361,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        bright-field disk, the plane-wave reduction outside it, with the soft</span>
 <span class="sd">        aperture edge as the transition.</span>
 <span class="sd">        """</span>
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">blend_angle</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">blend_angle</span> <span class="o">!=</span> <span class="s2">"aperture"</span><span class="p">:</span>
@@ -2451,8 +2483,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        returned on the full grid indexed by the displacement from the probe</span>
 <span class="sd">        (used by the full-window mode reduction, which keeps the absolute frame).</span>
 <span class="sd">        """</span>
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
-        <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complex_dtype</span>
 
         <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span>
         <span class="n">window_gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_gpts</span>
@@ -2487,7 +2519,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="c1"># memory budget of one gathered block in the batched mode contractions;</span>
     <span class="c1"># the modes are chunked so several probe positions fit in every batch even</span>
-    <span class="c1"># at large ranks, keeping the device operations big and few</span>
+    <span class="c1"># at large ranks, keeping the device operations big and few.</span>
     <span class="n">_REDUCE_BATCH_BYTES</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">30</span>
     <span class="n">_REDUCE_MODE_CHUNK</span> <span class="o">=</span> <span class="mi">64</span>
     <span class="c1"># the lattice reduction re-gathers a halo of window / step scan rows per</span>
@@ -2533,8 +2565,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        contiguous, so the chunks are free views and no transpose is needed</span>
 <span class="sd">        anywhere.</span>
 <span class="sd">        """</span>
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
-        <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complex_dtype</span>
 
         <span class="n">num_positions</span> <span class="o">=</span> <span class="n">flat_indices</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">out_shape</span> <span class="o">=</span> <span class="n">flat_indices</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
@@ -2667,8 +2699,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        by extracting ``G[p + a, a]``. The matrix products reuse both operands</span>
 <span class="sd">        across the whole block, which is what the gather formulation cannot do.</span>
 <span class="sd">        """</span>
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
-        <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complex_dtype</span>
 
         <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span>
         <span class="c1"># modes-first: (K, window_x, window_y) and (K, gpts_x, gpts_y)</span>
@@ -2816,7 +2848,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">extra_ensemble_axes_metadata</span><span class="o">=</span><span class="p">[],</span>
         <span class="p">)</span>
 
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
         <span class="c1"># modes-first, no transpose: _contract_modes_batched consumes (K, ...)</span>
         <span class="n">u_modes</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_u</span><span class="p">)</span>
         <span class="n">window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_gpts</span>
@@ -2943,6 +2975,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">measurements</span><span class="p">)</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_flat_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor</span><span class="p">,</span> <span class="n">span</span><span class="p">,</span> <span class="n">gpts</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Flat index into a ``(gpts[0], gpts[1])`` array visited by a window</span>
+<span class="sd">        of shape *span*, starting at *anchor* (shape ``(n, 2)``) and wrapping</span>
+<span class="sd">        periodically. Shared by :meth:`_reduce_to_waves_batched` (windowed:</span>
+<span class="sd">        ``anchor = snapped_pixels - window_gpts // 2``, ``span = window_gpts``)</span>
+<span class="sd">        and :meth:`_reduce_to_waves_absolute` (full-grid: ``anchor =</span>
+<span class="sd">        -snapped_pixels``, ``span = gpts``)."""</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">anchor</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">xp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">span</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="kc">None</span><span class="p">])</span> <span class="o">%</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">anchor</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">xp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">span</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="kc">None</span><span class="p">])</span> <span class="o">%</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">[:,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">y</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_reduce_to_waves_batched</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_windows</span><span class="p">,</span> <span class="n">snapped_pixels</span><span class="p">,</span> <span class="n">kernel</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Vectorized equivalent of :meth:`_reduce_to_waves`: the windows of the</span>
 <span class="sd">        left singular vectors are gathered for batches of probe positions and</span>
@@ -2951,7 +2996,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        The per-position loop of :meth:`_reduce_to_waves` evaluates thousands of</span>
 <span class="sd">        small kernels, which is launch-overhead bound on the GPU.</span>
 <span class="sd">        """</span>
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
 
         <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span>
         <span class="n">window_gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_gpts</span>
@@ -2961,11 +3006,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="o">-</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">))[</span><span class="kc">None</span><span class="p">]</span>
         <span class="p">)</span> <span class="o">%</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">gpts</span><span class="p">)[</span><span class="kc">None</span><span class="p">]</span>
 
-        <span class="n">window_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">corners</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">xp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="kc">None</span><span class="p">])</span> <span class="o">%</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">window_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">corners</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">xp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="kc">None</span><span class="p">])</span> <span class="o">%</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">flat_indices</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">window_x</span><span class="p">[:,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">window_y</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">flat_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flat_indices</span><span class="p">(</span><span class="n">corners</span><span class="p">,</span> <span class="n">window_gpts</span><span class="p">,</span> <span class="n">gpts</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contract_modes_batched</span><span class="p">(</span>
             <span class="n">u_windows</span><span class="p">,</span> <span class="n">flat_indices</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">gather_kernel</span><span class="o">=</span><span class="kc">False</span>
@@ -2979,15 +3020,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        indexed by the displacement from the probe; the result matches the</span>
 <span class="sd">        reduction of the expanded scattering matrix to floating point precision.</span>
 <span class="sd">        """</span>
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
 
         <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span>
 
-        <span class="n">shift_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">snapped_pixels</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">%</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">shift_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">snapped_pixels</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">%</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">flat_indices</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">shift_x</span><span class="p">[:,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">shift_y</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">flat_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flat_indices</span><span class="p">(</span><span class="o">-</span><span class="n">snapped_pixels</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">gpts</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contract_modes_batched</span><span class="p">(</span>
             <span class="n">u_full</span><span class="p">,</span> <span class="n">flat_indices</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">gather_kernel</span><span class="o">=</span><span class="kc">True</span>
@@ -3009,7 +3046,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">            Reduction kernel with the mode axis FIRST, of shape</span>
 <span class="sd">            (K, window_gpts_x, window_gpts_y).</span>
 <span class="sd">        """</span>
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
 
         <span class="k">if</span> <span class="n">xp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">np</span><span class="p">:</span>
             <span class="c1"># per-position loops are launch-overhead bound on the GPU</span>
@@ -3131,15 +3168,15 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_s_matrix_array"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_s_matrix_array</span>
 
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
-        <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complex_dtype</span>
 
         <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span>
 
         <span class="n">n_dense</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wave_vectors</span><span class="p">)</span>
         <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_dense</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">gpts</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
 
-        <span class="n">max_batch</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mi">256</span><span class="o">**</span><span class="mi">3</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">gpts</span><span class="p">)))</span>
+        <span class="n">max_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expansion_batch_size</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">gpts</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">start</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_dense</span><span class="p">,</span> <span class="n">max_batch</span><span class="p">):</span>
             <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">start</span> <span class="o">+</span> <span class="n">max_batch</span><span class="p">,</span> <span class="n">n_dense</span><span class="p">)</span>
             <span class="n">slab</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expanded_slab</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">xp</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
@@ -3170,6 +3207,66 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_s_matrix_array</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_new_batch_reduce_measurements</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">scan</span><span class="p">:</span> <span class="n">BaseScan</span><span class="p">,</span> <span class="n">ctf</span><span class="p">:</span> <span class="n">CTF</span><span class="p">,</span> <span class="n">detectors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseDetector</span><span class="p">],</span> <span class="n">pbar</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">BaseMeasurements</span> <span class="o">|</span> <span class="n">Waves</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">TqdmWrapper</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Shared head of ``_batch_reduce_to_measurements`` and</span>
+<span class="sd">        ``_streamed_batch_reduce_to_measurements``: allocate the output</span>
+<span class="sd">        measurements and the progress bar."""</span>
+        <span class="n">dummy_probes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dummy_probes</span><span class="p">(</span><span class="n">scan</span><span class="o">=</span><span class="n">scan</span><span class="p">,</span> <span class="n">ctf</span><span class="o">=</span><span class="n">ctf</span><span class="p">)</span>
+
+        <span class="n">measurements</span> <span class="o">=</span> <span class="n">allocate_multislice_measurements</span><span class="p">(</span>
+            <span class="n">dummy_probes</span><span class="p">,</span>
+            <span class="n">detectors</span><span class="p">,</span>
+            <span class="n">extra_ensemble_axes_shape</span><span class="o">=</span><span class="p">(),</span>
+            <span class="n">extra_ensemble_axes_metadata</span><span class="o">=</span><span class="p">[],</span>
+        <span class="p">)</span>
+
+        <span class="n">n_positions</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">shape</span> <span class="o">+</span> <span class="n">ctf</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">))</span>
+        <span class="n">pbar</span> <span class="o">=</span> <span class="n">TqdmWrapper</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="n">pbar</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">n_positions</span><span class="p">,</span> <span class="n">leave</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"reduce"</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">measurements</span><span class="p">,</span> <span class="n">pbar</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_finalize_batch_measurement</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">waves_array</span><span class="p">,</span>
+        <span class="n">scan_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">sub_ctf</span><span class="p">,</span>
+        <span class="n">detectors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseDetector</span><span class="p">],</span>
+        <span class="n">measurements</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">BaseMeasurements</span> <span class="o">|</span> <span class="n">Waves</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">ctf_slics</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span>
+        <span class="n">slics</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span>
+        <span class="n">pbar</span><span class="p">:</span> <span class="n">TqdmWrapper</span><span class="p">,</span>
+        <span class="n">n_reduced</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Shared tail of ``_batch_reduce_to_measurements`` and</span>
+<span class="sd">        ``_streamed_batch_reduce_to_measurements``: wrap the computed wave</span>
+<span class="sd">        array as a ``Waves`` object with the correct ensemble metadata,</span>
+<span class="sd">        detect it, and write the result into each measurement's array</span>
+<span class="sd">        slice."""</span>
+        <span class="n">ensemble_axes_metadata</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">UnknownAxis</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sub_ctf</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">))</span>
+        <span class="p">]</span>
+        <span class="n">ensemble_axes_metadata</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ScanAxis</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">scan_shape</span><span class="p">))]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detects_the_wave</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
+            <span class="n">waves_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_exit_reference</span><span class="p">(</span><span class="n">waves_array</span><span class="p">)</span>
+
+        <span class="n">waves</span> <span class="o">=</span> <span class="n">Waves</span><span class="p">(</span>
+            <span class="n">waves_array</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">),</span>
+            <span class="n">energy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span>
+            <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="n">ensemble_axes_metadata</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">ctf_slics</span> <span class="o">+</span> <span class="n">slics</span>
+
+        <span class="n">pbar</span><span class="o">.</span><span class="n">update_if_exists</span><span class="p">(</span><span class="n">n_reduced</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">detector</span><span class="p">,</span> <span class="n">measurement</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="n">measurements</span><span class="p">):</span>
+            <span class="n">measurement</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span><span class="o">.</span><span class="n">array</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_batch_reduce_to_measurements</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">scan</span><span class="p">:</span> <span class="n">BaseScan</span><span class="p">,</span>
@@ -3182,21 +3279,13 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">blend_component</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">blend_taper</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">BaseMeasurements</span> <span class="o">|</span> <span class="n">Waves</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-        <span class="n">dummy_probes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dummy_probes</span><span class="p">(</span><span class="n">scan</span><span class="o">=</span><span class="n">scan</span><span class="p">,</span> <span class="n">ctf</span><span class="o">=</span><span class="n">ctf</span><span class="p">)</span>
-
-        <span class="n">measurements</span> <span class="o">=</span> <span class="n">allocate_multislice_measurements</span><span class="p">(</span>
-            <span class="n">dummy_probes</span><span class="p">,</span>
-            <span class="n">detectors</span><span class="p">,</span>
-            <span class="n">extra_ensemble_axes_shape</span><span class="o">=</span><span class="p">(),</span>
-            <span class="n">extra_ensemble_axes_metadata</span><span class="o">=</span><span class="p">[],</span>
+        <span class="n">measurements</span><span class="p">,</span> <span class="n">pbar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_new_batch_reduce_measurements</span><span class="p">(</span>
+            <span class="n">scan</span><span class="p">,</span> <span class="n">ctf</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="n">pbar</span>
         <span class="p">)</span>
 
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
 
         <span class="n">u_windows</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_u</span><span class="p">)</span>
-
-        <span class="n">n_positions</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">shape</span> <span class="o">+</span> <span class="n">ctf</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">))</span>
-        <span class="n">pbar</span> <span class="o">=</span> <span class="n">TqdmWrapper</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="n">pbar</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">n_positions</span><span class="p">,</span> <span class="n">leave</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"reduce"</span><span class="p">)</span>
 
         <span class="n">sampling</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">)</span>
 
@@ -3279,28 +3368,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub_ctf</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span> <span class="o">+</span> <span class="n">scan_shape</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_gpts</span>
                 <span class="p">)</span>
 
-                <span class="n">ensemble_axes_metadata</span> <span class="o">=</span> <span class="p">[</span>
-                    <span class="n">UnknownAxis</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sub_ctf</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">))</span>
-                <span class="p">]</span>
-                <span class="n">ensemble_axes_metadata</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ScanAxis</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">scan_shape</span><span class="p">))]</span>
-
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detects_the_wave</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
-                    <span class="n">waves_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_exit_reference</span><span class="p">(</span><span class="n">waves_array</span><span class="p">)</span>
-
-                <span class="n">waves</span> <span class="o">=</span> <span class="n">Waves</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_finalize_batch_measurement</span><span class="p">(</span>
                     <span class="n">waves_array</span><span class="p">,</span>
-                    <span class="n">sampling</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">),</span>
-                    <span class="n">energy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span>
-                    <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="n">ensemble_axes_metadata</span><span class="p">,</span>
-                    <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+                    <span class="n">scan_shape</span><span class="p">,</span>
+                    <span class="n">sub_ctf</span><span class="p">,</span>
+                    <span class="n">detectors</span><span class="p">,</span>
+                    <span class="n">measurements</span><span class="p">,</span>
+                    <span class="n">ctf_slics</span><span class="p">,</span>
+                    <span class="n">slics</span><span class="p">,</span>
+                    <span class="n">pbar</span><span class="p">,</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">),</span>
                 <span class="p">)</span>
-
-                <span class="n">indices</span> <span class="o">=</span> <span class="n">ctf_slics</span> <span class="o">+</span> <span class="n">slics</span>
-
-                <span class="n">pbar</span><span class="o">.</span><span class="n">update_if_exists</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">))</span>
-
-                <span class="k">for</span> <span class="n">detector</span><span class="p">,</span> <span class="n">measurement</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="n">measurements</span><span class="p">):</span>
-                    <span class="n">measurement</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span><span class="o">.</span><span class="n">array</span>
 
         <span class="n">pbar</span><span class="o">.</span><span class="n">close_if_exists</span><span class="p">()</span>
 
@@ -3330,23 +3408,15 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        position phases and the same globally normalized CTF coefficients), so</span>
 <span class="sd">        the streamed and expanded reductions agree to floating point precision.</span>
 <span class="sd">        """</span>
-        <span class="n">dummy_probes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dummy_probes</span><span class="p">(</span><span class="n">scan</span><span class="o">=</span><span class="n">scan</span><span class="p">,</span> <span class="n">ctf</span><span class="o">=</span><span class="n">ctf</span><span class="p">)</span>
-
-        <span class="n">measurements</span> <span class="o">=</span> <span class="n">allocate_multislice_measurements</span><span class="p">(</span>
-            <span class="n">dummy_probes</span><span class="p">,</span>
-            <span class="n">detectors</span><span class="p">,</span>
-            <span class="n">extra_ensemble_axes_shape</span><span class="o">=</span><span class="p">(),</span>
-            <span class="n">extra_ensemble_axes_metadata</span><span class="o">=</span><span class="p">[],</span>
+        <span class="n">measurements</span><span class="p">,</span> <span class="n">pbar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_new_batch_reduce_measurements</span><span class="p">(</span>
+            <span class="n">scan</span><span class="p">,</span> <span class="n">ctf</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="n">pbar</span>
         <span class="p">)</span>
 
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="p">)</span>
-        <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xp</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complex_dtype</span>
 
         <span class="n">wave_vectors</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wave_vectors</span><span class="p">)</span>
         <span class="n">n_dense</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">wave_vectors</span><span class="p">)</span>
-
-        <span class="n">n_positions</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">shape</span> <span class="o">+</span> <span class="n">ctf</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">))</span>
-        <span class="n">pbar</span> <span class="o">=</span> <span class="n">TqdmWrapper</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="n">pbar</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">n_positions</span><span class="p">,</span> <span class="n">leave</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"reduce"</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ctf_slics</span><span class="p">,</span> <span class="n">sub_ctf</span> <span class="ow">in</span> <span class="n">ctf</span><span class="o">.</span><span class="n">generate_blocks</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
             <span class="n">sub_ctf</span> <span class="o">=</span> <span class="n">sub_ctf</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
@@ -3404,30 +3474,17 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span class="n">coefficients</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">],</span> <span class="n">slab</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">]</span>
                     <span class="p">)</span>
 
-                <span class="n">ensemble_axes_metadata</span> <span class="o">=</span> <span class="p">[</span>
-                    <span class="n">UnknownAxis</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sub_ctf</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">))</span>
-                <span class="p">]</span>
-                <span class="n">ensemble_axes_metadata</span> <span class="o">+=</span> <span class="p">[</span>
-                    <span class="n">ScanAxis</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sub_scan</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
-                <span class="p">]</span>
-
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detects_the_wave</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
-                    <span class="n">waves_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_exit_reference</span><span class="p">(</span><span class="n">waves_array</span><span class="p">)</span>
-
-                <span class="n">waves</span> <span class="o">=</span> <span class="n">Waves</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_finalize_batch_measurement</span><span class="p">(</span>
                     <span class="n">waves_array</span><span class="p">,</span>
-                    <span class="n">sampling</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">),</span>
-                    <span class="n">energy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span>
-                    <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="n">ensemble_axes_metadata</span><span class="p">,</span>
-                    <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+                    <span class="n">sub_scan</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                    <span class="n">sub_ctf</span><span class="p">,</span>
+                    <span class="n">detectors</span><span class="p">,</span>
+                    <span class="n">measurements</span><span class="p">,</span>
+                    <span class="n">ctf_slics</span><span class="p">,</span>
+                    <span class="n">slics</span><span class="p">,</span>
+                    <span class="n">pbar</span><span class="p">,</span>
+                    <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">sub_scan</span><span class="o">.</span><span class="n">shape</span><span class="p">)),</span>
                 <span class="p">)</span>
-
-                <span class="n">indices</span> <span class="o">=</span> <span class="n">ctf_slics</span> <span class="o">+</span> <span class="n">slics</span>
-
-                <span class="n">pbar</span><span class="o">.</span><span class="n">update_if_exists</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">sub_scan</span><span class="o">.</span><span class="n">shape</span><span class="p">)))</span>
-
-                <span class="k">for</span> <span class="n">detector</span><span class="p">,</span> <span class="n">measurement</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="n">measurements</span><span class="p">):</span>
-                    <span class="n">measurement</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span><span class="o">.</span><span class="n">array</span>
 
         <span class="n">pbar</span><span class="o">.</span><span class="n">close_if_exists</span><span class="p">()</span>
 
@@ -4928,7 +4985,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">coefficients</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">functions</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
         <span class="n">coefficients</span> <span class="o">/=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape</span><span class="p">))</span>
 
-        <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complex_dtype</span>
         <span class="n">kernels</span> <span class="o">=</span> <span class="p">()</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">bound</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="n">shape</span><span class="p">)):</span>
             <span class="n">frequencies</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="n">length</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
@@ -5027,7 +5084,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        exactly without ever forming it.</span>
 <span class="sd">        """</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
-        <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complex_dtype</span>
 
         <span class="n">gpts</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
         <span class="n">extent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span>
@@ -5057,7 +5114,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="c1"># it. The transform and the phase are independent per beam, so</span>
             <span class="c1"># batching is exact and the result is written back in place.</span>
             <span class="n">propagator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reference_propagator</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">xp</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)[</span><span class="kc">None</span><span class="p">]</span>
-            <span class="n">reference_batch</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">30</span> <span class="o">//</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">gpts</span><span class="p">)</span> <span class="o">*</span> <span class="mi">8</span><span class="p">)))</span>
+            <span class="n">reference_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_row_batch_size</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">gpts</span><span class="p">),</span> <span class="n">dtype</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_EXPANSION_BATCH_BYTES</span>
+            <span class="p">)</span>
             <span class="k">for</span> <span class="n">start</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">),</span> <span class="n">reference_batch</span><span class="p">):</span>
                 <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">start</span> <span class="o">+</span> <span class="n">reference_batch</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
                 <span class="n">array</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">fft2</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span> <span class="o">*</span> <span class="n">propagator</span><span class="p">)</span>
@@ -5067,7 +5126,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">defocus_phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_defocus_phase</span><span class="p">(</span><span class="n">wave_vectors</span><span class="p">)</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
 
         <span class="n">normalization</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interpolation</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">real_dtype</span><span class="p">)</span>
-        <span class="n">max_batch</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mi">256</span><span class="o">**</span><span class="mi">3</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">gpts</span><span class="p">)))</span>
+        <span class="n">max_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expansion_batch_size</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">gpts</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">start</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">),</span> <span class="n">max_batch</span><span class="p">):</span>
             <span class="n">chunk</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">max_batch</span><span class="p">)</span>
             <span class="n">phase</span> <span class="o">=</span> <span class="n">complex_exponential</span><span class="p">(</span>
@@ -5091,7 +5150,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="c1"># eigenvalues near the round-off floor (the coarse expansion is rank</span>
         <span class="c1"># deficient) are dropped.</span>
         <span class="n">gram</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
-        <span class="n">pixel_batch</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mi">256</span><span class="o">**</span><span class="mi">3</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">),</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="n">pixel_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expansion_batch_size</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">start</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">pixel_batch</span><span class="p">):</span>
             <span class="n">chunk</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[:,</span> <span class="n">start</span> <span class="p">:</span> <span class="n">start</span> <span class="o">+</span> <span class="n">pixel_batch</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
             <span class="n">gram</span> <span class="o">+=</span> <span class="n">chunk</span> <span class="o">@</span> <span class="n">chunk</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
@@ -5282,10 +5341,17 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span class="p">[</span><span class="n">union_wv_dict</span><span class="p">[(</span><span class="nb">float</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">]))]</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">wave_vectors</span><span class="p">]</span>
                     <span class="p">)</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">Array</span><span class="p">):</span>
-                        <span class="n">new_chunks</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_union</span><span class="p">,)</span> <span class="o">+</span> <span class="n">r</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">chunks</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-                        <span class="n">embedded</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span>
+                        <span class="c1"># _embed_wave_vectors assumes it receives the whole</span>
+                        <span class="c1"># per-energy array in one call (indices/n_union are</span>
+                        <span class="c1"># sized to the full wave-vector axis); force a single</span>
+                        <span class="c1"># chunk along that axis so map_blocks cannot invoke it</span>
+                        <span class="c1"># once per pre-existing block with only a chunk-sized</span>
+                        <span class="c1"># arr.</span>
+                        <span class="n">array</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">rechunk</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">})</span>
+                        <span class="n">new_chunks</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_union</span><span class="p">,)</span> <span class="o">+</span> <span class="n">array</span><span class="o">.</span><span class="n">chunks</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+                        <span class="n">embedded</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span>
                             <span class="n">_embed_wave_vectors</span><span class="p">,</span>
-                            <span class="n">dtype</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                            <span class="n">dtype</span><span class="o">=</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
                             <span class="n">chunks</span><span class="o">=</span><span class="n">new_chunks</span><span class="p">,</span>
                             <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">,</span>
                             <span class="n">n_union</span><span class="o">=</span><span class="n">n_union</span><span class="p">,</span>
