@@ -556,10 +556,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.ndimage</span>  <span class="c1"># type: ignore</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">numba</span><span class="w"> </span><span class="kn">import</span> <span class="n">cuda</span><span class="p">,</span> <span class="n">njit</span>  <span class="c1"># type: ignore</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numba</span><span class="w"> </span><span class="kn">import</span> <span class="n">njit</span>  <span class="c1"># type: ignore</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.antialias</span><span class="w"> </span><span class="kn">import</span> <span class="n">AntialiasAperture</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_array_module</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_cupy_is_installed</span><span class="p">,</span> <span class="n">cp</span><span class="p">,</span> <span class="n">get_array_module</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">energy2sigma</span><span class="p">,</span> <span class="n">energy2wavelength</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span>
 
@@ -745,6 +745,76 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="n">stencil</span>
 
 
+<span class="n">_LAPLACE_STENCIL_KERNEL</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">"""</span>
+<span class="s2">#include &lt;cupy/complex.cuh&gt;</span>
+
+<span class="s2">// Batched 2-D Laplacian finite-difference stencil: for each batch element m,</span>
+<span class="s2">// out[m, i, j] = sum_k c[k + n] * (a[m, i + k, j] + a[m, i, j + k]) over</span>
+<span class="s2">// k in [-n, n], evaluated on the interior i, j in [n, H - n) x [n, W - n).</span>
+<span class="s2">// The boundary is left zero; the caller handles it via wrap padding.</span>
+<span class="s2">//</span>
+<span class="s2">// Grid: x covers W (fastest axis, coalesced), y covers H, z strides over the</span>
+<span class="s2">// batch so any batch size is supported.</span>
+<span class="s2">//</span>
+<span class="s2">// Template parameter T is the complex floating-point type.</span>
+<span class="s2">template&lt;typename T&gt;</span>
+<span class="s2">__device__ __forceinline__ void laplace_stencil_impl(</span>
+<span class="s2">    T* __restrict__ out,</span>
+<span class="s2">    const T* __restrict__ a,</span>
+<span class="s2">    const T* __restrict__ c,</span>
+<span class="s2">    const int n,</span>
+<span class="s2">    const int M, const int H, const int W</span>
+<span class="s2">) {</span>
+<span class="s2">    const int j = blockIdx.x * blockDim.x + threadIdx.x;</span>
+<span class="s2">    const int i = blockIdx.y * blockDim.y + threadIdx.y;</span>
+<span class="s2">    if (i &lt; n || i &gt;= H - n || j &lt; n || j &gt;= W - n) return;</span>
+
+<span class="s2">    for (int m = blockIdx.z; m &lt; M; m += gridDim.z) {</span>
+<span class="s2">        const T* am = a + (long long)m * H * W;</span>
+<span class="s2">        T cumul = T(0);</span>
+<span class="s2">        for (int k = -n; k &lt;= n; k++) {</span>
+<span class="s2">            cumul += c[k + n] * (am[(long long)(i + k) * W + j]</span>
+<span class="s2">                                 + am[(long long)i * W + (j + k)]);</span>
+<span class="s2">        }</span>
+<span class="s2">        out[(long long)m * H * W + (long long)i * W + j] = cumul;</span>
+<span class="s2">    }</span>
+<span class="s2">}</span>
+
+<span class="s2">extern "C" __global__ void laplace_stencil_c64(</span>
+<span class="s2">    complex&lt;float&gt;* out, const complex&lt;float&gt;* a, const complex&lt;float&gt;* c,</span>
+<span class="s2">    int n, int M, int H, int W</span>
+<span class="s2">) {</span>
+<span class="s2">    laplace_stencil_impl&lt;complex&lt;float&gt; &gt;(out, a, c, n, M, H, W);</span>
+<span class="s2">}</span>
+
+<span class="s2">extern "C" __global__ void laplace_stencil_c128(</span>
+<span class="s2">    complex&lt;double&gt;* out, const complex&lt;double&gt;* a, const complex&lt;double&gt;* c,</span>
+<span class="s2">    int n, int M, int H, int W</span>
+<span class="s2">) {</span>
+<span class="s2">    laplace_stencil_impl&lt;complex&lt;double&gt; &gt;(out, a, c, n, M, H, W);</span>
+<span class="s2">}</span>
+<span class="s2">"""</span>
+
+<span class="n">_laplace_stencil_c64</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">_laplace_stencil_c128</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_init_laplace_stencil_kernels</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">_laplace_stencil_c64</span><span class="p">,</span> <span class="n">_laplace_stencil_c128</span>
+    <span class="k">if</span> <span class="n">_laplace_stencil_c64</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># no --std option: the dialect requirement comes from CuPy's bundled</span>
+        <span class="c1"># headers, and each backend's default tracks them (CuPy itself pins no</span>
+        <span class="c1"># dialect); pinning one broke NVRTC when CuPy 14's complex.cuh started</span>
+        <span class="c1"># requiring C++17 via CCCL</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">RawModule</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="n">_LAPLACE_STENCIL_KERNEL</span><span class="p">)</span>
+        <span class="c1"># _laplace_stencil_c64 doubles as the initialized-guard, so it is</span>
+        <span class="c1"># assigned last: a concurrent thread that observes it non-None is then</span>
+        <span class="c1"># guaranteed to also observe _laplace_stencil_c128 (redundant module</span>
+        <span class="c1"># compilation from two racing threads is harmless — CuPy caches it)</span>
+        <span class="n">_laplace_stencil_c128</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">get_function</span><span class="p">(</span><span class="s2">"laplace_stencil_c128"</span><span class="p">)</span>
+        <span class="n">_laplace_stencil_c64</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">get_function</span><span class="p">(</span><span class="s2">"laplace_stencil_c64"</span><span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_laplace_operator_stencil</span><span class="p">(</span>
     <span class="n">accuracy</span><span class="p">,</span> <span class="n">prefactor</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"wrap"</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span>
 <span class="p">):</span>
@@ -773,35 +843,51 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="n">out</span><span class="p">[</span><span class="n">m</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">cumul</span>
         <span class="k">return</span> <span class="n">out</span>
 
-    <span class="nd">@cuda</span><span class="o">.</span><span class="n">jit</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">stencil_func_gpu_batch</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
-        <span class="n">m</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-        <span class="n">M</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span>
-        <span class="k">if</span> <span class="n">m</span> <span class="o">&lt;</span> <span class="n">M</span> <span class="ow">and</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">H</span> <span class="o">-</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">W</span> <span class="o">-</span> <span class="n">n</span><span class="p">:</span>
-            <span class="n">cumul</span> <span class="o">=</span> <span class="n">dtype</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-                <span class="n">cumul</span> <span class="o">+=</span> <span class="n">c</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">a</span><span class="p">[</span><span class="n">m</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">k</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">c</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">a</span><span class="p">[</span><span class="n">m</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span>
-            <span class="n">out</span><span class="p">[</span><span class="n">m</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">cumul</span>
+    <span class="k">if</span> <span class="n">device</span> <span class="o">==</span> <span class="s2">"gpu"</span><span class="p">:</span>
+        <span class="n">check_cupy_is_installed</span><span class="p">()</span>
+        <span class="c1"># the kernel indexes the coefficients in natural order (index k + n for</span>
+        <span class="c1"># offset k), so undo the roll applied for the CPU stencil above</span>
+        <span class="n">c_gpu</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_laplace_stencil_gpu</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
 
         <span class="n">M</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span>
 
-        <span class="n">threads_x</span> <span class="o">=</span> <span class="mi">8</span>
-        <span class="n">threads_y</span> <span class="o">=</span> <span class="mi">8</span>
+        <span class="n">_init_laplace_stencil_kernels</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">xp</span><span class="o">.</span><span class="n">complex128</span><span class="p">:</span>
+            <span class="n">kernel</span> <span class="o">=</span> <span class="n">_laplace_stencil_c128</span>
+        <span class="k">elif</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">xp</span><span class="o">.</span><span class="n">complex64</span><span class="p">:</span>
+            <span class="n">kernel</span> <span class="o">=</span> <span class="n">_laplace_stencil_c64</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">"the GPU Laplacian stencil requires a complex64 or complex128 "</span>
+                <span class="sa">f</span><span class="s2">"array, got </span><span class="si">{</span><span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
 
-        <span class="n">target_threads</span> <span class="o">=</span> <span class="mi">256</span>
-        <span class="n">threads_m</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">target_threads</span> <span class="o">//</span> <span class="p">(</span><span class="n">threads_x</span> <span class="o">*</span> <span class="n">threads_y</span><span class="p">))</span>
-
-        <span class="n">threadsperblock</span> <span class="o">=</span> <span class="p">(</span><span class="n">threads_m</span><span class="p">,</span> <span class="n">threads_x</span><span class="p">,</span> <span class="n">threads_y</span><span class="p">)</span>
-
-        <span class="n">blockspergrid_m</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">threadsperblock</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">blockspergrid_x</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">threadsperblock</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="n">blockspergrid_y</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">threadsperblock</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-        <span class="n">blockspergrid</span> <span class="o">=</span> <span class="p">(</span><span class="n">blockspergrid_m</span><span class="p">,</span> <span class="n">blockspergrid_x</span><span class="p">,</span> <span class="n">blockspergrid_y</span><span class="p">)</span>
-        <span class="n">stencil_func_gpu_batch</span><span class="p">[</span><span class="n">blockspergrid</span><span class="p">,</span> <span class="n">threadsperblock</span><span class="p">](</span><span class="n">a</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+        <span class="n">threads_x</span> <span class="o">=</span> <span class="mi">16</span>
+        <span class="n">threads_y</span> <span class="o">=</span> <span class="mi">16</span>
+        <span class="n">block</span> <span class="o">=</span> <span class="p">(</span><span class="n">threads_x</span><span class="p">,</span> <span class="n">threads_y</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">W</span> <span class="o">/</span> <span class="n">threads_x</span><span class="p">),</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">H</span> <span class="o">/</span> <span class="n">threads_y</span><span class="p">),</span>
+            <span class="nb">min</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="mi">65535</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">kernel</span><span class="p">(</span>
+            <span class="n">grid</span><span class="p">,</span>
+            <span class="n">block</span><span class="p">,</span>
+            <span class="p">(</span>
+                <span class="n">out</span><span class="p">,</span>
+                <span class="n">a</span><span class="p">,</span>
+                <span class="n">c_gpu</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">M</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">H</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">W</span><span class="p">),</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">out</span>
 
@@ -870,6 +956,11 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Centered finite-difference laplacian operator.</span>
+
+<span class="sd">        Operates on complex wave arrays: the stencil coefficients are cast to</span>
+<span class="sd">        the configured complex dtype, so the stencils are specialized for</span>
+<span class="sd">        complex64/complex128 input even though the Laplacian itself is a real</span>
+<span class="sd">        operator.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>

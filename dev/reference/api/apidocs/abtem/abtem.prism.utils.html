@@ -651,7 +651,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <td></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#abtem.prism.utils.wrapped_slices" title="abtem.prism.utils.wrapped_slices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrapped_slices</span></code></a></p></td>
-<td></td>
+<td><p>Two slices covering <code class="docutils literal notranslate"><span class="pre">[start,</span> <span class="pre">stop)</span></code> on a periodic axis of length <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -691,8 +691,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.prism.utils.wrapped_slices">
-<span class="sig-prename descclassname"><span class="pre">abtem.prism.utils.</span></span><span class="sig-name descname"><span class="pre">wrapped_slices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.14)"><span class="pre">slice</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.14)"><span class="pre">slice</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/prism/utils.html#wrapped_slices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.prism.utils.wrapped_slices" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">abtem.prism.utils.</span></span><span class="sig-name descname"><span class="pre">wrapped_slices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#slice" title="(in Python v3.14)"><span class="pre">slice</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#slice" title="(in Python v3.14)"><span class="pre">slice</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/prism/utils.html#wrapped_slices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.prism.utils.wrapped_slices" title="Link to this definition">#</a></dt>
+<dd><p>Two slices covering <code class="docutils literal notranslate"><span class="pre">[start,</span> <span class="pre">stop)</span></code> on a periodic axis of length <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">start</span></code> may be any integer. Normalising it into <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">n)</span></code> first leaves
+only two cases – the window fits, or it wraps once – which is what two
+slices can express.</p>
+<p>The previous implementation assumed <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">&lt;=</span> <span class="pre">start</span> <span class="pre">&lt;</span> <span class="pre">n</span></code> and <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">&lt;</span> <span class="pre">stop</span> <span class="pre">&lt;=</span> <span class="pre">2n</span></code>
+and split on the raw values. For a window lying entirely in negative indices
+(<code class="docutils literal notranslate"><span class="pre">stop</span> <span class="pre">&lt;=</span> <span class="pre">0</span></code>) it produced <code class="docutils literal notranslate"><span class="pre">slice(0,</span> <span class="pre">stop)</span></code>, which is Python’s <em>negative
+indexing</em> and selects <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">+</span> <span class="pre">stop</span></code> elements rather than none, so the two
+pieces concatenated to <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">+</span> <span class="pre">size</span></code> elements instead of <code class="docutils literal notranslate"><span class="pre">size</span></code>. The
+mis-shaped array then surfaced as a broadcast error frames away from here.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.14)"><strong>RuntimeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">stop</span> <span class="pre">-</span> <span class="pre">start</span> <span class="pre">&gt;</span> <span class="pre">n</span></code>. Two slices cannot cover more than one period;
+<code class="docutils literal notranslate"><span class="pre">wrapped_crop_2d</span></code> catches this and takes its general path.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 </section>

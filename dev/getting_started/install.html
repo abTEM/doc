@@ -736,28 +736,52 @@ multi-GPU computation runs after installing this way.</p>
 </section>
 <section id="metal-on-apple-silicon-experimental">
 <h3>Metal on Apple silicon (experimental)<a class="headerlink" href="#metal-on-apple-silicon-experimental" title="Link to this heading">#</a></h3>
-<p>A subset of features in <em>ab</em>TEM can be accelerated on Apple silicon processors using their <a class="reference external" href="https://developer.apple.com/metal/">Metal API</a>.
-To enable this features requires a working installation of <a class="reference external" href="https://pytorch.org/">PyTorch</a>. Metal support is
-currently highly experimental, and not all features are supported. Features not currently supported, will fall
-back to the NumPy implementation.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">pytorch</span> <span class="n">torchvision</span> <span class="n">torchaudio</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span><span class="o">-</span><span class="n">nightly</span>
-<span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">abtem</span> <span class="n">jupyterlab</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="n">scipy</span> <span class="o">--</span><span class="n">force</span><span class="o">-</span><span class="n">reinstall</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">deps</span>
+<p><em>ab</em>TEM can run on the GPU of an Apple silicon Mac through their
+<a class="reference external" href="https://developer.apple.com/metal/">Metal API</a>, using <a class="reference external" href="https://pytorch.org/">PyTorch</a> the way it uses CuPy
+for CUDA. Metal support is experimental. Operations without a Metal implementation raise an error naming the
+operation rather than quietly moving your data back to the CPU, so an unsupported path is visible rather than
+merely slow.</p>
+<p>Install <em>ab</em>TEM with the <code class="docutils literal notranslate"><span class="pre">mps</span></code> extra, which pulls in PyTorch:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">"abtem[mps]"</span>
 </pre></div>
 </div>
-<p>To enable this feature you need to configure <code class="docutils literal notranslate"><span class="pre">enable_mps</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">abtem</span>
-<span class="n">abtem</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">enable_mps</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<p>The extra is restricted to macOS on Apple silicon, since Metal exists nowhere else.</p>
+<p>To enable the backend, set <code class="docutils literal notranslate"><span class="pre">enable_mps</span></code> <strong>before</strong> <em>ab</em>TEM is imported — either through the environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ABTEM_ENABLE_MPS</span><span class="o">=</span><span class="n">true</span> <span class="n">python</span> <span class="n">your_script</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<p>You can verify that mps support is available using the code below:</p>
+<p>or in <code class="docutils literal notranslate"><span class="pre">~/.config/abtem/abtem.yaml</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">enable_mps</span><span class="p">:</span> <span class="n">true</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">abtem.config.set(enable_mps=True)</span></code> does <strong>not</strong> work: the setting decides whether PyTorch is imported before
+FFTW, and by the time the call runs that has already been settled. PyTorch and FFTW each bundle their own copy
+of <code class="docutils literal notranslate"><span class="pre">libomp</span></code>, and a process that loaded FFTW’s first crashes inside ordinary PyTorch operations.</p>
+</div>
+<p>You can verify that Metal support is available using the code below:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">mps</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">abtem</span>
 <span class="n">wave</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">PlaneWave</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="mf">100e3</span><span class="p">,</span> <span class="n">gpts</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">wave</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">copy_to_device</span><span class="p">(</span><span class="s2">"mps"</span><span class="p">)</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"mps"</span>
 </pre></div>
 </div>
+<p>Then pass <code class="docutils literal notranslate"><span class="pre">device=&quot;mps&quot;</span></code> where you would otherwise pass <code class="docutils literal notranslate"><span class="pre">&quot;gpu&quot;</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">potential</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">gpts</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"mps"</span><span class="p">)</span>
+<span class="n">probe</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Probe</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="mf">200e3</span><span class="p">,</span> <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"mps"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Two things are worth knowing before you benchmark:</p>
+<ul class="simple">
+<li><p><strong>Metal is single precision.</strong> <code class="docutils literal notranslate"><span class="pre">precision</span></code> must be <code class="docutils literal notranslate"><span class="pre">float32</span></code>; pairing <code class="docutils literal notranslate"><span class="pre">device=&quot;mps&quot;</span></code> with <code class="docutils literal notranslate"><span class="pre">float64</span></code> is
+refused outright rather than silently narrowed. Use the <code class="docutils literal notranslate"><span class="pre">cpu</span></code> or <code class="docutils literal notranslate"><span class="pre">gpu</span></code> device if you need double precision.</p></li>
+<li><p><strong>Grid size matters more than on other backends.</strong> Metal’s FFT degrades sharply on sizes whose prime
+factors exceed 7. A grid of 272 (which is 16 times 17) can be no faster than the CPU, where 256 or 512
+runs several times faster. Choose <code class="docutils literal notranslate"><span class="pre">gpts</span></code> accordingly, or set <code class="docutils literal notranslate"><span class="pre">grid.round-to-fast-fft</span></code>.</p></li>
+</ul>
 </section>
 <section id="development-installation">
 <h3>Development installation<a class="headerlink" href="#development-installation" title="Link to this heading">#</a></h3>

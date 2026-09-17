@@ -562,6 +562,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dask.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_dask_collection</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_array_module</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
@@ -701,23 +702,59 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">EmptyEnsemble</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
             <span class="n">b</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">EmptyEnsemble</span>
         <span class="p">):</span>
-            <span class="k">return</span> <span class="kc">True</span>
+            <span class="c1"># `continue`, not `return True`: two EmptyEnsembles make THIS</span>
+            <span class="c1"># attribute equal, not the whole object. Returning here skipped</span>
+            <span class="c1"># every remaining attribute, so two objects differing in anything</span>
+            <span class="c1"># declared after an EmptyEnsemble compared equal. Latent today --</span>
+            <span class="c1"># nothing in abtem/ instantiates EmptyEnsemble or its subclass</span>
+            <span class="c1"># EmptyTransform -- but demonstrable on any class that holds one.</span>
+            <span class="k">continue</span>
 
         <span class="c1"># with warnings.catch_warnings():</span>
         <span class="c1"># warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">EqualityMixin</span><span class="p">):</span>
-            <span class="n">equal</span> <span class="o">=</span> <span class="n">safe_equality</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+            <span class="c1"># Forward the nested object's own exclusions. This recursion</span>
+            <span class="c1"># bypasses its __eq__, which is what would otherwise apply them, so</span>
+            <span class="c1"># without this an exclusion holds only for a top-level operand:</span>
+            <span class="c1"># SMatrix(built potential) != SMatrix(unbuilt potential) even</span>
+            <span class="c1"># though the two potentials themselves compare equal.</span>
+            <span class="n">equal</span> <span class="o">=</span> <span class="n">safe_equality</span><span class="p">(</span>
+                <span class="n">value</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"_eq_exclude"</span><span class="p">,</span> <span class="p">())</span>
+            <span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># if isinstance(value, (tuple, list, np.ndarray)):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">equal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
             <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">EqualityMixin</span><span class="p">):</span>
-                    <span class="n">equal</span> <span class="o">=</span> <span class="n">safe_equality</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                    <span class="n">equal</span> <span class="o">=</span> <span class="n">safe_equality</span><span class="p">(</span>
+                        <span class="n">value</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"_eq_exclude"</span><span class="p">,</span> <span class="p">())</span>
+                    <span class="p">)</span>
         <span class="c1"># else:</span>
         <span class="c1">#    equal = safe_equality(value, b.__dict__[key])</span>
-        <span class="k">if</span> <span class="n">equal</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="c1"># `np.all`, not `equal is False`. The identity test only catches the</span>
+        <span class="c1"># `False` singleton, and several producers here return something else:</span>
+        <span class="c1"># ase.Atoms.__eq__ returns numpy.bool_, and `np.False_ is False` is</span>
+        <span class="c1"># False, so a genuine difference was silently dropped -- two Potentials</span>
+        <span class="c1"># whose atoms differ by 1.234 A compared EQUAL. A `==` on arrays that</span>
+        <span class="c1"># np.allclose then failed to reduce leaves an array here too.</span>
+        <span class="c1"># np.all handles bool, numpy.bool_ and array alike.</span>
+        <span class="k">if</span> <span class="n">is_dask_collection</span><span class="p">(</span><span class="n">equal</span><span class="p">):</span>
+            <span class="c1"># Do not reduce a deferred value: np.all on a dask object returns</span>
+            <span class="c1"># another dask object, and the `not` in front of it calls</span>
+            <span class="c1"># __bool__, which executes the graph. `==` would then run the</span>
+            <span class="c1"># simulation it is comparing, throw the result away (the operands</span>
+            <span class="c1"># stay lazy) and let any error raised mid-graph escape `==`.</span>
+            <span class="c1"># Skipping it keeps the pre-existing behaviour, under which a dask</span>
+            <span class="c1"># value could never be the `False` singleton and so never counted</span>
+            <span class="c1"># as a difference. That leaves lazy arrays comparing equal</span>
+            <span class="c1"># regardless of content -- wrong, but pre-existing and not this</span>
+            <span class="c1"># change's to settle; what `==` should mean for a lazy object is</span>
+            <span class="c1"># abTEM issue #413.</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">equal</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">return</span> <span class="kc">True</span></div>
@@ -765,8 +802,15 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="viewcode-block" id="EqualityMixin">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.utils.html#abtem.core.utils.EqualityMixin">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EqualityMixin</span><span class="p">:</span>
+    <span class="c1">#: Attribute names excluded from equality, for lazily-populated derived</span>
+    <span class="c1">#: state. Such an attribute is a function of things already compared, so</span>
+    <span class="c1">#: it carries no identity of its own -- but it makes an object stop</span>
+    <span class="c1">#: comparing equal to an identical one the moment it is populated. Same</span>
+    <span class="c1">#: reasoning as _DeviceArrayCache.__eq__ in integrals.py, one level up.</span>
+    <span class="n">_eq_exclude</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">safe_equality</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">safe_equality</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_eq_exclude</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span></div>

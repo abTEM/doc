@@ -74,6 +74,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`get_shared_diffraction_pattern_fft <abtem.core.fft.get_shared_diffraction_pattern_fft>`
+  - ```{autodoc2-docstring} abtem.core.fft.get_shared_diffraction_pattern_fft
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`ifft2 <abtem.core.fft.ifft2>`
   - ```{autodoc2-docstring} abtem.core.fft.ifft2
     :parser: rst
@@ -91,6 +96,11 @@
     ```
 * - {py:obj}`next_fast_fft_size <abtem.core.fft.next_fast_fft_size>`
   - ```{autodoc2-docstring} abtem.core.fft.next_fast_fft_size
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`share_diffraction_pattern_fft <abtem.core.fft.share_diffraction_pattern_fft>`
+  - ```{autodoc2-docstring} abtem.core.fft.share_diffraction_pattern_fft
     :parser: rst
     :summary:
     ```
@@ -215,6 +225,14 @@
 ```
 ````
 
+````{py:function} get_shared_diffraction_pattern_fft(...)
+:canonical: abtem.core.fft.get_shared_diffraction_pattern_fft
+
+```{autodoc2-docstring} abtem.core.fft.get_shared_diffraction_pattern_fft
+:parser: rst
+```
+````
+
 ````{py:function} ifft2(...) -> abtem.core.fft.U
 :canonical: abtem.core.fft.ifft2
 
@@ -243,6 +261,14 @@
 :canonical: abtem.core.fft.next_fast_fft_size
 
 ```{autodoc2-docstring} abtem.core.fft.next_fast_fft_size
+:parser: rst
+```
+````
+
+````{py:function} share_diffraction_pattern_fft(...)
+:canonical: abtem.core.fft.share_diffraction_pattern_fft
+
+```{autodoc2-docstring} abtem.core.fft.share_diffraction_pattern_fft
 :parser: rst
 ```
 ````

@@ -844,7 +844,185 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="n">bins</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_polar_bins_key</span><span class="p">(</span>
+    <span class="n">gpts</span><span class="p">,</span>
+    <span class="n">sampling</span><span class="p">,</span>
+    <span class="n">inner</span><span class="p">,</span>
+    <span class="n">outer</span><span class="p">,</span>
+    <span class="n">nbins_radial</span><span class="p">,</span>
+    <span class="n">nbins_azimuthal</span><span class="p">,</span>
+    <span class="n">rotation</span><span class="p">,</span>
+    <span class="n">offset</span><span class="p">,</span>
+    <span class="n">fftshift</span><span class="p">,</span>
+    <span class="n">return_indices</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The canonical, hashable geometry key.</span>
+
+<span class="sd">    The single definition used by every cache in this module, so a parameter</span>
+<span class="sd">    added to the geometry cannot silently be left out of one cache's key.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">gpts</span><span class="p">),</span>
+        <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">sampling</span><span class="p">),</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">inner</span><span class="p">),</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">outer</span><span class="p">),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">nbins_radial</span><span class="p">),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">nbins_azimuthal</span><span class="p">),</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">rotation</span><span class="p">),</span>
+        <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">offset</span><span class="p">),</span>
+        <span class="nb">bool</span><span class="p">(</span><span class="n">fftshift</span><span class="p">),</span>
+        <span class="nb">bool</span><span class="p">(</span><span class="n">return_indices</span><span class="p">),</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_radial_binning_device_arrays</span><span class="p">(</span>
+    <span class="n">array</span><span class="p">,</span>
+    <span class="n">sampling</span><span class="p">,</span>
+    <span class="n">inner</span><span class="p">,</span>
+    <span class="n">outer</span><span class="p">,</span>
+    <span class="n">nbins_radial</span><span class="p">,</span>
+    <span class="n">nbins_azimuthal</span><span class="p">,</span>
+    <span class="n">rotation</span><span class="p">,</span>
+    <span class="n">offset</span><span class="p">,</span>
+    <span class="n">fftshift</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Flat bin indices and separators, resident on ``array``'s device.</span>
+
+<span class="sd">    Indexing a device array with a host index array transfers that array every</span>
+<span class="sd">    call; for a detector applied once per wave-function chunk this dominated a</span>
+<span class="sd">    core-loss scan's runtime. Both arrays depend only on the detector geometry</span>
+<span class="sd">    and the grid, so they are cached per (geometry, device).</span>
+
+<span class="sd">    The host-side indices are derived internally from the canonical geometry</span>
+<span class="sd">    key (a free lookup when the lru-cached geometry is warm), so there is no</span>
+<span class="sd">    key/data consistency contract for callers to uphold.</span>
+<span class="sd">    """</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">_polar_bins_key</span><span class="p">(</span>
+        <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:],</span>
+        <span class="n">sampling</span><span class="p">,</span>
+        <span class="n">inner</span><span class="p">,</span>
+        <span class="n">outer</span><span class="p">,</span>
+        <span class="n">nbins_radial</span><span class="p">,</span>
+        <span class="n">nbins_azimuthal</span><span class="p">,</span>
+        <span class="n">rotation</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">,</span>
+        <span class="n">fftshift</span><span class="p">,</span>
+        <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="p">:</span>
+        <span class="n">device_key</span> <span class="o">=</span> <span class="s2">"cpu"</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Key on the device the array actually lives on -- read off the array</span>
+        <span class="c1"># itself, not the current-device context, which can differ from it</span>
+        <span class="c1"># under multi-GPU use.</span>
+        <span class="n">device_key</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"gpu"</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">_radial_binning_device_arrays_cached</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">device_key</span><span class="p">)</span>
+
+
+<span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_radial_binning_device_arrays_cached</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">device_key</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The device-resident arrays behind ``_radial_binning_device_arrays``.</span>
+
+<span class="sd">    ``lru_cache`` supplies the locking and least-recently-used eviction (a</span>
+<span class="sd">    hand-rolled dict here raced under the threaded scheduler). The bound is a</span>
+<span class="sd">    single cap shared across all devices -- in the supported multi-GPU layout</span>
+<span class="sd">    (one process per GPU) each process only ever sees one device anyway.</span>
+<span class="sd">    """</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">_polar_detector_bins_cached</span><span class="p">(</span><span class="o">*</span><span class="n">key</span><span class="p">)</span>
+    <span class="n">flat_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+    <span class="n">separators</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">])))</span>
+
+    <span class="k">if</span> <span class="n">device_key</span> <span class="o">==</span> <span class="s2">"cpu"</span><span class="p">:</span>
+        <span class="c1"># Shared between callers, like the lru-cached geometry.</span>
+        <span class="n">flat_indices</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">separators</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">flat_indices</span><span class="p">,</span> <span class="n">separators</span>
+
+    <span class="c1"># Allocate on the keyed device, whatever device is current.</span>
+    <span class="c1"># (CuPy arrays cannot be flagged read-only; shared by convention.)</span>
+    <span class="k">with</span> <span class="n">cp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Device</span><span class="p">(</span><span class="n">device_key</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">return</span> <span class="n">cp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">flat_indices</span><span class="p">),</span> <span class="n">cp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">separators</span><span class="p">)</span>
+
+
+<span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_polar_detector_bins_cached</span><span class="p">(</span>
+    <span class="n">gpts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">sampling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">inner</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">nbins_radial</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">nbins_azimuthal</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">rotation</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">offset</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">fftshift</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">return_indices</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Cached bin geometry; see ``_polar_detector_bins``.</span>
+
+<span class="sd">    The result depends only on the detector geometry and the grid, but a</span>
+<span class="sd">    detector is applied once per wave-function chunk -- for a core-loss scan</span>
+<span class="sd">    that is hundreds of times per task, each one rebuilding full-grid polar</span>
+<span class="sd">    coordinates on the host and shipping the indices to the device. Profiling</span>
+<span class="sd">    such a scan put ~48 % of the runtime here.</span>
+
+<span class="sd">    Entries are full-grid arrays, so the bound is deliberately small: typical</span>
+<span class="sd">    workflows touch a handful of geometries, and 8 entries already cap the</span>
+<span class="sd">    retention at a few hundred MB for large grids.</span>
+
+<span class="sd">    Returned containers are immutable and their arrays read-only: they are</span>
+<span class="sd">    shared between all callers.</span>
+<span class="sd">    """</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">_polar_detector_bins_uncached</span><span class="p">(</span>
+        <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
+        <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
+        <span class="n">inner</span><span class="o">=</span><span class="n">inner</span><span class="p">,</span>
+        <span class="n">outer</span><span class="o">=</span><span class="n">outer</span><span class="p">,</span>
+        <span class="n">nbins_radial</span><span class="o">=</span><span class="n">nbins_radial</span><span class="p">,</span>
+        <span class="n">nbins_azimuthal</span><span class="o">=</span><span class="n">nbins_azimuthal</span><span class="p">,</span>
+        <span class="n">rotation</span><span class="o">=</span><span class="n">rotation</span><span class="p">,</span>
+        <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+        <span class="n">fftshift</span><span class="o">=</span><span class="n">fftshift</span><span class="p">,</span>
+        <span class="n">return_indices</span><span class="o">=</span><span class="n">return_indices</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">return_indices</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">array</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_polar_detector_bins</span><span class="p">(</span>
+    <span class="n">gpts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">sampling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">inner</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">nbins_radial</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">nbins_azimuthal</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">rotation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">offset</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+    <span class="n">fftshift</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">return_indices</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Bin geometry for a polar detector, cached on its arguments."""</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">_polar_bins_key</span><span class="p">(</span>
+        <span class="n">gpts</span><span class="p">,</span>
+        <span class="n">sampling</span><span class="p">,</span>
+        <span class="n">inner</span><span class="p">,</span>
+        <span class="n">outer</span><span class="p">,</span>
+        <span class="n">nbins_radial</span><span class="p">,</span>
+        <span class="n">nbins_azimuthal</span><span class="p">,</span>
+        <span class="n">rotation</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">,</span>
+        <span class="n">fftshift</span><span class="p">,</span>
+        <span class="n">return_indices</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_polar_detector_bins_cached</span><span class="p">(</span><span class="o">*</span><span class="n">key</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_polar_detector_bins_uncached</span><span class="p">(</span>
     <span class="n">gpts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="n">sampling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
     <span class="n">inner</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -1680,8 +1858,21 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="c1"># raise NotImplementedError("Lazy interpolation not implemented.")</span>
             <span class="c1"># TDOO: Implement lazy interpolation</span>
 
-            <span class="n">base_axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_shape</span><span class="p">)))</span>
-            <span class="n">chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">chunks</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],)</span>
+            <span class="c1"># The base (spatial) axes are the *last* len(self.base_shape) axes</span>
+            <span class="c1"># of self.array -- any ensemble axes come first. da.map_blocks's</span>
+            <span class="c1"># drop_axis must name their actual positions; previously this used</span>
+            <span class="c1"># range(len(self.base_shape)) == (0, 1), i.e. the *first* two axes,</span>
+            <span class="c1"># which is only correct for a bare 2D array with no ensemble axes.</span>
+            <span class="c1"># With any ensemble axis present this silently mismatches dask's</span>
+            <span class="c1"># block bookkeeping: it doesn't raise, but produces wrong output</span>
+            <span class="c1"># (extra, duplicated blocks) the moment an ensemble axis has more</span>
+            <span class="c1"># than one chunk, or wrong values once BOTH base axes have more</span>
+            <span class="c1"># than one chunk each (confirmed by direct reproduction -- e.g. a</span>
+            <span class="c1"># DiffractionPatterns array whose spatial axes were chunked by a</span>
+            <span class="c1"># sufficiently large zarr save/reload).</span>
+            <span class="n">n_base</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_shape</span><span class="p">)</span>
+            <span class="n">base_axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">n_base</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
+            <span class="n">chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">chunks</span><span class="p">[:</span><span class="o">-</span><span class="n">n_base</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],)</span>
             <span class="n">new_axis</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],)</span>
 
             <span class="k">if</span> <span class="n">width</span><span class="p">:</span>
@@ -3323,7 +3514,6 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="c1"># filter stops matching and the GPU tests catch the change.</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">scipy_signal</span><span class="o">.</span><span class="n">fftconvolve</span><span class="p">(</span><span class="n">padded</span><span class="p">,</span> <span class="n">kernel_nd</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"valid"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">array</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_lorentzian_source_size</span><span class="p">(</span>
@@ -4370,22 +4560,21 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="p">):</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
-        <span class="n">indices</span> <span class="o">=</span> <span class="n">_polar_detector_bins</span><span class="p">(</span>
-            <span class="n">gpts</span><span class="o">=</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:],</span>
+        <span class="c1"># The flat index array and the separators are functions of the</span>
+        <span class="c1"># detector geometry alone, but indexing a device array with a host</span>
+        <span class="c1"># index array copies it every call -- up to one int64 per grid point.</span>
+        <span class="n">flat_indices</span><span class="p">,</span> <span class="n">separators</span> <span class="o">=</span> <span class="n">_radial_binning_device_arrays</span><span class="p">(</span>
+            <span class="n">array</span><span class="p">,</span>
             <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
             <span class="n">inner</span><span class="o">=</span><span class="n">inner</span><span class="p">,</span>
             <span class="n">outer</span><span class="o">=</span><span class="n">outer</span><span class="p">,</span>
             <span class="n">nbins_radial</span><span class="o">=</span><span class="n">nbins_radial</span><span class="p">,</span>
             <span class="n">nbins_azimuthal</span><span class="o">=</span><span class="n">nbins_azimuthal</span><span class="p">,</span>
-            <span class="n">fftshift</span><span class="o">=</span><span class="n">fftshift</span><span class="p">,</span>
             <span class="n">rotation</span><span class="o">=</span><span class="n">rotation</span><span class="p">,</span>
             <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
-            <span class="n">return_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">fftshift</span><span class="o">=</span><span class="n">fftshift</span><span class="p">,</span>
         <span class="p">)</span>
-
-        <span class="n">separators</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]),</span> <span class="n">xp</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">])))</span>
-        <span class="p">)</span>
+        <span class="n">n_bins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">separators</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
 
         <span class="n">new_shape</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">nbins_radial</span><span class="p">,</span> <span class="n">nbins_azimuthal</span><span class="p">)</span>
 
@@ -4394,7 +4583,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
                 <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
             <span class="p">)</span>
-        <span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">indices</span><span class="p">)]</span>
+        <span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">flat_indices</span><span class="p">]</span>
 
         <span class="c1"># Use the configured floating-point precision, not a hardcoded float32.</span>
         <span class="c1"># _AbstractRadialDetector._out_dtype returns get_dtype(complex=False), so</span>
@@ -4403,7 +4592,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">result</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
             <span class="p">(</span>
                 <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span>
+                <span class="n">n_bins</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">,</span>
         <span class="p">)</span>
@@ -6738,6 +6927,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">vmin</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">vmax</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">logscale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">explode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="n">figsize</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">title</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -6766,7 +6956,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">            from the global min/max across all panels so the shared colorbar is</span>
 <span class="sd">            meaningful.</span>
 <span class="sd">        power : float</span>
-<span class="sd">            Display on a power scale.</span>
+<span class="sd">            Display on a power scale. Cannot be used together with ``logscale``.</span>
+<span class="sd">        logscale : bool</span>
+<span class="sd">            If True, show the spectrum on a logarithmic intensity scale. Cannot</span>
+<span class="sd">            be used together with ``power != 1.0``. Non-positive values are</span>
+<span class="sd">            masked (log scale is undefined there).</span>
 <span class="sd">        explode : bool or sequence of int</span>
 <span class="sd">            If True, explode all ensemble axes into a panel grid. If a sequence</span>
 <span class="sd">            of ints, explode only those ensemble-axis indices (the remaining</span>
@@ -6790,7 +6984,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
         <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">PowerNorm</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.visualize.artists</span><span class="w"> </span><span class="kn">import</span> <span class="n">_get_norm</span>
 
         <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="s2">"compute"</span><span class="p">):</span>
@@ -6819,6 +7014,24 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">cbar_label</span> <span class="o">=</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'label'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'units'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">]"</span>
         <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">logscale</span><span class="p">:</span>
+            <span class="c1"># LogNorm masks values &lt;= 0 (log is undefined there) rather than</span>
+            <span class="c1"># raising -- phonon-loss TDS intensity (incoherent - coherent) is</span>
+            <span class="c1"># routinely exactly zero, or, from floating-point noise, a tiny</span>
+            <span class="c1"># negative value. Masked entries render with the colormap's "bad"</span>
+            <span class="c1"># colour, which defaults to fully transparent -- i.e. the figure's</span>
+            <span class="c1"># white background shows through, easy to mistake for missing</span>
+            <span class="c1"># data. These pixels are real, valid, just-below-the-log-floor</span>
+            <span class="c1"># intensity, not missing data, so colour them as the darkest end</span>
+            <span class="c1"># of the scale instead of leaving a blank gap. with_extremes()</span>
+            <span class="c1"># returns a new Colormap rather than mutating in place (set_bad()</span>
+            <span class="c1"># does the latter and is being deprecated), so this can never</span>
+            <span class="c1"># affect the shared, globally registered colormap. Resolved here</span>
+            <span class="c1"># rather than in pcolormesh itself so it applies uniformly to</span>
+            <span class="c1"># every panel below.</span>
+            <span class="n">resolved_cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
+            <span class="n">cmap</span> <span class="o">=</span> <span class="n">resolved_cmap</span><span class="o">.</span><span class="n">with_extremes</span><span class="p">(</span><span class="n">bad</span><span class="o">=</span><span class="n">resolved_cmap</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">panel_data</span><span class="p">(</span><span class="n">grid_index</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
             <span class="c1"># Exploded axes take their grid value; other ensemble axes collapse</span>
@@ -6874,7 +7087,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">panels</span> <span class="o">=</span> <span class="p">[</span><span class="n">panel_data</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]</span>
             <span class="n">_vmin</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">panels</span><span class="p">)</span> <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">vmin</span>
             <span class="n">_vmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">panels</span><span class="p">)</span> <span class="k">if</span> <span class="n">vmax</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">vmax</span>
-            <span class="n">norm</span> <span class="o">=</span> <span class="n">PowerNorm</span><span class="p">(</span><span class="n">gamma</span><span class="o">=</span><span class="n">power</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">_vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">_vmax</span><span class="p">)</span>
+            <span class="n">norm</span> <span class="o">=</span> <span class="n">_get_norm</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">_vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">_vmax</span><span class="p">,</span> <span class="n">power</span><span class="o">=</span><span class="n">power</span><span class="p">,</span> <span class="n">logscale</span><span class="o">=</span><span class="n">logscale</span><span class="p">)</span>
 
             <span class="n">im</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">data_t</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">panels</span><span class="p">)):</span>
@@ -6936,7 +7149,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">else</span><span class="p">:</span>
             <span class="n">fig</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_figure</span><span class="p">()</span>
 
-        <span class="n">norm</span> <span class="o">=</span> <span class="n">PowerNorm</span><span class="p">(</span><span class="n">gamma</span><span class="o">=</span><span class="n">power</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">_get_norm</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">power</span><span class="o">=</span><span class="n">power</span><span class="p">,</span> <span class="n">logscale</span><span class="o">=</span><span class="n">logscale</span><span class="p">)</span>
         <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span>
             <span class="n">q</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">shading</span><span class="o">=</span><span class="s2">"nearest"</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
         <span class="p">)</span>

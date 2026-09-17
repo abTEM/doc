@@ -706,15 +706,6 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 
 ````
 
-````{py:method} set_threshold(...)
-:canonical: abtem.inelastic.core_loss.TransitionPotentialArray.set_threshold
-
-```{autodoc2-docstring} abtem.inelastic.core_loss.TransitionPotentialArray.set_threshold
-:parser: rst
-```
-
-````
-
 ````{py:method} show(...)
 :canonical: abtem.inelastic.core_loss.TransitionPotentialArray.show
 

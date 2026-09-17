@@ -571,7 +571,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.complex</span><span class="w"> </span><span class="kn">import</span> <span class="n">complex_exponential</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">TqdmWrapper</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">energy2wavelength</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">_wrap_with_array</span><span class="p">,</span> <span class="n">unpack_blockwise_args</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_wrap_with_array</span><span class="p">,</span>
+    <span class="n">shared_constant_arg</span><span class="p">,</span>
+    <span class="n">unpack_blockwise_args</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">CachedFFTWConvolution</span><span class="p">,</span> <span class="n">fft2_convolve</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">spatial_frequencies</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">expand_dims_to_broadcast</span><span class="p">,</span> <span class="n">get_dtype</span>
@@ -1061,25 +1065,49 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">detectors</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">measurements</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
-        <span class="n">new_measurement</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+    <span class="c1"># All detectors here see the same, not-yet-mutated ``waves`` -- share one</span>
+    <span class="c1"># diffraction-pattern FFT across them (see Waves._share_diffraction_pattern_fft).</span>
+    <span class="k">with</span> <span class="n">waves</span><span class="o">.</span><span class="n">_share_diffraction_pattern_fft</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
+            <span class="n">new_measurement</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">additive</span><span class="p">:</span>
-            <span class="n">measurements</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">measurement_index</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_measurement</span><span class="o">.</span><span class="n">array</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">measurements</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">measurement_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_measurement</span><span class="o">.</span><span class="n">array</span>
+            <span class="k">if</span> <span class="n">additive</span><span class="p">:</span>
+                <span class="n">measurements</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">measurement_index</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_measurement</span><span class="o">.</span><span class="n">array</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">measurements</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">measurement_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_measurement</span><span class="o">.</span><span class="n">array</span>
     <span class="k">return</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_validate_potential_ensemble_indices</span><span class="p">(</span>
     <span class="n">potential_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
-    <span class="n">exit_plane_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">exit_plane_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">slice</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">slice</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
     <span class="n">potential</span><span class="p">:</span> <span class="n">BasePotential</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">slice</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Index into a measurement's leading potential-ensemble and exit-plane axes.</span>
+
+<span class="sd">    The measurement is allocated with the potential's ensemble axes *before*</span>
+<span class="sd">    the exit-plane axis (see ``_potential_ensemble_shape_and_metadata``), so</span>
+<span class="sd">    both have to be indexed together; indexing the plane axis alone silently</span>
+<span class="sd">    addresses the ensemble axis instead whenever the potential has one.</span>
+
+<span class="sd">    ``exit_plane_index`` may be a ``slice`` for accumulations that contribute</span>
+<span class="sd">    to every plane at or beyond a depth, as the single-channel core-loss</span>
+<span class="sd">    driver does.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">:</span>
         <span class="n">potential_index</span> <span class="o">=</span> <span class="p">()</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">potential_index</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
         <span class="n">potential_index</span> <span class="o">=</span> <span class="p">(</span><span class="n">potential_index</span><span class="p">,)</span>
+
+    <span class="c1"># This whole family of defects was one caller passing too few leading</span>
+    <span class="c1"># indices, so refuse that rather than silently letting the exit-plane part</span>
+    <span class="c1"># land on an ensemble axis.</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential_index</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"potential_index </span><span class="si">{</span><span class="n">potential_index</span><span class="si">!r}</span><span class="s2"> has "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">potential_index</span><span class="p">)</span><span class="si">}</span><span class="s2"> entries for an ensemble of "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> axes </span><span class="si">{</span><span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="si">!r}</span><span class="s2">"</span>
+        <span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">exit_plane_index</span> <span class="o">=</span> <span class="p">()</span>
@@ -1377,10 +1405,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="c1"># Handle final output if not using intermediate measurements</span>
     <span class="k">if</span> <span class="n">measurements</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">measurements</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">waves</span><span class="p">)[(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)]</span>
-            <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="n">detectors</span>
-        <span class="p">]</span>
+        <span class="k">with</span> <span class="n">waves</span><span class="o">.</span><span class="n">_share_diffraction_pattern_fft</span><span class="p">():</span>
+            <span class="n">measurements</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">waves</span><span class="p">)[(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="n">detectors</span>
+            <span class="p">]</span>
 
     <span class="k">elif</span> <span class="n">return_backscattered</span><span class="p">:</span>
         <span class="n">_back_propagate_backscattered_waves</span><span class="p">(</span>
@@ -1474,6 +1503,19 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="n">backscattered_waves</span>
 
 
+<span class="n">_DETECTORS_ELASTIC_MESSAGE</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="c1"># Declared but never read: elastic detectors passed here were accepted in</span>
+    <span class="c1"># silence and only the inelastic measurement came back, so a caller</span>
+    <span class="c1"># expecting a simultaneous elastic image got a short list and no</span>
+    <span class="c1"># explanation. Every other unsupported keyword reaching this function</span>
+    <span class="c1"># through **multislice_func_kwargs raises TypeError; this one spelling</span>
+    <span class="c1"># quietly absorbed the caller's intent. Say so until it is implemented.</span>
+    <span class="s2">"detectors_elastic is not implemented: the core-loss multislice returns "</span>
+    <span class="s2">"only the inelastic measurement. Run a separate Probe.scan() with the "</span>
+    <span class="s2">"same scan and potential for the elastic image."</span>
+<span class="p">)</span>
+
+
 <div class="viewcode-block" id="transition_potential_multislice_and_detect">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.multislice.html#abtem.multislice.transition_potential_multislice_and_detect">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">transition_potential_multislice_and_detect</span><span class="p">(</span>
@@ -1512,6 +1554,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Exit waves or detected measurements or lists of measurements.</span>
 <span class="sd">    """</span>
 
+    <span class="k">if</span> <span class="n">detectors_elastic</span><span class="p">:</span>
+        <span class="c1"># Belt and braces: Waves.transition_potential_multislice refuses this</span>
+        <span class="c1"># before a graph is built, but the driver is also a public entry point.</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">_DETECTORS_ELASTIC_MESSAGE</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_update_loss_measurements</span><span class="p">(</span>
         <span class="n">measurements</span><span class="p">,</span> <span class="n">waves</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">slice_index</span><span class="p">,</span> <span class="n">potential_index</span>
     <span class="p">):</span>
@@ -1522,10 +1569,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">potential_index</span><span class="p">,</span> <span class="n">exit_plane_index</span><span class="p">,</span> <span class="n">potential</span>
             <span class="p">)</span>
 
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
-                <span class="n">new_measurement</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
-                <span class="n">new_measurement</span> <span class="o">=</span> <span class="n">new_measurement</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">0</span><span class="p">,))</span>
-                <span class="n">measurements</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">measurement_index</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_measurement</span><span class="o">.</span><span class="n">array</span>
+            <span class="c1"># All detectors here see the same, not-yet-mutated ``waves`` at</span>
+            <span class="c1"># this exit plane -- share one diffraction-pattern FFT across</span>
+            <span class="c1"># them (see Waves._share_diffraction_pattern_fft). The block is</span>
+            <span class="c1"># re-entered fresh each call, so a later call at a *different*</span>
+            <span class="c1"># slice_index/depth (waves whose ``.array`` some in-place</span>
+            <span class="c1"># multislice steps reuse across depths) never sees a value</span>
+            <span class="c1"># computed for an earlier one.</span>
+            <span class="k">with</span> <span class="n">waves</span><span class="o">.</span><span class="n">_share_diffraction_pattern_fft</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
+                    <span class="n">new_measurement</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+                    <span class="n">new_measurement</span> <span class="o">=</span> <span class="n">new_measurement</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">0</span><span class="p">,))</span>
+                    <span class="n">measurements</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">measurement_index</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_measurement</span><span class="o">.</span><span class="n">array</span>
 
     <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensure_real_space</span><span class="p">()</span>
 
@@ -1573,8 +1628,24 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">extra_ensemble_axes_metadata</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">transition_potential</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
-    <span class="n">transition_potential</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+    <span class="c1"># Arrives as one graph node shared by every task on this worker, so</span>
+    <span class="c1"># match on a private view rather than mutating it. See _task_local.</span>
+    <span class="c1">#</span>
+    <span class="c1"># A built TransitionPotentialArray cannot be matched: build() bakes</span>
+    <span class="c1"># self.energy into the array's form factors (k0, kn, the relativistic</span>
+    <span class="c1"># mass correction, the interaction parameter), and its array shape is</span>
+    <span class="c1"># fixed, so the match below can only change the private view's grid or</span>
+    <span class="c1"># accelerator, never recompute the array to agree with them. Checking</span>
+    <span class="c1"># first, while grid/accelerator still report what the array actually is,</span>
+    <span class="c1"># catches both -- the grid case already failed with an opaque broadcast</span>
+    <span class="c1"># ValueError inside scatter below; this gives it (and the previously</span>
+    <span class="c1"># unguarded energy case) the same clear RuntimeError as the PRISM-EELS</span>
+    <span class="c1"># driver's identical guard in abtem/inelastic/core_loss.py.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_potential</span><span class="p">,</span> <span class="n">TransitionPotential</span><span class="p">):</span>
+        <span class="n">transition_potential</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="n">transition_potential</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+
+    <span class="n">transition_potential</span> <span class="o">=</span> <span class="n">transition_potential</span><span class="o">.</span><span class="n">_task_local</span><span class="p">(</span><span class="n">match_to</span><span class="o">=</span><span class="n">waves</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_potential</span><span class="p">,</span> <span class="n">TransitionPotential</span><span class="p">):</span>
         <span class="n">transition_potential</span> <span class="o">=</span> <span class="n">transition_potential</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
@@ -1611,11 +1682,13 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">potential_configuration</span><span class="p">,</span>
     <span class="p">)</span> <span class="ow">in</span> <span class="n">_generate_potential_configurations</span><span class="p">(</span><span class="n">potential</span><span class="p">):</span>
         <span class="n">waves</span> <span class="o">=</span> <span class="n">waves_input</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-            <span class="n">measurement_index</span> <span class="o">=</span> <span class="n">_validate_potential_ensemble_indices</span><span class="p">(</span>
-                <span class="n">potential_index</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">potential</span>
-            <span class="p">)</span>
-            <span class="n">_update_measurements</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="n">measurements</span><span class="p">,</span> <span class="n">measurement_index</span><span class="p">)</span>
+
+        <span class="c1"># The entrance exit plane at t = 0 stays zero: no material has been</span>
+        <span class="c1"># traversed, so no ionisation has happened. Detecting the incident</span>
+        <span class="c1"># *elastic* wave here, as the elastic driver correctly does, wrote the</span>
+        <span class="c1"># full unscattered intensity into the t = 0 bin of a core-loss</span>
+        <span class="c1"># measurement. Measurements are allocated zeroed, so there is nothing</span>
+        <span class="c1"># to do.</span>
 
         <span class="c1"># The double-channel inner multislice re-visits slices [scatter_index+1 …]</span>
         <span class="c1"># once per site batch; pre-building (and bandlimiting) the transmission</span>
@@ -1727,20 +1800,44 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">exit_plane_index</span> <span class="o">=</span> <span class="n">bisect_left</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">,</span> <span class="n">scatter_index</span><span class="p">)</span>
 
-                    <span class="n">measurement_plane_indices</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                        <span class="n">exit_planes</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span>
-                            <span class="n">exit_plane_index</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">)</span>
-                        <span class="p">)</span>
-                        <span class="n">measurement_plane_indices</span> <span class="o">=</span> <span class="p">(</span><span class="n">exit_planes</span><span class="p">,)</span>
+                    <span class="c1"># Single-channel ionisation at this depth contributes to</span>
+                    <span class="c1"># every exit plane at or beyond it, hence a slice over the</span>
+                    <span class="c1"># plane axis. The potential's ensemble axes come first in</span>
+                    <span class="c1"># the measurement, so they must be indexed as well -- the</span>
+                    <span class="c1"># double-channel branch above gets this right by going</span>
+                    <span class="c1"># through _update_loss_measurements. Indexing the plane</span>
+                    <span class="c1"># axis alone meant that with a single exit plane the index</span>
+                    <span class="c1"># was empty and every configuration's contribution was</span>
+                    <span class="c1"># broadcast across all configurations (giving num_configs</span>
+                    <span class="c1"># times the correct result), while with several exit planes</span>
+                    <span class="c1"># the plane slice landed on the configuration axis and</span>
+                    <span class="c1"># dropped the contribution entirely (giving zeros).</span>
+                    <span class="n">measurement_indices</span> <span class="o">=</span> <span class="n">_validate_potential_ensemble_indices</span><span class="p">(</span>
+                        <span class="n">potential_index</span><span class="p">,</span>
+                        <span class="nb">slice</span><span class="p">(</span><span class="n">exit_plane_index</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">)),</span>
+                        <span class="n">potential</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="c1"># Only the slice entries survive the indexing and need</span>
+                    <span class="c1"># broadcasting; integer ensemble indices drop their axis.</span>
+                    <span class="n">n_slice_axes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+                        <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">slice</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">measurement_indices</span>
+                    <span class="p">)</span>
 
-                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
-                        <span class="n">new_measurement</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">scattered_waves</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">0</span><span class="p">,))</span>
-                        <span class="n">measurements</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">measurement_plane_indices</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
-                            <span class="n">new_measurement</span><span class="o">.</span><span class="n">array</span><span class="p">[</span>
-                                <span class="p">(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">measurement_plane_indices</span><span class="p">)</span>
-                            <span class="p">]</span>
-                        <span class="p">)</span>
+                    <span class="c1"># All detectors here see the same, not-yet-mutated</span>
+                    <span class="c1"># ``scattered_waves`` -- share one diffraction-pattern</span>
+                    <span class="c1"># FFT across them (see Waves._share_diffraction_pattern_fft).</span>
+                    <span class="k">with</span> <span class="n">scattered_waves</span><span class="o">.</span><span class="n">_share_diffraction_pattern_fft</span><span class="p">():</span>
+                        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
+                            <span class="n">new_measurement</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">scattered_waves</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                                <span class="p">(</span><span class="mi">0</span><span class="p">,)</span>
+                            <span class="p">)</span>
+                            <span class="c1"># Only the plane axis is a slice and so survives</span>
+                            <span class="c1"># the indexing; the ensemble axes are integers and</span>
+                            <span class="c1"># are dropped, so broadcast over the plane axis</span>
+                            <span class="c1"># alone.</span>
+                            <span class="n">measurements</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">measurement_indices</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                                <span class="n">new_measurement</span><span class="o">.</span><span class="n">array</span><span class="p">[(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n_slice_axes</span><span class="p">]</span>
+                            <span class="p">)</span>
 
     <span class="n">tqdm_pbar</span><span class="o">.</span><span class="n">close_if_exists</span><span class="p">()</span>
 
@@ -1775,6 +1872,18 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">return</span> <span class="kc">True</span>
     <span class="k">return</span> <span class="kc">False</span></div>
 
+
+
+<span class="c1"># Keyword arguments of a multislice function that are shipped as their own</span>
+<span class="c1"># graph node rather than baked into every task's partial. Listing a name here</span>
+<span class="c1"># is the whole opt-in: _partition_args appends it, _from_partitioned_args</span>
+<span class="c1"># leaves it out of the partial, and the member function restores it.</span>
+<span class="c1">#</span>
+<span class="c1"># The value must be an ordinary object (abTEM's potentials, transition</span>
+<span class="c1"># potentials, Atoms). A bare numpy array or scalar is not suitable: the</span>
+<span class="c1"># blockwise machinery unwraps zero-dimensional object arrays by calling</span>
+<span class="c1"># .item(), which such a payload would answer itself.</span>
+<span class="n">_GRAPH_NODE_KWARGS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"transition_potential"</span><span class="p">,)</span>
 
 
 <div class="viewcode-block" id="MultisliceTransform">
@@ -1948,6 +2057,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="k">return</span> <span class="n">chunks</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_graph_node_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Names of multislice_func kwargs shipped as their own graph node."""</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">key</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_GRAPH_NODE_KWARGS</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multislice_func_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_partition_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Chunks</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">lazy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="n">chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_ensemble_chunks</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span>
 
@@ -1959,11 +2076,39 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">],)</span>
 
+        <span class="c1"># Trailing zero-dimensional args, one per large kwarg: dask sees</span>
+        <span class="c1"># these (unlike anything baked into the partial below) and keeps a</span>
+        <span class="c1"># single copy in the graph. See shared_constant_arg.</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph_node_keys</span><span class="p">():</span>
+            <span class="n">args</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="n">shared_constant_arg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_multislice_func_kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">lazy</span><span class="o">=</span><span class="n">lazy</span><span class="p">),</span>
+            <span class="p">)</span>
+
         <span class="k">return</span> <span class="n">args</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_multislice_transform_member</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">potential_partial</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_multislice_transform_member</span><span class="p">(</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">potential_partial</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+        <span class="n">graph_node_keys</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
         <span class="n">args</span> <span class="o">=</span> <span class="n">unpack_blockwise_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">graph_node_keys</span><span class="p">:</span>
+            <span class="c1"># The trailing args are the values _partition_args shipped as</span>
+            <span class="c1"># their own graph nodes; restore them as keyword arguments.</span>
+            <span class="n">split</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">graph_node_keys</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">split</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"expected at least </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">graph_node_keys</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2"> partitioned "</span>
+                    <span class="sa">f</span><span class="s2">"arguments (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">graph_node_keys</span><span class="p">)</span><span class="si">}</span><span class="s2"> shipped as graph nodes "</span>
+                    <span class="sa">f</span><span class="s2">"plus the potential), got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s2">. The callable "</span>
+                    <span class="s2">"returned by _from_partitioned_args must be given the args "</span>
+                    <span class="s2">"from _partition_args of the same transform."</span>
+                <span class="p">)</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">graph_node_keys</span><span class="p">,</span> <span class="n">args</span><span class="p">[</span><span class="n">split</span><span class="p">:]))</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">args</span><span class="p">[:</span><span class="n">split</span><span class="p">]</span>
 
         <span class="n">potential</span> <span class="o">=</span> <span class="n">potential_partial</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
         <span class="n">potential</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
@@ -1975,12 +2120,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_from_partitioned_args</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
         <span class="n">potential_partial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_potential</span><span class="o">.</span><span class="n">_from_partitioned_args</span><span class="p">()</span>
+        <span class="n">graph_node_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph_node_keys</span><span class="p">()</span>
+        <span class="c1"># Whatever _partition_args ships as its own graph node must not also</span>
+        <span class="c1"># be baked in here, or dask re-embeds a copy of it in every task.</span>
+        <span class="n">func_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">key</span><span class="p">:</span> <span class="n">value</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multislice_func_kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">graph_node_keys</span>
+        <span class="p">}</span>
         <span class="k">return</span> <span class="n">partial</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_multislice_transform_member</span><span class="p">,</span>
             <span class="n">potential_partial</span><span class="o">=</span><span class="n">potential_partial</span><span class="p">,</span>
+            <span class="n">graph_node_keys</span><span class="o">=</span><span class="n">graph_node_keys</span><span class="p">,</span>
             <span class="n">detectors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_user_detectors</span><span class="p">,</span>
             <span class="n">multislice_func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">multislice_func</span><span class="p">,</span>
-            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_multislice_func_kwargs</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">func_kwargs</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_new_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">):</span>

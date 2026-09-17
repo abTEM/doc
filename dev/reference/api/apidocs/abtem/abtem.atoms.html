@@ -631,6 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.atoms.standardize_cell"><code class="docutils literal notranslate"><span class="pre">standardize_cell()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.atoms.validate_per_atom_property"><code class="docutils literal notranslate"><span class="pre">validate_per_atom_property()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.atoms.validate_sigmas"><code class="docutils literal notranslate"><span class="pre">validate_sigmas()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.atoms.wrap_and_snap_atoms"><code class="docutils literal notranslate"><span class="pre">wrap_and_snap_atoms()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.atoms.wrap_with_tolerance"><code class="docutils literal notranslate"><span class="pre">wrap_with_tolerance()</span></code></a></li>
 </ul>
 </li>
@@ -775,7 +776,10 @@ lattice vectors are made positive.</p></td>
 <tr class="row-even"><td><p><a class="reference internal" href="#abtem.atoms.validate_sigmas" title="abtem.atoms.validate_sigmas"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_sigmas</span></code></a></p></td>
 <td><p>Validate displacement standard deviations and detect anisotropy.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#abtem.atoms.wrap_with_tolerance" title="abtem.atoms.wrap_with_tolerance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_with_tolerance</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#abtem.atoms.wrap_and_snap_atoms" title="abtem.atoms.wrap_and_snap_atoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_and_snap_atoms</span></code></a></p></td>
+<td><p>Wrap atoms into their cell by modulo, snapping the boundary cases to zero.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#abtem.atoms.wrap_with_tolerance" title="abtem.atoms.wrap_with_tolerance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_with_tolerance</span></code></a></p></td>
 <td><p>Wrap atoms that are closer to cell boundaries than the given tolerance.</p></td>
 </tr>
 </tbody>
@@ -806,19 +810,19 @@ lattice vectors are made positive.</p></td>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.atoms.B_to_sigma">
-<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">B_to_sigma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#B_to_sigma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.B_to_sigma" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">B_to_sigma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#B_to_sigma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.B_to_sigma" title="Link to this definition">#</a></dt>
 <dd><p>Convert crystallographic B-factor to displacement standard deviation.</p>
 <p>The r.m.s. displacement sigma is related to the B-factor by σ = sqrt(B / (8π²)).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>B</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>ndarray</em>) – B-factor [Å²]. Accepts scalars, (3,) arrays for anisotropic displacements,
+<dd class="field-odd"><p><strong>B</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>ndarray</em>) – B-factor [Å²]. Accepts scalars, (3,) arrays for anisotropic displacements,
 or any broadcastable shape.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Displacement standard deviation [Å].</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a> or ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a> or ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -836,7 +840,7 @@ or any broadcastable shape.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atoms</strong> (<em>ase.Atoms</em>) – Atoms to be cropped.</p></li>
-<li><p><strong>margin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>three floats</em>) – Atoms that are outside the cell by this margin are not cropped (by default no
+<li><p><strong>margin</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>three floats</em>) – Atoms that are outside the cell by this margin are not cropped (by default no
 margin).</p></li>
 </ul>
 </dd>
@@ -864,8 +868,8 @@ repetitions in all directions.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>cell</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Cell of dimensions 3x3.</p></li>
-<li><p><strong>max_repetitions</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of allowed repetitions (default is 5).</p></li>
-<li><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Lattice vector components below this value are considered to be zero.</p></li>
+<li><p><strong>max_repetitions</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of allowed repetitions (default is 5).</p></li>
+<li><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Lattice vector components below this value are considered to be zero.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -887,11 +891,11 @@ first repeated until they do.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atoms</strong> (<em>ase.Atoms</em>) – Atoms to be fit.</p></li>
-<li><p><strong>cell</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>floats</em>) – Cell to be fit into.</p></li>
-<li><p><strong>plane</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>tuples</em>) – Plane to be rotated into given as either a string or two tuples (by default <cite>xy</cite>
+<li><p><strong>cell</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>floats</em>) – Cell to be fit into.</p></li>
+<li><p><strong>plane</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>tuples</em>) – Plane to be rotated into given as either a string or two tuples (by default <cite>xy</cite>
 which results in no rotation for a standardized cell).</p></li>
-<li><p><strong>origin</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>floats</em>) – Offset of the origin for the given cell with respect to the original cell.</p></li>
-<li><p><strong>margin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>three floats</em>) – Atoms that are outside the cell by this margin are not cropped (by default no
+<li><p><strong>origin</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>floats</em>) – Offset of the origin for the given cell with respect to the original cell.</p></li>
+<li><p><strong>margin</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>three floats</em>) – Atoms that are outside the cell by this margin are not cropped (by default no
 margin).</p></li>
 </ul>
 </dd>
@@ -906,7 +910,7 @@ margin).</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.atoms.decompose_affine_transform">
-<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">decompose_affine_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#decompose_affine_transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.decompose_affine_transform" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">decompose_affine_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#decompose_affine_transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.decompose_affine_transform" title="Link to this definition">#</a></dt>
 <dd><p>Decompose an affine transform into rotation, scale and shear.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -924,15 +928,15 @@ are arrays of dimension 3 representing rotation, scale and shear.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.atoms.euler_sequence">
-<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">euler_sequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#euler_sequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.euler_sequence" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">euler_sequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#euler_sequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.euler_sequence" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Specifies the order of rotation axes. It should be a string representing a valid
+<li><p><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Specifies the order of rotation axes. It should be a string representing a valid
 combination of the letters ‘x’, ‘y’, and ‘z’ in any order. For example, ‘xyz’
 represents a sequence of rotations about the x-axis, y-axis, and z-axis in that
 order.</p></li>
-<li><p><strong>convention</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Specifies the convention used for the Euler angles. It should be either
+<li><p><strong>convention</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Specifies the convention used for the Euler angles. It should be either
 ‘intrinsic’ or ‘static’ for rotations applied to a fixed frame or ‘extrinsic’ or
 ‘rotating’ for rotations applied to a rotating frame.</p></li>
 </ul>
@@ -942,10 +946,10 @@ order.</p></li>
 sequence specified by the given axes and convention.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the given convention is not one of the valid options (‘intrinsic’, ‘static’,
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the given convention is not one of the valid options (‘intrinsic’, ‘static’,
 ‘extrinsic’, ‘rotating’).</p>
 </dd>
 </dl>
@@ -958,11 +962,11 @@ sequence specified by the given axes and convention.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ai</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – First Euler angle [rad].</p></li>
-<li><p><strong>aj</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Second Euler angle [rad].</p></li>
-<li><p><strong>ak</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Third Euler angle [rad].</p></li>
-<li><p><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – String representation of the axes of rotation. Default is “xyz”.</p></li>
-<li><p><strong>convention</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Convention for rotation order. Default is “intrinsic”.</p></li>
+<li><p><strong>ai</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – First Euler angle [rad].</p></li>
+<li><p><strong>aj</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Second Euler angle [rad].</p></li>
+<li><p><strong>ak</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Third Euler angle [rad].</p></li>
+<li><p><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – String representation of the axes of rotation. Default is “xyz”.</p></li>
+<li><p><strong>convention</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Convention for rotation order. Default is “intrinsic”.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -982,7 +986,7 @@ sequence specified by the given axes and convention.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atoms</strong> (<em>ase.Atoms</em>) – Atoms to be inverted.</p></li>
-<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Integer representing the Cartesian axis (0 is <cite>x</cite>, 1 is <cite>y</cite>, and the default 2
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Integer representing the Cartesian axis (0 is <cite>x</cite>, 1 is <cite>y</cite>, and the default 2
 is <cite>z</cite>).</p></li>
 </ul>
 </dd>
@@ -997,7 +1001,7 @@ is <cite>z</cite>).</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.atoms.is_cell_hexagonal">
-<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">is_cell_hexagonal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#is_cell_hexagonal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.is_cell_hexagonal" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">is_cell_hexagonal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#is_cell_hexagonal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.is_cell_hexagonal" title="Link to this definition">#</a></dt>
 <dd><p>Check whether the cell of given atoms is hexagonal.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1007,7 +1011,7 @@ is <cite>z</cite>).</p></li>
 <dd class="field-even"><p><strong>hexagonal</strong> – True if cell is hexagonal.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1020,28 +1024,28 @@ is <cite>z</cite>).</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>cell</strong> (<em>ase.Atoms</em>) – The atoms that should be checked.</p></li>
-<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Components of the lattice vectors below this value are considered to be zero.</p></li>
+<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Components of the lattice vectors below this value are considered to be zero.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>orthogonal</strong> – True if cell is orthogonal.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.atoms.is_cell_valid">
-<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">is_cell_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#is_cell_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.is_cell_valid" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">is_cell_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#is_cell_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.is_cell_valid" title="Link to this definition">#</a></dt>
 <dd><p>Check whether the cell of given atoms can be converted to a structure usable by
 abTEM.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atoms</strong> (<em>ase.Atoms</em>) – The atoms that should be checked.</p></li>
-<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Components of the lattice vectors whose magnitude is below this value are
+<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Components of the lattice vectors whose magnitude is below this value are
 considered to be zero.</p></li>
 </ul>
 </dd>
@@ -1049,7 +1053,7 @@ considered to be zero.</p></li>
 <dd class="field-even"><p><strong>valid</strong> – True if the atomic structure is usable by abTEM.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1062,7 +1066,7 @@ considered to be zero.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atoms</strong> (<em>ase.Atoms</em>) – Atoms to merge.</p></li>
-<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Atoms closer to each other than this value are merged if they have identical
+<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Atoms closer to each other than this value are merged if they have identical
 atomic numbers.</p></li>
 </ul>
 </dd>
@@ -1086,13 +1090,13 @@ given maximum number, the remaining difference is made up by applying strain.</p
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atoms</strong> (<em>ase.Atoms</em>) – The non-orthogonal atoms.</p></li>
-<li><p><strong>max_repetitions</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The maximum number of repetitions allowed. Increase this to allow more
+<li><p><strong>max_repetitions</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The maximum number of repetitions allowed. Increase this to allow more
 repetitions and hence less strain.</p></li>
-<li><p><strong>return_transform</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If true, return the transformations that were applied to make the atoms
+<li><p><strong>return_transform</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If true, return the transformations that were applied to make the atoms
 orthogonal.</p></li>
-<li><p><strong>allow_transform</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If false no transformation is applied to make the cell orthogonal, hence a
+<li><p><strong>allow_transform</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If false no transformation is applied to make the cell orthogonal, hence a
 non-orthogonal cell may be returned.</p></li>
-<li><p><strong>plane</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><em>two tuples</em><em> of </em><em>three float</em><em>, </em><em>optional</em>) – The plane relative to the provided atoms mapped to <cite>xy</cite> plane of the potential,
+<li><p><strong>plane</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><em>two tuples</em><em> of </em><em>three float</em><em>, </em><em>optional</em>) – The plane relative to the provided atoms mapped to <cite>xy</cite> plane of the potential,
 i.e. provided plane is perpendicular to the propagation direction. If given as a
 string, it must be a concatenation of two of <cite>x</cite>, <cite>y</cite> and <cite>z</cite>; the default value
 ‘xy’ indicates that potential slices are cuts along the <cite>xy</cite>-plane of the atoms.
@@ -1116,7 +1120,7 @@ This is equivalent to translating the atoms. The default is (0., 0., 0.).</p></l
 from the atoms’ cell. If the box size does not match an integer number of the
 atoms’ supercell, an affine transformation may be necessary to preserve
 periodicity, determined by the <cite>periodic</cite> keyword.</p></li>
-<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Determines what is defined as a plane. All atoms within a distance equal to
+<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Determines what is defined as a plane. All atoms within a distance equal to
 tolerance [Å] from a given plane will be considered to belong to that plane.</p></li>
 </ul>
 </dd>
@@ -1139,9 +1143,9 @@ within the margin distance from the cell boundary.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atoms</strong> (<em>ase.Atoms</em>) – The atoms that should be padded.</p></li>
-<li><p><strong>margins</strong> (<em>one</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>three floats</em>) – The padding margin. Can be specified either as a single value for all
+<li><p><strong>margins</strong> (<em>one</em><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>three floats</em>) – The padding margin. Can be specified either as a single value for all
 directions, or three separate values.</p></li>
-<li><p><strong>directions</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The directions to pad the atoms as a concatenation of one or more of <cite>x</cite>, <cite>y</cite>
+<li><p><strong>directions</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The directions to pad the atoms as a concatenation of one or more of <cite>x</cite>, <cite>y</cite>
 and <cite>z</cite> for each of the principal directions.</p></li>
 </ul>
 </dd>
@@ -1156,17 +1160,17 @@ and <cite>z</cite> for each of the principal directions.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.atoms.plane_to_axes">
-<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">plane_to_axes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#plane_to_axes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.plane_to_axes" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">plane_to_axes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#plane_to_axes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.plane_to_axes" title="Link to this definition">#</a></dt>
 <dd><p>Convert string representation of Cartesian axes to numerical.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>plane</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – String representation of axes.</p>
+<dd class="field-odd"><p><strong>plane</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – String representation of axes.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>axes</strong> – Numerical representation of axes.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1177,7 +1181,7 @@ and <cite>z</cite> for each of the principal directions.</p></li>
 <dd><p>Print a decomposed transformation in an easy-to-read manner.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>decomposed</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Tuple of length 3 whose items are arrays of dimension 3 representing rotation,
+<dd class="field-odd"><p><strong>decomposed</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Tuple of length 3 whose items are arrays of dimension 3 representing rotation,
 scale and shear.</p>
 </dd>
 </dl>
@@ -1191,9 +1195,9 @@ scale and shear.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atoms</strong> (<em>Atoms</em>) – The atoms object to rotate.</p></li>
-<li><p><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The sequence of axes for rotation. Default is “zxz”.</p></li>
-<li><p><strong>angles</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>]</em><em>, </em><em>optional</em>) – The Euler angles in radians. Default is (0.0, 0.0, 0.0).</p></li>
-<li><p><strong>convention</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The convention for Euler angles. Default is “intrinsic”.</p></li>
+<li><p><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The sequence of axes for rotation. Default is “zxz”.</p></li>
+<li><p><strong>angles</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>]</em><em>, </em><em>optional</em>) – The Euler angles in radians. Default is (0.0, 0.0, 0.0).</p></li>
+<li><p><strong>convention</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The convention for Euler angles. Default is “intrinsic”.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1213,7 +1217,7 @@ scale and shear.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atoms</strong> (ASE <cite>Atoms</cite> objet) – Atoms to be rotated.</p></li>
-<li><p><strong>plane</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – Plane to be rotated into given as either a string or two tuples.</p></li>
+<li><p><strong>plane</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – Plane to be rotated into given as either a string or two tuples.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1232,7 +1236,7 @@ scale and shear.</p>
 plane.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>plane</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – Plane from which to rotate given either as a string or two tuples.</p>
+<dd class="field-odd"><p><strong>plane</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – Plane from which to rotate given either as a string or two tuples.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>rotation</strong> – Rotation matrix of dimension 3x3.</p>
@@ -1245,15 +1249,15 @@ plane.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.atoms.rotation_matrix_to_euler">
-<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">rotation_matrix_to_euler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#rotation_matrix_to_euler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.rotation_matrix_to_euler" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">rotation_matrix_to_euler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#rotation_matrix_to_euler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.rotation_matrix_to_euler" title="Link to this definition">#</a></dt>
 <dd><p>Convert a Cartesian rotation matrix to Euler angles.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>R</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Rotation array of dimension 3x3.</p></li>
-<li><p><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – String representation of Cartesian axes.</p></li>
-<li><p><strong>convention</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Convention for rotation order. Default is “intrinsic”.</p></li>
-<li><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Components of the rotation matrix whose magnitude is below this value are
+<li><p><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – String representation of Cartesian axes.</p></li>
+<li><p><strong>convention</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Convention for rotation order. Default is “intrinsic”.</p></li>
+<li><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Components of the rotation matrix whose magnitude is below this value are
 ignored.</p></li>
 </ul>
 </dd>
@@ -1261,7 +1265,7 @@ ignored.</p></li>
 <dd class="field-even"><p><strong>angles</strong> – Euler angles corresponding to the given rotation matrix.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1274,8 +1278,8 @@ ignored.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atoms</strong> (<em>ase.Atoms</em>) – Atoms whose repetition is to be removed.</p></li>
-<li><p><strong>repetitions</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – Integer number of repetitions in <cite>x</cite> and <cite>y</cite> directions to be checked.</p></li>
-<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Repetitions with a mismatch smaller than this value are considered to be
+<li><p><strong>repetitions</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – Integer number of repetitions in <cite>x</cite> and <cite>y</cite> directions to be checked.</p></li>
+<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Repetitions with a mismatch smaller than this value are considered to be
 repeated.</p></li>
 </ul>
 </dd>
@@ -1290,20 +1294,20 @@ repeated.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.atoms.sigma_to_B">
-<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">sigma_to_B</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#sigma_to_B"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.sigma_to_B" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">sigma_to_B</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#sigma_to_B"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.sigma_to_B" title="Link to this definition">#</a></dt>
 <dd><p>Convert displacement standard deviation to crystallographic B-factor.</p>
 <p>The B-factor (also called the Debye-Waller factor or temperature factor) is
 related to the r.m.s. displacement sigma by B = 8π²σ².</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>ndarray</em>) – Displacement standard deviation [Å]. Accepts scalars, (3,) arrays for
+<dd class="field-odd"><p><strong>sigma</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>ndarray</em>) – Displacement standard deviation [Å]. Accepts scalars, (3,) arrays for
 anisotropic displacements (Bx, By, Bz), or any broadcastable shape.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>B-factor [Å²].</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a> or ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a> or ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1318,7 +1322,7 @@ lattice vectors are made positive.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atoms</strong> (<em>ase.Atoms</em>) – The atoms that should be standardized.</p></li>
-<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Components of the lattice vectors whose magnitude is below this value are
+<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Components of the lattice vectors whose magnitude is below this value are
 considered to be zero.</p></li>
 </ul>
 </dd>
@@ -1333,15 +1337,15 @@ considered to be zero.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.atoms.validate_per_atom_property">
-<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">validate_per_atom_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#validate_per_atom_property"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.validate_per_atom_property" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">validate_per_atom_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#validate_per_atom_property"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.validate_per_atom_property" title="Link to this definition">#</a></dt>
 <dd><p>Validate and normalise a per-atom scalar or vector property.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atoms</strong> (<em>Atoms</em>)</p></li>
-<li><p><strong>props</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, or </em><em>array-like</em>) – A single value for all atoms, a dict keyed by symbol or atomic number,
+<li><p><strong>props</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, or </em><em>array-like</em>) – A single value for all atoms, a dict keyed by symbol or atomic number,
 or a sequence with one entry per atom.</p></li>
-<li><p><strong>return_array</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, always return a flat ndarray rather than a dict.</p></li>
+<li><p><strong>return_array</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, always return a flat ndarray rather than a dict.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1349,7 +1353,7 @@ or a sequence with one entry per atom.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.atoms.validate_sigmas">
-<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">validate_sigmas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#validate_sigmas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.validate_sigmas" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">validate_sigmas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#validate_sigmas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.validate_sigmas" title="Link to this definition">#</a></dt>
 <dd><p>Validate displacement standard deviations and detect anisotropy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1358,7 +1362,7 @@ or a sequence with one entry per atom.</p></li>
 <li><p><strong>sigmas</strong> (<em>AtomProperties</em>) – Isotropic: a single float, per-element dict of floats, or length-N array.
 Anisotropic: a 3-tuple of floats (identical for all atoms), a per-element
 dict of 3-tuples/arrays, or an (N, 3) array.</p></li>
-<li><p><strong>return_array</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, always return a flat ndarray rather than a dict.</p></li>
+<li><p><strong>return_array</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, always return a flat ndarray rather than a dict.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1372,6 +1376,37 @@ dict of 3-tuples/arrays, or an (N, 3) array.</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="abtem.atoms.wrap_and_snap_atoms">
+<span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">wrap_and_snap_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ase.Atoms</span></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#wrap_and_snap_atoms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.wrap_and_snap_atoms" title="Link to this definition">#</a></dt>
+<dd><p>Wrap atoms into their cell by modulo, snapping the boundary cases to zero.</p>
+<p>Wrapping is by <code class="docutils literal notranslate"><span class="pre">np.mod</span></code> rather than <code class="docutils literal notranslate"><span class="pre">Atoms.wrap</span></code>, because <code class="docutils literal notranslate"><span class="pre">wrap</span></code> is a
+<strong>no-op along any axis where ``pbc`` is False</strong> – which is ASE’s default
+for a hand-built <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> and what every <code class="docutils literal notranslate"><span class="pre">ase.build.*(vacuum=...)</span></code> slab
+carries. The slicing this feeds models an infinite-projection potential
+that is periodic in all three directions whatever the <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> object
+declares, so the bin index must be taken modulo the cell regardless.</p>
+<p>Using <code class="docutils literal notranslate"><span class="pre">wrap</span></code> here was actively harmful for those inputs: it left
+out-of-cell positions untouched, and the boundary snapping below then saw
+arbitrarily large values rather than near-boundary ones and moved them to
+zero – teleporting an atom instead of wrapping it.</p>
+<p>The snap itself is still needed: positions land in <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">L)</span></code>, and the
+<code class="docutils literal notranslate"><span class="pre">SliceIndexedAtoms</span></code> bin edges are nudged down by 1e-12, so anything in
+<code class="docutils literal notranslate"><span class="pre">(L</span> <span class="pre">-</span> <span class="pre">1e-12,</span> <span class="pre">L)</span></code> would fall outside every bin and be dropped. The same
+applies in x and y, where a value a hair below <code class="docutils literal notranslate"><span class="pre">L</span></code> puts the atom’s FFT
+peak at the wrong position.</p>
+<p>Idempotent, and the caller’s <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> is not modified unless <code class="docutils literal notranslate"><span class="pre">copy</span></code> is
+False.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atoms</strong> (<em>Atoms</em>) – Atoms to wrap. Not modified unless <code class="docutils literal notranslate"><span class="pre">copy</span></code> is False.</p></li>
+<li><p><strong>copy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If False, wrap in place. Only for callers that own <code class="docutils literal notranslate"><span class="pre">atoms</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="abtem.atoms.wrap_with_tolerance">
 <span class="sig-prename descclassname"><span class="pre">abtem.atoms.</span></span><span class="sig-name descname"><span class="pre">wrap_with_tolerance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ase.Atoms</span></span></span><a class="reference internal" href="../../../../_modules/abtem/atoms.html#wrap_with_tolerance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.atoms.wrap_with_tolerance" title="Link to this definition">#</a></dt>
 <dd><p>Wrap atoms that are closer to cell boundaries than the given tolerance.</p>
@@ -1379,7 +1414,7 @@ dict of 3-tuples/arrays, or an (N, 3) array.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atoms</strong> (<em>ase.Atoms</em>) – Atoms to be wrapped.</p></li>
-<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Minimum distance to any cell boundary.</p></li>
+<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Minimum distance to any cell boundary.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1493,6 +1528,7 @@ dict of 3-tuples/arrays, or an (N, 3) array.</p></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.atoms.standardize_cell"><code class="docutils literal notranslate"><span class="pre">standardize_cell()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.atoms.validate_per_atom_property"><code class="docutils literal notranslate"><span class="pre">validate_per_atom_property()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.atoms.validate_sigmas"><code class="docutils literal notranslate"><span class="pre">validate_sigmas()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.atoms.wrap_and_snap_atoms"><code class="docutils literal notranslate"><span class="pre">wrap_and_snap_atoms()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.atoms.wrap_with_tolerance"><code class="docutils literal notranslate"><span class="pre">wrap_with_tolerance()</span></code></a></li>
 </ul>
 </li>

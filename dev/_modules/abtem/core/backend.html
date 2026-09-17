@@ -590,8 +590,27 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">cupyx.scipy.ndimage</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cupyx_ndimage</span>  <span class="c1"># type: ignore</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="k">assert</span> <span class="n">cupyx</span> <span class="ow">is</span> <span class="kc">None</span>
+    <span class="c1"># same reasoning as the cupyx.scipy.signal guard below: this can fail even</span>
+    <span class="c1"># though cupyx itself imported, if the CUDA/ROCm libraries it eagerly</span>
+    <span class="c1"># pulls in aren't on the loader path. GPU code that needs cupyx_ndimage</span>
+    <span class="c1"># then fails at use time instead of blocking the abtem import.</span>
     <span class="n">cupyx_ndimage</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># cupyx.scipy exposes submodules lazily; signal must be imported explicitly</span>
+    <span class="c1"># before ``get_scipy_module(...).signal`` can resolve it (the import emits a</span>
+    <span class="c1"># FutureWarning about the experimental cupyx.jit interface it uses</span>
+    <span class="c1"># internally)</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="ne">FutureWarning</span><span class="p">)</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">cupyx.scipy.signal</span>  <span class="c1"># type: ignore  # noqa: F401</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c1"># this can fail even though cupyx itself imported: cupyx.scipy.signal</span>
+    <span class="c1"># eagerly imports cuBLAS-backed submodules, so an environment without the</span>
+    <span class="c1"># CUDA/ROCm libraries on the loader path fails here. GPU filters that need</span>
+    <span class="c1"># scipy.signal then fail at use time instead of blocking the abtem import.</span>
+    <span class="k">pass</span>
 
 
 <span class="n">ArrayModule</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ModuleType</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>

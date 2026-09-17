@@ -552,20 +552,55 @@ document.addEventListener("DOMContentLoaded", () => {
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">site</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>  <span class="c1"># type: ignore</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dask.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">canonical_name</span><span class="p">,</span> <span class="n">collect</span><span class="p">,</span> <span class="n">update</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dask.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">canonical_name</span><span class="p">,</span> <span class="n">collect_yaml</span><span class="p">,</span> <span class="n">interpret_value</span><span class="p">,</span> <span class="n">merge</span><span class="p">,</span> <span class="n">update</span>
 
 <span class="n">no_default</span> <span class="o">=</span> <span class="s2">"__no_default__"</span>
 
-<span class="k">if</span> <span class="s2">"ABTEM_CONFIG"</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
-    <span class="n">PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"ABTEM_CONFIG"</span><span class="p">]</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="n">PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">"~"</span><span class="p">),</span> <span class="s2">".config"</span><span class="p">,</span> <span class="s2">"abtem"</span><span class="p">)</span>
+<span class="c1">#: Prefix of the environment variables abTEM reads its configuration from,</span>
+<span class="c1">#: e.g. ``ABTEM_DEVICE=gpu`` or ``ABTEM_DASK__CHUNK_SIZE="256 MB"``.</span>
+<span class="n">ENV_PREFIX</span> <span class="o">=</span> <span class="s2">"ABTEM_"</span>
+
+<span class="c1">#: abTEM used to read its configuration from dask's environment namespace by</span>
+<span class="c1">#: accident. Variables in that namespace are still honored, but only for keys</span>
+<span class="c1">#: abTEM actually defines, and they warn. See :func:`collect_legacy_env`.</span>
+<span class="n">LEGACY_ENV_PREFIX</span> <span class="o">=</span> <span class="s2">"DASK_"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_paths</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Get locations to search for YAML configuration files.</span>
+
+<span class="sd">    This logic exists as a separate function for testing purposes.</span>
+<span class="sd">    """</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">"ABTEM_ROOT_CONFIG"</span><span class="p">,</span> <span class="s2">"/etc/abtem"</span><span class="p">),</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s2">"etc"</span><span class="p">,</span> <span class="s2">"abtem"</span><span class="p">),</span>
+        <span class="o">*</span><span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s2">"etc"</span><span class="p">,</span> <span class="s2">"abtem"</span><span class="p">)</span> <span class="k">for</span> <span class="n">prefix</span> <span class="ow">in</span> <span class="n">site</span><span class="o">.</span><span class="n">PREFIXES</span><span class="p">],</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">"~"</span><span class="p">),</span> <span class="s2">".config"</span><span class="p">,</span> <span class="s2">"abtem"</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="s2">"ABTEM_CONFIG"</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="n">paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"ABTEM_CONFIG"</span><span class="p">])</span>
+
+    <span class="c1"># Remove duplicate paths while preserving ordering</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">paths</span><span class="p">)))))</span>
+
+    <span class="k">return</span> <span class="n">paths</span>
+
+
+<span class="n">paths</span> <span class="o">=</span> <span class="n">_get_paths</span><span class="p">()</span>
+
+<span class="c1">#: Environment variables that control config *discovery* itself (see</span>
+<span class="c1">#: :func:`_get_paths`) rather than naming a configuration value. Excluded from</span>
+<span class="c1">#: :func:`collect_env` so they don't leak into the config dict as stray</span>
+<span class="c1">#: top-level keys (``config``, ``root_config``).</span>
+<span class="n">_CONTROL_ENV_VARS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"ABTEM_CONFIG"</span><span class="p">,</span> <span class="s2">"ABTEM_ROOT_CONFIG"</span><span class="p">})</span>
 
 <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -679,6 +714,178 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_defines_key</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">defaults</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaults</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether ``key`` (in dotted form) is a key defined by abTEM's defaults."""</span>
+    <span class="k">for</span> <span class="n">default</span> <span class="ow">in</span> <span class="n">defaults</span><span class="p">:</span>
+        <span class="n">node</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">default</span>
+        <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">):</span>
+            <span class="c1"># dict rather than Mapping: the defaults are parsed from yaml, and</span>
+            <span class="c1"># canonical_name is typed for dict.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">break</span>
+            <span class="n">part</span> <span class="o">=</span> <span class="n">canonical_name</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">part</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="n">part</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="collect_env">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.config.html#abtem.core.config.collect_env">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">collect_env</span><span class="p">(</span><span class="n">env</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Collect config from environment variables</span>
+
+<span class="sd">    This grabs environment variables of the form ``ABTEM_FOO__BAR_BAZ=123`` and</span>
+<span class="sd">    turns these into config variables of the form ``{"foo": {"bar-baz": 123}}``.</span>
+<span class="sd">    It transforms the key and value in the following way:</span>
+
+<span class="sd">    -  Lower-cases the key text</span>
+<span class="sd">    -  Treats ``__`` (double-underscore) as nested access</span>
+<span class="sd">    -  Calls ``ast.literal_eval`` on the value</span>
+
+<span class="sd">    ``ABTEM_CONFIG`` and ``ABTEM_ROOT_CONFIG`` are excluded even though they</span>
+<span class="sd">    carry the ``ABTEM_`` prefix: they control where :func:`collect` looks for</span>
+<span class="sd">    yaml files (see :func:`_get_paths`) rather than naming a configuration</span>
+<span class="sd">    value, and must not leak into the config dict as a stray ``config`` or</span>
+<span class="sd">    ``root_config`` key.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    env : Mapping[str, str], optional</span>
+<span class="sd">        The system environment variables. Defaults to ``os.environ``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    config : dict</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">env</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">ENV_PREFIX</span><span class="p">)</span> <span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"__"</span><span class="p">,</span> <span class="s2">"."</span><span class="p">):</span> <span class="n">interpret_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">ENV_PREFIX</span><span class="p">)</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_CONTROL_ENV_VARS</span>
+    <span class="p">}</span>
+
+    <span class="n">result</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="nb">set</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">lock</span><span class="o">=</span><span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="collect_legacy_env">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.config.html#abtem.core.config.collect_legacy_env">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">collect_legacy_env</span><span class="p">(</span>
+    <span class="n">env</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">defaults</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaults</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Collect config from deprecated ``DASK_``-prefixed environment variables</span>
+
+<span class="sd">    Before abTEM read its own configuration location, ``refresh`` delegated</span>
+<span class="sd">    wholesale to :func:`dask.config.collect`, so the only environment variables</span>
+<span class="sd">    that reached abTEM were dask's. Those keep working for a transition period,</span>
+<span class="sd">    but they warn, and only for keys abTEM itself defines -- a genuine dask</span>
+<span class="sd">    setting such as ``DASK_DISTRIBUTED__WORKER__MEMORY__TARGET`` is left to</span>
+<span class="sd">    dask and never enters abTEM's config.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    env : Mapping[str, str], optional</span>
+<span class="sd">        The system environment variables. Defaults to ``os.environ``.</span>
+<span class="sd">    defaults : list of Mapping, optional</span>
+<span class="sd">        The registered default configurations, used to decide which variables</span>
+<span class="sd">        in dask's namespace are meant for abTEM.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    config : dict</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">env</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">LEGACY_ENV_PREFIX</span><span class="p">):</span>
+            <span class="k">continue</span>
+
+        <span class="n">key</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">LEGACY_ENV_PREFIX</span><span class="p">)</span> <span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"__"</span><span class="p">,</span> <span class="s2">"."</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_defines_key</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">defaults</span><span class="p">):</span>
+            <span class="k">continue</span>
+
+        <span class="n">new_name</span> <span class="o">=</span> <span class="n">ENV_PREFIX</span> <span class="o">+</span> <span class="n">name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">LEGACY_ENV_PREFIX</span><span class="p">)</span> <span class="p">:]</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">"Setting abTEM configuration through the environment variable "</span>
+            <span class="sa">f</span><span class="s1">'"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">" is deprecated, as it collides with dask</span><span class="se">\'</span><span class="s1">s '</span>
+            <span class="sa">f</span><span class="s1">'configuration namespace. Please use "</span><span class="si">{</span><span class="n">new_name</span><span class="si">}</span><span class="s1">" instead.'</span><span class="p">,</span>
+            <span class="ne">FutureWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">interpret_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="n">result</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="nb">set</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">lock</span><span class="o">=</span><span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="collect">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.config.html#abtem.core.config.collect">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">collect</span><span class="p">(</span>
+    <span class="n">paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">paths</span><span class="p">,</span>
+    <span class="n">env</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">defaults</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaults</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Collect configuration from paths and environment variables</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    paths : list[str]</span>
+<span class="sd">        A list of paths to search for yaml config files. Defaults to</span>
+<span class="sd">        ``abtem.config.paths``, i.e. ``/etc/abtem``, ``&lt;sys.prefix&gt;/etc/abtem``,</span>
+<span class="sd">        ``~/.config/abtem`` and ``$ABTEM_CONFIG``, in increasing priority.</span>
+<span class="sd">    env : Mapping[str, str], optional</span>
+<span class="sd">        The system environment variables. Defaults to ``os.environ``.</span>
+<span class="sd">    defaults : list of Mapping, optional</span>
+<span class="sd">        The registered default configurations, used by</span>
+<span class="sd">        :func:`collect_legacy_env`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    config : dict</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    abtem.config.refresh: collect configuration and update into primary config</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">yaml_configs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">collect_yaml</span><span class="p">(</span><span class="n">paths</span><span class="o">=</span><span class="n">paths</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># A malformed yaml file in the user's config directory must not take</span>
+        <span class="c1"># down `import abtem` -- a typo should degrade to a warning, not a raw</span>
+        <span class="c1"># parser traceback. Coarse-grained: this drops every yaml source for</span>
+        <span class="c1"># this call rather than isolating just the one bad file among several</span>
+        <span class="c1"># in `paths`; real per-file isolation would mean replicating</span>
+        <span class="c1"># collect_yaml's own path-discovery loop.</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Failed to read abTEM's yaml configuration files under </span><span class="si">{</span><span class="n">paths</span><span class="si">}</span><span class="s2">; "</span>
+            <span class="sa">f</span><span class="s2">"configuration from these files is being skipped: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="ne">RuntimeWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">yaml_configs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">configs</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="o">*</span><span class="n">yaml_configs</span><span class="p">,</span>
+        <span class="n">collect_legacy_env</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="n">defaults</span><span class="p">),</span>
+        <span class="n">collect_env</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="n">merge</span><span class="p">(</span><span class="o">*</span><span class="n">configs</span><span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="refresh">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.config.html#abtem.core.config.refresh">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">refresh</span><span class="p">(</span>
@@ -695,7 +902,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    1.  Clearing out all old configuration</span>
 <span class="sd">    2.  Updating from the stored defaults from downstream libraries</span>
 <span class="sd">        (see update_defaults)</span>
-<span class="sd">    3.  Updating from yaml files and environment variables</span>
+<span class="sd">    3.  Updating from abTEM's yaml files (see ``abtem.config.paths``) and</span>
+<span class="sd">        ``ABTEM_``-prefixed environment variables</span>
 
 <span class="sd">    Note that some functionality only checks configuration once at startup and</span>
 <span class="sd">    may not change behavior, even if configuration changes.  It is recommended</span>
@@ -711,6 +919,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">defaults</span><span class="p">:</span>
         <span class="n">update</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="s2">"old"</span><span class="p">)</span>
+
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"defaults"</span><span class="p">,</span> <span class="n">defaults</span><span class="p">)</span>
 
     <span class="n">update</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">collect</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">))</span></div>
 
@@ -812,8 +1022,8 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">update_defaults</span><span class="p">(</span><span class="n">_defaults</span><span class="p">)</span>
 
 
-<span class="n">refresh</span><span class="p">()</span>
 <span class="n">_initialize</span><span class="p">()</span>
+<span class="n">refresh</span><span class="p">()</span>
 </pre></div>
 
                 </article>

@@ -560,6 +560,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span><span class="p">,</span> <span class="n">reduce</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">dask</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atoms</span>
@@ -575,7 +576,13 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">UnknownAxis</span><span class="p">,</span>
     <span class="n">WaveVectorAxis</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy_to_device</span><span class="p">,</span> <span class="n">cp</span><span class="p">,</span> <span class="n">get_array_module</span><span class="p">,</span> <span class="n">validate_device</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">asnumpy</span><span class="p">,</span>
+    <span class="n">copy_to_device</span><span class="p">,</span>
+    <span class="n">cp</span><span class="p">,</span>
+    <span class="n">get_array_module</span><span class="p">,</span>
+    <span class="n">validate_device</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chunks</span><span class="p">,</span> <span class="n">chunk_ranges</span><span class="p">,</span> <span class="n">equal_sized_chunks</span><span class="p">,</span> <span class="n">validate_chunks</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.complex</span><span class="w"> </span><span class="kn">import</span> <span class="n">complex_exponential</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">TqdmWrapper</span>
@@ -608,7 +615,13 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.prism.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">batch_crop_2d</span><span class="p">,</span> <span class="n">minimum_crop</span><span class="p">,</span> <span class="n">plane_waves</span><span class="p">,</span> <span class="n">wrapped_crop_2d</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.scan</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseScan</span><span class="p">,</span> <span class="n">GridScan</span><span class="p">,</span> <span class="n">validate_scan</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.transfer</span><span class="w"> </span><span class="kn">import</span> <span class="n">CTF</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseWaves</span><span class="p">,</span> <span class="n">Probe</span><span class="p">,</span> <span class="n">Waves</span><span class="p">,</span> <span class="n">_antialias_cutoff_gpts</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseWaves</span><span class="p">,</span>
+    <span class="n">Probe</span><span class="p">,</span>
+    <span class="n">Waves</span><span class="p">,</span>
+    <span class="n">_antialias_cutoff_gpts</span><span class="p">,</span>
+    <span class="n">reduce_ensemble</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_extract_measurement</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
@@ -1753,8 +1766,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 <span class="n">pbar</span><span class="o">.</span><span class="n">update_if_exists</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sub_scan</span><span class="p">))</span>
 
-                <span class="k">for</span> <span class="n">detector</span><span class="p">,</span> <span class="n">measurement</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="n">measurements</span><span class="p">):</span>
-                    <span class="n">measurement</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span><span class="o">.</span><span class="n">array</span>
+                <span class="c1"># All detectors here see the same, not-yet-mutated ``waves``</span>
+                <span class="c1"># -- share one diffraction-pattern FFT across them.</span>
+                <span class="k">with</span> <span class="n">waves</span><span class="o">.</span><span class="n">_share_diffraction_pattern_fft</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">detector</span><span class="p">,</span> <span class="n">measurement</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="n">measurements</span><span class="p">):</span>
+                        <span class="n">measurement</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span><span class="o">.</span><span class="n">array</span>
 
         <span class="n">pbar</span><span class="o">.</span><span class="n">close_if_exists</span><span class="p">()</span>
 
@@ -2966,8 +2982,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     <span class="n">pbar</span><span class="o">.</span><span class="n">update_if_exists</span><span class="p">((</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">*</span> <span class="n">scan_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
-                    <span class="k">for</span> <span class="n">detector</span><span class="p">,</span> <span class="n">measurement</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="n">measurements</span><span class="p">):</span>
-                        <span class="n">measurement</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span><span class="o">.</span><span class="n">array</span>
+                    <span class="c1"># All detectors here see the same, not-yet-mutated</span>
+                    <span class="c1"># ``waves`` -- share one diffraction-pattern FFT across</span>
+                    <span class="c1"># them.</span>
+                    <span class="k">with</span> <span class="n">waves</span><span class="o">.</span><span class="n">_share_diffraction_pattern_fft</span><span class="p">():</span>
+                        <span class="k">for</span> <span class="n">detector</span><span class="p">,</span> <span class="n">measurement</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="n">measurements</span><span class="p">):</span>
+                            <span class="n">measurement</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span><span class="o">.</span><span class="n">array</span>
 
                 <span class="k">del</span> <span class="n">interpolated</span><span class="p">,</span> <span class="n">plane_wave</span>
 
@@ -3264,8 +3284,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">pbar</span><span class="o">.</span><span class="n">update_if_exists</span><span class="p">(</span><span class="n">n_reduced</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">detector</span><span class="p">,</span> <span class="n">measurement</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="n">measurements</span><span class="p">):</span>
-            <span class="n">measurement</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span><span class="o">.</span><span class="n">array</span>
+        <span class="c1"># All detectors here see the same, not-yet-mutated ``waves`` --</span>
+        <span class="c1"># share one diffraction-pattern FFT across them.</span>
+        <span class="k">with</span> <span class="n">waves</span><span class="o">.</span><span class="n">_share_diffraction_pattern_fft</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">detector</span><span class="p">,</span> <span class="n">measurement</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="n">measurements</span><span class="p">):</span>
+                <span class="n">measurement</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span><span class="o">.</span><span class="n">array</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_batch_reduce_to_measurements</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -5219,9 +5242,14 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">w</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">lattice_basis</span><span class="p">,</span> <span class="n">extra_basis</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># order the retained modes by how much of the expansion they carry, so</span>
-        <span class="c1"># that a rank cap keeps the largest and the reported spectrum descends</span>
+        <span class="c1"># that a rank cap keeps the largest and the reported spectrum descends;</span>
+        <span class="c1"># the argsort runs on the host: the vector holds one entry per retained</span>
+        <span class="c1"># mode, and CuPy's Thrust-backed sort is unavailable on some HIP/ROCm</span>
+        <span class="c1"># builds</span>
         <span class="n">amplitudes</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">((</span><span class="n">projected</span> <span class="o">@</span> <span class="n">w</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-        <span class="n">order</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">amplitudes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">amplitudes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_rank</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">order</span> <span class="o">=</span> <span class="n">order</span><span class="p">[:</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_rank</span><span class="p">)]</span>
         <span class="n">w</span><span class="p">,</span> <span class="n">amplitudes</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="n">order</span><span class="p">],</span> <span class="n">xp</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">amplitudes</span><span class="p">[</span><span class="n">order</span><span class="p">])</span>
@@ -5632,8 +5660,14 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">extra_ensemble_axes_shape</span> <span class="o">=</span> <span class="n">extra_ensemble_axes_shape</span> <span class="o">+</span> <span class="p">(</span>
                 <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">),</span>
             <span class="p">)</span>
+            <span class="c1"># base_axes_metadata[0] is the per-*slice* ThicknessAxis, whose</span>
+            <span class="c1"># values have length num_slices, while the axis being described</span>
+            <span class="c1"># here has length len(exit_planes). Those differ whenever exit</span>
+            <span class="c1"># planes are not every slice, and the mismatch raises from the</span>
+            <span class="c1"># measurement constructor. Use the per-exit-plane axis, as</span>
+            <span class="c1"># multislice.py's _potential_ensemble_shape_and_metadata does.</span>
             <span class="n">extra_ensemble_axes_metadata</span> <span class="o">=</span> <span class="n">extra_ensemble_axes_metadata</span> <span class="o">+</span> <span class="p">[</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">base_axes_metadata</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">_get_exit_planes_axes_metadata</span><span class="p">()</span>
             <span class="p">]</span>
         <span class="k">return</span> <span class="n">extra_ensemble_axes_shape</span><span class="p">,</span> <span class="n">extra_ensemble_axes_metadata</span>
 
@@ -5713,6 +5747,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">squeeze</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span>
 
+        <span class="c1"># One object per block; _extract_measurement only calls .item(), so the</span>
+        <span class="c1"># shape of this wrapper carries no information beyond being non-empty.</span>
         <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
         <span class="n">itemset</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">measurements</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">array</span>
@@ -5801,21 +5837,41 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">double_channel</span><span class="o">=</span><span class="n">double_channel</span><span class="p">,</span>
                 <span class="n">inelastic_crop</span><span class="o">=</span><span class="n">inelastic_crop</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="k">return</span> <span class="n">_wrap_measurements</span><span class="p">(</span><span class="n">measurements</span><span class="p">)</span>
+            <span class="c1"># Squeeze once, here, on the assembled measurements -- the level</span>
+            <span class="c1"># Waves.transition_potential_multislice uses. The per-configuration</span>
+            <span class="c1"># driver deliberately no longer does it.</span>
+            <span class="k">return</span> <span class="n">_wrap_measurements</span><span class="p">(</span><span class="n">reduce_ensemble</span><span class="p">(</span><span class="n">measurements</span><span class="p">))</span>
 
         <span class="n">blocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_blocks</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Each block carries a measurement with an exit-plane axis whenever the</span>
+        <span class="c1"># potential has more than one, sitting between the ensemble axes and</span>
+        <span class="c1"># the scan axes. Declaring chunks without it made the declared block</span>
+        <span class="c1"># shape disagree with the computed one: the result came back with one</span>
+        <span class="c1"># more array dimension than axes metadata (so every method pairing the</span>
+        <span class="c1"># two raised), and with ensemble_mean=False it failed outright during</span>
+        <span class="c1"># compute with a broadcast error.</span>
+        <span class="n">num_exit_planes</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">num_exit_planes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">)</span>
 
         <span class="n">chunks</span> <span class="o">=</span> <span class="p">()</span>
         <span class="n">drop_axis</span> <span class="o">=</span> <span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">:</span>
             <span class="n">blocks</span> <span class="o">=</span> <span class="n">blocks</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
             <span class="n">drop_axis</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,)</span>
-            <span class="n">new_axis</span> <span class="o">=</span> <span class="n">tuple_range</span><span class="p">(</span><span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">chunks</span> <span class="o">+=</span> <span class="n">blocks</span><span class="o">.</span><span class="n">chunks</span>
-            <span class="n">new_axis</span> <span class="o">=</span> <span class="n">tuple_range</span><span class="p">(</span>
-                <span class="n">offset</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">length</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">new_axis</span> <span class="o">=</span> <span class="n">tuple_range</span><span class="p">(</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">length</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">num_exit_planes</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">num_exit_planes</span><span class="p">:</span>
+            <span class="n">chunks</span> <span class="o">+=</span> <span class="p">(</span><span class="n">num_exit_planes</span><span class="p">,)</span>
 
         <span class="n">chunks</span> <span class="o">+=</span> <span class="n">scan</span><span class="o">.</span><span class="n">shape</span>
 
@@ -5826,7 +5882,12 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">,</span>
             <span class="n">scan</span><span class="o">=</span><span class="n">scan</span><span class="p">,</span>
             <span class="n">detectors</span><span class="o">=</span><span class="n">detectors</span><span class="p">,</span>
-            <span class="n">transition_potentials</span><span class="o">=</span><span class="n">transition_potentials</span><span class="p">,</span>
+            <span class="c1"># One graph node shared by every ensemble block's task instead</span>
+            <span class="c1"># of a copy embedded per task; map_blocks traverses kwargs for</span>
+            <span class="c1"># dask collections and materializes it before the call. Same</span>
+            <span class="c1"># rationale as shared_constant_arg, which the multislice driver</span>
+            <span class="c1"># uses through the transform's partitioned args.</span>
+            <span class="n">transition_potentials</span><span class="o">=</span><span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">transition_potentials</span><span class="p">,</span> <span class="n">pure</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
             <span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span>
             <span class="n">double_channel</span><span class="o">=</span><span class="n">double_channel</span><span class="p">,</span>
             <span class="n">inelastic_crop</span><span class="o">=</span><span class="n">inelastic_crop</span><span class="p">,</span>
@@ -5837,13 +5898,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">extra_axes_metadata</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">extra_axes_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
+            <span class="n">extra_axes_metadata</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">num_exit_planes</span><span class="p">:</span>
+                <span class="n">extra_axes_metadata</span> <span class="o">=</span> <span class="n">extra_axes_metadata</span> <span class="o">+</span> <span class="p">[</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">_get_exit_planes_axes_metadata</span><span class="p">()</span>
+                <span class="p">]</span>
 
         <span class="n">measurements</span> <span class="o">=</span> <span class="n">_finalize_lazy_measurements</span><span class="p">(</span>
             <span class="n">arrays</span><span class="p">,</span> <span class="n">waves</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="n">extra_axes_metadata</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">_wrap_measurements</span><span class="p">(</span><span class="n">measurements</span><span class="p">)</span></div>
+        <span class="c1"># Squeeze once, here, on the assembled measurements -- the level</span>
+        <span class="c1"># Waves.transition_potential_multislice uses. The per-configuration</span>
+        <span class="c1"># driver deliberately no longer does it.</span>
+        <span class="k">return</span> <span class="n">_wrap_measurements</span><span class="p">(</span><span class="n">reduce_ensemble</span><span class="p">(</span><span class="n">measurements</span><span class="p">))</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_eager_build_s_matrix_detect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">ctf</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="n">squeeze</span><span class="p">):</span>

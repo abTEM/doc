@@ -560,7 +560,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atoms</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.atoms</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_cell_orthogonal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.atoms</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_cell_orthogonal</span><span class="p">,</span> <span class="n">wrap_and_snap_atoms</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">EqualityMixin</span><span class="p">,</span> <span class="n">label_to_index</span>
 
 
@@ -1238,8 +1238,36 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span>
         <span class="n">slice_thickness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">wrap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="c1"># Atoms outside the cell must be wrapped before they are binned, and</span>
+        <span class="c1"># not every caller has done so: Potential._prepare_atoms wraps, but</span>
+        <span class="c1"># explicit core-loss ``sites`` and CrystalPotential's tiled atoms are</span>
+        <span class="c1"># handed here raw. np.digitize returns 0 for any z below the first bin</span>
+        <span class="c1"># edge -- including arbitrarily negative z -- so an unwrapped atom was</span>
+        <span class="c1"># assigned to slice 0 whatever its true wrapped depth, and one above</span>
+        <span class="c1"># the last edge was discarded by label_to_index. Both are silent, and</span>
+        <span class="c1"># the mis-sliced one is the damaging case: it ionises at the wrong</span>
+        <span class="c1"># depth, which is exactly what a depth-resolved measurement is trying</span>
+        <span class="c1"># to resolve.</span>
+        <span class="c1">#</span>
+        <span class="c1"># ``wrap`` exists because that is only right for a periodic potential.</span>
+        <span class="c1"># Potential(periodic=False) deliberately does not wrap -- its atoms are</span>
+        <span class="c1"># cut from a larger repeated potential and randomised *after* padding,</span>
+        <span class="c1"># so an edge atom displaced just outside the cell belongs at the face</span>
+        <span class="c1"># it left, not at the opposite one. Wrapping unconditionally moved such</span>
+        <span class="c1"># an atom the full height of the box, which is the same depth</span>
+        <span class="c1"># corruption this wrap exists to prevent, just for the other path.</span>
+        <span class="c1"># Callers that know the potential's convention pass it through; the</span>
+        <span class="c1"># default wraps, since that is right for everything else that reaches</span>
+        <span class="c1"># here.</span>
+        <span class="c1"># Validate first: wrapping reads np.diag(atoms.cell) and would</span>
+        <span class="c1"># silently ignore the shear terms of a non-orthogonal cell before</span>
+        <span class="c1"># BaseSlicedAtoms raises for it.</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">slice_thickness</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">wrap</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_atoms</span> <span class="o">=</span> <span class="n">wrap_and_snap_atoms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
 
         <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
 
@@ -1252,6 +1280,22 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">bin_edges</span> <span class="o">-=</span> <span class="mf">1e-12</span>
 
         <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">bin_edges</span><span class="p">)</span>
+
+        <span class="c1"># label_to_index silently discards labels outside [0, num_slices - 1],</span>
+        <span class="c1"># which is how an out-of-cell atom used to disappear. After the wrap</span>
+        <span class="c1"># above there is no such atom, so say so rather than dropping one.</span>
+        <span class="c1"># Only meaningful after a wrap: with wrap=False (a non-periodic</span>
+        <span class="c1"># potential) an atom outside the cell is expected, and label_to_index</span>
+        <span class="c1"># dropping it is the pre-existing behaviour this must not change.</span>
+        <span class="c1"># np.digitize against increasing bins returns [0, len(bins)], never</span>
+        <span class="c1"># negative, so only the upper end can escape.</span>
+        <span class="k">if</span> <span class="n">wrap</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="ow">and</span> <span class="n">labels</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">int</span><span class="p">((</span><span class="n">labels</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span><span class="si">}</span><span class="s2"> atom(s) fall outside "</span>
+                <span class="sa">f</span><span class="s2">"every one of the </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2"> slices after wrapping; the "</span>
+                <span class="s2">"first is at z = "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">labels</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span><span class="si">!r}</span><span class="s2">"</span>
+            <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_slice_index</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">indices</span> <span class="k">for</span> <span class="n">indices</span> <span class="ow">in</span> <span class="n">label_to_index</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">max_label</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>

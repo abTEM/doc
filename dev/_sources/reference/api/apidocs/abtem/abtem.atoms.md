@@ -146,6 +146,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`wrap_and_snap_atoms <abtem.atoms.wrap_and_snap_atoms>`
+  - ```{autodoc2-docstring} abtem.atoms.wrap_and_snap_atoms
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`wrap_with_tolerance <abtem.atoms.wrap_with_tolerance>`
   - ```{autodoc2-docstring} abtem.atoms.wrap_with_tolerance
     :parser: rst
@@ -399,6 +404,14 @@
 :canonical: abtem.atoms.validate_sigmas
 
 ```{autodoc2-docstring} abtem.atoms.validate_sigmas
+:parser: rst
+```
+````
+
+````{py:function} wrap_and_snap_atoms(...) -> ase.Atoms
+:canonical: abtem.atoms.wrap_and_snap_atoms
+
+```{autodoc2-docstring} abtem.atoms.wrap_and_snap_atoms
 :parser: rst
 ```
 ````

@@ -552,8 +552,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">bisect</span><span class="w"> </span><span class="kn">import</span> <span class="n">bisect_left</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
@@ -578,7 +580,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.array</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayObject</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">AxisMetadata</span><span class="p">,</span> <span class="n">OrdinalAxis</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy_to_device</span><span class="p">,</span> <span class="n">get_array_module</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">copy_to_device</span><span class="p">,</span>
+    <span class="n">get_array_module</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate_chunks</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.complex</span><span class="w"> </span><span class="kn">import</span> <span class="n">abs2</span><span class="p">,</span> <span class="n">complex_exponential</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.electron_configurations</span><span class="w"> </span><span class="kn">import</span> <span class="n">electron_configurations</span>
@@ -591,7 +596,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">fft2</span><span class="p">,</span> <span class="n">fft2_convolve</span><span class="p">,</span> <span class="n">fft_shift_kernel</span><span class="p">,</span> <span class="n">ifft2</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">Grid</span><span class="p">,</span> <span class="n">HasGrid2DMixin</span><span class="p">,</span> <span class="n">polar_spatial_frequencies</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">CopyMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">CopyMixin</span><span class="p">,</span> <span class="n">get_dtype</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.measurements</span><span class="w"> </span><span class="kn">import</span> <span class="n">Images</span><span class="p">,</span> <span class="n">RealSpaceLineProfiles</span><span class="p">,</span> <span class="n">_polar_detector_bins</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
@@ -662,12 +667,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_validate_transition_potentials</span><span class="p">(</span><span class="n">transition_potentials</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">transition_potentials</span><span class="p">,</span> <span class="s2">"scatter"</span><span class="p">):</span>
-        <span class="n">transition_potentials</span> <span class="o">=</span> <span class="p">[</span><span class="n">transition_potentials</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">transition_potentials</span>
-
-
 <div class="viewcode-block" id="RadialWavefunction">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html#abtem.inelastic.core_loss.RadialWavefunction">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RadialWavefunction</span><span class="p">:</span>
@@ -692,19 +691,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_radial_grid</span> <span class="o">=</span> <span class="n">radial_grid</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_radial_values</span> <span class="o">=</span> <span class="n">radial_values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interpolator</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
-        <span class="n">f</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_radial_grid</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_radial_values</span><span class="p">,</span>
-            <span class="n">kind</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-            <span class="n">fill_value</span><span class="o">=</span><span class="s2">"extrapolate"</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+        <span class="c1"># Built once and reused: the overlap integral evaluates each radial</span>
+        <span class="c1"># function several times, and the continuum grid can hold millions of</span>
+        <span class="c1"># points at low continuum energy.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_interpolator</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_radial_grid</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_radial_values</span><span class="p">,</span>
+                <span class="n">kind</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">fill_value</span><span class="o">=</span><span class="s2">"extrapolate"</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolator</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">bound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="c1"># Continuum states carry n=None, so comparing n to 0 raised TypeError.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -843,6 +848,123 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+<span class="c1"># Radial step of the continuum integration grid [Bohr], and the largest grid we</span>
+<span class="c1"># are willing to build before giving up on resolving the asymptotic region.</span>
+<span class="n">_CONTINUUM_STEP</span> <span class="o">=</span> <span class="mf">20.0</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1000000</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">_CONTINUUM_MAX_RADIUS</span> <span class="o">=</span> <span class="mf">150.0</span>
+
+<span class="c1"># The outer region must span this many oscillations, and the centrifugal term</span>
+<span class="c1"># throughout it must be this small a fraction of the kinetic energy, for the</span>
+<span class="c1"># wave to be free-particle-like enough to read off its amplitude. The envelope</span>
+<span class="c1"># of a free wave is exactly constant, so one oscillation is enough to sample it;</span>
+<span class="c1"># the spread of the envelope is checked separately as a diagnostic.</span>
+<span class="n">_CONTINUUM_PERIODS</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">_CONTINUUM_CENTRIFUGAL_TOLERANCE</span> <span class="o">=</span> <span class="mf">0.02</span>
+
+<span class="c1"># Fraction of the grid, measured from the outer edge, used to read the amplitude.</span>
+<span class="n">_ASYMPTOTIC_REGION_FRACTION</span> <span class="o">=</span> <span class="mf">0.25</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_continuum_radial_grid</span><span class="p">(</span><span class="n">ef</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lprime</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Radial grid whose outer quarter is asymptotically free.</span>
+
+<span class="sd">    The amplitude of the continuum wave can only be read off where the</span>
+<span class="sd">    centrifugal barrier is negligible and the wave has completed several</span>
+<span class="sd">    oscillations. Both conditions are hardest to satisfy at low continuum</span>
+<span class="sd">    energy and high angular momentum, so the grid is extended as needed.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ef : float</span>
+<span class="sd">        Continuum energy [Rydberg].</span>
+<span class="sd">    lprime : int</span>
+<span class="sd">        Angular momentum of the continuum state.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    r : np.ndarray</span>
+<span class="sd">        Radial grid [Bohr].</span>
+<span class="sd">    """</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ef</span><span class="p">)</span>
+
+    <span class="n">fraction</span> <span class="o">=</span> <span class="n">_ASYMPTOTIC_REGION_FRACTION</span>
+
+    <span class="c1"># The outer region spans `fraction` of the grid and must contain enough</span>
+    <span class="c1"># oscillations to sample the envelope.</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">_CONTINUUM_PERIODS</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">(</span><span class="n">k</span> <span class="o">*</span> <span class="n">fraction</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">lprime</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># The centrifugal term is largest at the inner edge of the outer region.</span>
+        <span class="n">free_radius</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="n">lprime</span> <span class="o">*</span> <span class="p">(</span><span class="n">lprime</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">_CONTINUUM_CENTRIFUGAL_TOLERANCE</span> <span class="o">*</span> <span class="n">ef</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">radius</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">free_radius</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">fraction</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">radius</span> <span class="o">&gt;</span> <span class="n">_CONTINUUM_MAX_RADIUS</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"the continuum state (epsilon=</span><span class="si">{</span><span class="n">ef</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">units</span><span class="o">.</span><span class="n">Rydberg</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2"> eV, "</span>
+            <span class="sa">f</span><span class="s2">"l'=</span><span class="si">{</span><span class="n">lprime</span><span class="si">}</span><span class="s2">) does not reach its asymptotic form within "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_CONTINUUM_MAX_RADIUS</span><span class="si">}</span><span class="s2"> Bohr; its normalisation, and hence the "</span>
+            <span class="s2">"absolute scale of the transition potential, may be inaccurate"</span><span class="p">,</span>
+            <span class="ne">RuntimeWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">radius</span> <span class="o">=</span> <span class="n">_CONTINUUM_MAX_RADIUS</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1e-12</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">radius</span> <span class="o">/</span> <span class="n">_CONTINUUM_STEP</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_asymptotic_amplitude</span><span class="p">(</span><span class="n">r</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Amplitude of the asymptotic oscillation ``u(r) -&gt; A sin(k r + delta)``.</span>
+
+<span class="sd">    Taken from the envelope ``sqrt(u^2 + (u'/k)^2)`` over the outer region,</span>
+<span class="sd">    which is constant wherever the wave is free.</span>
+
+<span class="sd">    Using ``max(u)`` instead, as earlier versions of abTEM did, is wrong in two</span>
+<span class="sd">    regimes: at low continuum energy the grid spans less than one oscillation,</span>
+<span class="sd">    and for ``l' &gt;= 2`` the envelope overshoots its asymptotic value near the</span>
+<span class="sd">    turning point of the centrifugal barrier, so the maximum is attained well</span>
+<span class="sd">    inside the atom.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    r : np.ndarray</span>
+<span class="sd">        Radial grid [Bohr].</span>
+<span class="sd">    u : np.ndarray</span>
+<span class="sd">        Radial wavefunction on that grid.</span>
+<span class="sd">    k : float</span>
+<span class="sd">        Asymptotic wavenumber [1/Bohr].</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    amplitude : float</span>
+<span class="sd">    """</span>
+    <span class="n">outer</span> <span class="o">=</span> <span class="n">r</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">_ASYMPTOTIC_REGION_FRACTION</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">du</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+    <span class="n">envelope</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">outer</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">du</span><span class="p">[</span><span class="n">outer</span><span class="p">]</span> <span class="o">/</span> <span class="n">k</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">mean</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">envelope</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">mean</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">"the continuum wavefunction vanishes in the asymptotic region"</span>
+        <span class="p">)</span>
+
+    <span class="n">spread</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">envelope</span><span class="p">))</span> <span class="o">/</span> <span class="n">mean</span>
+    <span class="k">if</span> <span class="n">spread</span> <span class="o">&gt;</span> <span class="mf">0.05</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"the continuum wavefunction amplitude varies by </span><span class="si">{</span><span class="n">spread</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2"> over "</span>
+            <span class="s2">"the asymptotic region, so it has not reached its free-particle "</span>
+            <span class="s2">"form; its normalisation may be inaccurate"</span><span class="p">,</span>
+            <span class="ne">RuntimeWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">envelope</span><span class="p">))</span>
+
+
 <div class="viewcode-block" id="calculate_continuum_radial_wavefunction">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html#abtem.inelastic.core_loss.calculate_continuum_radial_wavefunction">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calculate_continuum_radial_wavefunction</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">lprime</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="s2">"PBE"</span><span class="p">):</span>
@@ -872,11 +994,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="n">ef</span> <span class="o">=</span> <span class="n">epsilon</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">Rydberg</span>
 
-    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1e-12</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">1000000</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">_continuum_radial_grid</span><span class="p">(</span><span class="n">ef</span><span class="p">,</span> <span class="n">lprime</span><span class="p">)</span>
     <span class="n">f</span> <span class="o">=</span> <span class="n">radial_schroedinger_equation</span><span class="p">(</span><span class="n">ef</span><span class="p">,</span> <span class="n">lprime</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">vr</span><span class="p">)</span>
 
     <span class="n">ur</span> <span class="o">=</span> <span class="n">numerov</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">ur</span> <span class="o">=</span> <span class="n">ur</span> <span class="o">/</span> <span class="n">ur</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">ef</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">4</span><span class="p">))</span>
+
+    <span class="c1"># Energy normalisation, &lt;eps|eps'&gt; = delta(eps - eps') with eps in Rydberg:</span>
+    <span class="c1"># u(r) -&gt; sin(k r + delta) / sqrt(pi k), so the asymptotic amplitude is</span>
+    <span class="c1"># 1 / sqrt(pi k) with k = sqrt(ef).</span>
+    <span class="n">ur</span> <span class="o">=</span> <span class="n">ur</span> <span class="o">/</span> <span class="n">_asymptotic_amplitude</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">ur</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ef</span><span class="p">))</span>
+    <span class="n">ur</span> <span class="o">=</span> <span class="n">ur</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">ef</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">4</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">RadialWavefunction</span><span class="p">(</span>
         <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1081,6 +1208,42 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="o">.</span><span class="n">_double_channel</span> <span class="o">=</span> <span class="n">double_channel</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_task_local</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">match_to</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""A private view of this transition potential for one task.</span>
+
+<span class="sd">        A transition potential travels through the task graph as a single</span>
+<span class="sd">        node (see ``shared_constant_arg``), so every task on a worker -- and</span>
+<span class="sd">        every thread of the local scheduler -- is handed the *same* object.</span>
+<span class="sd">        Matching its grid and accelerator to the wave functions mutates that</span>
+<span class="sd">        shared state, which concurrent tasks would race on (an energy</span>
+<span class="sd">        ensemble puts a different energy in each task). Work on a shallow</span>
+<span class="sd">        copy with a private grid and accelerator instead, so nothing large</span>
+<span class="sd">        is copied.</span>
+
+<span class="sd">        Everything else stays shared, so this view alone is **not** enough</span>
+<span class="sd">        to call the mutating methods on: ``scatter`` and</span>
+<span class="sd">        ``generate_scattered_waves`` rebind ``_array`` and re-match the grid</span>
+<span class="sd">        on ``self``. Both drivers rely on following this call with</span>
+<span class="sd">        ``copy_to_device``, which rebuilds the object and privatizes that</span>
+<span class="sd">        derived state; a caller that skips it must not mutate the result.</span>
+<span class="sd">        The payload buffer itself is only ever read (the transforms</span>
+<span class="sd">        allocate rather than overwrite their input). Note that</span>
+<span class="sd">        ``copy.copy`` honours ``__getstate__``, so a subclass that blanks an</span>
+<span class="sd">        attribute there gets it blanked in this view as well.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        match_to : Waves, optional</span>
+<span class="sd">            Match the private grid and accelerator to these wave functions.</span>
+<span class="sd">        """</span>
+        <span class="n">task_local</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">task_local</span><span class="o">.</span><span class="n">_grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">task_local</span><span class="o">.</span><span class="n">_accelerator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accelerator</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">match_to</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">task_local</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">match_to</span><span class="p">)</span>
+            <span class="n">task_local</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">match_to</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">task_local</span>
+
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">double_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_double_channel</span>
@@ -1252,7 +1415,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">cumulative</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">integrated_intensities</span> <span class="o">/</span> <span class="n">integrated_intensities</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
 
         <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">cumulative</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="n">transitions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[:</span><span class="n">n</span><span class="p">]</span>
+
+        <span class="c1"># Keep the n strongest transitions. Earlier versions sliced the</span>
+        <span class="c1"># unsorted list instead, which kept an arbitrary subset; the sibling</span>
+        <span class="c1"># TransitionPotentialArray.filter_by_intensity has always used `order`.</span>
+        <span class="n">transitions</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">order</span><span class="p">[:</span><span class="n">n</span><span class="p">]]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">transitions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">()</span>
@@ -1269,7 +1436,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
 
-        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transitions</span><span class="p">),)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex64</span><span class="p">)</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transitions</span><span class="p">),)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="n">k0</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">energy2wavelength</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">bound</span><span class="p">,</span> <span class="n">excited</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transitions</span><span class="p">):</span>
@@ -1286,15 +1455,24 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_form_factor</span><span class="p">(</span><span class="n">bound</span><span class="p">,</span> <span class="n">excited</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orbital_filling_factor</span><span class="p">:</span>
-                <span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">bound</span><span class="o">.</span><span class="n">l</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="c1"># 4*l+2 is the full subshell's electron count: spin (2) times</span>
+                <span class="c1"># orbital degeneracy (2*l+1). The orbital part is already</span>
+                <span class="c1"># realised explicitly -- SubshellTransitions.get_transitions</span>
+                <span class="c1"># builds one bound state per ml and this array is summed</span>
+                <span class="c1"># incoherently over all of them -- so only the spin factor</span>
+                <span class="c1"># belongs here. Applying 4*l+2 per ml double-counts the</span>
+                <span class="c1"># orbital degeneracy by (2*l+1); invisible for l=0, where</span>
+                <span class="c1"># 4*l+2 reduces to the spin-only factor of 2.</span>
+                <span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 
             <span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="n">relativistic_mass_correction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
                 <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">kn</span> <span class="o">*</span> <span class="n">k</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">energy2sigma</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
             <span class="p">)</span>
 
-        <span class="n">array</span> <span class="o">=</span> <span class="n">array</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">)</span>
-
-        <span class="c1"># array = array.astype(xp.complex64)</span>
+        <span class="c1"># In place: `array / np.prod(...)` divides by a float64 numpy scalar,</span>
+        <span class="c1"># which under NEP 50 promotes the whole array to complex128 and silently</span>
+        <span class="c1"># discards the dtype the array was allocated with.</span>
+        <span class="n">array</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">TransitionPotentialArray</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span>
@@ -1379,6 +1557,14 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="k">class</span><span class="w"> </span><span class="nc">TransitionPotentialArray</span><span class="p">(</span><span class="n">ArrayObject</span><span class="p">,</span> <span class="n">BaseTransitionPotential</span><span class="p">):</span>
     <span class="n">_base_dims</span> <span class="o">=</span> <span class="mi">2</span>
 
+    <span class="c1"># _local_potential_device_cache is derived state: local_potential_on_device()</span>
+    <span class="c1"># populates it lazily from _local_potential (itself derived from the array</span>
+    <span class="c1"># already compared) and the requesting device. __getstate__ already drops</span>
+    <span class="c1"># it for pickling, for the same reason -- it is a per-process convenience,</span>
+    <span class="c1"># not part of the object's identity. Same pattern as Potential._sliced_atoms</span>
+    <span class="c1"># in abtem/potentials/iam.py.</span>
+    <span class="n">_eq_exclude</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_local_potential_device_cache"</span><span class="p">,)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">Z</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -1401,22 +1587,13 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_potential</span><span class="p">(</span><span class="n">space</span><span class="o">=</span><span class="s2">"real"</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential_device_cache</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_threshold</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="TransitionPotentialArray.from_array_and_metadata">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html#abtem.inelastic.core_loss.TransitionPotentialArray.from_array_and_metadata">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_array_and_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">metadata</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
-
-
-<div class="viewcode-block" id="TransitionPotentialArray.set_threshold">
-<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html#abtem.inelastic.core_loss.TransitionPotentialArray.set_threshold">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_threshold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wave</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
-        <span class="n">local_potentials</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_potential</span><span class="p">(</span><span class="n">space</span><span class="o">=</span><span class="s2">"real"</span><span class="p">)</span>
-        <span class="n">local_potential</span> <span class="o">=</span> <span class="n">local_potentials</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-
-        <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfft2</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfft2</span><span class="p">(</span><span class="n">local_potential</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfft2</span><span class="p">(</span><span class="n">wave</span><span class="o">.</span><span class="n">array</span><span class="p">))</span>
-        <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">ravel</span><span class="p">())[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="TransitionPotentialArray.local_potential">
@@ -1507,14 +1684,17 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="s2">"build"</span><span class="p">):</span>
             <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-        <span class="n">local_potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_potential</span><span class="p">(</span><span class="n">space</span><span class="o">=</span><span class="s2">"real"</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">array</span> <span class="o">=</span> <span class="n">abs2</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
 
-        <span class="n">local_potential</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="n">local_potential</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span>
+        <span class="c1"># This runs once per task; reuse the local potential computed in</span>
+        <span class="c1"># __init__ and its cached device copy instead of re-deriving and</span>
+        <span class="c1"># re-uploading both on every call.</span>
+        <span class="n">local_potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential_on_device</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
+        <span class="n">complex_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">overlap</span> <span class="o">=</span> <span class="n">fft2_convolve</span><span class="p">(</span>
-            <span class="n">local_potential</span><span class="p">[(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">complex64</span><span class="p">),</span>
-            <span class="n">fft2</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">complex64</span><span class="p">)),</span>
+            <span class="n">local_potential</span><span class="p">[(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">complex_dtype</span><span class="p">),</span>
+            <span class="n">fft2</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">complex_dtype</span><span class="p">)),</span>
         <span class="p">)</span><span class="o">.</span><span class="n">real</span>
 
         <span class="n">overlap</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="n">overlap</span><span class="p">,</span> <span class="s2">"cpu"</span><span class="p">)</span>
@@ -1535,16 +1715,54 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="k">if</span> <span class="n">sites</span><span class="o">.</span><span class="n">number</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">Z</span><span class="p">:</span>
                 <span class="n">sites</span> <span class="o">=</span> <span class="n">sites</span><span class="o">.</span><span class="n">position</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">sites</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="n">sites</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">sites</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">sites</span> <span class="o">=</span> <span class="n">sites</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
 
-        <span class="n">sites</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">sites</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_local_potential_on_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">like</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The local potential, resident on the device of ``like``.</span>
+
+<span class="sd">        Cached per device so repeated calls reuse the upload; the cache is</span>
+<span class="sd">        dropped when the local potential itself is recomputed.</span>
+<span class="sd">        """</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">like</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">np</span><span class="p">:</span>
+            <span class="n">device</span> <span class="o">=</span> <span class="s2">"cpu"</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># One process can drive several GPUs (outside the dask-cuda</span>
+            <span class="c1"># process-per-GPU layout); an array cached for one device must</span>
+            <span class="c1"># not be handed to a kernel running on another. Key on the device</span>
+            <span class="c1"># ``like`` actually lives on -- a plain attribute read, so there</span>
+            <span class="c1"># is no failure mode to fall back from -- rather than the</span>
+            <span class="c1"># current-device context, which can differ from it.</span>
+            <span class="n">device</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"gpu"</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">like</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+        <span class="n">cache</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_local_potential_device_cache"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cache</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">device</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cache</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">np</span><span class="p">:</span>
+            <span class="n">on_device</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_potential</span><span class="p">,</span> <span class="n">like</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Allocate on like's device, whatever device is current.</span>
+            <span class="k">with</span> <span class="n">like</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
+                <span class="n">on_device</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_potential</span><span class="p">,</span> <span class="n">like</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential_device_cache</span> <span class="o">=</span> <span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">on_device</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">on_device</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># The device cache is a per-process convenience and may hold a cupy</span>
+        <span class="c1"># array; letting it ride through pickle would bloat every dask task</span>
+        <span class="c1"># carrying this object and break unpickling on CPU-only workers.</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">"_local_potential_device_cache"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">state</span>
 
 <div class="viewcode-block" id="TransitionPotentialArray.filter_sites">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html#abtem.inelastic.core_loss.TransitionPotentialArray.filter_sites">[docs]</a>
@@ -1552,7 +1770,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="s2">"build"</span><span class="p">):</span>
             <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-        <span class="n">validated_sites</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_sites</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
+        <span class="c1"># The mask below is computed over the validated array, which subsets</span>
+        <span class="c1"># an Atoms input to this element -- index that same array at the end,</span>
+        <span class="c1"># not the caller's object, or the two lengths disagree.</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_sites</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
+        <span class="n">validated_sites</span> <span class="o">=</span> <span class="n">sites</span>
 
         <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">threshold</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
@@ -1562,7 +1784,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="p">(</span><span class="n">validated_sites</span> <span class="o">/</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">))</span>
             <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
-            <span class="n">local_potential</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_potential</span><span class="p">,</span> <span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+            <span class="c1"># filter_sites runs once per site chunk, so re-uploading the</span>
+            <span class="c1"># local potential here costs a full-grid host-to-device transfer</span>
+            <span class="c1"># hundreds of times per task. Keep the device copy on the object,</span>
+            <span class="c1"># as scatter() already does for the transition potentials.</span>
+            <span class="n">local_potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential_on_device</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
 
             <span class="c1"># Stream the overlap reduction over sites in chunks. The full</span>
             <span class="c1"># (n_sites, *waves_shape, H, W) tensor that the naive computation</span>
@@ -1657,7 +1883,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
             <span class="n">sites</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
 
-            <span class="n">sites</span> <span class="o">=</span> <span class="n">sites</span> <span class="o">/</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="n">sites</span> <span class="o">=</span> <span class="n">sites</span> <span class="o">/</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
 
             <span class="n">array</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
@@ -1698,7 +1924,27 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">max_batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
         <span class="n">threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="c1"># Match before filtering: filter_sites reads self.sampling, and the</span>
+        <span class="c1"># scatter path used to run this match first -- keep the immediate,</span>
+        <span class="c1"># informative error for a grid mismatch.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
+
         <span class="n">sites</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_sites</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
+
+        <span class="c1"># Filter once for the whole set rather than inside every chunk.</span>
+        <span class="c1"># filter_sites copies the mask back to the host, which synchronises</span>
+        <span class="c1"># the device; doing that per chunk cost one synchronisation per chunk</span>
+        <span class="c1"># -- for a production core-loss scan, ~1400 per task. The threshold is</span>
+        <span class="c1"># applied per site and does not depend on how the sites are chunked,</span>
+        <span class="c1"># so the surviving set is identical.</span>
+        <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">threshold</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">sites</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_sites</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="n">sites</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">max_batch</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="n">limit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_batch</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
@@ -1722,6 +1968,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">sites_chunk</span> <span class="o">=</span> <span class="n">sites</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
             <span class="n">start</span> <span class="o">=</span> <span class="n">end</span>
 
+            <span class="c1"># threshold is None here: the sites were filtered above.</span>
             <span class="n">scattered_waves</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="n">sites_chunk</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">)</span>
             <span class="k">yield</span> <span class="n">sites_chunk</span><span class="p">,</span> <span class="n">scattered_waves</span></div>
 
@@ -1764,7 +2011,13 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">sites</span> <span class="o">=</span> <span class="n">unit_atoms</span> <span class="o">*</span> <span class="n">potential</span><span class="o">.</span><span class="n">repetitions</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
-        <span class="n">sites</span> <span class="o">=</span> <span class="n">SliceIndexedAtoms</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="n">potential</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span>
+        <span class="c1"># Follow the potential's own convention, so explicitly passed sites</span>
+        <span class="c1"># are sliced exactly as sites=None would be.</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="n">SliceIndexedAtoms</span><span class="p">(</span>
+            <span class="n">sites</span><span class="p">,</span>
+            <span class="n">slice_thickness</span><span class="o">=</span><span class="n">potential</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">,</span>
+            <span class="n">wrap</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="s2">"periodic"</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="p">)</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">SliceIndexedAtoms</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="s2">"Could not derive scattering sites from the potential "</span>
@@ -1780,7 +2033,6 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="kn">import</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_types</span>
 
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.antialias</span><span class="w"> </span><span class="kn">import</span> <span class="n">AntialiasAperture</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.detectors</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlexibleAnnularDetector</span><span class="p">,</span> <span class="n">validate_detectors</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.multislice</span><span class="w"> </span><span class="kn">import</span> <span class="n">FresnelPropagator</span><span class="p">,</span> <span class="n">conventional_multislice_step</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.prism.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">plane_waves</span>
@@ -1796,9 +2048,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">transition_potential</span> <span class="o">=</span> <span class="n">transition_potentials</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">transition_potential</span> <span class="o">=</span> <span class="n">transition_potentials</span>
-
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_potential</span><span class="p">,</span> <span class="n">TransitionPotential</span><span class="p">):</span>
-        <span class="n">transition_potential</span> <span class="o">=</span> <span class="n">transition_potential</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
 
     <span class="n">potential</span> <span class="o">=</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">potential</span>
     <span class="n">energy</span> <span class="o">=</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">energy</span>
@@ -1820,7 +2069,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">n_k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">wave_vectors_np</span><span class="p">)</span>
 
     <span class="n">s_array</span> <span class="o">=</span> <span class="n">plane_waves</span><span class="p">(</span>
-        <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">wave_vectors_np</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">extent</span><span class="p">,</span> <span class="n">gpts</span>
+        <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">wave_vectors_np</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">()),</span> <span class="n">extent</span><span class="p">,</span> <span class="n">gpts</span>
     <span class="p">)</span>
     <span class="n">s_array</span> <span class="o">=</span> <span class="n">s_array</span> <span class="o">*</span> <span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">s_matrix</span><span class="o">.</span><span class="n">interpolation</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">s_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
@@ -1843,24 +2092,60 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">potential</span><span class="o">.</span><span class="n">generate_slices</span><span class="p">()</span>
     <span class="p">]</span>
 
-    <span class="n">transition_potential</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s_waves</span><span class="p">)</span>
-    <span class="n">transition_potential</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s_waves</span><span class="p">)</span>
+    <span class="c1"># Arrives as one graph node shared by every task on this worker, so</span>
+    <span class="c1"># match on a private view rather than mutating it. See _task_local.</span>
+    <span class="c1"># Match BEFORE building: build() evaluates the form factors on self.gpts,</span>
+    <span class="c1"># so an unbuilt TransitionPotential needs the grid first. This is the</span>
+    <span class="c1"># order transition_potential_multislice_and_detect and</span>
+    <span class="c1"># TransitionPotential.scatter already use.</span>
+    <span class="c1"># An ALREADY-BUILT transition potential cannot be matched: its array has a</span>
+    <span class="c1"># fixed shape, and _task_local below would overwrite the grid to agree with</span>
+    <span class="c1"># s_waves while leaving that array alone -- leaving an object whose grid</span>
+    <span class="c1"># lies about its own contents (gpts (64, 64) over a (4, 32, 32) array,</span>
+    <span class="c1"># measured). The scan then completes and returns a result on the wrong</span>
+    <span class="c1"># grid: 18.1 % low against the matched reference on a Si cell, with an</span>
+    <span class="c1"># identical output shape, so nothing downstream can notice.</span>
+    <span class="c1">#</span>
+    <span class="c1"># So check first, while the grid still reports what the array actually is.</span>
+    <span class="c1"># Checking after the match is useless, because the match is what destroys</span>
+    <span class="c1"># the evidence. Grid.check_match paired with Accelerator.check_match is</span>
+    <span class="c1"># the same guard iam.py:1948 already uses for a potential against its</span>
+    <span class="c1"># waves -- energy is checked for the same reason as gpts/extent: build()</span>
+    <span class="c1"># bakes self.energy into the array's form factors (k0, kn, the</span>
+    <span class="c1"># relativistic mass correction and the interaction parameter all derive</span>
+    <span class="c1"># from it), so a built array whose grid matches but whose energy does not</span>
+    <span class="c1"># is exactly as stale as a gpts/extent mismatch, and _task_local's match</span>
+    <span class="c1"># would silently overwrite .energy to agree with s_waves while those</span>
+    <span class="c1"># baked-in form factors stay computed at the old one.</span>
+    <span class="c1">#</span>
+    <span class="c1"># The unbuilt case is untouched: it has no array yet, the match sets its</span>
+    <span class="c1"># grid and energy, and build() then evaluates the form factors on the</span>
+    <span class="c1"># right values -- which is what the preceding commit fixed.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_potential</span><span class="p">,</span> <span class="n">TransitionPotential</span><span class="p">):</span>
+        <span class="n">transition_potential</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">s_waves</span><span class="p">)</span>
+        <span class="n">transition_potential</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">s_waves</span><span class="p">)</span>
+
+    <span class="n">transition_potential</span> <span class="o">=</span> <span class="n">transition_potential</span><span class="o">.</span><span class="n">_task_local</span><span class="p">(</span><span class="n">match_to</span><span class="o">=</span><span class="n">s_waves</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_potential</span><span class="p">,</span> <span class="n">TransitionPotential</span><span class="p">):</span>
+        <span class="n">transition_potential</span> <span class="o">=</span> <span class="n">transition_potential</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
     <span class="n">transition_potential</span> <span class="o">=</span> <span class="n">transition_potential</span><span class="o">.</span><span class="n">copy_to_device</span><span class="p">(</span><span class="n">s_matrix</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
     <span class="n">Z</span> <span class="o">=</span> <span class="n">transition_potential</span><span class="o">.</span><span class="n">Z</span>
 
     <span class="n">sites</span> <span class="o">=</span> <span class="n">_extract_scattering_sites</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
 
     <span class="n">positions_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">get_positions</span><span class="p">())</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-    <span class="n">positions</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">positions_np</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">positions</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">positions_np</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
     <span class="n">n_positions</span> <span class="o">=</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">wave_vectors_xp</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">wave_vectors_np</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">wave_vectors_xp</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">wave_vectors_np</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
 
     <span class="n">position_coefficients</span> <span class="o">=</span> <span class="n">complex_exponential</span><span class="p">(</span>
-        <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">get_dtype</span><span class="p">()(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
         <span class="o">*</span> <span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span>
         <span class="o">*</span> <span class="n">wave_vectors_xp</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">*</span> <span class="n">complex_exponential</span><span class="p">(</span>
-        <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">get_dtype</span><span class="p">()(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
         <span class="o">*</span> <span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
         <span class="o">*</span> <span class="n">wave_vectors_xp</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span>
     <span class="p">)</span>
@@ -1869,7 +2154,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">ctf</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s_matrix</span><span class="o">.</span><span class="n">dummy_probes</span><span class="p">())</span>
     <span class="n">alpha</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">xp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">wave_vectors_xp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">wave_vectors_xp</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">ctf</span><span class="o">.</span><span class="n">wavelength</span><span class="p">)</span>
+        <span class="o">*</span> <span class="n">get_dtype</span><span class="p">()(</span><span class="n">ctf</span><span class="o">.</span><span class="n">wavelength</span><span class="p">)</span>
     <span class="p">)</span>
     <span class="n">phi</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">wave_vectors_xp</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">wave_vectors_xp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
     <span class="n">ctf_array</span> <span class="o">=</span> <span class="n">ctf</span><span class="o">.</span><span class="n">_evaluate_from_angular_grid</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span>
@@ -1881,7 +2166,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="p">)</span>
 
     <span class="n">full_sampling</span> <span class="o">=</span> <span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">full_sampling_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">full_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">full_sampling_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">full_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
 
     <span class="k">return</span> <span class="n">_types</span><span class="o">.</span><span class="n">SimpleNamespace</span><span class="p">(</span>
         <span class="n">transition_potential</span><span class="o">=</span><span class="n">transition_potential</span><span class="p">,</span>
@@ -1979,10 +2264,11 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">fft_interpolate</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span><span class="p">,</span> <span class="n">safe_ceiling_int</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">safe_ceiling_int</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.multislice</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
         <span class="n">FresnelPropagator</span><span class="p">,</span>
         <span class="n">_potential_ensemble_shape_and_metadata</span><span class="p">,</span>
+        <span class="n">_validate_potential_ensemble_indices</span><span class="p">,</span>
         <span class="n">allocate_multislice_measurements</span><span class="p">,</span>
         <span class="n">conventional_multislice_step</span><span class="p">,</span>
     <span class="p">)</span>
@@ -1991,7 +2277,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">minimum_crop</span><span class="p">,</span>
         <span class="n">wrapped_crop_2d</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="n">Waves</span><span class="p">,</span> <span class="n">reduce_ensemble</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="n">Waves</span>
 
     <span class="n">ctx</span> <span class="o">=</span> <span class="n">_prism_eels_common_setup</span><span class="p">(</span>
         <span class="n">s_matrix</span><span class="p">,</span> <span class="n">transition_potentials</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="n">sites</span>
@@ -2125,13 +2411,28 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">extent</span><span class="o">=</span><span class="n">inelastic_window_extent</span><span class="p">,</span>
         <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="p">[</span><span class="n">OrdinalAxis</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,))],</span>
     <span class="p">)</span>
-    <span class="n">full_sampling_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">full_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">full_sampling_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">full_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
 
     <span class="c1"># Reduction helpers operate in the downsampled grid.</span>
-    <span class="n">pixel_positions</span> <span class="o">=</span> <span class="n">positions</span> <span class="o">/</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ds_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">pixel_positions</span> <span class="o">=</span> <span class="n">positions</span> <span class="o">/</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ds_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
     <span class="n">reduce_crop_corner</span><span class="p">,</span> <span class="n">reduce_size</span><span class="p">,</span> <span class="n">reduce_corners</span> <span class="o">=</span> <span class="n">minimum_crop</span><span class="p">(</span>
         <span class="n">pixel_positions</span><span class="p">,</span> <span class="n">output_window_gpts</span>
     <span class="p">)</span>
+
+    <span class="c1"># This driver processes one potential configuration per call and indexes</span>
+    <span class="c1"># the measurement's ensemble axes with zeros accordingly -- which holds for</span>
+    <span class="c1"># every SMatrix entry point, each of which passes a single-configuration</span>
+    <span class="c1"># sub-potential. Called directly with a multi-configuration potential it</span>
+    <span class="c1"># would silently return 1/num_configurations of the right answer, in a</span>
+    <span class="c1"># plausible, correctly shaped, monotone thickness series. Refuse instead,</span>
+    <span class="c1"># as prism_transition_potential_scan_beam_basis already does.</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">"prism_transition_potential_scan processes one potential "</span>
+            <span class="sa">f</span><span class="s2">"configuration per call, got ensemble shape "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="si">!r}</span><span class="s2">. Iterate the configurations and "</span>
+            <span class="s2">"average the results, as SMatrix.transition_potential_scan does."</span>
+        <span class="p">)</span>
 
     <span class="c1"># --- Exit planes ---</span>
     <span class="n">exit_planes</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span>
@@ -2159,7 +2460,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="c1"># --- Reduce, detect, accumulate helper ---</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_reduce_and_record</span><span class="p">(</span><span class="n">scattered_window</span><span class="p">,</span> <span class="n">site_xy</span><span class="p">,</span> <span class="n">exit_idx</span><span class="p">):</span>
-        <span class="n">ds_sampling_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ds_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">ds_sampling_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ds_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
         <span class="n">site_pixel_ds</span> <span class="o">=</span> <span class="n">site_xy</span> <span class="o">/</span> <span class="n">ds_sampling_arr</span>
         <span class="n">site_pixel_int_ds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">site_pixel_ds</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
         <span class="n">site_crop_corner_ds</span> <span class="o">=</span> <span class="p">(</span>
@@ -2222,25 +2523,39 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">scan_axes_metadata</span><span class="p">),</span>
         <span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">det_idx</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">position_waves</span><span class="p">)</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">0</span><span class="p">,))</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exit_idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-                <span class="n">idx</span> <span class="o">=</span> <span class="p">()</span> <span class="k">if</span> <span class="n">n_exit</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">(</span><span class="n">exit_idx</span><span class="p">,)</span>
-                <span class="n">measurements</span><span class="p">[</span><span class="n">det_idx</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">m</span><span class="o">.</span><span class="n">array</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">measurements</span><span class="p">[</span><span class="n">det_idx</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">exit_idx</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
-                    <span class="n">m</span><span class="o">.</span><span class="n">array</span><span class="p">[(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">exit_idx</span><span class="p">)]</span>
+        <span class="c1"># All detectors here see the same, not-yet-mutated ``position_waves``</span>
+        <span class="c1"># -- share one diffraction-pattern FFT across them.</span>
+        <span class="k">with</span> <span class="n">position_waves</span><span class="o">.</span><span class="n">_share_diffraction_pattern_fft</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">det_idx</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">position_waves</span><span class="p">)</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">0</span><span class="p">,))</span>
+                <span class="c1"># The measurement's leading axes are the potential's</span>
+                <span class="c1"># ensemble axes and then the exit-plane axis (see</span>
+                <span class="c1"># _potential_ensemble_shape_and_metadata, shared with the</span>
+                <span class="c1"># regular multislice driver). Indexing the plane part alone</span>
+                <span class="c1"># addressed the ensemble axis instead: this driver runs once</span>
+                <span class="c1"># per configuration with a length-1 ensemble axis, so an</span>
+                <span class="c1"># exit-plane slice starting at 1 or beyond selected nothing</span>
+                <span class="c1"># and the contribution was dropped in silence -- a whole</span>
+                <span class="c1"># thickness series came back zero.</span>
+                <span class="n">indices</span> <span class="o">=</span> <span class="n">_validate_potential_ensemble_indices</span><span class="p">(</span>
+                    <span class="p">(</span><span class="mi">0</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">),</span> <span class="n">exit_idx</span><span class="p">,</span> <span class="n">potential</span>
                 <span class="p">)</span>
+                <span class="c1"># Only the slice entries survive the indexing and need</span>
+                <span class="c1"># broadcasting; integer ensemble indices drop their axis.</span>
+                <span class="n">n_slice_axes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">slice</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">)</span>
+                <span class="n">measurements</span><span class="p">[</span><span class="n">det_idx</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">+=</span> <span class="n">m</span><span class="o">.</span><span class="n">array</span><span class="p">[</span>
+                    <span class="p">(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n_slice_axes</span>
+                <span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_scatter_at_site</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
         <span class="n">site_xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">atom</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">atom</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+            <span class="p">[</span><span class="n">atom</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">atom</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">()</span>
         <span class="p">)</span>
         <span class="n">site_pixel</span> <span class="o">=</span> <span class="n">site_xy</span> <span class="o">/</span> <span class="n">full_sampling_arr</span>
         <span class="n">site_pixel_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">site_pixel</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
         <span class="n">sub_pixel</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">site_pixel</span> <span class="o">-</span> <span class="n">site_pixel_int</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">site_pixel</span> <span class="o">-</span> <span class="n">site_pixel_int</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(),</span>
         <span class="p">)</span>
         <span class="n">site_crop_corner</span> <span class="o">=</span> <span class="p">(</span>
             <span class="nb">int</span><span class="p">(</span><span class="n">site_pixel_int</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">inelastic_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
@@ -2354,12 +2669,27 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span class="n">sw_out</span><span class="p">,</span> <span class="n">site_xys</span><span class="p">[</span><span class="n">s_idx</span><span class="p">],</span> <span class="n">ep_idx</span>
                     <span class="p">)</span>
 
-    <span class="c1"># Squeeze out single-point-scan axes the same way the multislice path</span>
-    <span class="c1"># does (via reduce_ensemble inside Waves.transition_potential_multislice</span>
-    <span class="c1"># — see waves.py:1075). This is what makes ``scan=(0, 0)`` return a bare</span>
-    <span class="c1"># detector-shaped measurement instead of a ``(1, *detector_shape)``</span>
-    <span class="c1"># array with a singleton scan axis.</span>
-    <span class="n">measurements</span> <span class="o">=</span> <span class="p">[</span><span class="n">reduce_ensemble</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">measurements</span><span class="p">]</span>
+    <span class="c1"># Reduce the ensemble mean, but do NOT squeeze here.</span>
+    <span class="c1">#</span>
+    <span class="c1"># This function is the per-configuration driver: SMatrix calls it once per</span>
+    <span class="c1"># dask block and once per potential-ensemble member. The multislice path</span>
+    <span class="c1"># this used to imitate squeezes at the *outer* level instead --</span>
+    <span class="c1"># Waves.transition_potential_multislice ends in the module-level</span>
+    <span class="c1"># reduce_ensemble on the assembled result -- so blocks and declared chunks</span>
+    <span class="c1"># keep the axis and only the finished object loses it.</span>
+    <span class="c1">#</span>
+    <span class="c1"># Squeezing per block dropped the scan axis underneath two consumers that</span>
+    <span class="c1"># still expected it: the lazy branch declares ``chunks += scan.shape``, and</span>
+    <span class="c1"># the eager branch pre-allocates from ``dummy_probes(scan)``. A</span>
+    <span class="c1"># single-position non-BaseScan scan -- ``(x, y)``, ``[(x, y)]``,</span>
+    <span class="c1"># ``np.array([[x, y]])`` -- therefore came back one axis too wide, and</span>
+    <span class="c1"># whether it did depended on whether the potential was an ensemble.</span>
+    <span class="c1">#</span>
+    <span class="c1"># The module-level reduce_ensemble is squeeze-then-ensemble-mean; the</span>
+    <span class="c1"># method called below is only the second half, which is the half that</span>
+    <span class="c1"># belongs per block. SMatrix.transition_potential_scan applies the first</span>
+    <span class="c1"># half once, at the level the oracle uses.</span>
+    <span class="n">measurements</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">reduce_ensemble</span><span class="p">()</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">measurements</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">measurements</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">measurements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -2614,17 +2944,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">OrdinalAxis</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">())))),</span>
             <span class="p">],</span>
         <span class="p">)</span>
-        <span class="k">for</span> <span class="n">det_idx</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">wave</span><span class="p">)</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">0</span><span class="p">,))</span>
-            <span class="n">full_partial</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">n_positions</span><span class="p">,)</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span>
-            <span class="p">)</span>
-            <span class="n">full_partial</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">array</span>
-            <span class="n">full_partial</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="n">full_partial</span><span class="p">,</span> <span class="n">measurements</span><span class="p">[</span><span class="n">det_idx</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
-            <span class="n">measurements</span><span class="p">[</span><span class="n">det_idx</span><span class="p">]</span><span class="o">.</span><span class="n">array</span> <span class="o">+=</span> <span class="n">full_partial</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
-                <span class="n">scan_shape</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-            <span class="p">)</span>
+        <span class="c1"># All detectors here see the same, not-yet-mutated ``wave`` -- share</span>
+        <span class="c1"># one diffraction-pattern FFT across them.</span>
+        <span class="k">with</span> <span class="n">wave</span><span class="o">.</span><span class="n">_share_diffraction_pattern_fft</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">det_idx</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">wave</span><span class="p">)</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">0</span><span class="p">,))</span>
+                <span class="n">full_partial</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">n_positions</span><span class="p">,)</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span>
+                <span class="p">)</span>
+                <span class="n">full_partial</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">array</span>
+                <span class="n">full_partial</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span>
+                    <span class="n">full_partial</span><span class="p">,</span> <span class="n">measurements</span><span class="p">[</span><span class="n">det_idx</span><span class="p">]</span><span class="o">.</span><span class="n">array</span>
+                <span class="p">)</span>
+                <span class="n">measurements</span><span class="p">[</span><span class="n">det_idx</span><span class="p">]</span><span class="o">.</span><span class="n">array</span> <span class="o">+=</span> <span class="n">full_partial</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                    <span class="n">scan_shape</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="p">)</span>
 
     <span class="c1"># --- Main loop ---</span>
     <span class="k">for</span> <span class="n">slice_index</span><span class="p">,</span> <span class="n">transmission</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">transmissions</span><span class="p">):</span>
@@ -2653,7 +2988,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">sites_this_slice</span><span class="p">:</span>
             <span class="n">site_xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">atom</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">atom</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+                <span class="p">[</span><span class="n">atom</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">atom</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">()</span>
             <span class="p">)</span>
             <span class="n">site_pixel</span> <span class="o">=</span> <span class="n">site_xy</span> <span class="o">/</span> <span class="n">full_sampling_arr</span>
             <span class="n">site_pixel_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">site_pixel</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
@@ -2663,7 +2998,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="p">)</span>
 
             <span class="n">shift_k</span> <span class="o">=</span> <span class="n">fft_shift_kernel</span><span class="p">(</span>
-                <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">site_pixel</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">gpts</span>
+                <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">site_pixel</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">()),</span> <span class="n">gpts</span>
             <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">H_full</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">tp_k</span> <span class="o">*</span> <span class="n">shift_k</span><span class="p">)</span>  <span class="c1"># (n_T, *gpts), shifted to true site position</span>
             <span class="n">H_crop</span> <span class="o">=</span> <span class="n">wrapped_crop_2d</span><span class="p">(</span><span class="n">H_full</span><span class="p">,</span> <span class="n">crop_corner</span><span class="p">,</span> <span class="n">window_gpts</span><span class="p">)</span>

@@ -781,7 +781,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="n">struct_factors</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">xp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-            <span class="n">f_e</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">positions</span> <span class="o">@</span> <span class="n">hkl</span><span class="p">),</span>
+            <span class="n">f_e</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">2.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">positions</span> <span class="o">@</span> <span class="n">hkl</span><span class="p">),</span>
             <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="o">/</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">volume</span>
@@ -844,14 +844,21 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    """</span>
     <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">structure_factor</span><span class="p">)</span>
     <span class="n">structure_factor</span> <span class="o">=</span> <span class="n">structure_factor_1d_to_3d</span><span class="p">(</span><span class="n">structure_factor</span><span class="p">,</span> <span class="n">hkl</span><span class="p">,</span> <span class="n">gpts</span><span class="p">)</span>
-    <span class="c1"># Deliberately xp.fft rather than abtem.core.fft.ifftn: the FFTW backend</span>
+    <span class="c1"># Deliberately xp.fft rather than abtem.core.fft.fftn: the FFTW backend</span>
     <span class="c1"># behind that wrapper only ever transforms the trailing two axes, so it</span>
     <span class="c1"># would silently turn this 3D transform into a 2D one on CPU. The slow-FFT</span>
     <span class="c1"># diagnostic is requested explicitly instead -- this grid follows from</span>
     <span class="c1"># g_max and the cell, so it is essentially never a fast length.</span>
-    <span class="n">warn_if_slow_gpu_fft</span><span class="p">(</span><span class="n">structure_factor</span><span class="p">,</span> <span class="s2">"ifftn"</span><span class="p">)</span>
-    <span class="n">potential</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftn</span><span class="p">(</span><span class="n">structure_factor</span><span class="p">)</span>
-    <span class="n">potential</span> <span class="o">=</span> <span class="n">potential</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="n">kappa</span>
+    <span class="c1">#</span>
+    <span class="c1"># calculate_structure_factors uses the standard crystallographic convention</span>
+    <span class="c1"># F(g) = sum_j f_j exp(+2pi i g.r_j), i.e. V(r) = sum_g F(g) exp(-2pi i g.r)</span>
+    <span class="c1"># is the correct Fourier synthesis -- exactly numpy's forward transform</span>
+    <span class="c1"># (fftn), not the inverse. Unlike ifftn, fftn carries no built-in 1/N</span>
+    <span class="c1"># normalization, so (unlike the previous ifftn-based version) the result</span>
+    <span class="c1"># must not be rescaled by the number of grid points.</span>
+    <span class="n">warn_if_slow_gpu_fft</span><span class="p">(</span><span class="n">structure_factor</span><span class="p">,</span> <span class="s2">"fftn"</span><span class="p">)</span>
+    <span class="n">potential</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftn</span><span class="p">(</span><span class="n">structure_factor</span><span class="p">)</span>
+    <span class="n">potential</span> <span class="o">=</span> <span class="n">potential</span> <span class="o">/</span> <span class="n">kappa</span>
     <span class="n">potential</span> <span class="o">-=</span> <span class="n">potential</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">potential</span><span class="o">.</span><span class="n">real</span></div>
 
@@ -2492,6 +2499,12 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">calculate_wave_functions</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">g_vec</span><span class="p">,</span> <span class="n">extent</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">thicknesses</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">thicknesses</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># a scalar thickness has no ensemble (thickness) axis; drop the spurious</span>
+                <span class="c1"># leading size-1 axis so the array matches the empty axis metadata (the</span>
+                <span class="c1"># lazy path already returns a 2D array in this case).</span>
+                <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 

@@ -776,6 +776,69 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+<span class="c1"># Codecs (Blosc/zlib) reject a single buffer over 2**31 - 1 bytes. Writing a</span>
+<span class="c1"># whole array as one zarr chunk -- as this module used to always do -- hits</span>
+<span class="c1"># that limit for any reasonably large array, especially at float64. Stay well</span>
+<span class="c1"># under it (also a more sensible chunk size for parallel IO in general) by</span>
+<span class="c1"># halving the largest axis of the chunk shape until it fits the budget.</span>
+<span class="n">_MAX_ZARR_CHUNK_BYTES</span> <span class="o">=</span> <span class="mi">512</span> <span class="o">*</span> <span class="mi">1024</span><span class="o">**</span><span class="mi">2</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_safe_zarr_chunks</span><span class="p">(</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">itemsize</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">max_bytes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">n_fixed_trailing_axes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Pick a chunk shape that stays under ``max_bytes``, preferring to</span>
+<span class="sd">    shrink leading (ensemble) axes and never touching the trailing</span>
+<span class="sd">    ``n_fixed_trailing_axes`` (an ArrayObject's ``_base_dims``) unless there</span>
+<span class="sd">    is no other choice.</span>
+
+<span class="sd">    Several of abTEM's own lazy dask operations on measurements (e.g.</span>
+<span class="sd">    ``interpolate_line``'s ``da.map_blocks(..., drop_axis=...)``) require</span>
+<span class="sd">    their base/measurement axes to be a single dask chunk -- splitting them</span>
+<span class="sd">    doesn't raise, it silently produces wrong results (confirmed by direct</span>
+<span class="sd">    reproduction: a DiffractionPatterns array whose spatial axes were split</span>
+<span class="sd">    this way, then reloaded lazily, gave an all-zero momentum-resolved</span>
+<span class="sd">    spectrum while eagerly-computed data from the same file was correct).</span>
+<span class="sd">    Chunking only the ensemble axes keeps a round-tripped array safe for</span>
+<span class="sd">    every lazy operation that already assumes whole base-axis chunks,</span>
+<span class="sd">    matching e.g. ``PotentialArray``'s own ``("auto",) * n + (-1,) *</span>
+<span class="sd">    _base_dims`` convention elsewhere in this module.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">max_bytes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Read fresh rather than as a default-argument value, so overriding</span>
+        <span class="c1"># the module-level budget (e.g. in tests) takes effect.</span>
+        <span class="n">max_bytes</span> <span class="o">=</span> <span class="n">_MAX_ZARR_CHUNK_BYTES</span>
+
+    <span class="n">chunks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">nbytes</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">itemsize</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">*=</span> <span class="n">c</span>
+        <span class="k">return</span> <span class="n">n</span>
+
+    <span class="n">n_fixed</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n_fixed_trailing_axes</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">))</span>
+    <span class="n">splittable</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span> <span class="o">-</span> <span class="n">n_fixed</span><span class="p">))</span>
+
+    <span class="k">while</span> <span class="n">nbytes</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">max_bytes</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">splittable</span><span class="p">):</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">splittable</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">j</span><span class="p">:</span> <span class="n">chunks</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="n">chunks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">chunks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Only reached if the base axes are themselves so large that shrinking</span>
+    <span class="c1"># every ensemble axis to 1 still isn't enough (e.g. a single very large</span>
+    <span class="c1"># image with little to no ensemble axis to shrink) -- fall back to</span>
+    <span class="c1"># splitting them too rather than failing outright; this is the one case</span>
+    <span class="c1"># where the lazy-op hazard described above is genuinely unavoidable.</span>
+    <span class="k">while</span> <span class="n">nbytes</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">max_bytes</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">):</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">j</span><span class="p">:</span> <span class="n">chunks</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="n">chunks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">chunks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="ComputableList">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.array.html#abtem.array.ComputableList">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ComputableList</span><span class="p">(</span><span class="nb">list</span><span class="p">):</span>
@@ -875,6 +938,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">arrays_to_write</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">metadata_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">base_dims_by_index</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">has_array</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="n">has_array</span> <span class="o">=</span> <span class="n">has_array</span><span class="o">.</span><span class="n">ensure_lazy</span><span class="p">()</span>
@@ -892,6 +956,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <span class="n">arrays_to_write</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">array</span><span class="p">))</span>
             <span class="n">metadata_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="sa">f</span><span class="s2">"metadata</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">:</span> <span class="n">metadata_dict</span><span class="p">})</span>
+            <span class="n">base_dims_by_index</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">has_array</span><span class="o">.</span><span class="n">_base_dims</span>
 
         <span class="k">if</span> <span class="n">is_zip</span><span class="p">:</span>
             <span class="c1"># Use ZipStore for .zip files</span>
@@ -926,11 +991,27 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span class="n">root</span><span class="o">.</span><span class="n">create_array</span><span class="p">(</span>
                                 <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"array</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                                 <span class="n">data</span><span class="o">=</span><span class="n">computed_array</span><span class="p">,</span>
-                                <span class="n">chunks</span><span class="o">=</span><span class="n">computed_array</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                                <span class="n">chunks</span><span class="o">=</span><span class="n">_safe_zarr_chunks</span><span class="p">(</span>
+                                    <span class="n">computed_array</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                                    <span class="n">computed_array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">itemsize</span><span class="p">,</span>
+                                    <span class="n">n_fixed_trailing_axes</span><span class="o">=</span><span class="n">base_dims_by_index</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                <span class="p">),</span>
                                 <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                 <span class="n">compressors</span><span class="o">=</span><span class="n">compressors</span><span class="p">,</span>
                             <span class="p">)</span>
-                    <span class="k">finally</span><span class="p">:</span>
+                    <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+                        <span class="c1"># A failed write (e.g. a chunk still over a codec's</span>
+                        <span class="c1"># buffer limit) can leave a .zip with valid-looking</span>
+                        <span class="c1"># metadata (shape/dtype/chunks) but no actual chunk</span>
+                        <span class="c1"># data -- silently readable later as all zeros</span>
+                        <span class="c1"># (zarr's fill_value for a declared-but-missing</span>
+                        <span class="c1"># chunk) instead of raising again. Don't leave that</span>
+                        <span class="c1"># behind.</span>
+                        <span class="n">store</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+                            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+                        <span class="k">raise</span>
+                    <span class="k">else</span><span class="p">:</span>
                         <span class="n">store</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
                 <span class="k">return</span> <span class="n">url</span>
@@ -947,6 +1028,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 <span class="n">root</span> <span class="o">=</span> <span class="n">zarr</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"w"</span><span class="p">)</span>
 
+                <span class="k">def</span><span class="w"> </span><span class="nf">_close</span><span class="p">():</span>
+                    <span class="n">store</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">"store"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">store</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">close_fn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s2">"close"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">close_fn</span><span class="p">):</span>
+                            <span class="n">close_fn</span><span class="p">()</span>
+
                 <span class="k">try</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">metadata_dict</span> <span class="ow">in</span> <span class="n">metadata_list</span><span class="p">:</span>
                         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">metadata_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -956,15 +1044,23 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span class="n">root</span><span class="o">.</span><span class="n">create_array</span><span class="p">(</span>
                             <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"array</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                             <span class="n">data</span><span class="o">=</span><span class="n">computed_array</span><span class="p">,</span>
-                            <span class="n">chunks</span><span class="o">=</span><span class="n">computed_array</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                            <span class="n">chunks</span><span class="o">=</span><span class="n">_safe_zarr_chunks</span><span class="p">(</span>
+                                <span class="n">computed_array</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                                <span class="n">computed_array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">itemsize</span><span class="p">,</span>
+                                <span class="n">n_fixed_trailing_axes</span><span class="o">=</span><span class="n">base_dims_by_index</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                            <span class="p">),</span>
                             <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                         <span class="p">)</span>
-                <span class="k">finally</span><span class="p">:</span>
-                    <span class="n">store</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">"store"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">store</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">close_fn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="s2">"close"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">close_fn</span><span class="p">):</span>
-                            <span class="n">close_fn</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+                    <span class="c1"># See the matching comment in write_to_zipstore: don't</span>
+                    <span class="c1"># leave a partially-written store with valid-looking</span>
+                    <span class="c1"># metadata but missing/incomplete chunk data.</span>
+                    <span class="n">_close</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+                        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+                    <span class="k">raise</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">_close</span><span class="p">()</span>
 
                 <span class="k">return</span> <span class="n">url</span>
 
@@ -2865,7 +2961,16 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">zarr_array</span> <span class="o">=</span> <span class="n">root</span><span class="p">[</span><span class="sa">f</span><span class="s2">"array</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">chunks</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
-            <span class="n">array_chunks</span> <span class="o">=</span> <span class="s2">"auto"</span>
+            <span class="c1"># Respect cls._base_dims the same way the legacy loader below</span>
+            <span class="c1"># already does: dask's own "auto" heuristic doesn't know which</span>
+            <span class="c1"># trailing axes are an ArrayObject's base (measurement) axes, and</span>
+            <span class="c1"># several of abTEM's own lazy operations (e.g. interpolate_line)</span>
+            <span class="c1"># assume those are never split across chunks. chunks=None (the</span>
+            <span class="c1"># default) already avoids this by mirroring whatever to_zarr</span>
+            <span class="c1"># actually wrote, which itself never splits base axes -- this</span>
+            <span class="c1"># branch only matters if a caller explicitly opts into "auto".</span>
+            <span class="n">num_ensemble_axes</span> <span class="o">=</span> <span class="n">zarr_array</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_base_dims</span>
+            <span class="n">array_chunks</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"auto"</span><span class="p">,)</span> <span class="o">*</span> <span class="n">num_ensemble_axes</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_base_dims</span>
         <span class="k">elif</span> <span class="n">chunks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">array_chunks</span> <span class="o">=</span> <span class="n">zarr_array</span><span class="o">.</span><span class="n">chunks</span>
         <span class="k">else</span><span class="p">:</span>

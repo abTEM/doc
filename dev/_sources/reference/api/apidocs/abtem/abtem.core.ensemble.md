@@ -39,6 +39,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`shared_constant_arg <abtem.core.ensemble.shared_constant_arg>`
+  - ```{autodoc2-docstring} abtem.core.ensemble.shared_constant_arg
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`unpack_blockwise_args <abtem.core.ensemble.unpack_blockwise_args>`
   - ```{autodoc2-docstring} abtem.core.ensemble.unpack_blockwise_args
     :parser: rst
@@ -162,6 +167,14 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`
 :canonical: abtem.core.ensemble.concatenate_array_blocks
 
 ```{autodoc2-docstring} abtem.core.ensemble.concatenate_array_blocks
+:parser: rst
+```
+````
+
+````{py:function} shared_constant_arg(...) -> numpy.ndarray | dask.array.core.Array
+:canonical: abtem.core.ensemble.shared_constant_arg
+
+```{autodoc2-docstring} abtem.core.ensemble.shared_constant_arg
 :parser: rst
 ```
 ````

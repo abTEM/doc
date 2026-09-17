@@ -555,6 +555,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span>
 
@@ -591,6 +593,185 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.parametrizations</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parametrization</span>
+
+
+<span class="n">_MAX_CACHE_ENTRIES</span> <span class="o">=</span> <span class="mi">32</span>
+
+<span class="c1"># Kept as the name the scattering-factor tests import.</span>
+<span class="n">_MAX_SCATTERING_FACTOR_ENTRIES</span> <span class="o">=</span> <span class="n">_MAX_CACHE_ENTRIES</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_CacheStateMixin</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Normalise cache attributes restored from an older pickle.</span>
+
+<span class="sd">    ``__setstate__`` gets ``__dict__`` verbatim, so an integrator pickled</span>
+<span class="sd">    before these caches existed -- ``_sinc_cache`` only arrived in PR #269 --</span>
+<span class="sd">    comes back missing them, and one pickled while they were plain dicts comes</span>
+<span class="sd">    back with objects that have ``.get`` but not ``.put``. The miss path, not</span>
+<span class="sd">    the hit path, would then raise. Restore both to the current container.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_cache_attributes</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Drop the caches on the way out.</span>
+
+<span class="sd">        abTEM pickles integrators into every task graph, so a populated cache</span>
+<span class="sd">        rides along to every worker. Measured on a warm four-configuration</span>
+<span class="sd">        frozen-phonon graph at 512^2, the caches this file keeps inflate it</span>
+<span class="sd">        126x (scattering factor), 532x (quadrature) and 39x (gaussian); a</span>
+<span class="sd">        sampling sweep takes a pickled quadrature integrator to 69 MB. That is</span>
+<span class="sd">        the same mechanism this commit cites when deleting the two caches that</span>
+<span class="sd">        never stored -- keeping the others un-dropped while deleting those for</span>
+<span class="sd">        graph inflation would be incoherent.</span>
+
+<span class="sd">        They are pure derived state that any worker can rebuild, and</span>
+<span class="sd">        __setstate__ below recreates them empty. Same discipline as</span>
+<span class="sd">        _local_potential_on_device.__getstate__ in core_loss.py (PR #375).</span>
+
+<span class="sd">        This also settles the __eq__/tokenize disagreement: two integrators</span>
+<span class="sd">        that compare equal now tokenize equal, because tokenize pickles.</span>
+<span class="sd">        """</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_attributes</span><span class="p">:</span>
+            <span class="n">state</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">state</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Restore, with every cache empty.</span>
+
+<span class="sd">        Contents are deliberately not carried over, even when the state dict</span>
+<span class="sd">        has them. Only a pickle written before __getstate__ existed can, and</span>
+<span class="sd">        its entries are keyed in the *old* shape -- _sorted_disks without a</span>
+<span class="sd">        precision component, _tables without sampling -- so reusing them would</span>
+<span class="sd">        serve a value found under an incomplete key, which is the whole defect</span>
+<span class="sd">        this commit exists to fix. They are derived state; recomputing costs a</span>
+<span class="sd">        miss and gives the same answer.</span>
+
+<span class="sd">        The attribute still has to be replaced rather than trusted: an</span>
+<span class="sd">        integrator pickled before these caches existed (_sinc_cache post-dates</span>
+<span class="sd">        PR #269) comes back missing them entirely, and one pickled while they</span>
+<span class="sd">        were plain dicts comes back with an object that has .get but not .put,</span>
+<span class="sd">        so the miss path -- not the hit path -- raised AttributeError.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_attributes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_DeviceArrayCache</span><span class="p">()</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_DeviceArrayCache</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A bounded, least-recently-used cache of computed arrays.</span>
+
+<span class="sd">    Deliberately a plain ``OrderedDict`` rather than ``functools.lru_cache``: a</span>
+<span class="sd">    per-instance ``lru_cache`` wrapping a bound method is not picklable -- it</span>
+<span class="sd">    resolves by ``__qualname__`` and no longer matches the class attribute of</span>
+<span class="sd">    that name -- which breaks dask's processes scheduler and ``distributed``,</span>
+<span class="sd">    i.e. the multi-GPU layout these device keys exist to serve. It also breaks</span>
+<span class="sd">    ``EqualityMixin`` comparison and ``deepcopy``. See PR #388.</span>
+
+<span class="sd">    Eviction cannot race: ``popitem`` and ``move_to_end`` are single C-level</span>
+<span class="sd">    dict operations, and the ``KeyError`` a losing thread sees is caught rather</span>
+<span class="sd">    than escaping to the caller.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maxsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">_MAX_CACHE_ENTRIES</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maxsize</span> <span class="o">=</span> <span class="n">maxsize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">:</span> <span class="n">OrderedDict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The cached value for ``key``, or ``default``, refreshing its recency.</span>
+
+<span class="sd">        The two-argument form matters: ``tables`` and ``scattering_factors``</span>
+<span class="sd">        are public properties that returned a plain dict before this container</span>
+<span class="sd">        existed, and keeping them dict-like is the whole reason this is a</span>
+<span class="sd">        Mapping. A one-argument override shadows ``Mapping.get`` and makes</span>
+<span class="sd">        ``scattering_factors.get(key, "not cached")`` -- ordinary dict usage --</span>
+<span class="sd">        raise TypeError instead of returning the default.</span>
+<span class="sd">        """</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">default</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="o">.</span><span class="n">move_to_end</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>  <span class="c1"># evicted by another thread; the value is still ours</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Store ``value`` under ``key`` and return it."""</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maxsize</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="o">.</span><span class="n">popitem</span><span class="p">(</span><span class="n">last</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>  <span class="c1"># another thread emptied it</span>
+                <span class="k">break</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">)</span>
+
+    <span class="c1"># ``QuadratureProjectionIntegrals.tables`` and</span>
+    <span class="c1"># ``ScatteringFactorProjectionIntegrals.scattering_factors`` are public</span>
+    <span class="c1"># properties that returned a plain dict before this container existed, so</span>
+    <span class="c1"># it has to keep behaving like one -- Mapping supplies keys/values/items/</span>
+    <span class="c1"># __contains__/get on top of __getitem__/__iter__/__len__. Note Mapping</span>
+    <span class="c1"># also supplies __eq__, which is why ours is defined *after* this in the</span>
+    <span class="c1"># class body and wins.</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="c1"># A cache is incidental state, never identity: two integrators with the</span>
+        <span class="c1"># same parametrization are the same integrator whether or not either</span>
+        <span class="c1"># has been used. Comparing contents would compare numpy arrays, which</span>
+        <span class="c1"># safe_equality turns into an unequal verdict via its ValueError guard,</span>
+        <span class="c1"># so a used integrator would stop comparing equal to an identical fresh</span>
+        <span class="c1"># one.</span>
+        <span class="c1">#</span>
+        <span class="c1"># This fixes the comparison at the *integrator* level only. A built</span>
+        <span class="c1"># Potential still compares unequal to an identical unbuilt one, because</span>
+        <span class="c1"># Potential.build() populates _sliced_atoms lazily -- the same defect</span>
+        <span class="c1"># shape one level up, and out of scope here.</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">_DeviceArrayCache</span><span class="p">)</span>
+
+    <span class="fm">__hash__</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_precision_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The current precision, as a cache-key component.</span>
+
+<span class="sd">    Every cached value here is built through ``get_dtype``, directly or via</span>
+<span class="sd">    ``spatial_frequencies``, so a key without it serves a float32 entry to a</span>
+<span class="sd">    float64 request. Silent, and small enough that ``np.allclose`` with default</span>
+<span class="sd">    tolerances calls the wrong answer correct.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_device_cache_key</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">like</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Name the concrete device a cached array belongs to.</span>
+
+<span class="sd">    The ``device`` threaded through the integrators is the plain "cpu"/"gpu"</span>
+<span class="sd">    string, which does not distinguish one GPU from another. Read the device</span>
+<span class="sd">    off ``like`` -- an array the cached value will be combined with -- the way</span>
+<span class="sd">    ``_local_potential_on_device`` (core_loss.py) and</span>
+<span class="sd">    ``_radial_binning_device_arrays`` (measurements.py) read it off theirs.</span>
+<span class="sd">    That is what makes the key right when one process drives several GPUs: the</span>
+<span class="sd">    ambient CUDA context can differ from the device an array actually lives on.</span>
+
+<span class="sd">    Without ``like`` there is nothing to anchor to and the current device is</span>
+<span class="sd">    the best available answer. Callers that have an array should pass it.</span>
+<span class="sd">    """</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">np</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">"cpu"</span>
+    <span class="k">if</span> <span class="n">like</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">like</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">np</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">"gpu"</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">like</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s2">"gpu"</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Device</span><span class="p">()</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="FieldIntegrator">
@@ -690,7 +871,12 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">long_range</span> <span class="o">=</span> <span class="n">long_range</span><span class="o">.</span><span class="n">projected_scattering_factor</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
 
     <span class="n">correction</span> <span class="o">=</span> <span class="n">short_range</span><span class="p">(</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">long_range</span><span class="p">(</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-    <span class="c1"># correction /= sinc()</span>
+    <span class="c1"># A commented-out `correction /= sinc()` sat here and read like an</span>
+    <span class="c1"># unfinished step. It is not: integrate_on_grid divides the *summed*</span>
+    <span class="c1"># gaussian-plus-correction array by sinc once, so dividing here as well</span>
+    <span class="c1"># double-divides. Restoring it makes the result diverge rather than</span>
+    <span class="c1"># converge as the sampling is refined -- total ratio against the quadrature</span>
+    <span class="c1"># integrator goes 2.70 / 7.78 / 28.12 at gpts 128 / 256 / 512.</span>
     <span class="k">return</span> <span class="n">correction</span></div>
 
 
@@ -732,9 +918,116 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_sinc_on_device</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">device_key</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""``sinc`` built inside the context of the device its key names."""</span>
+    <span class="k">if</span> <span class="n">device_key</span> <span class="o">==</span> <span class="s2">"cpu"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">sinc</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="s2">"cpu"</span><span class="p">)</span>
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">cupy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cp</span>  <span class="c1"># noqa: PLC0415 -- optional dependency</span>
+
+    <span class="k">with</span> <span class="n">cp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Device</span><span class="p">(</span><span class="n">device_key</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">return</span> <span class="n">sinc</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="s2">"gpu"</span><span class="p">)</span>
+
+
+<span class="c1"># The largest scale-relative deviation a Gaussian-form parametrization may show</span>
+<span class="c1"># when rebuilt from its own parameters. Peng, the only one abTEM ships, reaches</span>
+<span class="c1"># 1.8e-07 at float32 and 1.8e-16 at float64 over all 98 elements it covers on a</span>
+<span class="c1"># 128^2 grid; the nearest rejection, Kirkland, is 0.275, and Lobato is 2.3-3.8.</span>
+<span class="c1"># Three decades of headroom above the former and three below the latter.</span>
+<span class="n">_GAUSSIAN_FORM_TOLERANCE</span> <span class="o">=</span> <span class="mf">1e-4</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_gaussian_form</span><span class="p">(</span><span class="n">parametrization</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reject a parametrization that is not a superposition of Gaussians.</span>
+
+<span class="sd">    ``gaussian_parametrization`` is documented as requiring that form and</span>
+<span class="sd">    nothing checked it: ``gaussian_projected_scattering_factors`` evaluates</span>
+<span class="sd">    ``a exp(-b k^2)`` on whatever ``(2, n)`` array it is handed, so Lobato --</span>
+<span class="sd">    same shape, different functional form -- produced a potential whose plane</span>
+<span class="sd">    integral is 3.3x too large for carbon and 4.8x for silicon, finite</span>
+<span class="sd">    everywhere.</span>
+
+<span class="sd">    The test is functional rather than a name check: rebuild the scattering</span>
+<span class="sd">    factor from the parameters as a Gaussian sum and compare with the</span>
+<span class="sd">    parametrization's own.</span>
+
+<span class="sd">    **On the grid the call is about to use**, not on a fixed window. An earlier</span>
+<span class="sd">    version sampled ``linspace(0.01, 4.0, 32)``, which covers 2.3 % of the k^2</span>
+<span class="sd">    a 128^2 build evaluates and 0.1 % of a 512^2 one -- and 32 points across</span>
+<span class="sd">    that window sit 0.13 apart, so a feature narrower than that fell between</span>
+<span class="sd">    them as well. Both holes were reachable: a Peng subclass carrying a bump at</span>
+<span class="sd">    k^2 = 20, or one between two sample points, passed the check and built a</span>
+<span class="sd">    potential several per cent to tens of per cent wrong. Using the real grid</span>
+<span class="sd">    costs nothing, since ``gaussian_projected_scattering_factors`` computes it</span>
+<span class="sd">    one call later.</span>
+
+<span class="sd">    Both sides are evaluated at the configured precision. Mixing them made the</span>
+<span class="sd">    verdict depend on ``abtem.config``: ``scaled_parameters`` is float64 while</span>
+<span class="sd">    ``Parametrization._get_function`` casts to ``get_dtype``, so the same</span>
+<span class="sd">    parametrization could be accepted at float64 and rejected at float32.</span>
+
+<span class="sd">    Checked **per element, for the element actually being used**, not once at</span>
+<span class="sd">    construction for a fixed one. A first version validated only carbon, which</span>
+<span class="sd">    rejected the shipped ``peng_ionic.json`` (all ions, no carbon) and let a</span>
+<span class="sd">    parametrization whose carbon entry is sound but whose silicon entry is not</span>
+<span class="sd">    through silently.</span>
+
+<span class="sd">    This also rejects a parametrization whose ``scaled_parameters`` and whose</span>
+<span class="sd">    own scattering-factor function disagree about the number of terms -- which</span>
+<span class="sd">    is what Peng does if its parameter table is extended past five, because</span>
+<span class="sd">    ``scattering_factor_k2`` is hardcoded to five. That rejection is wanted:</span>
+<span class="sd">    the extra Gaussians would be added to the field while ``get_corrections``</span>
+<span class="sd">    and ``cutoff`` still saw five.</span>
+<span class="sd">    """</span>
+    <span class="n">fp_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">parametrization</span><span class="o">.</span><span class="n">scaled_parameters</span><span class="p">(</span>
+            <span class="n">symbol</span><span class="p">,</span> <span class="s2">"projected_scattering_factor"</span>
+        <span class="p">)</span>
+        <span class="n">own_function</span> <span class="o">=</span> <span class="n">parametrization</span><span class="o">.</span><span class="n">projected_scattering_factor</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># noqa: BLE001 -- re-raised with context</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">parametrization</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> cannot provide a projected "</span>
+            <span class="sa">f</span><span class="s2">"scattering factor for </span><span class="si">{</span><span class="n">symbol</span><span class="si">!r}</span><span class="s2">, so it cannot be used as "</span>
+            <span class="s2">"gaussian_parametrization"</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+    <span class="n">parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">parameters</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">parameters</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">parametrization</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is not a superposition of "</span>
+            <span class="sa">f</span><span class="s2">"Gaussians for </span><span class="si">{</span><span class="n">symbol</span><span class="si">!r}</span><span class="s2">: expected (2, n) amplitude/width "</span>
+            <span class="sa">f</span><span class="s2">"parameters, got </span><span class="si">{</span><span class="n">parameters</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+
+    <span class="n">k</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">polar_spatial_frequencies</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
+    <span class="n">k2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span>
+    <span class="n">own</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">own_function</span><span class="p">(</span><span class="n">k2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span>
+    <span class="n">reconstructed</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">parameters</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">k2</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Scale-relative, not np.allclose: these span many orders of magnitude</span>
+    <span class="c1"># across the grid, and at large k^2 both sides are ~0, where a per-element</span>
+    <span class="c1"># relative tolerance compares noise with noise.</span>
+    <span class="n">deviation</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">reconstructed</span> <span class="o">-</span> <span class="n">own</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">own</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">deviation</span> <span class="o">&lt;=</span> <span class="n">_GAUSSIAN_FORM_TOLERANCE</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">parametrization</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is not a superposition of "</span>
+            <span class="sa">f</span><span class="s2">"Gaussians for </span><span class="si">{</span><span class="n">symbol</span><span class="si">!r}</span><span class="s2">: rebuilding its projected scattering "</span>
+            <span class="s2">"factor from its own parameters as a sum of Gaussians does not "</span>
+            <span class="sa">f</span><span class="s2">"reproduce it on a </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">gpts</span><span class="p">)</span><span class="si">}</span><span class="s2"> grid (max deviation "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">deviation</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2"> of peak, tolerance "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_GAUSSIAN_FORM_TOLERANCE</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">). gaussian_parametrization requires "</span>
+            <span class="s2">"a Gaussian-form parametrization such as Peng, and its parameter "</span>
+            <span class="s2">"table must have the same number of terms its own "</span>
+            <span class="s2">"scattering-factor function uses."</span>
+        <span class="p">)</span>
+
+
 <div class="viewcode-block" id="GaussianProjectionIntegrals">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.integrals.html#abtem.integrals.GaussianProjectionIntegrals">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">GaussianProjectionIntegrals</span><span class="p">(</span><span class="n">FieldIntegrator</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GaussianProjectionIntegrals</span><span class="p">(</span><span class="n">_CacheStateMixin</span><span class="p">,</span> <span class="n">FieldIntegrator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -749,7 +1042,55 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    cutoff_tolerance : float, optional</span>
 <span class="sd">        The error tolerance used for deciding the radial cutoff distance of the</span>
 <span class="sd">        potential [eV / e]. Default is 1e-3.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The short-range correction is **not** resolved along z. The Gaussian term is:</span>
+<span class="sd">    each atom contributes to every slice, weighted by the analytic z-integral of</span>
+<span class="sd">    each Gaussian between that slice's limits. The correction term is not: the</span>
+<span class="sd">    whole infinitely-projected difference between the two parametrizations is</span>
+<span class="sd">    added to the one slice the atom's centre falls in.</span>
+
+<span class="sd">    Summed over slices the two terms recover the full projection of</span>
+<span class="sd">    ``parametrization`` -- exact up to ``_GAUSSIAN_FORM_TOLERANCE``, not</span>
+<span class="sd">    unconditionally. The identity holds only where the Gaussian sum built from</span>
+<span class="sd">    ``scaled_parameters`` equals the parametrization's own</span>
+<span class="sd">    ``projected_scattering_factor``, and the form check bounds their</span>
+<span class="sd">    disagreement globally, as ``max|difference| / max|own|``. A discrepancy</span>
+<span class="sd">    parked where ``own`` is small relative to the grid's peak therefore costs</span>
+<span class="sd">    almost nothing globally while being large locally: a Peng subclass with a</span>
+<span class="sd">    bump at k^2 = 150 on a 128^2 grid is accepted at a global deviation of</span>
+<span class="sd">    5.5e-05 while differing by 4.8 % locally, leaving the total off by 3.2e-04.</span>
+<span class="sd">    For the shipped Peng/Lobato default the disagreement is ~1.8e-07 and the</span>
+<span class="sd">    total is exact to that, but a custom ``gaussian_parametrization`` should not</span>
+<span class="sd">    read this as an unconditional guarantee.</span>
+
+<span class="sd">    Distribution between slices is a separate matter, and a worse one: it is a</span>
+<span class="sd">    good approximation only if the difference between the two parametrizations</span>
+<span class="sd">    is confined to a region thinner than a slice. It is not. Measured for silicon, the fraction</span>
+<span class="sd">    of the correction that actually belongs in the atom's own slice is 11 % at</span>
+<span class="sd">    dz = 0.5 A, 20 % at 1 A and 31 % at 2 A, against 44 / 67 / 90 % for the</span>
+<span class="sd">    atom's own potential: the correction is *less* localised in z than the atom</span>
+<span class="sd">    it corrects, because a five-Gaussian fit crosses a different functional form</span>
+<span class="sd">    repeatedly rather than agreeing with it outside the core.</span>
+
+<span class="sd">    The cost is a redistribution of potential between neighbouring slices, not a</span>
+<span class="sd">    change in the total. Building a single silicon atom against</span>
+<span class="sd">    ``QuadratureProjectionIntegrals`` at matched cutoff, the largest per-slice</span>
+<span class="sd">    deviation grows as 1/dz -- 0.16 % for one slice holding the whole atom,</span>
+<span class="sd">    0.62 % at dz = 1 A, 3.5 % at dz = 0.125 A -- while the total stays within</span>
+<span class="sd">    1563-1643 ppm throughout. **Refining the slicing makes it worse**, which is</span>
+<span class="sd">    the signature of a model choice rather than a discretisation error.</span>
+
+<span class="sd">    Whether that is acceptable, and whether the correction should carry a real</span>
+<span class="sd">    z-profile, is an open question: giving it one means a numerical z-quadrature</span>
+<span class="sd">    for that term, since the difference of the two parametrizations has no</span>
+<span class="sd">    closed-form z-integral. Until it is settled, prefer</span>
+<span class="sd">    ``QuadratureProjectionIntegrals`` where the distribution of potential within</span>
+<span class="sd">    a slice matters, and this class where periodicity does.</span>
 <span class="sd">    """</span>
+
+    <span class="n">_cache_attributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_gaussians"</span><span class="p">,</span> <span class="s2">"_corrections"</span><span class="p">,</span> <span class="s2">"_sinc_cache"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -767,8 +1108,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">periodic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">finite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussians</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_corrections</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># integrate_on_grid runs once per slice per species and recomputes</span>
+        <span class="c1"># both parametrization arrays each time -- 46x redundant for a 46-slice</span>
+        <span class="c1"># cell, and 65-70 % of CPU build time (89 % on GPU at 1024^2, which is</span>
+        <span class="c1"># why the device could not help). The previous commit deleted these two</span>
+        <span class="c1"># caches because as written they were unusable: they never stored, their</span>
+        <span class="c1"># key omitted precision, and they rode into every task graph. Restored</span>
+        <span class="c1"># here with the key they always needed and excluded from __getstate__.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gaussians</span> <span class="o">=</span> <span class="n">_DeviceArrayCache</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_corrections</span> <span class="o">=</span> <span class="n">_DeviceArrayCache</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sinc_cache</span> <span class="o">=</span> <span class="n">_DeviceArrayCache</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">cutoff_tolerance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -778,12 +1127,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_parametrization</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""The error tolerance used for deciding the radial cutoff distance of the</span>
-<span class="sd">        potential [eV / e]."""</span>
+<span class="w">        </span><span class="sd">"""The Gaussian radial potential parametrization that is superposed to build</span>
+<span class="sd">        the projected field. Must be a superposition of Gaussians."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_parametrization</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">correction_parametrization</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The radial potential parametrization the short-range correction is taken</span>
+<span class="sd">        from. Set by the `parametrization` argument, which is named for consistency</span>
+<span class="sd">        with the other integrators; the correction is the difference between this</span>
+<span class="sd">        parametrization and `gaussian_parametrization`."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_correction_parametrization</span>
 
 <div class="viewcode-block" id="GaussianProjectionIntegrals.cutoff">
@@ -800,21 +1153,51 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="viewcode-block" id="GaussianProjectionIntegrals.get_gaussians">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.integrals.html#abtem.integrals.GaussianProjectionIntegrals.get_gaussians">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_gaussians</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">):</span>
-        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussians</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussians</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="c1"># Host-side: the helper takes no device, so the key needs none -- but</span>
+        <span class="c1"># it does need the precision, which reaches the value through</span>
+        <span class="c1"># spatial_frequencies.</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">gpts</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">sampling</span><span class="p">),</span> <span class="n">_precision_key</span><span class="p">())</span>
+        <span class="n">cached</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussians</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cached</span>
 
-        <span class="k">return</span> <span class="n">gaussian_projected_scattering_factors</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span></div>
+        <span class="n">_validate_gaussian_form</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_parametrization</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussians</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
+            <span class="n">key</span><span class="p">,</span>
+            <span class="n">gaussian_projected_scattering_factors</span><span class="p">(</span>
+                <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">parametrization</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_parametrization</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GaussianProjectionIntegrals.get_corrections">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.integrals.html#abtem.integrals.GaussianProjectionIntegrals.get_corrections">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_corrections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">):</span>
-        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_corrections</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_corrections</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">gpts</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">sampling</span><span class="p">),</span> <span class="n">_precision_key</span><span class="p">())</span>
+        <span class="n">cached</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_corrections</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cached</span>
 
-        <span class="k">return</span> <span class="n">correction_projected_scattering_factors</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span></div>
+        <span class="c1"># Validated here too, not only in get_gaussians. The correction is</span>
+        <span class="c1"># short_range - long_range with long_range = gaussian_parametrization,</span>
+        <span class="c1"># so a non-Gaussian one yields a plausible-looking array rather than an</span>
+        <span class="c1"># error. integrate_on_grid happens to call get_gaussians first, which</span>
+        <span class="c1"># would raise before this is reached -- but that is an ordering</span>
+        <span class="c1"># accident, and get_corrections is public. Validating both makes the</span>
+        <span class="c1"># guarantee a property of the methods rather than of their call order.</span>
+        <span class="n">_validate_gaussian_form</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_parametrization</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_corrections</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
+            <span class="n">key</span><span class="p">,</span>
+            <span class="n">correction_projected_scattering_factors</span><span class="p">(</span>
+                <span class="n">symbol</span><span class="p">,</span>
+                <span class="n">gpts</span><span class="p">,</span>
+                <span class="n">sampling</span><span class="p">,</span>
+                <span class="n">short_range</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_correction_parametrization</span><span class="p">,</span>
+                <span class="n">long_range</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_parametrization</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_integrate_gaussians</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
@@ -823,18 +1206,38 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">shifted_a</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
         <span class="n">shifted_b</span> <span class="o">=</span> <span class="n">b</span> <span class="o">-</span> <span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
 
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">gaussian_projection_weights</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">shifted_a</span><span class="p">,</span> <span class="n">shifted_b</span><span class="p">)</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">gaussian_projection_weights</span><span class="p">(</span>
+            <span class="n">symbol</span><span class="p">,</span>
+            <span class="n">shifted_a</span><span class="p">,</span>
+            <span class="n">shifted_b</span><span class="p">,</span>
+            <span class="n">parametrization</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_parametrization</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="n">fp_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">cx_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">positions</span> <span class="o">=</span> <span class="p">(</span><span class="n">positions</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">fp_dtype</span><span class="p">)</span>
+        <span class="c1"># The parametrization helpers are host-only, so move their results</span>
+        <span class="c1"># across before they meet a device array. Cast on the way: the</span>
+        <span class="c1"># parameters are float64 regardless of the configured precision, so</span>
+        <span class="c1"># transferring them raw moves twice the bytes a float32 run needs.</span>
+        <span class="c1"># Only on device -- casting on the host path would change CPU results.</span>
+        <span class="k">if</span> <span class="n">xp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">np</span><span class="p">:</span>
+            <span class="n">gaussians</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">gaussians</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span>
 
         <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cx_dtype</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
-            <span class="n">temp</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cx_dtype</span><span class="p">)</span>
+        <span class="c1"># Was hardcoded to 5 while the parametrization became configurable, so</span>
+        <span class="c1"># a six-term parametrization silently dropped its last Gaussian and a</span>
+        <span class="c1"># three-term one raised IndexError.</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gaussians</span><span class="p">)):</span>
+            <span class="c1"># Superpose into a real array and cast afterwards, as the infinite</span>
+            <span class="c1"># projection does: cupy's scatter-add has no complex overload.</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span>
             <span class="n">superpose_deltas</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="n">array</span> <span class="o">+=</span> <span class="n">fft2</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">*</span> <span class="n">gaussians</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">cx_dtype</span><span class="p">)</span>
+            <span class="n">array</span> <span class="o">+=</span> <span class="n">fft2</span><span class="p">(</span><span class="n">temp</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">cx_dtype</span><span class="p">),</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">*</span> <span class="n">gaussians</span><span class="p">[</span>
+                <span class="n">i</span>
+            <span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">cx_dtype</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">array</span>
 
@@ -844,15 +1247,20 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="n">fp_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">cx_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">xp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">np</span><span class="p">:</span>
+            <span class="c1"># Real, not complex: the imaginary part is identically zero, so a</span>
+            <span class="c1"># complex cast saved nothing at float32 and doubled the transfer at</span>
+            <span class="c1"># float64 -- and left cpu and gpu disagreeing on dtype.</span>
+            <span class="n">corrections</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">corrections</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span>
 
         <span class="n">positions</span> <span class="o">=</span> <span class="n">positions</span><span class="p">[(</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">)]</span>
         <span class="n">positions</span> <span class="o">=</span> <span class="p">(</span><span class="n">positions</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">fp_dtype</span><span class="p">)</span>
 
-        <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cx_dtype</span><span class="p">)</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span>
 
         <span class="n">superpose_deltas</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span>
 
-        <span class="n">corrections</span> <span class="o">=</span> <span class="n">fft2</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">*</span> <span class="n">corrections</span>
+        <span class="n">corrections</span> <span class="o">=</span> <span class="n">fft2</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">cx_dtype</span><span class="p">),</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">*</span> <span class="n">corrections</span>
 
         <span class="k">return</span> <span class="n">corrections</span>
 
@@ -866,7 +1274,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">gpts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
         <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>
-        <span class="n">fourier_space</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
@@ -882,14 +1289,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">positions</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device</span>
             <span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_sinc_cache"</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_sinc_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># `array` is already on the device this result must live on, so use it</span>
+        <span class="c1"># as the anchor rather than the ambient CUDA context, and build the</span>
+        <span class="c1"># sinc there too -- keying on one device while allocating on another is</span>
+        <span class="c1"># the half-fix PR #388 had to correct.</span>
+        <span class="n">device_key</span> <span class="o">=</span> <span class="n">_device_cache_key</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">like</span><span class="o">=</span><span class="n">array</span><span class="p">)</span>
+        <span class="n">sinc_key</span> <span class="o">=</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">gpts</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">sampling</span><span class="p">),</span> <span class="n">device_key</span><span class="p">,</span> <span class="n">_precision_key</span><span class="p">())</span>
+        <span class="n">sinc_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sinc_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sinc_key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sinc_array</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sinc_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sinc_cache</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
+                <span class="n">sinc_key</span><span class="p">,</span> <span class="n">_sinc_on_device</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">device_key</span><span class="p">)</span>
+            <span class="p">)</span>
 
-        <span class="n">sinc_key</span> <span class="o">=</span> <span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">sinc_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sinc_cache</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_sinc_cache</span><span class="p">[</span><span class="n">sinc_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">sinc</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">array</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sinc_cache</span><span class="p">[</span><span class="n">sinc_key</span><span class="p">])</span><span class="o">.</span><span class="n">real</span></div>
+        <span class="k">return</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">array</span> <span class="o">/</span> <span class="n">sinc_array</span><span class="p">)</span><span class="o">.</span><span class="n">real</span></div>
 </div>
 
 
@@ -1000,7 +1412,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <div class="viewcode-block" id="ScatteringFactorProjectionIntegrals">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.integrals.html#abtem.integrals.ScatteringFactorProjectionIntegrals">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">ScatteringFactorProjectionIntegrals</span><span class="p">(</span><span class="n">FieldIntegrator</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ScatteringFactorProjectionIntegrals</span><span class="p">(</span><span class="n">_CacheStateMixin</span><span class="p">,</span> <span class="n">FieldIntegrator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A FieldIntegrator calculating infinite projections of radial potential</span>
 <span class="sd">    parametrizations. The hybrid real and reciprocal space method by</span>
@@ -1018,9 +1430,12 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    doi:10.1016/j.ultramic.2015.07.005.</span>
 <span class="sd">    """</span>
 
+    <span class="n">_cache_attributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_scattering_factors"</span><span class="p">,)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parametrization</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Parametrization</span> <span class="o">=</span> <span class="s2">"lobato"</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_parametrization</span> <span class="o">=</span> <span class="n">validate_parametrization</span><span class="p">(</span><span class="n">parametrization</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_scattering_factors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># See _DeviceArrayCache for why this is not a functools.lru_cache.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scattering_factors</span> <span class="o">=</span> <span class="n">_DeviceArrayCache</span><span class="p">()</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">periodic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">finite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -1058,21 +1473,62 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <div class="viewcode-block" id="ScatteringFactorProjectionIntegrals.get_scattering_factor">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.integrals.html#abtem.integrals.ScatteringFactorProjectionIntegrals.get_scattering_factor">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_scattering_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">scattering_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scattering_factors</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="n">scattering_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_scattering_factor</span><span class="p">(</span>
-                <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_scattering_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">like</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># The cached array depends on the grid and on the device it was</span>
+        <span class="c1"># allocated on, not on the element alone: keying on ``symbol`` served</span>
+        <span class="c1"># the first grid's array to every later grid (a broadcast error one</span>
+        <span class="c1"># frame away, in integrate_on_grid) and the first device's array to</span>
+        <span class="c1"># every later device (a numpy array handed to a cupy kernel).</span>
+        <span class="c1">#</span>
+        <span class="c1"># ``device`` itself is deliberately not part of the key: it may be an</span>
+        <span class="c1"># array or a module (get_array_module accepts both), which is not</span>
+        <span class="c1"># always hashable, and "gpu" and the cupy module would otherwise take</span>
+        <span class="c1"># two entries for one physical device. ``device_key`` is canonical.</span>
+        <span class="n">device_key</span> <span class="o">=</span> <span class="n">_device_cache_key</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">like</span><span class="p">)</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">symbol</span><span class="p">,</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">gpts</span><span class="p">),</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">sampling</span><span class="p">),</span>
+            <span class="n">device_key</span><span class="p">,</span>
+            <span class="n">_precision_key</span><span class="p">(),</span>
+        <span class="p">)</span>
+
+        <span class="n">scattering_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scattering_factors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">scattering_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scattering_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scattering_factors</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
+                <span class="n">key</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_scattering_factor_on_device</span><span class="p">(</span>
+                    <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device_key</span>
+                <span class="p">),</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_scattering_factors</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="n">scattering_factor</span>
 
         <span class="k">return</span> <span class="n">scattering_factor</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_scattering_factor_on_device</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device_key</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Build the scattering factor *on the device named by the key*.</span>
+
+<span class="sd">        Anchoring only the key on ``like`` would have been half a fix: the key</span>
+<span class="sd">        would say one device while the allocation followed the ambient CUDA</span>
+<span class="sd">        context, so under multi-GPU use the array could be cached under a</span>
+<span class="sd">        device it does not live on. Allocate inside that device's context, as</span>
+<span class="sd">        ``_local_potential_on_device`` (core_loss.py) does with</span>
+<span class="sd">        ``with like.device:``.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">device_key</span> <span class="o">==</span> <span class="s2">"cpu"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_scattering_factor</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="s2">"cpu"</span><span class="p">)</span>
+
+        <span class="kn">import</span><span class="w"> </span><span class="nn">cupy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cp</span>  <span class="c1"># noqa: PLC0415 -- optional dependency</span>
+
+        <span class="k">with</span> <span class="n">cp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Device</span><span class="p">(</span><span class="n">device_key</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_scattering_factor</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="s2">"gpu"</span><span class="p">)</span>
+
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">scattering_factors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""Projected scattering factor array on a 2D grid."""</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scattering_factors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Cached projected scattering factors, keyed by element, grid and</span>
+<span class="sd">        device."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scattering_factors</span>
 
 <div class="viewcode-block" id="ScatteringFactorProjectionIntegrals.integrate_on_grid">
@@ -1092,8 +1548,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">numbers</span><span class="p">):</span>
+            <span class="c1"># Anchor the cache's device key on an array the scattering factor</span>
+            <span class="c1"># will actually be combined with, rather than on the ambient CUDA</span>
+            <span class="c1"># context, which can name a different device under multi-GPU use.</span>
             <span class="n">scattering_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_scattering_factor</span><span class="p">(</span>
-                <span class="n">chemical_symbols</span><span class="p">[</span><span class="n">number</span><span class="p">],</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device</span>
+                <span class="n">chemical_symbols</span><span class="p">[</span><span class="n">number</span><span class="p">],</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">like</span><span class="o">=</span><span class="n">array</span>
             <span class="p">)</span>
 
             <span class="n">positions</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">atoms</span><span class="o">.</span><span class="n">numbers</span> <span class="o">==</span> <span class="n">number</span><span class="p">]</span>
@@ -1357,7 +1816,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <div class="viewcode-block" id="QuadratureProjectionIntegrals">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.integrals.html#abtem.integrals.QuadratureProjectionIntegrals">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">QuadratureProjectionIntegrals</span><span class="p">(</span><span class="n">FieldIntegrator</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">QuadratureProjectionIntegrals</span><span class="p">(</span><span class="n">_CacheStateMixin</span><span class="p">,</span> <span class="n">FieldIntegrator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Projection integration plan for calculating finite projection integrals based on</span>
 <span class="sd">    Gaussian quadrature rule.</span>
@@ -1382,6 +1841,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Default is 8.</span>
 <span class="sd">    """</span>
 
+    <span class="n">_cache_attributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_tables"</span><span class="p">,</span> <span class="s2">"_sorted_disks"</span><span class="p">,</span> <span class="s2">"_device_arrays"</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">parametrization</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Parametrization</span> <span class="o">=</span> <span class="s2">"lobato"</span><span class="p">,</span>
@@ -1397,10 +1858,15 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="o">.</span><span class="n">_cutoff_tolerance</span> <span class="o">=</span> <span class="n">cutoff_tolerance</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_inner_cutoff_factor</span> <span class="o">=</span> <span class="n">inner_cutoff_factor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_integration_step</span> <span class="o">=</span> <span class="n">integration_step</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ProjectionIntegralTable</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sorted_disks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span>
-            <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
-        <span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Keyed on the element ALONE until 2026-09: _calculate_integral_table</span>
+        <span class="c1"># sets inner_limit from min(sampling), which sets the radial grid, so</span>
+        <span class="c1"># reusing one integrator across a sampling sweep served the first</span>
+        <span class="c1"># sampling's table and built a potential ~54 % wrong.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span> <span class="o">=</span> <span class="n">_DeviceArrayCache</span><span class="p">()</span>
+        <span class="c1"># Host-side sorted disk, keyed by (symbol, sampling) -- correct, but</span>
+        <span class="c1"># previously unbounded, so a sampling sweep accumulated it without</span>
+        <span class="c1"># limit while its device-resident twin below was capped.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sorted_disks</span> <span class="o">=</span> <span class="n">_DeviceArrayCache</span><span class="p">()</span>
         <span class="c1"># Device-resident copy of the sorted disk, keyed by</span>
         <span class="c1"># (symbol, sampling, device). The disk is invariant per (symbol,</span>
         <span class="c1"># sampling) across all slices, but integrate_on_grid is called once</span>
@@ -1410,7 +1876,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="c1"># changing between calls. Only disks small enough to fit within</span>
         <span class="c1"># the chunked-transfer bound are cached; larger disks are streamed</span>
         <span class="c1"># in memory-bounded chunks instead (see integrate_on_grid).</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_device_arrays</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">object</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_device_arrays</span> <span class="o">=</span> <span class="n">_DeviceArrayCache</span><span class="p">()</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">periodic</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">finite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -1518,9 +1984,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">table</span> <span class="o">=</span> <span class="n">table</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_taper_values</span><span class="p">(</span><span class="n">radial_gpts</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_taper</span><span class="p">)[</span><span class="kc">None</span><span class="p">]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="n">ProjectionIntegralTable</span><span class="p">(</span><span class="n">radial_gpts</span><span class="p">,</span> <span class="n">limits</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">table</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">ProjectionIntegralTable</span><span class="p">(</span><span class="n">radial_gpts</span><span class="p">,</span> <span class="n">limits</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">table</span><span class="p">)</span>
 
 <div class="viewcode-block" id="QuadratureProjectionIntegrals.get_integral_table">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.integrals.html#abtem.integrals.QuadratureProjectionIntegrals.get_integral_table">[docs]</a>
@@ -1541,13 +2005,14 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        projection_integral_table :</span>
 <span class="sd">            ProjectionIntegralTable</span>
 <span class="sd">        """</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">scattering_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="n">scattering_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_integral_table</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="n">scattering_factor</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">sampling</span><span class="p">),</span> <span class="n">_precision_key</span><span class="p">())</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
+                <span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_integral_table</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
+            <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">scattering_factor</span></div>
+        <span class="k">return</span> <span class="n">table</span></div>
 
 
 <div class="viewcode-block" id="QuadratureProjectionIntegrals.integrate_on_grid">
@@ -1575,9 +2040,39 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">fp_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
             <span class="n">cutoff</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">radial_gpts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">disk_key</span> <span class="o">=</span> <span class="p">(</span><span class="n">chemical_symbols</span><span class="p">[</span><span class="n">number</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">sampling</span><span class="p">))</span>
-            <span class="k">if</span> <span class="n">disk_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sorted_disks</span><span class="p">:</span>
-                <span class="n">disk</span><span class="p">,</span> <span class="n">disk_radii</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sorted_disks</span><span class="p">[</span><span class="n">disk_key</span><span class="p">]</span>
+            <span class="c1"># Precision is the one key component this needed; the symbol was</span>
+            <span class="c1"># already here. It belongs for the same reason as everywhere else</span>
+            <span class="c1"># in this file, though it takes two steps to get there: the disk is</span>
+            <span class="c1"># sized int(ceil(cutoff / min(sampling))), and `cutoff` is</span>
+            <span class="c1"># precision-dependent (optimize_cutoff evaluates the parametrization</span>
+            <span class="c1"># at the configured dtype) -- 5.066261105906332 against</span>
+            <span class="c1"># 5.066261205200659 for Si, ~2e-8 relative.</span>
+            <span class="c1">#</span>
+            <span class="c1"># That is enough to move the integer. Solving cutoff32/m &lt;= s &lt;</span>
+            <span class="c1"># cutoff64/m gives a counterexample for every element tried; at</span>
+            <span class="c1"># sampling 0.281458955844481 Si wants radius 18 at float32 and 19</span>
+            <span class="c1"># at float64. Serving the float32 disk to a float64 build is then</span>
+            <span class="c1"># measurably wrong -- 4.6e-05 absolute on a peak of 312, i.e. 1.5e-7</span>
+            <span class="c1"># relative -- because the missing ring lands just inside the last</span>
+            <span class="c1"># radial gridpoint, where interpolate_radial_functions still</span>
+            <span class="c1"># contributes (idx == n - 2) rather than clamping to zero.</span>
+            <span class="c1">#</span>
+            <span class="c1"># An earlier version of this key omitted precision, on the argument</span>
+            <span class="c1"># that a 400-sampling scan found no case where the integer moves.</span>
+            <span class="c1"># It found none because a linear scan cannot: the cases have to be</span>
+            <span class="c1"># solved for, not stumbled on.</span>
+            <span class="c1">#</span>
+            <span class="c1"># The symbol component is older than this commit and was never</span>
+            <span class="c1"># missing -- see test_the_sorted_disk_is_not_served_across_elements,</span>
+            <span class="c1"># which covers it for the first time rather than fixing it.</span>
+            <span class="n">disk_key</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">chemical_symbols</span><span class="p">[</span><span class="n">number</span><span class="p">],</span>
+                <span class="nb">tuple</span><span class="p">(</span><span class="n">sampling</span><span class="p">),</span>
+                <span class="n">_precision_key</span><span class="p">(),</span>
+            <span class="p">)</span>
+            <span class="n">cached_disk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sorted_disks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">disk_key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cached_disk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">disk</span><span class="p">,</span> <span class="n">disk_radii</span> <span class="o">=</span> <span class="n">cached_disk</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">disk</span> <span class="o">=</span> <span class="n">disk_meshgrid</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">cutoff</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">sampling</span><span class="p">))))</span>
                 <span class="c1"># Sort the disk pixels by physical radial distance so that the</span>
@@ -1588,7 +2083,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">disk_radii</span><span class="p">)</span>
                 <span class="n">disk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">disk</span><span class="p">[</span><span class="n">order</span><span class="p">])</span>
                 <span class="n">disk_radii</span> <span class="o">=</span> <span class="n">disk_radii</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_sorted_disks</span><span class="p">[</span><span class="n">disk_key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">disk</span><span class="p">,</span> <span class="n">disk_radii</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_sorted_disks</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">disk_key</span><span class="p">,</span> <span class="p">(</span><span class="n">disk</span><span class="p">,</span> <span class="n">disk_radii</span><span class="p">))</span>
 
             <span class="c1"># A pixel at lateral distance r only receives contributions from</span>
             <span class="c1"># the part of the radial potential at 3D distance</span>
@@ -1646,11 +2141,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="c1"># Common case: the disk fits comfortably on device, so keep</span>
                     <span class="c1"># a cached copy -- re-uploading it every slice measurably</span>
                     <span class="c1"># dominated GPU build time (see PR #309 discussion).</span>
-                    <span class="n">device_key</span> <span class="o">=</span> <span class="n">disk_key</span> <span class="o">+</span> <span class="p">(</span><span class="n">device</span><span class="p">,)</span>
-                    <span class="n">disk_device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_device_arrays</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">device_key</span><span class="p">)</span>
+                    <span class="c1"># disk_counts_device was just allocated for this work, so</span>
+                    <span class="c1"># it names the device this copy has to live on. Keying on</span>
+                    <span class="c1"># the plain "gpu" string instead served an array cached for</span>
+                    <span class="c1"># one GPU to a kernel running on another, whenever a single</span>
+                    <span class="c1"># process drives several.</span>
+                    <span class="n">cache_key</span> <span class="o">=</span> <span class="n">disk_key</span> <span class="o">+</span> <span class="p">(</span>
+                        <span class="n">_device_cache_key</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">like</span><span class="o">=</span><span class="n">disk_counts_device</span><span class="p">),</span>
+                    <span class="p">)</span>
+                    <span class="n">disk_device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_device_arrays</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cache_key</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">disk_device</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">disk_device</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">disk</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_device_arrays</span><span class="p">[</span><span class="n">device_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">disk_device</span>
+                        <span class="k">with</span> <span class="n">disk_counts_device</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
+                            <span class="n">disk_device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_device_arrays</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
+                                <span class="n">cache_key</span><span class="p">,</span> <span class="n">cp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">disk</span><span class="p">)</span>
+                            <span class="p">)</span>
                     <span class="n">interpolate_radial_functions_cuda</span><span class="p">(</span>
                         <span class="n">array</span><span class="o">=</span><span class="n">temp</span><span class="p">,</span>
                         <span class="n">positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>

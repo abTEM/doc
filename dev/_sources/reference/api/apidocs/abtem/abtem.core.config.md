@@ -34,6 +34,21 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`collect <abtem.core.config.collect>`
+  - ```{autodoc2-docstring} abtem.core.config.collect
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`collect_env <abtem.core.config.collect_env>`
+  - ```{autodoc2-docstring} abtem.core.config.collect_env
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`collect_legacy_env <abtem.core.config.collect_legacy_env>`
+  - ```{autodoc2-docstring} abtem.core.config.collect_legacy_env
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`get <abtem.core.config.get>`
   - ```{autodoc2-docstring} abtem.core.config.get
     :parser: rst
@@ -57,6 +72,16 @@
 :class: autosummary longtable
 :align: left
 
+* - {py:obj}`ENV_PREFIX <abtem.core.config.ENV_PREFIX>`
+  - ```{autodoc2-docstring} abtem.core.config.ENV_PREFIX
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`LEGACY_ENV_PREFIX <abtem.core.config.LEGACY_ENV_PREFIX>`
+  - ```{autodoc2-docstring} abtem.core.config.LEGACY_ENV_PREFIX
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`config <abtem.core.config.config>`
   - ```{autodoc2-docstring} abtem.core.config.config
     :parser: rst
@@ -82,14 +107,65 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`paths <abtem.core.config.paths>`
+  - ```{autodoc2-docstring} abtem.core.config.paths
+    :parser: rst
+    :summary:
+    ```
 ````
 
 ### API
+
+````{py:data} ENV_PREFIX
+:canonical: abtem.core.config.ENV_PREFIX
+:value: >
+   'ABTEM_'
+
+```{autodoc2-docstring} abtem.core.config.ENV_PREFIX
+:parser: rst
+```
+
+````
+
+````{py:data} LEGACY_ENV_PREFIX
+:canonical: abtem.core.config.LEGACY_ENV_PREFIX
+:value: >
+   'DASK_'
+
+```{autodoc2-docstring} abtem.core.config.LEGACY_ENV_PREFIX
+:parser: rst
+```
+
+````
 
 ````{py:function} check_deprecations(...) -> str
 :canonical: abtem.core.config.check_deprecations
 
 ```{autodoc2-docstring} abtem.core.config.check_deprecations
+:parser: rst
+```
+````
+
+````{py:function} collect(...) -> dict
+:canonical: abtem.core.config.collect
+
+```{autodoc2-docstring} abtem.core.config.collect
+:parser: rst
+```
+````
+
+````{py:function} collect_env(...) -> dict
+:canonical: abtem.core.config.collect_env
+
+```{autodoc2-docstring} abtem.core.config.collect_env
+:parser: rst
+```
+````
+
+````{py:function} collect_legacy_env(...) -> dict
+:canonical: abtem.core.config.collect_legacy_env
+
+```{autodoc2-docstring} abtem.core.config.collect_legacy_env
 :parser: rst
 ```
 ````
@@ -155,6 +231,17 @@
    '__no_default__'
 
 ```{autodoc2-docstring} abtem.core.config.no_default
+:parser: rst
+```
+
+````
+
+````{py:data} paths
+:canonical: abtem.core.config.paths
+:value: >
+   '_get_paths(...)'
+
+```{autodoc2-docstring} abtem.core.config.paths
 :parser: rst
 ```
 

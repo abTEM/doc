@@ -154,7 +154,7 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`, {py:obj}`abtem.core.utils.CopyM
 `````{py:class} GaussianProjectionIntegrals(...)
 :canonical: abtem.integrals.GaussianProjectionIntegrals
 
-Bases: {py:obj}`abtem.integrals.FieldIntegrator`
+Bases: {py:obj}`abtem.integrals._CacheStateMixin`, {py:obj}`abtem.integrals.FieldIntegrator`
 
 ```{autodoc2-docstring} abtem.integrals.GaussianProjectionIntegrals
 :parser: rst
@@ -282,7 +282,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 `````{py:class} QuadratureProjectionIntegrals(...)
 :canonical: abtem.integrals.QuadratureProjectionIntegrals
 
-Bases: {py:obj}`abtem.integrals.FieldIntegrator`
+Bases: {py:obj}`abtem.integrals._CacheStateMixin`, {py:obj}`abtem.integrals.FieldIntegrator`
 
 ```{autodoc2-docstring} abtem.integrals.QuadratureProjectionIntegrals
 :parser: rst
@@ -366,7 +366,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 `````{py:class} ScatteringFactorProjectionIntegrals(...)
 :canonical: abtem.integrals.ScatteringFactorProjectionIntegrals
 
-Bases: {py:obj}`abtem.integrals.FieldIntegrator`
+Bases: {py:obj}`abtem.integrals._CacheStateMixin`, {py:obj}`abtem.integrals.FieldIntegrator`
 
 ```{autodoc2-docstring} abtem.integrals.ScatteringFactorProjectionIntegrals
 :parser: rst
@@ -410,7 +410,7 @@ Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 
 ````{py:property} scattering_factors
 :canonical: abtem.integrals.ScatteringFactorProjectionIntegrals.scattering_factors
-:type: dict[str, numpy.ndarray]
+:type: collections.abc.Mapping[tuple, numpy.ndarray]
 
 ```{autodoc2-docstring} abtem.integrals.ScatteringFactorProjectionIntegrals.scattering_factors
 :parser: rst

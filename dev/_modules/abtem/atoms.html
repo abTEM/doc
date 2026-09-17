@@ -1493,6 +1493,15 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        The applied transform given as Euler angles (by default not returned).</span>
 <span class="sd">    """</span>
 
+    <span class="c1"># Copy once, up front, rather than at each mutating call below. Three</span>
+    <span class="c1"># separate ASE calls on `atoms` in this function mutate in place --</span>
+    <span class="c1"># `set_cell`/`wrap` immediately below, `translate`/`wrap` when `origin`</span>
+    <span class="c1"># is non-default, and `_snap_scaled_positions_to_cell_boundary` right</span>
+    <span class="c1"># before `cut()` in the repeat-and-cut branch further down -- so copying</span>
+    <span class="c1"># at only one of those call sites still leaves the others writing into</span>
+    <span class="c1"># the caller's object.</span>
+    <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
     <span class="n">cell</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span>
     <span class="n">cell</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">atoms</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
@@ -1718,6 +1727,64 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="c1"># new_atoms = wrap_with_tolerance(new_atoms)</span>
     <span class="k">return</span> <span class="n">new_atoms</span></div>
+
+
+
+<div class="viewcode-block" id="wrap_and_snap_atoms">
+<a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.atoms.html#abtem.atoms.wrap_and_snap_atoms">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">wrap_and_snap_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span> <span class="n">copy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Wrap atoms into their cell by modulo, snapping the boundary cases to zero.</span>
+
+<span class="sd">    Wrapping is by ``np.mod`` rather than ``Atoms.wrap``, because ``wrap`` is a</span>
+<span class="sd">    **no-op along any axis where ``pbc`` is False** -- which is ASE's default</span>
+<span class="sd">    for a hand-built ``Atoms`` and what every ``ase.build.*(vacuum=...)`` slab</span>
+<span class="sd">    carries. The slicing this feeds models an infinite-projection potential</span>
+<span class="sd">    that is periodic in all three directions whatever the ``Atoms`` object</span>
+<span class="sd">    declares, so the bin index must be taken modulo the cell regardless.</span>
+
+<span class="sd">    Using ``wrap`` here was actively harmful for those inputs: it left</span>
+<span class="sd">    out-of-cell positions untouched, and the boundary snapping below then saw</span>
+<span class="sd">    arbitrarily large values rather than near-boundary ones and moved them to</span>
+<span class="sd">    zero -- teleporting an atom instead of wrapping it.</span>
+
+<span class="sd">    The snap itself is still needed: positions land in ``[0, L)``, and the</span>
+<span class="sd">    ``SliceIndexedAtoms`` bin edges are nudged down by 1e-12, so anything in</span>
+<span class="sd">    ``(L - 1e-12, L)`` would fall outside every bin and be dropped. The same</span>
+<span class="sd">    applies in x and y, where a value a hair below ``L`` puts the atom's FFT</span>
+<span class="sd">    peak at the wrong position.</span>
+
+<span class="sd">    Idempotent, and the caller's ``Atoms`` is not modified unless ``copy`` is</span>
+<span class="sd">    False.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    atoms : Atoms</span>
+<span class="sd">        Atoms to wrap. Not modified unless ``copy`` is False.</span>
+<span class="sd">    copy : bool, optional</span>
+<span class="sd">        If False, wrap in place. Only for callers that own ``atoms``.</span>
+<span class="sd">    """</span>
+    <span class="n">cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">))</span>
+
+    <span class="n">positions</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span>
+    <span class="k">if</span> <span class="n">positions</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">cell</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">):</span>
+        <span class="c1"># A degenerate cell is reported better by the caller's own validation</span>
+        <span class="c1"># than by a modulo-by-zero here.</span>
+        <span class="k">return</span> <span class="n">atoms</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="n">positions</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">positions</span> <span class="o">&lt;</span> <span class="n">cell</span> <span class="o">-</span> <span class="mf">1e-10</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">atoms</span>
+
+    <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+        <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">cell</span><span class="p">[</span><span class="n">ax</span><span class="p">]</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="n">ax</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">length</span> <span class="o">-</span> <span class="mf">1e-10</span><span class="p">,</span> <span class="n">ax</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="n">ax</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">,</span> <span class="n">ax</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">return</span> <span class="n">atoms</span></div>
 
 
 
