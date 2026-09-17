@@ -121,29 +121,63 @@ multi-GPU computation runs after installing this way.
 
 ### Metal on Apple silicon (experimental)
 
-A subset of features in *ab*TEM can be accelerated on Apple silicon processors using their [Metal API](https://developer.apple.com/metal/). 
-To enable this features requires a working installation of [PyTorch](https://pytorch.org/). Metal support is 
-currently highly experimental, and not all features are supported. Features not currently supported, will fall 
-back to the NumPy implementation.
+*ab*TEM can run on the GPU of an Apple silicon Mac through their
+[Metal API](https://developer.apple.com/metal/), using [PyTorch](https://pytorch.org/) the way it uses CuPy
+for CUDA. Metal support is experimental. Operations without a Metal implementation raise an error naming the
+operation rather than quietly moving your data back to the CPU, so an unsupported path is visible rather than
+merely slow.
+
+Install *ab*TEM with the `mps` extra, which pulls in PyTorch:
 
 ```{code-block}
-conda install pytorch torchvision torchaudio -c pytorch-nightly
-conda install -c conda-forge abtem jupyterlab
-pip install scipy --force-reinstall --no-deps
+pip install "abtem[mps]"
 ```
-To enable this feature you need to configure `enable_mps`.
-```python
-import abtem
-abtem.config.set(enable_mps=True)
+
+The extra is restricted to macOS on Apple silicon, since Metal exists nowhere else.
+
+To enable the backend, set `enable_mps` **before** *ab*TEM is imported — either through the environment:
+
+```{code-block}
+ABTEM_ENABLE_MPS=true python your_script.py
 ```
-You can verify that mps support is available using the code below:
+
+or in `~/.config/abtem/abtem.yaml`:
+
+```{code-block}
+enable_mps: true
+```
+
+```{note}
+`abtem.config.set(enable_mps=True)` does **not** work: the setting decides whether PyTorch is imported before
+FFTW, and by the time the call runs that has already been settled. PyTorch and FFTW each bundle their own copy
+of `libomp`, and a process that loaded FFTW's first crashes inside ordinary PyTorch operations.
+```
+
+You can verify that Metal support is available using the code below:
+
 ```python
 import torch
 assert torch.backends.mps.is_available()
 
+import abtem
 wave = abtem.PlaneWave(energy=100e3, gpts=128, sampling=0.05)
 assert wave.build(lazy=False).copy_to_device("mps").array.device.type == "mps"
 ```
+
+Then pass `device="mps"` where you would otherwise pass `"gpu"`:
+
+```python
+potential = abtem.Potential(atoms, gpts=512, device="mps")
+probe = abtem.Probe(energy=200e3, semiangle_cutoff=20, device="mps")
+```
+
+Two things are worth knowing before you benchmark:
+
+- **Metal is single precision.** `precision` must be `float32`; pairing `device="mps"` with `float64` is
+  refused outright rather than silently narrowed. Use the `cpu` or `gpu` device if you need double precision.
+- **Grid size matters more than on other backends.** Metal's FFT degrades sharply on sizes whose prime
+  factors exceed 7. A grid of 272 (which is 16 times 17) can be no faster than the CPU, where 256 or 512
+  runs several times faster. Choose `gpts` accordingly, or set `grid.round-to-fast-fft`.
 
 ### Development installation
 
