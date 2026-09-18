@@ -1,0 +1,1093 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="robots" content="noindex">
+    <style>header.bd-header.navbar{display:none!important}</style>
+    <title>Time-resolved TEM from molecular dynamics</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=b8b12719"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  for (const cls of [".primary-toggle", ".secondary-toggle"]) {
+    const toggles = document.querySelectorAll(cls);
+    for (let i = 1; i < toggles.length; i++) {
+      toggles[i].addEventListener("click", () => toggles[0].click());
+    }
+  }
+});
+</script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.querySelector(".bd-header-announcement");
+  if (!banner) return;
+  if (localStorage.getItem("abtem_dev_announcement_dismissed")) {
+    banner.remove();
+    return;
+  }
+  const closeBtn = banner.querySelector(".abtem-announcement-close");
+  if (!closeBtn) return;
+  closeBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    localStorage.setItem("abtem_dev_announcement_dismissed", "1");
+    banner.remove();
+  });
+});
+</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/tutorials/time_resolved';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Example gallery" href="../examples/examples.html" />
+    <link rel="prev" title="Phonon-loss spectroscopy" href="phonon_loss.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This is the <strong>development</strong> documentation, including unreleased work in <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM/dev</a>. <a href="https://abtem.github.io/doc/">Switch to the stable version</a>. <a href="#" class="abtem-announcement-close ms-3 my-1 align-baseline" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></a></div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../intro.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.png" class="logo__image only-light" alt=" - Home"/>
+    <img src="../../_static/logo.png" class="logo__image only-dark pst-js-only" alt=" - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../intro.html">
+                    Welcome!
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/basics.html">Basic examples</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../walkthrough/walkthrough.html">Walkthrough</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../walkthrough/atomic_models.html">Atomic models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../walkthrough/potentials.html">Potentials</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../walkthrough/wave_functions.html">Wave functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../walkthrough/multislice.html">Multislice simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../walkthrough/contrast_transfer_function.html">Contrast transfer function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../walkthrough/scan_and_detect.html">Scan and detect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../walkthrough/frozen_phonons.html">Frozen phonons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../walkthrough/parallelization.html">Parallelization</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../appendix/appendix.html">Appendix</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../appendix/conventions.html">Conventions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../appendix/multislice_derivation.html">Deriving the Multislice Algorithm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../appendix/antialiasing.html">Sampling and antialiasing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../appendix/ensembles.html">Ensembles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../appendix/convergence.html">Convergence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../appendix/performance_tips.html">Parallel performance tips</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="tutorials.html">Advanced tutorials</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="advanced_atomic_models.html">Advanced atomic models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="orthogonal_cells.html">Orthogonal periodic supercells</a></li>
+<li class="toctree-l2"><a class="reference internal" href="partial_coherence.html">Partial coherence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="structured_illumination.html">Structured illumination</a></li>
+<li class="toctree-l2"><a class="reference internal" href="charge_density.html"><em>ab initio</em> potentials with GPAW</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blochwave.html">Bloch-wave simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="real_space.html">Real-space multislice</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prism.html">PRISM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_loss.html">Core-loss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="phonon_loss.html">Phonon-loss spectroscopy</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Time-resolved TEM from molecular dynamics</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../examples/notebooks/cbed_quickstart.html">CBED quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/notebooks/hrtem_quickstart.html">HRTEM quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/notebooks/stem_quickstart.html">STEM quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/notebooks/prism_quickstart.html">PRISM quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/notebooks/saed_quickstart.html">SAED quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/notebooks/ped_quickstart.html">PED quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/notebooks/blochwave_quickstart.html">Bloch wave quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/notebooks/pacbed_quickstart.html">PACBED quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/notebooks/4d-stem_quickstart.html">4D-STEM quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/notebooks/interactions.html">Interactive visualizations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/notebooks/animations.html">Animations</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">Bibliography</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../reference/api/api.html">API</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.dynamical.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.dynamical</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.indexing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.indexing</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.matrix_exponential.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.matrix_exponential</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.utils.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.utils</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.axes.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.axes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.backend.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.backend</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.chunks.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.chunks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.colors.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.colors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.complex.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.complex</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.config.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.constants.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.constants</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.diagnostics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.diagnostics</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.electron_configurations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.electron_configurations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.energy.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.energy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.ensemble.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.ensemble</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.fft.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.fft</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.grid.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.grid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.units.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.units</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.utils.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.utils</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.inelastic.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic.core_loss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.inelastic.phonons.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic.phonons</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.inelastic.plasmons.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic.plasmons</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.magnetism.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.magnetism</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.magnetism.parametrizations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.magnetism.parametrizations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.magnetism.gpaw.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.magnetism.gpaw</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.magnetism.iam.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.magnetism.iam</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.magnetism.pauli.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.magnetism.pauli</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.magnetism.utils.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.magnetism.utils</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.parametrizations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.parametrizations</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.parametrizations.functions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.parametrizations.functions</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.potentials.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.potentials</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.potentials.charge_density.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.potentials.charge_density</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.potentials.gpaw.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.potentials.gpaw</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.potentials.iam.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.potentials.iam</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.prism.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.prism</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.prism.s_matrix.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.prism.s_matrix</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.prism.utils.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.prism.utils</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.visualize.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.visualize</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.visualize.artists.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.visualize.artists</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.visualize.axes_grid.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.visualize.axes_grid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.visualize.visualizations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.visualize.visualizations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.visualize.widgets.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.visualize.widgets</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.antialias.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.antialias</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.array.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.array</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.atoms.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.atoms</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.detectors.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.detectors</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.slicing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.slicing</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.tilt.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.tilt</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.transfer.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.transfer</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.transform.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.transform</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.waves.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.waves</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/api/class_diagrams.html">Class diagrams</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/config.html">Configuration</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">abTEM</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../abtem/contact.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../abtem/contribute.html">Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../abtem/cite.html">Cite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../abtem/changelog.html">Changelog</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/abTEM/doc" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/abTEM/doc/issues/new?title=Issue%20on%20page%20%2Fuser_guide/tutorials/time_resolved.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/user_guide/tutorials/time_resolved.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Time-resolved TEM from molecular dynamics</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-the-atomic-model">Creating the atomic model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-the-imaging-geometry">Setting up the imaging geometry</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-molecular-dynamics">Running the molecular dynamics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hrtem-simulation">HRTEM simulation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#short-exposure-image">Short-exposure image</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#time-averaged-image">Time-averaged image</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-effect-of-time-averaging">The effect of time averaging</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">abtem</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ase</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">fcc111</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.calculators.emt</span><span class="w"> </span><span class="kn">import</span> <span class="n">EMT</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.constraints</span><span class="w"> </span><span class="kn">import</span> <span class="n">FixAtoms</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.md.langevin</span><span class="w"> </span><span class="kn">import</span> <span class="n">Langevin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.md.velocitydistribution</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stationary</span><span class="p">,</span> <span class="n">thermalize_momenta</span>
+
+<span class="n">abtem</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">({</span><span class="s2">"device"</span><span class="p">:</span> <span class="s2">"cpu"</span><span class="p">});</span>
+<span class="n">abtem</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">({</span><span class="s2">"diagnostics.progress_bar"</span><span class="p">:</span> <span class="kc">False</span><span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section class="tex2jax_ignore mathjax_ignore" id="time-resolved-tem-from-molecular-dynamics">
+<span id="tutorials-time-resolved"></span><h1>Time-resolved TEM from molecular dynamics<a class="headerlink" href="#time-resolved-tem-from-molecular-dynamics" title="Link to this heading">#</a></h1>
+<p>An experimental TEM image is not a snapshot: it is an average over the exposure time. Anything that moves during the
+exposure — a diffusing adatom, a fluxional catalyst site, an adsorbate hopping between binding sites — is smeared out,
+and the recorded contrast is the time average of the moving structure rather than any of its instantaneous
+configurations. Whether a dynamic process is resolved or averaged away therefore depends on how its time scale compares
+to the exposure time.</p>
+<p>This tutorial shows how to model that averaging in <em>ab</em>TEM by combining a molecular dynamics (MD) trajectory with the
+multislice algorithm: each MD snapshot is imaged separately, and the resulting intensities are averaged. We use a Cu
+adatom diffusing on a Cu(111) surface as the example and compare two limits — a short exposure, in which the adatom is
+effectively frozen, and an exposure covering the full trajectory.</p>
+<p>This tutorial was contributed by <a class="reference external" href="https://github.com/giolajide">Gbolagade Olajide</a> and
+<a class="reference external" href="https://github.com/tgmaxson">Tristan Maxson</a>, and follows the approach of Olajide et al.
+<span class="bibtex-citation" id="id1">[<a class="reference internal" href="../bibliography.html#id29" title="Gbolagade Olajide, Tristan Maxson, and Tibor Szilvási. Temporal resolution of In Situ TEM limits the characterization of catalyst site dynamics. ACS Catalysis, 15(22):18908–18916, November 2025. doi:10.1021/acscatal.5c05363.">OMSzilvasi25</a>]</span>.</p>
+<section id="creating-the-atomic-model">
+<h2>Creating the atomic model<a class="headerlink" href="#creating-the-atomic-model" title="Link to this heading">#</a></h2>
+<p>We use <a class="reference external" href="https://ase-lib.org/">ASE</a> to build a Cu(111) slab, fixing the bottom two layers so that they stay in place
+during the molecular dynamics, and place a single Cu adatom on the surface.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All 2D visualizations in <em>ab</em>TEM, <code class="docutils literal notranslate"><span class="pre">show_atoms</span></code> included, show the projection seen from <span class="math notranslate nohighlight">\(-z\)</span> looking along the
+propagation direction, so the left panel below is the view the beam has on entering the cell, not a view from above:
+the adatom is drawn behind the substrate atom it sits on rather than in front of it. See our
+<a class="reference internal" href="../appendix/conventions.html#appendix-conventions"><span class="std std-ref">conventions</span></a> for the full set of these choices.</p>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">surface</span> <span class="o">=</span> <span class="n">fcc111</span><span class="p">(</span><span class="s2">"Cu"</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">orthogonal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">vacuum</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">surface</span><span class="o">.</span><span class="n">set_constraint</span><span class="p">(</span><span class="n">FixAtoms</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="p">[</span><span class="n">tag</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">surface</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()]))</span>
+
+<span class="n">atoms</span> <span class="o">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">adsorption_height</span> <span class="o">=</span> <span class="mf">2.2</span>  <span class="c1"># Å above the top layer</span>
+<span class="n">atoms</span> <span class="o">+=</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">(</span><span class="s2">"Cu"</span><span class="p">,</span> <span class="n">positions</span><span class="o">=</span><span class="p">[(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">adsorption_height</span><span class="p">)])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">abtem</span><span class="o">.</span><span class="n">show_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">plane</span><span class="o">=</span><span class="s2">"xy"</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Beam view"</span><span class="p">,</span> <span class="n">tight_limits</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">abtem</span><span class="o">.</span><span class="n">show_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">plane</span><span class="o">=</span><span class="s2">"yz"</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Side view"</span><span class="p">,</span> <span class="n">tight_limits</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/29c9bfeb0d90623431b41e9645ed070d2a189837d1bb4a9e3708513205d3539f.png" src="../../_images/29c9bfeb0d90623431b41e9645ed070d2a189837d1bb4a9e3708513205d3539f.png" />
+</div>
+</div>
+<section id="setting-up-the-imaging-geometry">
+<h3>Setting up the imaging geometry<a class="headerlink" href="#setting-up-the-imaging-geometry" title="Link to this heading">#</a></h3>
+<p>In <em>ab</em>TEM the beam always propagates along the <span class="math notranslate nohighlight">\(z\)</span>-axis, so the model above would be imaged in plan view, looking through
+the surface. In an <em>in situ</em> experiment the interesting sites are usually imaged in profile instead, at the edge of
+a particle, so we rotate the <a class="reference external" href="https://ase-lib.org/ase/atoms.html"><code class="docutils literal notranslate"><span class="pre">Atoms</span></code></a> object to bring the surface normal into the
+image plane. See the <a class="reference internal" href="../walkthrough/atomic_models.html#walkthrough-atomic-models"><span class="std std-ref">walkthrough on atomic models</span></a> for more on orienting a structure.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">atoms</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="s2">"x"</span><span class="p">,</span> <span class="n">rotate_cell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">atoms</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">,</span> <span class="n">rotate_cell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">abtem</span><span class="o">.</span><span class="n">show_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">plane</span><span class="o">=</span><span class="s2">"xy"</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Beam view after rotation"</span><span class="p">,</span> <span class="n">tight_limits</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/e9279cf5076aca8531f7cf83fbcc5e616f6982a0336c26094b789daf0cad71f5.png" src="../../_images/e9279cf5076aca8531f7cf83fbcc5e616f6982a0336c26094b789daf0cad71f5.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="running-the-molecular-dynamics">
+<h2>Running the molecular dynamics<a class="headerlink" href="#running-the-molecular-dynamics" title="Link to this heading">#</a></h2>
+<p>Running MD in ASE requires a <a class="reference external" href="https://ase-lib.org/ase/calculators/calculators.html">calculator</a> to provide the forces.
+The effective medium theory (EMT) potential is parametrized for Cu and is fast enough to run inside this notebook; for a
+system EMT does not cover, a machine-learned interatomic potential such as
+<a class="reference external" href="https://github.com/ACEsuit/mace-foundations">MACE-MP-0</a> is a good general-purpose substitute, at a higher cost.</p>
+<p>We run Langevin dynamics with a 3 fs timestep at 700 K, a temperature at which the adatom diffuses over the surface
+within the 10 ps of simulated time. The trajectory is sampled every 30 steps, giving one snapshot every
+90 fs.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">temperature</span> <span class="o">=</span> <span class="mi">700</span>  <span class="c1"># K, high enough to drive surface diffusion</span>
+<span class="n">timestep</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># fs</span>
+<span class="n">total_time</span> <span class="o">=</span> <span class="mi">10_000</span>  <span class="c1"># fs, i.e. 10 ps</span>
+<span class="n">sampling_interval</span> <span class="o">=</span> <span class="mi">30</span>  <span class="c1"># save every 30th step</span>
+
+<span class="n">steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">total_time</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">EMT</span><span class="p">()</span>
+
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">thermalize_momenta</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+<span class="n">Stationary</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+
+<span class="n">trajectory</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="n">dyn</span> <span class="o">=</span> <span class="n">Langevin</span><span class="p">(</span>
+    <span class="n">atoms</span><span class="p">,</span>
+    <span class="n">timestep</span><span class="o">=</span><span class="n">timestep</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+    <span class="n">temperature_K</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span>
+    <span class="n">friction</span><span class="o">=</span><span class="mf">0.002</span><span class="p">,</span>
+    <span class="n">fixcm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">dyn</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()),</span> <span class="n">interval</span><span class="o">=</span><span class="n">sampling_interval</span><span class="p">)</span>
+<span class="n">dyn</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+
+<span class="nb">len</span><span class="p">(</span><span class="n">trajectory</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>112
+</pre></div>
+</div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We keep the trajectory in memory here to avoid writing files, but a realistic workflow runs the dynamics separately and
+reads the result back with <code class="docutils literal notranslate"><span class="pre">ase.io.read(&quot;md.traj&quot;,</span> <span class="pre">&quot;:&quot;)</span></code>, which gives the same list of <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> objects. The MD is by far
+the more expensive part of a time-resolved simulation, so it is worth doing once and reusing.</p>
+</div>
+<p>The adatom is the last atom in each snapshot, so we can check directly how far it travelled. It covers several
+Ångström over the 10 ps, while the substrate atoms only vibrate around their lattice sites.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adatom_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">image</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">trajectory</span><span class="p">])</span>
+<span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trajectory</span><span class="p">))</span> <span class="o">*</span> <span class="n">sampling_interval</span> <span class="o">*</span> <span class="n">timestep</span> <span class="o">/</span> <span class="mi">1000</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">adatom_positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Time [ps]"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Adatom $x$-position [Å]"</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/1c0bb2b5281a35e8bb4247c2a0a2d01a0c636e070993097f097388044dc5e890.png" src="../../_images/1c0bb2b5281a35e8bb4247c2a0a2d01a0c636e070993097f097388044dc5e890.png" />
+</div>
+</div>
+<p>The adatom leaves the cell along the way, so we wrap every snapshot back into the cell before building the potentials.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">trajectory</span><span class="p">:</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">wrap</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="hrtem-simulation">
+<h2>HRTEM simulation<a class="headerlink" href="#hrtem-simulation" title="Link to this heading">#</a></h2>
+<p>We now simulate HRTEM images in two limiting cases:</p>
+<ol class="arabic simple">
+<li><p><em>Short exposure</em>: the image is formed from a single MD snapshot. The exposure is long compared to the period of a
+lattice vibration, but too short for the adatom to move appreciably.</p></li>
+<li><p><em>Time-averaged</em>: the image is the average over all snapshots, corresponding to an exposure of 10 ps. This is the
+limit that experimental imaging of a diffusing species approaches.</p></li>
+</ol>
+<section id="short-exposure-image">
+<h3>Short-exposure image<a class="headerlink" href="#short-exposure-image" title="Link to this heading">#</a></h3>
+<p>We take the final snapshot of the trajectory and average over a <a class="reference internal" href="../walkthrough/frozen_phonons.html#walkthrough-frozen-phonons"><span class="std std-ref">frozen phonon</span></a> ensemble to
+include the thermal vibrations that are averaged out even in a short exposure. The two bottom layers are held fixed in
+the molecular dynamics, so we give them a vanishing vibration amplitude here as well, keeping the two simulations
+comparable.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sigmas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">trajectory</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_tags</span><span class="p">(),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)),</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># the fixed layers do not vibrate</span>
+
+<span class="n">static_potential</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span>
+    <span class="n">abtem</span><span class="o">.</span><span class="n">FrozenPhonons</span><span class="p">(</span><span class="n">trajectory</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">num_configs</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">sigmas</span><span class="o">=</span><span class="n">sigmas</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">13</span><span class="p">),</span>
+    <span class="n">sampling</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">slice_thickness</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">projection</span><span class="o">=</span><span class="s2">"infinite"</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>The incident beam is represented by a <a class="reference internal" href="../walkthrough/wave_functions.html#walkthrough-wave-functions"><span class="std std-ref">plane wave</span></a> at 200 kV, which we propagate through the
+potential with the <a class="reference internal" href="../walkthrough/multislice.html#walkthrough-multislice"><span class="std std-ref">multislice algorithm</span></a>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plane_wave</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">PlaneWave</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="mf">200e3</span><span class="p">)</span>
+
+<span class="n">static_exit_wave</span> <span class="o">=</span> <span class="n">plane_wave</span><span class="o">.</span><span class="n">multislice</span><span class="p">(</span><span class="n">static_potential</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>The exit wave is imaged through an objective lens described by a
+<a class="reference internal" href="../walkthrough/contrast_transfer_function.html#walkthrough-contrast-transfer-function"><span class="std std-ref">contrast transfer function</span></a>. We use an aberration-corrected instrument with a
+small negative spherical aberration at Scherzer defocus, and include the focal spread resulting from the chromatic
+aberration of the lens and the energy spread of the source, as described in the tutorial on
+<a class="reference internal" href="partial_coherence.html#tutorials-partial-coherence"><span class="std std-ref">partial coherence</span></a>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Cs</span> <span class="o">=</span> <span class="o">-</span><span class="mf">8e-6</span> <span class="o">*</span> <span class="mf">1e10</span>  <span class="c1"># spherical aberration of -8 µm, in Å</span>
+<span class="n">Cc</span> <span class="o">=</span> <span class="mf">1.0e-3</span> <span class="o">*</span> <span class="mf">1e10</span>  <span class="c1"># chromatic aberration of 1 mm, in Å</span>
+<span class="n">energy_spread</span> <span class="o">=</span> <span class="mf">0.3</span>  <span class="c1"># standard deviation of the beam energy [eV]</span>
+
+<span class="n">ctf</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">CTF</span><span class="p">(</span><span class="n">Cs</span><span class="o">=</span><span class="n">Cs</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="n">plane_wave</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">defocus</span><span class="o">=</span><span class="s2">"scherzer"</span><span class="p">)</span>
+<span class="n">ctf</span><span class="o">.</span><span class="n">focal_spread</span> <span class="o">=</span> <span class="n">Cc</span> <span class="o">*</span> <span class="n">energy_spread</span> <span class="o">/</span> <span class="n">plane_wave</span><span class="o">.</span><span class="n">energy</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">static_image</span> <span class="o">=</span> <span class="n">static_exit_wave</span><span class="o">.</span><span class="n">apply_ctf</span><span class="p">(</span><span class="n">ctf</span><span class="p">)</span><span class="o">.</span><span class="n">intensity</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The multislice simulation is the expensive step, so it pays to write the result to disk with
+<code class="docutils literal notranslate"><span class="pre">static_image.to_zarr(&quot;static_image.zarr&quot;)</span></code> and read it back later with <code class="docutils literal notranslate"><span class="pre">abtem.from_zarr(&quot;static_image.zarr&quot;)</span></code>, rather
+than recomputing it every time you change the display or the noise level.</p>
+</div>
+</section>
+<section id="time-averaged-image">
+<h3>Time-averaged image<a class="headerlink" href="#time-averaged-image" title="Link to this heading">#</a></h3>
+<p>The time-averaged image is obtained the same way, except that the potential is built from the full list of snapshots
+instead of a single one. <em>ab</em>TEM turns any sequence of <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> objects into an ensemble of potentials, exactly as it
+does for a frozen phonon ensemble, and the exit waves are averaged after the intensity is taken. No frozen phonons are
+needed here — the MD trajectory already contains the thermal vibrations.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">potential</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span>
+    <span class="n">trajectory</span><span class="p">,</span>
+    <span class="n">sampling</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">slice_thickness</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">projection</span><span class="o">=</span><span class="s2">"infinite"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">exit_wave</span> <span class="o">=</span> <span class="n">plane_wave</span><span class="o">.</span><span class="n">multislice</span><span class="p">(</span><span class="n">potential</span><span class="p">)</span>
+
+<span class="n">time_averaged_image</span> <span class="o">=</span> <span class="n">exit_wave</span><span class="o">.</span><span class="n">apply_ctf</span><span class="p">(</span><span class="n">ctf</span><span class="p">)</span><span class="o">.</span><span class="n">intensity</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The cost of a time-resolved simulation is the cost of a single image multiplied by the number of snapshots, so it grows
+quickly with the exposure time. The snapshots are independent, which makes the calculation trivially parallel — see the
+<a class="reference internal" href="../walkthrough/parallelization.html#walkthrough-parallelization"><span class="std std-ref">parallelization walkthrough</span></a> for running the ensemble across multiple workers, or set
+<code class="docutils literal notranslate"><span class="pre">abtem.config.set({&quot;device&quot;:</span> <span class="pre">&quot;gpu&quot;})</span></code> to run on a GPU.</p>
+</div>
+</section>
+</section>
+<section id="the-effect-of-time-averaging">
+<h2>The effect of time averaging<a class="headerlink" href="#the-effect-of-time-averaging" title="Link to this heading">#</a></h2>
+<p>We compare the two images on a common intensity scale, cropping the field of view to the surface region. The substrate
+lattice is imaged identically in both, but the adatom, visible just above the surface in the short-exposure image,
+almost disappears when the image is averaged over 10 ps: its intensity is spread over the region it explored during the
+exposure instead of being concentrated at a single site.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">comparison</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">static_image</span><span class="p">,</span> <span class="n">time_averaged_image</span><span class="p">),</span> <span class="p">(</span><span class="s2">"Short exposure"</span><span class="p">,</span> <span class="s2">"Time-averaged (10 ps)"</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">cropped</span> <span class="o">=</span> <span class="n">comparison</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="n">comparison</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">12</span><span class="p">),</span> <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">))</span>
+
+<span class="n">cropped</span><span class="o">.</span><span class="n">show</span><span class="p">(</span>
+    <span class="n">explode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">common_color_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"gray"</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">cbar</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/a661b547baee12ef6728e8c814e1501a96267029c058b953573f57e9705cec5c.png" src="../../_images/a661b547baee12ef6728e8c814e1501a96267029c058b953573f57e9705cec5c.png" />
+</div>
+</div>
+<p>The effect is easier to quantify in a line profile taken across the image at the height of the adatom, averaged over a
+1 Å wide band. The peak marking the adatom in the short-exposure image is reduced to a broad, low ripple by the time
+averaging.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adatom_height</span> <span class="o">=</span> <span class="n">adatom_positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+<span class="n">profiles</span> <span class="o">=</span> <span class="n">comparison</span><span class="o">.</span><span class="n">interpolate_line</span><span class="p">(</span>
+    <span class="n">start</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">adatom_height</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="p">(</span><span class="n">comparison</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">adatom_height</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpts</span><span class="o">=</span><span class="mi">200</span>
+<span class="p">)</span>
+
+<span class="n">profiles</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">legend</span><span class="o">=</span><span class="kc">True</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/27499e390933c88b06253079c86c36d1684291c87270d54bef36f5b1b0ead504.png" src="../../_images/27499e390933c88b06253079c86c36d1684291c87270d54bef36f5b1b0ead504.png" />
+</div>
+</div>
+<p>A real image is also limited by the finite number of electrons collected during the exposure, which we include by
+applying shot noise for a given dose.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">noisy_comparison</span> <span class="o">=</span> <span class="n">cropped</span><span class="o">.</span><span class="n">poisson_noise</span><span class="p">(</span><span class="n">dose_per_area</span><span class="o">=</span><span class="mf">2e4</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">noisy_comparison</span><span class="o">.</span><span class="n">show</span><span class="p">(</span>
+    <span class="n">explode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">common_color_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"gray"</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">cbar</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/0df83811896f30ae4407cd26708bb463fb3f9076aa2c11fd6d6869b678f0be47.png" src="../../_images/0df83811896f30ae4407cd26708bb463fb3f9076aa2c11fd6d6869b678f0be47.png" />
+</div>
+</div>
+<p>With noise included, the weak time-averaged adatom contrast is no longer distinguishable from the background, while the
+same adatom is still visible in the short-exposure image. Averaging over longer times only makes this worse: the adatom
+explores a larger region, and its contrast at any single position falls further. This is the basic limitation that
+temporal resolution places on the characterization of site dynamics — see Olajide et al.
+<span class="bibtex-citation" id="id2">[<a class="reference internal" href="../bibliography.html#id29" title="Gbolagade Olajide, Tristan Maxson, and Tibor Szilvási. Temporal resolution of In Situ TEM limits the characterization of catalyst site dynamics. ACS Catalysis, 15(22):18908–18916, November 2025. doi:10.1021/acscatal.5c05363.">OMSzilvasi25</a>]</span> for a detailed analysis of the consequences for <em>in situ</em> catalysis studies.</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./user_guide/tutorials"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="phonon_loss.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Phonon-loss spectroscopy</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../examples/examples.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Example gallery</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-the-atomic-model">Creating the atomic model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-up-the-imaging-geometry">Setting up the imaging geometry</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-molecular-dynamics">Running the molecular dynamics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hrtem-simulation">HRTEM simulation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#short-exposure-image">Short-exposure image</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#time-averaged-image">Time-averaged image</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-effect-of-time-averaging">The effect of time averaging</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <p>Tested against pre-release <a href="https://github.com/abTEM/abTEM/tree/dev">abTEM v1.1.0</a>.</p>
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

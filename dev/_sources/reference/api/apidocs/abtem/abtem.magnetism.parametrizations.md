@@ -41,6 +41,8 @@
 `````{py:class} LyonParametrization()
 :canonical: abtem.magnetism.parametrizations.LyonParametrization
 
+Bases: {py:obj}`abtem.core.utils.EqualityMixin`
+
 ```{autodoc2-docstring} abtem.magnetism.parametrizations.LyonParametrization
 :parser: rst
 ```

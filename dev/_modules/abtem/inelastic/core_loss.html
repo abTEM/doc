@@ -288,6 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/time_resolved.html">Time-resolved TEM from molecular dynamics</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -558,7 +559,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">bisect</span><span class="w"> </span><span class="kn">import</span> <span class="n">bisect_left</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Self</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">,</span> <span class="n">units</span>
@@ -584,7 +585,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">copy_to_device</span><span class="p">,</span>
     <span class="n">get_array_module</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate_chunks</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="n">estimate_scan_batch_size</span><span class="p">,</span> <span class="n">validate_chunks</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.complex</span><span class="w"> </span><span class="kn">import</span> <span class="n">abs2</span><span class="p">,</span> <span class="n">complex_exponential</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.electron_configurations</span><span class="w"> </span><span class="kn">import</span> <span class="n">electron_configurations</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.energy</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -597,6 +598,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">fft2</span><span class="p">,</span> <span class="n">fft2_convolve</span><span class="p">,</span> <span class="n">fft_shift_kernel</span><span class="p">,</span> <span class="n">ifft2</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">Grid</span><span class="p">,</span> <span class="n">HasGrid2DMixin</span><span class="p">,</span> <span class="n">polar_spatial_frequencies</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">CopyMixin</span><span class="p">,</span> <span class="n">get_dtype</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.integrals</span><span class="w"> </span><span class="kn">import</span> <span class="n">_device_cache_key</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.measurements</span><span class="w"> </span><span class="kn">import</span> <span class="n">Images</span><span class="p">,</span> <span class="n">RealSpaceLineProfiles</span><span class="p">,</span> <span class="n">_polar_detector_bins</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
@@ -1557,13 +1559,13 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="k">class</span><span class="w"> </span><span class="nc">TransitionPotentialArray</span><span class="p">(</span><span class="n">ArrayObject</span><span class="p">,</span> <span class="n">BaseTransitionPotential</span><span class="p">):</span>
     <span class="n">_base_dims</span> <span class="o">=</span> <span class="mi">2</span>
 
-    <span class="c1"># _local_potential_device_cache is derived state: local_potential_on_device()</span>
-    <span class="c1"># populates it lazily from _local_potential (itself derived from the array</span>
-    <span class="c1"># already compared) and the requesting device. __getstate__ already drops</span>
-    <span class="c1"># it for pickling, for the same reason -- it is a per-process convenience,</span>
-    <span class="c1"># not part of the object's identity. Same pattern as Potential._sliced_atoms</span>
-    <span class="c1"># in abtem/potentials/iam.py.</span>
-    <span class="n">_eq_exclude</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_local_potential_device_cache"</span><span class="p">,)</span>
+    <span class="c1"># _local_potential_device_cache and _device_array_cache are derived state:</span>
+    <span class="c1"># populated lazily from the array already compared and the requesting</span>
+    <span class="c1"># device. __getstate__ already drops them for pickling, for the same</span>
+    <span class="c1"># reason -- they are a per-process convenience, not part of the object's</span>
+    <span class="c1"># identity. Same pattern as Potential._sliced_atoms in</span>
+    <span class="c1"># abtem/potentials/iam.py.</span>
+    <span class="n">_eq_exclude</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_local_potential_device_cache"</span><span class="p">,</span> <span class="s2">"_device_array_cache"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1588,6 +1590,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_potential</span><span class="p">(</span><span class="n">space</span><span class="o">=</span><span class="s2">"real"</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential_device_cache</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Memo for copy_to_device, keyed by target device -- see that method.</span>
+        <span class="c1"># Set here, on the object every _task_local view is shallow-copied</span>
+        <span class="c1"># from, so copy.copy's shared dict reference is what makes every</span>
+        <span class="c1"># per-task view see what any sibling view already uploaded.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_device_array_cache</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_threshold</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="TransitionPotentialArray.from_array_and_metadata">
@@ -1756,12 +1763,90 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential_device_cache</span> <span class="o">=</span> <span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">on_device</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">on_device</span>
 
+<div class="viewcode-block" id="TransitionPotentialArray.copy_to_device">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html#abtem.inelastic.core_loss.TransitionPotentialArray.copy_to_device">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy_to_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Copy to a device, memoized per (shared graph node, device).</span>
+
+<span class="sd">        ``ArrayObject.copy_to_device`` always rebuilds through ``__init__``,</span>
+<span class="sd">        which recomputes ``_local_potential`` from the array -- an ``ifft2``</span>
+<span class="sd">        + ``abs2`` + sum over the whole payload -- even when the array is</span>
+<span class="sd">        already on the target device, since the free ``copy_to_device`` being</span>
+<span class="sd">        a no-op there is invisible to ``__init__``. Once this object arrives</span>
+<span class="sd">        as one graph node shared by every task on a worker (see</span>
+<span class="sd">        ``BaseTransitionPotential._task_local``), both that recomputation and,</span>
+<span class="sd">        on GPU, the host-to-device upload beneath it happen once per task</span>
+<span class="sd">        rather than once per worker.</span>
+
+<span class="sd">        This does NOT memoize the returned *object* -- ``scatter`` and</span>
+<span class="sd">        ``generate_scattered_waves`` mutate what they are handed</span>
+<span class="sd">        (``self._array = ...``, ``self.grid.match(...)``), so two tasks</span>
+<span class="sd">        sharing one returned instance would race on those mutations exactly</span>
+<span class="sd">        as ``_task_local`` exists to prevent one step earlier. What is safe</span>
+<span class="sd">        to share is the immutable-in-practice *array data*: the device-</span>
+<span class="sd">        resident array and the local potential derived from it are cached,</span>
+<span class="sd">        and a fresh, independently-mutable wrapper is copied out each call.</span>
+
+<span class="sd">        The cache lives in ``_device_array_cache``, set in ``__init__`` on</span>
+<span class="sd">        the object every ``_task_local`` view is shallow-copied from --</span>
+<span class="sd">        ``copy.copy`` shares dict *references*, not contents, so every</span>
+<span class="sd">        per-task view sees the same dict and therefore whatever a sibling</span>
+<span class="sd">        view already uploaded, with its lifetime tied to the shared node.</span>
+<span class="sd">        """</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">_device_cache_key</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">cached</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_device_array_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">array_on_device</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">array_on_device</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+                <span class="n">local_potential_on_device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array_on_device</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="p">:</span>
+                    <span class="n">local_potential_on_device</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential</span><span class="p">,</span> <span class="n">array_on_device</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="n">array_on_device</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
+                        <span class="n">local_potential_on_device</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential</span><span class="p">,</span> <span class="n">array_on_device</span>
+                        <span class="p">)</span>
+            <span class="n">cached</span> <span class="o">=</span> <span class="p">(</span><span class="n">array_on_device</span><span class="p">,</span> <span class="n">local_potential_on_device</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_device_array_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">cached</span>
+
+        <span class="n">array_on_device</span><span class="p">,</span> <span class="n">local_potential_on_device</span> <span class="o">=</span> <span class="n">cached</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">_array</span> <span class="o">=</span> <span class="n">array_on_device</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">_local_potential</span> <span class="o">=</span> <span class="n">local_potential_on_device</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">_local_potential_device_cache</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Without this, copy.copy(self) -- what _task_local uses to build a</span>
+        <span class="c1"># per-task view -- goes through __reduce_ex__/__getstate__ instead of</span>
+        <span class="c1"># a plain __dict__ share, since a class with __getstate__ but no</span>
+        <span class="c1"># __copy__ uses the former for BOTH pickling and copy.copy. That</span>
+        <span class="c1"># silently gave every _task_local view its own fresh</span>
+        <span class="c1"># _device_array_cache (__getstate__ always resets it, correctly for</span>
+        <span class="c1"># pickling), defeating the memo in copy_to_device: sibling per-task</span>
+        <span class="c1"># views never saw what one another had already uploaded. A real</span>
+        <span class="c1"># shallow copy -- sharing __dict__ values by reference, which is what</span>
+        <span class="c1"># _task_local's own docstring already promises ("everything else</span>
+        <span class="c1"># stays shared") -- fixes it for this cache and matches the intended</span>
+        <span class="c1"># semantics generally.</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span>
+        <span class="n">new</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">new</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># The device cache is a per-process convenience and may hold a cupy</span>
-        <span class="c1"># array; letting it ride through pickle would bloat every dask task</span>
-        <span class="c1"># carrying this object and break unpickling on CPU-only workers.</span>
+        <span class="c1"># Both device caches are a per-process convenience and may hold cupy</span>
+        <span class="c1"># arrays; letting them ride through pickle would bloat every dask</span>
+        <span class="c1"># task carrying this object and break unpickling on CPU-only workers.</span>
         <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">state</span><span class="p">[</span><span class="s2">"_local_potential_device_cache"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">"_device_array_cache"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">return</span> <span class="n">state</span>
 
 <div class="viewcode-block" id="TransitionPotentialArray.filter_sites">
@@ -2415,9 +2500,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="c1"># Reduction helpers operate in the downsampled grid.</span>
     <span class="n">pixel_positions</span> <span class="o">=</span> <span class="n">positions</span> <span class="o">/</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ds_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
-    <span class="n">reduce_crop_corner</span><span class="p">,</span> <span class="n">reduce_size</span><span class="p">,</span> <span class="n">reduce_corners</span> <span class="o">=</span> <span class="n">minimum_crop</span><span class="p">(</span>
-        <span class="n">pixel_positions</span><span class="p">,</span> <span class="n">output_window_gpts</span>
-    <span class="p">)</span>
 
     <span class="c1"># This driver processes one potential configuration per call and indexes</span>
     <span class="c1"># the measurement's ensemble axes with zeros accordingly -- which holds for</span>
@@ -2458,6 +2540,90 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">extra_ensemble_axes_metadata</span><span class="p">,</span>
     <span class="p">)</span>
 
+    <span class="c1"># --- Chunk the reduction over scan positions ---</span>
+    <span class="c1">#</span>
+    <span class="c1"># minimum_crop's bounding box spans every position handed to it, so</span>
+    <span class="c1"># cropping around the *whole* scan (as a single reduce_and_record call</span>
+    <span class="c1"># used to) makes the box -- and the tensordot below -- scale with the</span>
+    <span class="c1"># scan's spatial extent rather than with output_window_gpts. Peak memory</span>
+    <span class="c1"># is n_positions * (scan_span + window)^2, growing with both factors as</span>
+    <span class="c1"># the field of view grows; a production-sized PRISM-EELS scan can demand</span>
+    <span class="c1"># a single allocation in the hundreds of GB.</span>
+    <span class="c1">#</span>
+    <span class="c1"># Chunking over spatially contiguous blocks of scan rows shrinks the</span>
+    <span class="c1"># bounding box along with the block -- a strided block scheme would keep</span>
+    <span class="c1"># the full box and gain nothing, since the box is set by the block's own</span>
+    <span class="c1"># spatial spread, not its position count. Positions are already</span>
+    <span class="c1"># flattened in scan-raster order (positions_np above), so a contiguous</span>
+    <span class="c1"># range of the flat axis is a contiguous range of whole rows of</span>
+    <span class="c1"># scan_shape's leading axis for any scan dimensionality, including the</span>
+    <span class="c1"># 0-d single-point case (n_rows = row_cols = 1 below, one batch, no</span>
+    <span class="c1"># behaviour change).</span>
+    <span class="n">n_rows</span> <span class="o">=</span> <span class="n">scan_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">scan_shape</span> <span class="k">else</span> <span class="mi">1</span>
+    <span class="n">row_cols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">scan_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scan_shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">1</span>
+    <span class="n">n_T_estimate</span> <span class="o">=</span> <span class="n">transition_potential</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">n_k</span> <span class="o">=</span> <span class="n">coefficients</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">itemsize</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">complex_dtype</span><span class="p">)</span><span class="o">.</span><span class="n">itemsize</span>
+
+    <span class="c1"># First guess: convert the existing probe-batch memory budget (sized for</span>
+    <span class="c1"># one position at output_window_gpts, with no bounding-box growth) into a</span>
+    <span class="c1"># row count, dividing by the number of transitions sharing that budget.</span>
+    <span class="n">budget_positions</span> <span class="o">=</span> <span class="n">estimate_scan_batch_size</span><span class="p">(</span>
+        <span class="n">output_window_gpts</span><span class="p">,</span> <span class="n">complex_dtype</span><span class="p">,</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">device</span>
+    <span class="p">)</span>
+    <span class="n">rows_per_batch</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+        <span class="mi">1</span><span class="p">,</span> <span class="n">budget_positions</span> <span class="o">//</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_T_estimate</span><span class="p">)</span> <span class="o">//</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">row_cols</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">rows_per_batch</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">rows_per_batch</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">)</span>
+
+    <span class="c1"># The guess above assumes the ideal case (no bounding-box growth), which</span>
+    <span class="c1"># is exactly wrong when the batch covers a large fraction of the scan --</span>
+    <span class="c1"># that is where the box is at its largest. This must run even when the</span>
+    <span class="c1"># guess already covers the whole scan (rows_per_batch == n_rows): gating</span>
+    <span class="c1"># it on rows_per_batch &lt; n_rows skipped verification in precisely that</span>
+    <span class="c1"># case, silently reproducing the original whole-scan-as-one-block defect</span>
+    <span class="c1"># whenever the naive per-position estimate happened to clear the row</span>
+    <span class="c1"># count (a large output_window_gpts -- e.g. interpolation=1, no PRISM</span>
+    <span class="c1"># downsampling -- makes this the common case, not a corner one).</span>
+    <span class="k">if</span> <span class="n">rows_per_batch</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># Verify the guess against the actual box a batch of this size</span>
+        <span class="c1"># produces -- translation-invariant for a regular raster scan, so</span>
+        <span class="c1"># the first candidate batch is representative -- and shrink until it</span>
+        <span class="c1"># fits the same byte budget the guess was converted from.</span>
+        <span class="n">budget_bytes</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">budget_positions</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">output_window_gpts</span><span class="p">))</span> <span class="o">*</span> <span class="n">itemsize</span>
+        <span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_batch_bytes</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span> <span class="o">*</span> <span class="n">row_cols</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">minimum_crop</span><span class="p">(</span><span class="n">pixel_positions</span><span class="p">[:</span><span class="n">end</span><span class="p">],</span> <span class="n">output_window_gpts</span><span class="p">)</span>
+            <span class="n">size_px</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+            <span class="c1"># bbox_scattered (n_T, n_k, *size) plus the dominant ``reduced``</span>
+            <span class="c1"># tensor (end, n_T, *size) -- see _reduce_and_record below.</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">n_T_estimate</span> <span class="o">*</span> <span class="n">n_k</span> <span class="o">+</span> <span class="n">end</span> <span class="o">*</span> <span class="n">n_T_estimate</span><span class="p">)</span> <span class="o">*</span> <span class="n">size_px</span> <span class="o">*</span> <span class="n">itemsize</span>
+
+        <span class="k">while</span> <span class="n">rows_per_batch</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">_batch_bytes</span><span class="p">(</span><span class="n">rows_per_batch</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">budget_bytes</span><span class="p">:</span>
+            <span class="n">rows_per_batch</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">rows_per_batch</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">row_batches</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">r</span> <span class="o">+</span> <span class="n">rows_per_batch</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">,</span> <span class="n">rows_per_batch</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="c1"># minimum_crop's result for a given batch depends only on that batch's</span>
+    <span class="c1"># own positions, never on the site or exit plane -- but _reduce_and_record</span>
+    <span class="c1"># runs once per (site, exit plane), so computing it there recomputed the</span>
+    <span class="c1"># identical box for every batch on every one of those calls. Hoisting it</span>
+    <span class="c1"># here, once per batch, turns that into O(n_batches) instead of</span>
+    <span class="c1"># O(n_batches * n_sites * n_exit_planes).</span>
+    <span class="n">row_batch_boxes</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">minimum_crop</span><span class="p">(</span>
+            <span class="n">pixel_positions</span><span class="p">[</span><span class="n">row_start</span> <span class="o">*</span> <span class="n">row_cols</span> <span class="p">:</span> <span class="n">row_end</span> <span class="o">*</span> <span class="n">row_cols</span><span class="p">],</span>
+            <span class="n">output_window_gpts</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">row_start</span><span class="p">,</span> <span class="n">row_end</span> <span class="ow">in</span> <span class="n">row_batches</span>
+    <span class="p">]</span>
+
     <span class="c1"># --- Reduce, detect, accumulate helper ---</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_reduce_and_record</span><span class="p">(</span><span class="n">scattered_window</span><span class="p">,</span> <span class="n">site_xy</span><span class="p">,</span> <span class="n">exit_idx</span><span class="p">):</span>
         <span class="n">ds_sampling_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ds_sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
@@ -2467,86 +2633,117 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="nb">int</span><span class="p">(</span><span class="n">site_pixel_int_ds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">output_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
             <span class="nb">int</span><span class="p">(</span><span class="n">site_pixel_int_ds</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">output_window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">site_in_bbox</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">site_crop_corner_ds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">reduce_crop_corner</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-            <span class="n">site_crop_corner_ds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">reduce_crop_corner</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-        <span class="p">)</span>
-        <span class="n">bbox_scattered</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-            <span class="n">scattered_window</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">reduce_size</span><span class="p">),</span>
-            <span class="n">dtype</span><span class="o">=</span><span class="n">complex_dtype</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">for</span> <span class="n">_n0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">_n1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
-                <span class="n">_r0</span> <span class="o">=</span> <span class="n">site_in_bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">_n0</span> <span class="o">*</span> <span class="n">ds_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">_r1</span> <span class="o">=</span> <span class="n">site_in_bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">_n1</span> <span class="o">*</span> <span class="n">ds_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">_s0</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">_r0</span><span class="p">)</span>
-                <span class="n">_s1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">_r1</span><span class="p">)</span>
-                <span class="n">_d0</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">_r0</span><span class="p">)</span>
-                <span class="n">_d1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">_r1</span><span class="p">)</span>
-                <span class="n">_e0</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">reduce_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">_r0</span> <span class="o">+</span> <span class="n">output_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-                <span class="n">_e1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">reduce_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">_r1</span> <span class="o">+</span> <span class="n">output_window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-                <span class="k">if</span> <span class="n">_d0</span> <span class="o">&gt;=</span> <span class="n">_e0</span> <span class="ow">or</span> <span class="n">_d1</span> <span class="o">&gt;=</span> <span class="n">_e1</span><span class="p">:</span>
-                    <span class="k">continue</span>
-                <span class="n">bbox_scattered</span><span class="p">[</span>
-                    <span class="o">...</span><span class="p">,</span> <span class="n">_d0</span><span class="p">:</span><span class="n">_e0</span><span class="p">,</span> <span class="n">_d1</span><span class="p">:</span><span class="n">_e1</span>
-                <span class="p">]</span> <span class="o">=</span> <span class="n">scattered_window</span><span class="p">[</span>
-                    <span class="o">...</span><span class="p">,</span>
-                    <span class="n">_s0</span> <span class="p">:</span> <span class="n">_s0</span> <span class="o">+</span> <span class="p">(</span><span class="n">_e0</span> <span class="o">-</span> <span class="n">_d0</span><span class="p">),</span>
-                    <span class="n">_s1</span> <span class="p">:</span> <span class="n">_s1</span> <span class="o">+</span> <span class="p">(</span><span class="n">_e1</span> <span class="o">-</span> <span class="n">_d1</span><span class="p">),</span>
-                <span class="p">]</span>
+        <span class="n">n_T</span> <span class="o">=</span> <span class="n">scattered_window</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="n">reduced</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span>
-            <span class="n">coefficients</span><span class="p">,</span> <span class="n">bbox_scattered</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">]</span>
-        <span class="p">)</span>
-        <span class="n">reduced</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">reduced</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">waves_at_positions</span> <span class="o">=</span> <span class="n">batch_crop_2d</span><span class="p">(</span>
-            <span class="n">reduced</span><span class="p">,</span> <span class="n">reduce_corners</span><span class="p">,</span> <span class="n">output_window_gpts</span>
-        <span class="p">)</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">row_start</span><span class="p">,</span> <span class="n">row_end</span><span class="p">),</span> <span class="p">(</span>
+            <span class="n">reduce_crop_corner</span><span class="p">,</span>
+            <span class="n">reduce_size</span><span class="p">,</span>
+            <span class="n">reduce_corners</span><span class="p">,</span>
+        <span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">row_batches</span><span class="p">,</span> <span class="n">row_batch_boxes</span><span class="p">):</span>
+            <span class="n">flat_start</span> <span class="o">=</span> <span class="n">row_start</span> <span class="o">*</span> <span class="n">row_cols</span>
+            <span class="n">flat_end</span> <span class="o">=</span> <span class="n">row_end</span> <span class="o">*</span> <span class="n">row_cols</span>
 
-        <span class="n">position_waves_shape</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">waves_at_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
-            <span class="o">+</span> <span class="n">scan_shape</span>
-            <span class="o">+</span> <span class="n">waves_at_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
-        <span class="p">)</span>
-        <span class="n">waves_at_positions</span> <span class="o">=</span> <span class="n">waves_at_positions</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
-            <span class="n">position_waves_shape</span>
-        <span class="p">)</span>
+            <span class="n">site_in_bbox</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">site_crop_corner_ds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">reduce_crop_corner</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">site_crop_corner_ds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">reduce_crop_corner</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">bbox_scattered</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                <span class="n">scattered_window</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">reduce_size</span><span class="p">),</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">complex_dtype</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">_n0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">_n1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                    <span class="n">_r0</span> <span class="o">=</span> <span class="n">site_in_bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">_n0</span> <span class="o">*</span> <span class="n">ds_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">_r1</span> <span class="o">=</span> <span class="n">site_in_bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">_n1</span> <span class="o">*</span> <span class="n">ds_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">_s0</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">_r0</span><span class="p">)</span>
+                    <span class="n">_s1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">_r1</span><span class="p">)</span>
+                    <span class="n">_d0</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">_r0</span><span class="p">)</span>
+                    <span class="n">_d1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">_r1</span><span class="p">)</span>
+                    <span class="n">_e0</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">reduce_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">_r0</span> <span class="o">+</span> <span class="n">output_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="n">_e1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">reduce_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">_r1</span> <span class="o">+</span> <span class="n">output_window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">_d0</span> <span class="o">&gt;=</span> <span class="n">_e0</span> <span class="ow">or</span> <span class="n">_d1</span> <span class="o">&gt;=</span> <span class="n">_e1</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">bbox_scattered</span><span class="p">[</span>
+                        <span class="o">...</span><span class="p">,</span> <span class="n">_d0</span><span class="p">:</span><span class="n">_e0</span><span class="p">,</span> <span class="n">_d1</span><span class="p">:</span><span class="n">_e1</span>
+                    <span class="p">]</span> <span class="o">=</span> <span class="n">scattered_window</span><span class="p">[</span>
+                        <span class="o">...</span><span class="p">,</span>
+                        <span class="n">_s0</span> <span class="p">:</span> <span class="n">_s0</span> <span class="o">+</span> <span class="p">(</span><span class="n">_e0</span> <span class="o">-</span> <span class="n">_d0</span><span class="p">),</span>
+                        <span class="n">_s1</span> <span class="p">:</span> <span class="n">_s1</span> <span class="o">+</span> <span class="p">(</span><span class="n">_e1</span> <span class="o">-</span> <span class="n">_d1</span><span class="p">),</span>
+                    <span class="p">]</span>
 
-        <span class="n">n_T</span> <span class="o">=</span> <span class="n">waves_at_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">position_waves</span> <span class="o">=</span> <span class="n">Waves</span><span class="p">(</span>
-            <span class="n">waves_at_positions</span><span class="p">,</span>
-            <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
-            <span class="n">extent</span><span class="o">=</span><span class="n">output_window_extent</span><span class="p">,</span>
-            <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="p">[</span>
-                <span class="n">OrdinalAxis</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_T</span><span class="p">)))</span>
-            <span class="p">]</span>
-            <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">scan_axes_metadata</span><span class="p">),</span>
-        <span class="p">)</span>
+            <span class="n">reduced</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span>
+                <span class="n">coefficients</span><span class="p">[</span><span class="n">flat_start</span><span class="p">:</span><span class="n">flat_end</span><span class="p">],</span> <span class="n">bbox_scattered</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">reduced</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">reduced</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">waves_at_positions</span> <span class="o">=</span> <span class="n">batch_crop_2d</span><span class="p">(</span>
+                <span class="n">reduced</span><span class="p">,</span> <span class="n">reduce_corners</span><span class="p">,</span> <span class="n">output_window_gpts</span>
+            <span class="p">)</span>
 
-        <span class="c1"># All detectors here see the same, not-yet-mutated ``position_waves``</span>
-        <span class="c1"># -- share one diffraction-pattern FFT across them.</span>
-        <span class="k">with</span> <span class="n">position_waves</span><span class="o">.</span><span class="n">_share_diffraction_pattern_fft</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">det_idx</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
-                <span class="n">m</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">position_waves</span><span class="p">)</span>
-                <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">0</span><span class="p">,))</span>
-                <span class="c1"># The measurement's leading axes are the potential's</span>
-                <span class="c1"># ensemble axes and then the exit-plane axis (see</span>
-                <span class="c1"># _potential_ensemble_shape_and_metadata, shared with the</span>
-                <span class="c1"># regular multislice driver). Indexing the plane part alone</span>
-                <span class="c1"># addressed the ensemble axis instead: this driver runs once</span>
-                <span class="c1"># per configuration with a length-1 ensemble axis, so an</span>
-                <span class="c1"># exit-plane slice starting at 1 or beyond selected nothing</span>
-                <span class="c1"># and the contribution was dropped in silence -- a whole</span>
-                <span class="c1"># thickness series came back zero.</span>
-                <span class="n">indices</span> <span class="o">=</span> <span class="n">_validate_potential_ensemble_indices</span><span class="p">(</span>
-                    <span class="p">(</span><span class="mi">0</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">),</span> <span class="n">exit_idx</span><span class="p">,</span> <span class="n">potential</span>
+            <span class="n">batch_scan_shape</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span><span class="n">row_end</span> <span class="o">-</span> <span class="n">row_start</span><span class="p">,)</span> <span class="o">+</span> <span class="n">scan_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">scan_shape</span> <span class="k">else</span> <span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">position_waves_shape</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">waves_at_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">batch_scan_shape</span>
+                <span class="o">+</span> <span class="n">waves_at_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+            <span class="p">)</span>
+            <span class="n">waves_at_positions</span> <span class="o">=</span> <span class="n">waves_at_positions</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="n">position_waves_shape</span>
+            <span class="p">)</span>
+
+            <span class="c1"># scan_axes_metadata[0] describes every position in the full</span>
+            <span class="c1"># scan; some axis types (e.g. CustomScan's PositionsAxis) carry</span>
+            <span class="c1"># an explicit per-position ``values`` tuple whose length Waves</span>
+            <span class="c1"># validates against the array, so it must be restricted to this</span>
+            <span class="c1"># batch's row range -- the same restriction dask's own ensemble</span>
+            <span class="c1"># partitioning applies per block (AxisMetadata.__getitem__).</span>
+            <span class="c1"># ScanAxis-like linear axes have no such tuple and are</span>
+            <span class="c1"># unaffected by the slice.</span>
+            <span class="k">if</span> <span class="n">scan_shape</span><span class="p">:</span>
+                <span class="n">batch_axes_metadata</span> <span class="o">=</span> <span class="p">[</span><span class="n">scan_axes_metadata</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">row_start</span><span class="p">:</span><span class="n">row_end</span><span class="p">]]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span>
+                    <span class="n">scan_axes_metadata</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
                 <span class="p">)</span>
-                <span class="c1"># Only the slice entries survive the indexing and need</span>
-                <span class="c1"># broadcasting; integer ensemble indices drop their axis.</span>
-                <span class="n">n_slice_axes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">slice</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">)</span>
-                <span class="n">measurements</span><span class="p">[</span><span class="n">det_idx</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">+=</span> <span class="n">m</span><span class="o">.</span><span class="n">array</span><span class="p">[</span>
-                    <span class="p">(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n_slice_axes</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">batch_axes_metadata</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="n">position_waves</span> <span class="o">=</span> <span class="n">Waves</span><span class="p">(</span>
+                <span class="n">waves_at_positions</span><span class="p">,</span>
+                <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+                <span class="n">extent</span><span class="o">=</span><span class="n">output_window_extent</span><span class="p">,</span>
+                <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="p">[</span>
+                    <span class="n">OrdinalAxis</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_T</span><span class="p">)))</span>
                 <span class="p">]</span>
+                <span class="o">+</span> <span class="n">batch_axes_metadata</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># All detectors here see the same, not-yet-mutated</span>
+            <span class="c1"># ``position_waves`` -- share one diffraction-pattern FFT across</span>
+            <span class="c1"># them.</span>
+            <span class="k">with</span> <span class="n">position_waves</span><span class="o">.</span><span class="n">_share_diffraction_pattern_fft</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">det_idx</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
+                    <span class="n">m</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">position_waves</span><span class="p">)</span>
+                    <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">0</span><span class="p">,))</span>
+                    <span class="c1"># The measurement's leading axes are the potential's</span>
+                    <span class="c1"># ensemble axes and then the exit-plane axis (see</span>
+                    <span class="c1"># _potential_ensemble_shape_and_metadata, shared with the</span>
+                    <span class="c1"># regular multislice driver). Indexing the plane part</span>
+                    <span class="c1"># alone addressed the ensemble axis instead: this driver</span>
+                    <span class="c1"># runs once per configuration with a length-1 ensemble</span>
+                    <span class="c1"># axis, so an exit-plane slice starting at 1 or beyond</span>
+                    <span class="c1"># selected nothing and the contribution was dropped in</span>
+                    <span class="c1"># silence -- a whole thickness series came back zero.</span>
+                    <span class="n">indices</span> <span class="o">=</span> <span class="n">_validate_potential_ensemble_indices</span><span class="p">(</span>
+                        <span class="p">(</span><span class="mi">0</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">),</span> <span class="n">exit_idx</span><span class="p">,</span> <span class="n">potential</span>
+                    <span class="p">)</span>
+                    <span class="c1"># Only the slice entries survive the indexing and need</span>
+                    <span class="c1"># broadcasting; integer ensemble indices drop their axis.</span>
+                    <span class="n">n_slice_axes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">slice</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">)</span>
+                    <span class="n">row_index</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">row_start</span><span class="p">,</span> <span class="n">row_end</span><span class="p">),)</span> <span class="k">if</span> <span class="n">scan_shape</span> <span class="k">else</span> <span class="p">()</span>
+                    <span class="p">)</span>
+                    <span class="n">measurements</span><span class="p">[</span><span class="n">det_idx</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span>
+                        <span class="n">indices</span> <span class="o">+</span> <span class="n">row_index</span>
+                    <span class="p">]</span> <span class="o">+=</span> <span class="n">m</span><span class="o">.</span><span class="n">array</span><span class="p">[(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n_slice_axes</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_scatter_at_site</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
         <span class="n">site_xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>

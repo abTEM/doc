@@ -293,6 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../user_guide/tutorials/time_resolved.html">Time-resolved TEM from molecular dynamics</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -670,6 +671,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.inelastic.core_loss.TransitionPotentialArray"><code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.inelastic.core_loss.TransitionPotentialArray.absolute_threshold"><code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray.absolute_threshold()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.inelastic.core_loss.TransitionPotentialArray.copy_to_device"><code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray.copy_to_device()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.inelastic.core_loss.TransitionPotentialArray.filter_by_intensity"><code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray.filter_by_intensity()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.inelastic.core_loss.TransitionPotentialArray.filter_sites"><code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray.filter_sites()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.inelastic.core_loss.TransitionPotentialArray.from_array_and_metadata"><code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray.from_array_and_metadata()</span></code></a></li>
@@ -1083,6 +1085,34 @@ and return the updated configuration string.</p></td>
 <dt class="sig sig-object py" id="abtem.inelastic.core_loss.TransitionPotentialArray.absolute_threshold">
 <span class="sig-name descname"><span class="pre">absolute_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/abtem/inelastic/core_loss.html#TransitionPotentialArray.absolute_threshold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.inelastic.core_loss.TransitionPotentialArray.absolute_threshold" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="abtem.inelastic.core_loss.TransitionPotentialArray.copy_to_device">
+<span class="sig-name descname"><span class="pre">copy_to_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Self" title="(in Python v3.14)"><span class="pre">Self</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/inelastic/core_loss.html#TransitionPotentialArray.copy_to_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.inelastic.core_loss.TransitionPotentialArray.copy_to_device" title="Link to this definition">#</a></dt>
+<dd><p>Copy to a device, memoized per (shared graph node, device).</p>
+<p><code class="docutils literal notranslate"><span class="pre">ArrayObject.copy_to_device</span></code> always rebuilds through <code class="docutils literal notranslate"><span class="pre">__init__</span></code>,
+which recomputes <code class="docutils literal notranslate"><span class="pre">_local_potential</span></code> from the array – an <code class="docutils literal notranslate"><span class="pre">ifft2</span></code>
++ <code class="docutils literal notranslate"><span class="pre">abs2</span></code> + sum over the whole payload – even when the array is
+already on the target device, since the free <code class="docutils literal notranslate"><span class="pre">copy_to_device</span></code> being
+a no-op there is invisible to <code class="docutils literal notranslate"><span class="pre">__init__</span></code>. Once this object arrives
+as one graph node shared by every task on a worker (see
+<code class="docutils literal notranslate"><span class="pre">BaseTransitionPotential._task_local</span></code>), both that recomputation and,
+on GPU, the host-to-device upload beneath it happen once per task
+rather than once per worker.</p>
+<p>This does NOT memoize the returned <em>object</em> – <code class="docutils literal notranslate"><span class="pre">scatter</span></code> and
+<code class="docutils literal notranslate"><span class="pre">generate_scattered_waves</span></code> mutate what they are handed
+(<code class="docutils literal notranslate"><span class="pre">self._array</span> <span class="pre">=</span> <span class="pre">...</span></code>, <code class="docutils literal notranslate"><span class="pre">self.grid.match(...)</span></code>), so two tasks
+sharing one returned instance would race on those mutations exactly
+as <code class="docutils literal notranslate"><span class="pre">_task_local</span></code> exists to prevent one step earlier. What is safe
+to share is the immutable-in-practice <em>array data</em>: the device-
+resident array and the local potential derived from it are cached,
+and a fresh, independently-mutable wrapper is copied out each call.</p>
+<p>The cache lives in <code class="docutils literal notranslate"><span class="pre">_device_array_cache</span></code>, set in <code class="docutils literal notranslate"><span class="pre">__init__</span></code> on
+the object every <code class="docutils literal notranslate"><span class="pre">_task_local</span></code> view is shallow-copied from –
+<code class="docutils literal notranslate"><span class="pre">copy.copy</span></code> shares dict <em>references</em>, not contents, so every
+per-task view sees the same dict and therefore whatever a sibling
+view already uploaded, with its lifetime tied to the shared node.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="abtem.inelastic.core_loss.TransitionPotentialArray.filter_by_intensity">
@@ -1504,6 +1534,7 @@ and return the updated configuration string.</p>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.inelastic.core_loss.TransitionPotentialArray"><code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.inelastic.core_loss.TransitionPotentialArray.absolute_threshold"><code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray.absolute_threshold()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.inelastic.core_loss.TransitionPotentialArray.copy_to_device"><code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray.copy_to_device()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.inelastic.core_loss.TransitionPotentialArray.filter_by_intensity"><code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray.filter_by_intensity()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.inelastic.core_loss.TransitionPotentialArray.filter_sites"><code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray.filter_sites()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#abtem.inelastic.core_loss.TransitionPotentialArray.from_array_and_metadata"><code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray.from_array_and_metadata()</span></code></a></li>

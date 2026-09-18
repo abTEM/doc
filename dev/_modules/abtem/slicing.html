@@ -288,6 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../user_guide/tutorials/time_resolved.html">Time-resolved TEM from molecular dynamics</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -561,7 +562,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atoms</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.atoms</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_cell_orthogonal</span><span class="p">,</span> <span class="n">wrap_and_snap_atoms</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">EqualityMixin</span><span class="p">,</span> <span class="n">label_to_index</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">EqualityMixin</span><span class="p">,</span> <span class="n">label_to_index</span><span class="p">,</span> <span class="n">safe_equality</span>
 
 
 <div class="viewcode-block" id="crystal_slice_thicknesses">
@@ -1300,6 +1301,31 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="o">.</span><span class="n">_slice_index</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">indices</span> <span class="k">for</span> <span class="n">indices</span> <span class="ow">in</span> <span class="n">label_to_index</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">max_label</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="c1"># _slice_index is a list of integer arrays, one per slice. list.__eq__</span>
+        <span class="c1"># compares elementwise and reduces the per-element `==` (itself an</span>
+        <span class="c1"># array) to a bool, which numpy refuses for anything but a length-1</span>
+        <span class="c1"># array -- generic EqualityMixin.__eq__ (safe_equality) catches that</span>
+        <span class="c1"># ValueError and reports "unequal", so this class never compared equal</span>
+        <span class="c1"># to anything, including an identical twin. Compare it directly with</span>
+        <span class="c1"># np.array_equal and let safe_equality handle every other attribute</span>
+        <span class="c1"># exactly as it would without this override.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SliceIndexedAtoms</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_slice_index</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_slice_index</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_slice_index</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">_slice_index</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="n">safe_equality</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"_slice_index"</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eq_exclude</span>
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="SliceIndexedAtoms.get_atoms_in_slices">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.slicing.html#abtem.slicing.SliceIndexedAtoms.get_atoms_in_slices">[docs]</a>

@@ -34,20 +34,11 @@
 * - {py:obj}`MagneticFieldArray <abtem.magnetism.iam.MagneticFieldArray>`
   -
 * - {py:obj}`QuasiDipoleMagneticFieldProjections <abtem.magnetism.iam.QuasiDipoleMagneticFieldProjections>`
-  - ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleMagneticFieldProjections
-    :parser: rst
-    :summary:
-    ```
+  -
 * - {py:obj}`QuasiDipoleProjections <abtem.magnetism.iam.QuasiDipoleProjections>`
-  - ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections
-    :parser: rst
-    :summary:
-    ```
+  -
 * - {py:obj}`QuasiDipoleVectorPotentialProjections <abtem.magnetism.iam.QuasiDipoleVectorPotentialProjections>`
-  - ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleVectorPotentialProjections
-    :parser: rst
-    :summary:
-    ```
+  -
 * - {py:obj}`VectorPotential <abtem.magnetism.iam.VectorPotential>`
   - ```{autodoc2-docstring} abtem.magnetism.iam.VectorPotential
     :parser: rst
@@ -266,53 +257,20 @@ Bases: {py:obj}`abtem.magnetism.iam.BaseMagneticField`, {py:obj}`abtem.potential
 
 `````
 
-````{py:class} QuasiDipoleMagneticFieldProjections(...)
+```{py:class} QuasiDipoleMagneticFieldProjections(...)
 :canonical: abtem.magnetism.iam.QuasiDipoleMagneticFieldProjections
 
 Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 
-```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleMagneticFieldProjections
-:parser: rst
 ```
-
-```{rubric} Initialization
-```
-
-```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleMagneticFieldProjections.__init__
-:parser: rst
-```
-
-````
 
 `````{py:class} QuasiDipoleProjections(...)
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections
 
-```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections
-:parser: rst
-```
-
-```{rubric} Initialization
-```
-
-```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.__init__
-:parser: rst
-```
+Bases: {py:obj}`abtem.integrals.FieldIntegrator`
 
 ````{py:method} cutoff(...)
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections.cutoff
-
-```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.cutoff
-:parser: rst
-```
-
-````
-
-````{py:property} finite
-:canonical: abtem.magnetism.iam.QuasiDipoleProjections.finite
-
-```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.finite
-:parser: rst
-```
 
 ````
 
@@ -328,25 +286,12 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 ````{py:method} integrate_on_grid(...)
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections.integrate_on_grid
 
-```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.integrate_on_grid
-:parser: rst
-```
-
 ````
 
 ````{py:property} parametrization
 :canonical: abtem.magnetism.iam.QuasiDipoleProjections.parametrization
 
 ```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.parametrization
-:parser: rst
-```
-
-````
-
-````{py:property} periodic
-:canonical: abtem.magnetism.iam.QuasiDipoleProjections.periodic
-
-```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleProjections.periodic
 :parser: rst
 ```
 
@@ -372,23 +317,12 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 
 `````
 
-````{py:class} QuasiDipoleVectorPotentialProjections(...)
+```{py:class} QuasiDipoleVectorPotentialProjections(...)
 :canonical: abtem.magnetism.iam.QuasiDipoleVectorPotentialProjections
 
 Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 
-```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleVectorPotentialProjections
-:parser: rst
 ```
-
-```{rubric} Initialization
-```
-
-```{autodoc2-docstring} abtem.magnetism.iam.QuasiDipoleVectorPotentialProjections.__init__
-:parser: rst
-```
-
-````
 
 ````{py:class} VectorPotential(...)
 :canonical: abtem.magnetism.iam.VectorPotential

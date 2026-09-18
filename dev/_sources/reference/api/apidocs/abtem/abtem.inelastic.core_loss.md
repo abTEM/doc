@@ -646,6 +646,15 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 
 ````
 
+````{py:method} copy_to_device(...) -> typing.Self
+:canonical: abtem.inelastic.core_loss.TransitionPotentialArray.copy_to_device
+
+```{autodoc2-docstring} abtem.inelastic.core_loss.TransitionPotentialArray.copy_to_device
+:parser: rst
+```
+
+````
+
 ````{py:method} filter_by_intensity(...) -> abtem.inelastic.core_loss.TransitionPotential
 :canonical: abtem.inelastic.core_loss.TransitionPotentialArray.filter_by_intensity
 

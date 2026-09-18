@@ -288,6 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/time_resolved.html">Time-resolved TEM from molecular dynamics</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -1629,7 +1630,12 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
-        <span class="n">new_shape</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)]</span> <span class="o">+</span> <span class="n">new_shape</span>
+        <span class="c1"># Not `array.shape[: -len(new_shape)]`: -0 is 0, not "the end", so</span>
+        <span class="c1"># for `new_shape == ()` that slice was `[:0]`, always empty, rather</span>
+        <span class="c1"># than `[:len(array.shape)]` -- every dimension is a batch</span>
+        <span class="c1"># dimension when none are being resized.</span>
+        <span class="n">n_batch_dims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span>
+        <span class="n">new_shape</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="n">n_batch_dims</span><span class="p">]</span> <span class="o">+</span> <span class="n">new_shape</span>
 
     <span class="c1"># Build per-dimension slice-pair lists.  Dimensions with equal in/out size</span>
     <span class="c1"># (e.g. batch dims) take a single full-slice pair; the rest contribute 1–2</span>
@@ -1685,7 +1691,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    numpy.ndarray</span>
 <span class="sd">        Interpolated array.</span>
 <span class="sd">    """</span>
-    <span class="n">old_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span> <span class="p">:])</span>
+    <span class="c1"># Not `array.shape[-len(new_shape):]`: the same -0 problem, mirrored --</span>
+    <span class="c1"># for `new_shape == ()` that slice was `[0:]`, everything, rather than</span>
+    <span class="c1"># `[len(array.shape):]`, nothing (no axes are being resized).</span>
+    <span class="n">n_batch_dims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span>
+    <span class="n">old_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">n_batch_dims</span><span class="p">:])</span>
 
     <span class="n">is_complex</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">iscomplexobj</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
@@ -1709,7 +1719,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">real</span>
 
     <span class="k">if</span> <span class="n">normalization</span> <span class="o">==</span> <span class="s2">"values"</span><span class="p">:</span>
-        <span class="n">array</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span> <span class="p">:])</span> <span class="o">/</span> <span class="n">old_size</span>
+        <span class="c1"># See the comment above old_size: same -0 fix, same reasoning.</span>
+        <span class="n">n_batch_dims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span>
+        <span class="n">array</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">n_batch_dims</span><span class="p">:])</span> <span class="o">/</span> <span class="n">old_size</span>
     <span class="k">elif</span> <span class="n">normalization</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"amplitude"</span><span class="p">,</span> <span class="s2">"intensity"</span><span class="p">):</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>

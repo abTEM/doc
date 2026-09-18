@@ -288,6 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/prism.html">PRISM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/core_loss.html">Core-loss</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/phonon_loss.html">Phonon-loss spectroscopy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../user_guide/tutorials/time_resolved.html">Time-resolved TEM from molecular dynamics</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../user_guide/examples/examples.html">Example gallery</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -567,7 +568,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">energy2sigma</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">coordinate_grid</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.inelastic.phonons</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseFrozenPhonons</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.integrals</span><span class="w"> </span><span class="kn">import</span> <span class="n">cutoff_taper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.integrals</span><span class="w"> </span><span class="kn">import</span> <span class="n">FieldIntegrator</span><span class="p">,</span> <span class="n">cutoff_taper</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.magnetism.parametrizations</span><span class="w"> </span><span class="kn">import</span> <span class="n">LyonParametrization</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.iam</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">BaseField</span><span class="p">,</span>
@@ -947,7 +948,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <div class="viewcode-block" id="QuasiDipoleProjections">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.magnetism.iam.html#abtem.magnetism.iam.QuasiDipoleProjections">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">QuasiDipoleProjections</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">QuasiDipoleProjections</span><span class="p">(</span><span class="n">FieldIntegrator</span><span class="p">):</span>
+    <span class="c1"># _tables is a cache populated lazily by get_integral_table, one entry</span>
+    <span class="c1"># per element on first use -- incidental state, never identity, same</span>
+    <span class="c1"># reasoning as _DeviceArrayCache.__eq__ (integrals.py) and Potential's</span>
+    <span class="c1"># _sliced_atoms exclusion. Without this, a used integrator stops</span>
+    <span class="c1"># comparing equal to an identical fresh one once anything is cached, and</span>
+    <span class="c1"># two integrators that cached the *same* element compare unequal anyway:</span>
+    <span class="c1"># dict.__eq__ on values that are numpy arrays raises ValueError, which</span>
+    <span class="c1"># safe_equality's exception guard reports as "unequal".</span>
+    <span class="n">_eq_exclude</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_tables"</span><span class="p">,)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">interpolation_func</span><span class="p">,</span>
@@ -958,6 +969,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
         <span class="n">slice_thickness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">periodic</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">finite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_parametrization</span> <span class="o">=</span> <span class="n">LyonParametrization</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cutoff</span> <span class="o">=</span> <span class="n">cutoff</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_step_size</span> <span class="o">=</span> <span class="n">integration_steps</span>
@@ -990,13 +1002,8 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">parametrization</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parametrization</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">finite</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="kc">True</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">periodic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="kc">False</span>
+    <span class="c1"># finite/periodic come from FieldIntegrator, backed by _finite/_periodic</span>
+    <span class="c1"># set via super().__init__(periodic=False, finite=True) above.</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
