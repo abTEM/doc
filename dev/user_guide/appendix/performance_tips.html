@@ -331,6 +331,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.complex.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.complex</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.config.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.constants.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.constants</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.dask_sizeof.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.dask_sizeof</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.diagnostics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.diagnostics</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.electron_configurations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.electron_configurations</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.energy.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.energy</span></code></a></li>
@@ -822,6 +823,17 @@ faster — so it can be worth benchmarking your own simulation:</p>
 options. Because Dask already parallelizes across chunks, oversubscription can hurt: as a rule of thumb, keep the
 number of workers times the FFT threads at or below your physical core count. FFTW also exposes its planner through
 <code class="docutils literal notranslate"><span class="pre">fftw.planning_effort</span></code>; more patient planning can pay off for long-running simulations that reuse one grid size.</p>
+<p>The same principle applies to Numba, which a few CPU-only code paths use directly — the
+real-space multislice algorithm among them. Numba’s thread pool follows <code class="docutils literal notranslate"><span class="pre">OMP_NUM_THREADS</span></code> if it
+is set, or every visible core otherwise, and <code class="docutils literal notranslate"><span class="pre">NUMBA_NUM_THREADS</span></code> overrides that independently of
+the other libraries above. These kernels are memory-bandwidth-bound and scale poorly past a
+handful of threads even in isolation, so a large value rarely helps a single computation —
+benchmark before assuming your full core count is best. Once Dask is already running many chunks
+concurrently, keeping this low costs nothing at worst, and can measurably help: when the number
+of concurrent workers already exceeds your physical core count — common once a worker pool is
+sized to logical rather than physical cores — each kernel call claiming its own extra threads adds
+contention with nothing left to actually parallelize into, and can cost real throughput rather
+than merely fail to gain any.</p>
 </section>
 <section id="use-good-numbers-of-gpts">
 <h3>Use “good” numbers of <code class="docutils literal notranslate"><span class="pre">gpts</span></code><a class="headerlink" href="#use-good-numbers-of-gpts" title="Link to this heading">#</a></h3>

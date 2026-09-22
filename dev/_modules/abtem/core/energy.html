@@ -326,6 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.core.complex.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.complex</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.core.config.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.core.constants.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.constants</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.core.dask_sizeof.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.dask_sizeof</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.core.diagnostics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.diagnostics</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.core.electron_configurations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.electron_configurations</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.core.energy.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.energy</span></code></a></li>
@@ -739,6 +740,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_other_energy</span><span class="p">(</span><span class="n">other</span><span class="p">:</span> <span class="s2">"Accelerator | HasAcceleratorMixin"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Best-effort scalar energy for ``other``, seeing through an indexed</span>
+<span class="sd">    energy-ensemble member.</span>
+
+<span class="sd">    ``other.accelerator.energy`` (or ``other.energy`` for a bare</span>
+<span class="sd">    ``Accelerator``) is ``None`` both when no energy has ever been set *and*</span>
+<span class="sd">    when ``other`` is a single, already-indexed member of an energy ensemble</span>
+<span class="sd">    -- its real energy then lives in ``other.metadata["energy"]`` or a</span>
+<span class="sd">    single-valued ``EnergyAxis`` in ``other.ensemble_axes_metadata`` instead</span>
+<span class="sd">    (the same resolution :func:`resolve_energy` already performs for</span>
+<span class="sd">    ``Waves._valid_energy``). Reading only the raw accelerator energy</span>
+<span class="sd">    conflates the two cases: ``Accelerator.match``/``check_match`` would then</span>
+<span class="sd">    treat a perfectly well-defined ensemble member as "no energy defined"</span>
+<span class="sd">    and let their own energy silently override it (``match``), or never</span>
+<span class="sd">    notice a genuine mismatch against it (``check_match``).</span>
+
+<span class="sd">    ``other`` need not be an ``ArrayObject`` -- ``metadata`` and</span>
+<span class="sd">    ``ensemble_axes_metadata`` are read with ``getattr`` and default to</span>
+<span class="sd">    "absent", so a plain ``Accelerator`` or any other</span>
+<span class="sd">    ``HasAcceleratorMixin`` without those attributes falls back to exactly</span>
+<span class="sd">    the previous, raw-energy behaviour.</span>
+<span class="sd">    """</span>
+    <span class="n">energy</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">other</span><span class="o">.</span><span class="n">energy</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Accelerator</span><span class="p">)</span> <span class="k">else</span> <span class="n">other</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">energy</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">"metadata"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">ensemble_axes_metadata</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">"ensemble_axes_metadata"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">()</span>
+    <span class="k">return</span> <span class="n">resolve_energy</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">ensemble_axes_metadata</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="Accelerator">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.energy.html#abtem.core.energy.Accelerator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Accelerator</span><span class="p">(</span><span class="n">EqualityMixin</span><span class="p">,</span> <span class="n">CopyMixin</span><span class="p">):</span>
@@ -811,19 +844,22 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        other: Accelerator object</span>
 <span class="sd">            The accelerator that should be checked.</span>
 <span class="sd">        """</span>
-        <span class="c1"># Use accelerator.energy directly for HasAcceleratorMixin subclasses that may</span>
-        <span class="c1"># override .energy to return non-scalar types (e.g. EnergyEnsemble).</span>
-        <span class="n">other_energy</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">other</span><span class="o">.</span><span class="n">energy</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Accelerator</span><span class="p">)</span>
-            <span class="k">else</span> <span class="n">other</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">energy</span>
-        <span class="p">)</span>
+        <span class="n">other_energy</span> <span class="o">=</span> <span class="n">_resolve_other_energy</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
             <span class="ow">and</span> <span class="p">(</span><span class="n">other_energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
             <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">!=</span> <span class="n">other_energy</span><span class="p">)</span>
         <span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Inconsistent energies"</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Inconsistent energies: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="si">}</span><span class="s2"> eV vs </span><span class="si">{</span><span class="n">other_energy</span><span class="si">}</span><span class="s2"> eV. "</span>
+                <span class="s2">"A fixed energy (e.g. a built TransitionPotentialArray, or a CTF "</span>
+                <span class="s2">"with an explicit energy) cannot be applied to wave functions at "</span>
+                <span class="s2">"a different energy -- this also covers one member of a "</span>
+                <span class="s2">"multi-energy ensemble, whose own energy is resolved from its "</span>
+                <span class="s2">"metadata/ensemble axes even though its accelerator energy reads "</span>
+                <span class="s2">"None. Build a separate object per energy, or leave the energy "</span>
+                <span class="s2">"unset so it is taken from the wave functions."</span>
+            <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Accelerator.match">
@@ -846,13 +882,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="n">check_match</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
-        <span class="c1"># Use accelerator.energy directly for HasAcceleratorMixin subclasses that may</span>
-        <span class="c1"># override .energy to return non-scalar types (e.g. EnergyEnsemble).</span>
-        <span class="n">other_energy</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">other</span><span class="o">.</span><span class="n">energy</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Accelerator</span><span class="p">)</span>
-            <span class="k">else</span> <span class="n">other</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">energy</span>
-        <span class="p">)</span>
+        <span class="n">other_energy</span> <span class="o">=</span> <span class="n">_resolve_other_energy</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">other_energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Accelerator</span><span class="p">):</span>

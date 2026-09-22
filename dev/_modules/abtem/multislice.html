@@ -326,6 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.complex.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.complex</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.config.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.constants.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.constants</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.dask_sizeof.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.dask_sizeof</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.diagnostics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.diagnostics</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.electron_configurations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.electron_configurations</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.energy.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.energy</span></code></a></li>
@@ -2004,6 +2005,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">base_shape</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_out_ensemble_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">detector</span><span class="o">.</span><span class="n">_out_ensemble_source</span><span class="p">(</span><span class="n">waves</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectors</span>
+        <span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_out_base_axes_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">],</span> <span class="o">...</span><span class="p">]:</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
             <span class="n">detector</span><span class="o">.</span><span class="n">_out_base_axes_metadata</span><span class="p">(</span><span class="n">waves</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectors</span>
@@ -2154,12 +2160,45 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="n">energy_axis_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
+            <span class="c1"># Match every detector against the *full*, un-indexed ensemble</span>
+            <span class="c1"># waves before splitting into per-energy members below -- the</span>
+            <span class="c1"># same waves the lazy path's `_out_base_shape` matches against to</span>
+            <span class="c1"># size the output array up front (abtem/detectors.py). Without</span>
+            <span class="c1"># this, an auto-sizing radial detector (e.g.</span>
+            <span class="c1"># FlexibleAnnularDetector with no explicit outer) would instead</span>
+            <span class="c1"># see each per-energy `member` one at a time -- via</span>
+            <span class="c1"># `_match_waves`'s own per-call energy-ensemble guard -- either</span>
+            <span class="c1"># raising there in an order that varies with which member the</span>
+            <span class="c1"># detector is reused across, or, once unguarded, sizing its bins</span>
+            <span class="c1"># from each member's own cutoff angle and producing per-member</span>
+            <span class="c1"># arrays of different shapes for `np.stack` below to fail on.</span>
+            <span class="c1"># Matching here instead reaches the same</span>
+            <span class="c1"># cannot-auto-size-for-an-ensemble guard while still holding the</span>
+            <span class="c1"># full ensemble, so eager raises the same clear error as lazy,</span>
+            <span class="c1"># regardless of energy order.</span>
+            <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectors</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="s2">"_match_waves"</span><span class="p">):</span>
+                    <span class="n">detector</span><span class="o">.</span><span class="n">_match_waves</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+
             <span class="n">energy_axis</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">[</span><span class="n">energy_axis_idx</span><span class="p">]</span>
             <span class="n">per_energy</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">energy_axis</span><span class="o">.</span><span class="n">values</span><span class="p">)):</span>
                 <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),)</span> <span class="o">*</span> <span class="n">energy_axis_idx</span> <span class="o">+</span> <span class="p">(</span><span class="n">j</span><span class="p">,)</span>
                 <span class="n">member</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">waves</span><span class="o">.</span><span class="n">get_items</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
                 <span class="n">per_energy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_calculate_new_array</span><span class="p">(</span><span class="n">member</span><span class="p">))</span>
+            <span class="c1"># Stack at energy_axis_idx itself, reinserting the axis exactly</span>
+            <span class="c1"># where indexing removed it -- member's own remaining axes are</span>
+            <span class="c1"># *waves*' own axes with energy_axis_idx dropped, in their</span>
+            <span class="c1"># original relative order, so this always reproduces waves' own</span>
+            <span class="c1"># (natural, undeclared) ensemble axis order, whatever detector</span>
+            <span class="c1"># or scan type is in play. A detector like AnnularDetector</span>
+            <span class="c1"># declares a *different* axis order in its own metadata (moving</span>
+            <span class="c1"># scan axes to the end -- see _out_ensemble_source in</span>
+            <span class="c1"># abtem/detectors.py); reordering to match that declared order</span>
+            <span class="c1"># is handled once, uniformly for both eager and lazy results, in</span>
+            <span class="c1"># ArrayObject.apply_transform (abtem/array.py) rather than here,</span>
+            <span class="c1"># so this function only ever needs to know its own axes, not any</span>
+            <span class="c1"># particular detector's output convention.</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">per_energy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">):</span>
                 <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
                     <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">per_energy</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="n">energy_axis_idx</span><span class="p">)</span>

@@ -326,6 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.complex.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.complex</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.config.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.constants.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.constants</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.dask_sizeof.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.dask_sizeof</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.diagnostics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.diagnostics</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.electron_configurations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.electron_configurations</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.energy.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.energy</span></code></a></li>
@@ -803,30 +804,28 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">integrate_on_grid</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">positions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span>
+        <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">b</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">gpts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
         <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Integrate radial potential between two limits at the given 2D positions on a</span>
-<span class="sd">        grid. The integration limits are only used when the integration method is</span>
+<span class="sd">        Integrate radial potential between two limits at the given atomic positions on</span>
+<span class="sd">        a grid. The integration limits are only used when the integration method is</span>
 <span class="sd">        finite.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        positions : numpy.ndarray</span>
-<span class="sd">            2D array of xy-positions of the centers of each radial function [Å].</span>
-<span class="sd">        a : numpy.ndarray</span>
-<span class="sd">            Lower integration limit of the pr</span>
-<span class="sd">            ojection integrals along z for each position [Å]. The limit is given</span>
-<span class="sd">            relative to the center of the radial function.</span>
-<span class="sd">        b : numpy.ndarray</span>
-<span class="sd">            Upper integration limit of the projection integrals along z for each</span>
-<span class="sd">            position [Å]. The limit is given relative to the center of the radial</span>
-<span class="sd">            function.</span>
+<span class="sd">        atoms : ase.Atoms</span>
+<span class="sd">            The atoms whose radial functions are integrated onto the grid.</span>
+<span class="sd">        a : float</span>
+<span class="sd">            Lower integration limit of the projection integrals along z [Å]. The limit</span>
+<span class="sd">            is given relative to the center of the radial function.</span>
+<span class="sd">        b : float</span>
+<span class="sd">            Upper integration limit of the projection integrals along z [Å]. The limit</span>
+<span class="sd">            is given relative to the center of the radial function.</span>
 <span class="sd">        gpts : two int</span>
 <span class="sd">            Number of grid points in `x` and `y` describing each slice of the potential.</span>
 <span class="sd">        sampling : two float</span>
@@ -1270,8 +1269,8 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">integrate_on_grid</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span>
-        <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">b</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">gpts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
         <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>
@@ -1537,8 +1536,8 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">integrate_on_grid</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span>
-        <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">b</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">gpts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
         <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>

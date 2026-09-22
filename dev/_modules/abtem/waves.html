@@ -326,6 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.complex.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.complex</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.config.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.constants.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.constants</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.dask_sizeof.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.dask_sizeof</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.diagnostics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.diagnostics</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.electron_configurations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.electron_configurations</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.energy.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.energy</span></code></a></li>
@@ -2600,6 +2601,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="o">*</span><span class="n">args</span><span class="p">,</span>
         <span class="n">partials</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">],</span>
         <span class="n">arg_splits</span><span class="p">,</span>
+        <span class="n">ndims</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="n">args</span> <span class="o">=</span> <span class="n">unpack_blockwise_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
@@ -2612,7 +2614,14 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">new_probe</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">wrapped_new_probe</span> <span class="o">=</span> <span class="n">_wrap_with_array</span><span class="p">(</span><span class="n">new_probe</span><span class="p">)</span>
+        <span class="c1"># Not _wrap_with_array(new_probe) (ndims=None default -&gt; len(new_probe.</span>
+        <span class="c1"># ensemble_shape)): a reconstructed sub-ensemble can keep non-trivial</span>
+        <span class="c1"># structure even for a single block -- a GridScan position stays a</span>
+        <span class="c1"># (1, 1) grid, not a squeezed (), unlike a scalar energy value -- so</span>
+        <span class="c1"># new_probe.ensemble_shape does not reliably reflect "one block along</span>
+        <span class="c1"># each of the combined ensemble axes this call fills". Use the fixed,</span>
+        <span class="c1"># combined axis count instead, matching ensemble_blocks's own out_ind.</span>
+        <span class="n">wrapped_new_probe</span> <span class="o">=</span> <span class="n">_wrap_with_array</span><span class="p">(</span><span class="n">new_probe</span><span class="p">,</span> <span class="n">ndims</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">wrapped_new_probe</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_from_partitioned_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -2621,11 +2630,13 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">ensemble</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensembles</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">}</span>
 
+        <span class="n">ndims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ensembles</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
         <span class="k">return</span> <span class="n">partial</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_from_partitioned_args_func</span><span class="p">,</span>
             <span class="n">partials</span><span class="o">=</span><span class="n">partials</span><span class="p">,</span>
             <span class="n">arg_splits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_arg_splits</span><span class="p">(),</span>
+            <span class="n">ndims</span><span class="o">=</span><span class="n">ndims</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -2699,12 +2710,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
+            <span class="n">calculate_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_array</span>
+            <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span>
+            <span class="k">assert</span> <span class="n">gpts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_array_block</span><span class="p">(</span>
+                <span class="n">block</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">block_info</span><span class="o">=</span><span class="kc">None</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+                <span class="c1"># _calculate_array's per-block result can omit a size-1</span>
+                <span class="c1"># placeholder axis for an ensemble member that is already</span>
+                <span class="c1"># fully resolved to a scalar within this block (e.g. one</span>
+                <span class="c1"># energy value out of several, each its own chunk) -- it</span>
+                <span class="c1"># only has to be aware of the axes it itself iterates over.</span>
+                <span class="c1"># da.map_blocks still declares that axis as part of this</span>
+                <span class="c1"># block's own *logical* chunk shape (from `blocks.chunks`),</span>
+                <span class="c1"># so reshape here rather than require every _calculate_array</span>
+                <span class="c1"># override to track it. Read the declared chunk shape from</span>
+                <span class="c1"># block_info rather than block.shape: `blocks` is an</span>
+                <span class="c1"># object-dtype array whose per-task wrapping (_wrap_with_</span>
+                <span class="c1"># array) always produces a raw (1,)*ndims array regardless</span>
+                <span class="c1"># of how many logical ensemble values that one task's chunk</span>
+                <span class="c1"># actually covers (adjust_chunks in ensemble_blocks can make</span>
+                <span class="c1"># those differ, e.g. one unsplit block covering every value</span>
+                <span class="c1"># of an axis) -- block.shape would be wrong whenever they do.</span>
+                <span class="c1"># reshape on its own only guarantees equal total size, not</span>
+                <span class="c1"># equal non-1 dimensions in the same order -- e.g. (2, 3, 2)</span>
+                <span class="c1"># reshapes into (3, 2, 2) without error, silently remapping</span>
+                <span class="c1"># real data across axes. Only inserting or resizing size-1</span>
+                <span class="c1"># axes is actually safe here, so assert that explicitly:</span>
+                <span class="c1"># every non-1 dimension of the two shapes must already</span>
+                <span class="c1"># match, in order, before reshape is allowed to run.</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">calculate_array</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+                <span class="n">chunk_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                    <span class="n">end</span> <span class="o">-</span> <span class="n">start</span> <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">block_info</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"array-location"</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="n">expected_shape</span> <span class="o">=</span> <span class="n">chunk_shape</span> <span class="o">+</span> <span class="n">gpts</span>
+                <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">expected_shape</span><span class="p">:</span>
+                    <span class="n">non1_result</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span> <span class="k">if</span> <span class="n">d</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="n">non1_expected</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">expected_shape</span> <span class="k">if</span> <span class="n">d</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="k">assert</span> <span class="n">non1_result</span> <span class="o">==</span> <span class="n">non1_expected</span><span class="p">,</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"cannot safely reshape </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> to "</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">expected_shape</span><span class="si">}</span><span class="s2">: non-size-1 dimensions differ"</span>
+                    <span class="p">)</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">expected_shape</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">result</span>
+
             <span class="n">array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_array</span><span class="p">,</span>
+                <span class="n">_calculate_array_block</span><span class="p">,</span>
                 <span class="n">blocks</span><span class="p">,</span>
                 <span class="n">meta</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span>
                 <span class="n">new_axis</span><span class="o">=</span><span class="n">tuple_range</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)),</span>
                 <span class="n">chunks</span><span class="o">=</span><span class="n">blocks</span><span class="o">.</span><span class="n">chunks</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span>
+                <span class="n">block_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>

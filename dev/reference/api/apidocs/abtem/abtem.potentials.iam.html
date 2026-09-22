@@ -331,6 +331,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l4"><a class="reference internal" href="abtem.core.complex.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.complex</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="abtem.core.config.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="abtem.core.constants.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.constants</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="abtem.core.dask_sizeof.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.dask_sizeof</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="abtem.core.diagnostics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.diagnostics</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="abtem.core.electron_configurations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.electron_configurations</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="abtem.core.energy.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.energy</span></code></a></li>
@@ -1318,9 +1319,19 @@ one configuration, which uses a uniform 1.0 Å target thickness instead.</p></li
 for each element. Two of the most accurate parametrizations are available
 (by Lobato et al. and Kirkland; default is ‘lobato’).
 See the citation guide for references.</p></li>
-<li><p><strong>projection</strong> (<em>'finite'</em><em> or </em><em>'infinite'</em><em>, </em><em>optional</em>) – If ‘finite’ the 3D potential is numerically integrated between the slice
+<li><p><strong>projection</strong> (<em>'finite'</em><em> or </em><em>'infinite'</em><em>, </em><em>optional</em>) – <p>If ‘finite’ the 3D potential is numerically integrated between the slice
 boundaries. If ‘infinite’ (default), the infinite potential projection of each
-atom will be assigned to a single slice.</p></li>
+atom will be assigned to a single slice.</p>
+<p>On GPU, <code class="docutils literal notranslate"><span class="pre">projection='finite'</span></code> is not bit-reproducible: its radial
+interpolation kernel accumulates overlapping atoms’ contributions with
+an atomic add, whose order (and therefore float32 rounding) varies
+from run to run (deviation ~1e-7 relative). <code class="docutils literal notranslate"><span class="pre">projection='infinite'</span></code>
+has no such accumulation and is deterministic on both CPU and GPU, as
+is <code class="docutils literal notranslate"><span class="pre">'finite'</span></code> on CPU. Compare finite-projection GPU results with a
+relative tolerance of at least 1e-6 rather than exact equality, and
+build on CPU (or use <code class="docutils literal notranslate"><span class="pre">'infinite'</span></code>) where bit-for-bit reproducibility
+matters.</p>
+</p></li>
 <li><p><strong>exit_planes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The <cite>exit_planes</cite> argument can be used to calculate thickness series.
 Providing <cite>exit_planes</cite> as a tuple of int indicates that the tuple contains the
 slice indices after which an exit plane is desired, and hence during a

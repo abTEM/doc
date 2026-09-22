@@ -326,6 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.complex.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.complex</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.config.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.constants.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.constants</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.dask_sizeof.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.dask_sizeof</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.diagnostics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.diagnostics</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.electron_configurations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.electron_configurations</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.energy.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.energy</span></code></a></li>
@@ -562,7 +563,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">AxisMetadata</span><span class="p">,</span> <span class="n">LinearAxis</span><span class="p">,</span> <span class="n">RealSpaceAxis</span><span class="p">,</span> <span class="n">ReciprocalSpaceAxis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AxisMetadata</span><span class="p">,</span>
+    <span class="n">EnergyAxis</span><span class="p">,</span>
+    <span class="n">LinearAxis</span><span class="p">,</span>
+    <span class="n">RealSpaceAxis</span><span class="p">,</span>
+    <span class="n">ReciprocalSpaceAxis</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_array_module</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chunks</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">energy2wavelength</span>
@@ -794,6 +801,13 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span> <span class="o">=</span> <span class="n">inner</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_outer</span> <span class="o">=</span> <span class="n">outer</span>
+        <span class="c1"># Whether `outer` was ever given explicitly (constructor or the</span>
+        <span class="c1"># setter below), as opposed to auto-matched from waves in</span>
+        <span class="c1"># `_match_waves`. `outer is None` alone cannot tell these apart once</span>
+        <span class="c1"># a value has been auto-matched, which is exactly what made</span>
+        <span class="c1"># `_match_waves` latch onto the first waves it ever saw and ignore</span>
+        <span class="c1"># every later one (see `_match_waves`'s own docstring).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outer_is_explicit</span> <span class="o">=</span> <span class="n">outer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rotation</span> <span class="o">=</span> <span class="n">rotation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span> <span class="o">=</span> <span class="n">offset</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">to_cpu</span><span class="o">=</span><span class="n">to_cpu</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">)</span>
@@ -815,6 +829,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="nd">@outer</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">outer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_outer</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outer_is_explicit</span> <span class="o">=</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">rotation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -919,8 +934,45 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">return</span> <span class="n">measurement</span><span class="o">.</span><span class="n">_eager_array</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_match_waves</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_outer</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">cutoff_angles</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""Auto-size ``outer`` from ``waves``, unless the user gave one.</span>
+
+<span class="sd">        Previously guarded by ``if self.outer is None``, which conflated</span>
+<span class="sd">        "the user never gave an outer" with "not matched yet": once matched,</span>
+<span class="sd">        this would latch onto whichever waves it saw *first* for the rest of</span>
+<span class="sd">        this detector's life, including a later, unrelated call with</span>
+<span class="sd">        different waves (e.g. this same detector instance reused for a</span>
+<span class="sd">        second scan at a different energy). Re-matching every call instead</span>
+<span class="sd">        makes each call self-consistent, at the cost of being a no-op for</span>
+<span class="sd">        the common case (repeated calls at one energy already agree).</span>
+
+<span class="sd">        A multi-member energy ensemble cannot be auto-sized at all: each</span>
+<span class="sd">        member has its own antialias cutoff angle (`waves.cutoff_angles`,</span>
+<span class="sd">        which scales with wavelength at a fixed grid -- it is not the</span>
+<span class="sd">        semiangle_cutoff/aperture, which does not enter it at all), so a</span>
+<span class="sd">        single radial axis cannot fit all of them (see the module docstring</span>
+<span class="sd">        analogue: this is the `FlexibleAnnularDetector` gotcha; unlike a</span>
+<span class="sd">        single-value cutoff, the two shortest-first / longest-first energy</span>
+<span class="sd">        orders would otherwise silently size the bins differently). Refuse</span>
+<span class="sd">        it instead of picking one member's cutoff (or lazy's own, different,</span>
+<span class="sd">        convention) silently.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outer_is_explicit</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="n">EnergyAxis</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">axis</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> cannot auto-size its outer angle for "</span>
+                <span class="s2">"a multi-energy ensemble: each energy has its own antialias "</span>
+                <span class="s2">"cutoff angle (it scales with wavelength at fixed grid), so "</span>
+                <span class="s2">"no single radial axis fits every member. Pass an explicit "</span>
+                <span class="s2">"outer= (a value valid for every member), or run one energy "</span>
+                <span class="s2">"at a time and combine the results yourself."</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outer</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">cutoff_angles</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">detect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PolarMeasurements</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -1164,6 +1216,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="nd">@outer</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">outer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_outer</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outer_is_explicit</span> <span class="o">=</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">offset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
@@ -1225,10 +1278,27 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">_out_ensemble_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="o">...</span><span class="p">]:</span>
         <span class="n">ensemble_shapes</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_out_ensemble_shape</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_scan_shape</span><span class="p">(</span><span class="n">waves</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">_scan_axes</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">source</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">ensemble_shapes</span>  <span class="c1"># No 2D scan axes: keep PositionsAxis in ensemble as-is</span>
 
-        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">ensemble_shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">ensemble_shape</span> <span class="ow">in</span> <span class="n">ensemble_shapes</span><span class="p">)</span>
+        <span class="c1"># Drop exactly the axes _scan_axes identifies, by position -- not the</span>
+        <span class="c1"># last two entries, which need not be the scan axes (e.g. a GridScan</span>
+        <span class="c1"># probe's own energy ensemble trails its two ScanAxis entries).</span>
+        <span class="n">drop</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">source</span><span class="p">}</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ensemble_shape</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">drop</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">ensemble_shape</span> <span class="ow">in</span> <span class="n">ensemble_shapes</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_out_ensemble_source</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">_scan_axes</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">source</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_out_ensemble_source</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="n">kept</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">))</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">source</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">kept</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">source</span><span class="p">)),)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_out_base_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">_scan_shape</span><span class="p">(</span><span class="n">waves</span><span class="p">),)</span>
@@ -1683,9 +1753,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_out_ensemble_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="o">...</span><span class="p">]:</span>
         <span class="n">ensemble_shapes</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_out_ensemble_shape</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_scan_shape</span><span class="p">(</span><span class="n">waves</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">_scan_axes</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">source</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">ensemble_shapes</span>
-        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">ensemble_shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">ensemble_shape</span> <span class="ow">in</span> <span class="n">ensemble_shapes</span><span class="p">)</span>
+        <span class="c1"># Drop exactly the axes _scan_axes identifies, by position -- not the</span>
+        <span class="c1"># last two entries, which need not be the scan axes (e.g. a GridScan</span>
+        <span class="c1"># probe's own energy ensemble trails its two ScanAxis entries).</span>
+        <span class="n">drop</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">source</span><span class="p">}</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ensemble_shape</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">drop</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">ensemble_shape</span> <span class="ow">in</span> <span class="n">ensemble_shapes</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_out_ensemble_source</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">_scan_axes</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">source</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_out_ensemble_source</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="n">kept</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">))</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">source</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">kept</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">source</span><span class="p">)),)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_out_base_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">_scan_shape</span><span class="p">(</span><span class="n">waves</span><span class="p">),)</span>

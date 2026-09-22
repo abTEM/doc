@@ -21,6 +21,7 @@ abtem.core.colors
 abtem.core.complex
 abtem.core.config
 abtem.core.constants
+abtem.core.dask_sizeof
 abtem.core.diagnostics
 abtem.core.electron_configurations
 abtem.core.energy

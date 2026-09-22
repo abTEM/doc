@@ -326,6 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.complex.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.complex</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.config.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.constants.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.constants</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.dask_sizeof.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.dask_sizeof</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.diagnostics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.diagnostics</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.electron_configurations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.electron_configurations</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.energy.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.energy</span></code></a></li>
@@ -693,6 +694,34 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="n">arr</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_to_natural_order</span><span class="p">(</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">order</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Undo an `_out_ensemble_source`-style permutation on a declared shape,</span>
+<span class="sd">    recovering the size each of the first `len(order)` (ensemble) axes would</span>
+<span class="sd">    have in the array's own natural (undeclared) axis order. Any trailing</span>
+<span class="sd">    (base) axes beyond that span are untouched."""</span>
+    <span class="n">ensemble_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+    <span class="n">inverse</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">ensemble_len</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">order</span><span class="p">):</span>
+        <span class="n">inverse</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="nb">tuple</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="n">inverse</span><span class="p">[</span><span class="n">p</span><span class="p">]]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ensemble_len</span><span class="p">))</span>
+        <span class="o">+</span> <span class="n">shape</span><span class="p">[</span><span class="n">ensemble_len</span><span class="p">:]</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_transpose_to_ensemble_source</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""Physically permute an array's first `len(order)` (ensemble) axes into</span>
+<span class="sd">    the order `_out_ensemble_source` declares (e.g. AnnularDetector/</span>
+<span class="sd">    SpectralSlitDetector moving scan axes to the end), leaving any trailing</span>
+<span class="sd">    (base) axes untouched. Works identically for a numpy or dask array."""</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">))):</span>
+        <span class="k">return</span> <span class="n">array</span>
+    <span class="n">trailing</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">),</span> <span class="n">array</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">array</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">*</span><span class="n">order</span><span class="p">,</span> <span class="o">*</span><span class="n">trailing</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="multi_output_blockwise">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.array.html#abtem.array.multi_output_blockwise">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">multi_output_blockwise</span><span class="p">(</span>
@@ -755,6 +784,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">out_array</span><span class="o">.</span><span class="n">chunks</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">drop_axis</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">()</span>
 
+        <span class="c1"># `new_shape` is in `array`'s own natural axis order here (the</span>
+        <span class="c1"># caller undoes any declared-output reordering before calling this</span>
+        <span class="c1"># function -- see apply_transform), matching `chunks`, `drop_axis`</span>
+        <span class="c1"># and out_array's own axes, none of which are ever reordered by</span>
+        <span class="c1"># da.blockwise above.</span>
         <span class="n">drop_chunks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">)):</span>
             <span class="k">if</span> <span class="n">j</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">drop_axis</span><span class="p">:</span>
@@ -2475,8 +2509,23 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">array_object_partial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_from_partitioned_args</span><span class="p">()</span>
             <span class="n">transform_partial</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">_from_partitioned_args</span><span class="p">()</span>
 
-            <span class="n">new_shapes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">declared_shapes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
                 <span class="nb">tuple</span><span class="p">(</span><span class="n">out_shape</span><span class="p">)</span> <span class="k">for</span> <span class="n">out_shape</span> <span class="ow">in</span> <span class="n">transform</span><span class="o">.</span><span class="n">_out_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">ensemble_sources</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">_out_ensemble_source</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+            <span class="c1"># multi_output_blockwise builds its dask graph directly from</span>
+            <span class="c1"># array's own (natural, undeclared) ensemble axis order --</span>
+            <span class="c1"># da.blockwise's out_ind there is never permuted relative to its</span>
+            <span class="c1"># own array_symbols, so nothing in that graph physically moves a</span>
+            <span class="c1"># block to a different axis position. Validate/build its chunks</span>
+            <span class="c1"># in that same natural order (undo ensemble_sources' declared</span>
+            <span class="c1"># reordering here) rather than the declared order, and apply the</span>
+            <span class="c1"># declared reordering once, uniformly, below -- identically for</span>
+            <span class="c1"># this lazy result and the eager one -- via an actual transpose.</span>
+            <span class="n">natural_shapes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="n">_to_natural_order</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">shape</span><span class="p">,</span> <span class="n">order</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">declared_shapes</span><span class="p">,</span> <span class="n">ensemble_sources</span><span class="p">)</span>
             <span class="p">)</span>
 
             <span class="n">new_arrays</span> <span class="o">=</span> <span class="n">multi_output_blockwise</span><span class="p">(</span>
@@ -2487,7 +2536,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">new_axes</span><span class="o">=</span><span class="n">new_axes</span><span class="p">,</span>
                 <span class="n">drop_axes</span><span class="o">=</span><span class="n">drop_axes</span><span class="p">,</span>
                 <span class="n">out_metas</span><span class="o">=</span><span class="n">out_metas</span><span class="p">,</span>
-                <span class="n">new_shapes</span><span class="o">=</span><span class="n">new_shapes</span><span class="p">,</span>
+                <span class="n">new_shapes</span><span class="o">=</span><span class="n">natural_shapes</span><span class="p">,</span>
                 <span class="n">array_object_partial</span><span class="o">=</span><span class="n">array_object_partial</span><span class="p">,</span>
                 <span class="n">transform_partial</span><span class="o">=</span><span class="n">transform_partial</span><span class="p">,</span>
                 <span class="n">base_ndims</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_shape</span><span class="p">),</span>
@@ -2496,6 +2545,12 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">new_arrays</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">_calculate_new_array</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_arrays</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
                 <span class="n">new_arrays</span> <span class="o">=</span> <span class="p">(</span><span class="n">new_arrays</span><span class="p">,)</span>
+            <span class="n">ensemble_sources</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">_out_ensemble_source</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="n">new_arrays</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">_transpose_to_ensemble_source</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">array</span><span class="p">,</span> <span class="n">order</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">new_arrays</span><span class="p">,</span> <span class="n">ensemble_sources</span><span class="p">)</span>
+        <span class="p">)</span>
 
         <span class="n">base_axes_metadatas</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">_out_base_axes_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">ensemble_axes_metadatas</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">_out_ensemble_axes_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -2609,7 +2664,14 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="c1"># Not self.device: a detector's to_cpu=True (the default) moves a</span>
+        <span class="c1"># measurement's array to numpy without updating the object's own</span>
+        <span class="c1"># device label, so self.device can say "gpu" while self.array is</span>
+        <span class="c1"># already a plain ndarray. get_array_module(self.array) reads the</span>
+        <span class="c1"># real backing type instead of that possibly-stale label -- the same</span>
+        <span class="c1"># fix as _stack below, and the pattern every other get_array_module</span>
+        <span class="c1"># call in this file already uses.</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
 
         <span class="n">axes_base_indices</span> <span class="o">=</span> <span class="n">tuple_range</span><span class="p">(</span>
             <span class="n">offset</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">),</span> <span class="n">length</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_shape</span><span class="p">)</span>
@@ -2746,7 +2808,15 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">axis_metadata</span><span class="p">:</span> <span class="n">AxisMetadata</span><span class="p">,</span>
         <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array_objects</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="c1"># Not array_objects[0].device: a detector's to_cpu=True (the</span>
+        <span class="c1"># default) moves a measurement's array to numpy without updating</span>
+        <span class="c1"># the object's own device label, so .device can say "gpu" while</span>
+        <span class="c1"># .array is already a plain ndarray. Only used below in the eager</span>
+        <span class="c1"># (xp.stack) branch -- the lazy (da.stack) branch below doesn't</span>
+        <span class="c1"># need to know the concrete backing type -- but get_array_module</span>
+        <span class="c1"># already handles a dask array via its _meta, so resolving it from</span>
+        <span class="c1"># the real array here rather than the label is safe either way.</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array_objects</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">is_lazy</span> <span class="k">for</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">array_objects</span><span class="p">):</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
@@ -2819,11 +2889,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">chunks</span><span class="o">=</span><span class="n">ensemble_chunks</span>
             <span class="p">)</span>
 
+            <span class="n">ndims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span>
+
             <span class="k">def</span><span class="w"> </span><span class="nf">_combine_args</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
                 <span class="n">combined</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-                <span class="k">return</span> <span class="n">_wrap_with_array</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">_wrap_with_array</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">ndims</span><span class="p">)</span>
 
-            <span class="n">ndims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span>
             <span class="n">blocks</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">blockwise</span><span class="p">(</span>
                 <span class="n">_combine_args</span><span class="p">,</span>
                 <span class="n">tuple_range</span><span class="p">(</span><span class="n">ndims</span><span class="p">),</span>

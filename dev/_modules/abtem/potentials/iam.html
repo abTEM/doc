@@ -326,6 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.core.complex.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.complex</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.core.config.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.core.constants.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.constants</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.core.dask_sizeof.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.dask_sizeof</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.core.diagnostics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.diagnostics</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.core.electron_configurations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.electron_configurations</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.core.energy.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.energy</span></code></a></li>
@@ -1821,6 +1822,16 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        If 'finite' the 3D potential is numerically integrated between the slice</span>
 <span class="sd">        boundaries. If 'infinite' (default), the infinite potential projection of each</span>
 <span class="sd">        atom will be assigned to a single slice.</span>
+
+<span class="sd">        On GPU, ``projection='finite'`` is not bit-reproducible: its radial</span>
+<span class="sd">        interpolation kernel accumulates overlapping atoms' contributions with</span>
+<span class="sd">        an atomic add, whose order (and therefore float32 rounding) varies</span>
+<span class="sd">        from run to run (deviation ~1e-7 relative). ``projection='infinite'``</span>
+<span class="sd">        has no such accumulation and is deterministic on both CPU and GPU, as</span>
+<span class="sd">        is ``'finite'`` on CPU. Compare finite-projection GPU results with a</span>
+<span class="sd">        relative tolerance of at least 1e-6 rather than exact equality, and</span>
+<span class="sd">        build on CPU (or use ``'infinite'``) where bit-for-bit reproducibility</span>
+<span class="sd">        matters.</span>
 <span class="sd">    exit_planes : int or tuple of int, optional</span>
 <span class="sd">        The `exit_planes` argument can be used to calculate thickness series.</span>
 <span class="sd">        Providing `exit_planes` as a tuple of int indicates that the tuple contains the</span>
