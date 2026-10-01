@@ -858,8 +858,9 @@ ignored.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>inner_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The cutoff semiangle of inner radius of the aperture [mrad].</p></li>
-<li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The cutoff semiangle of the aperture [mrad].</p></li>
+<li><p><strong>inner_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The cutoff semiangle of inner radius of the aperture [mrad]. Must be
+non-negative and smaller than <cite>semiangle_cutoff</cite>.</p></li>
+<li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The cutoff semiangle of the aperture [mrad]. Must be positive.</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Electron energy [eV]. If not provided, inferred from the wave functions.</p></li>
 <li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>two float</em><em>, </em><em>optional</em>) – Lateral extent of wave functions [Å] in <cite>x</cite> and <cite>y</cite> directions. If a single
 float is given, both are set equal.</p></li>
@@ -894,7 +895,8 @@ both STEM and HRTEM. The abrupt cutoff may be softened by tapering it.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><a class="reference internal" href="abtem.distributions.html#abtem.distributions.BaseDistribution" title="abtem.distributions.BaseDistribution"><em>BaseDistribution</em></a>) – The cutoff semiangle of the aperture [mrad]. Alternatively, a distribution of
-angles may be provided.</p></li>
+angles may be provided. Must be non-negative; a cutoff of 0 keeps only the
+zero-angle beam, i.e. a parallel beam.</p></li>
 <li><p><strong>soft</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, the edge of the aperture is softened (default is True).</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Electron energy [eV]. If not provided, inferred from the wave functions.</p></li>
 <li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>two float</em><em>, </em><em>optional</em>) – Lateral extent of wave functions [Å] in <cite>x</cite> and <cite>y</cite> directions. If a single
@@ -939,7 +941,8 @@ ignored.</p></li>
 <dt class="sig sig-object py" id="abtem.transfer.BaseAperture.nyquist_sampling">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nyquist_sampling</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><a class="headerlink" href="#abtem.transfer.BaseAperture.nyquist_sampling" title="Link to this definition">#</a></dt>
 <dd><p>Nyquist sampling corresponding to the semiangle cutoff of the
-aperture [Å].</p>
+aperture [Å]. Raises a ValueError for a zero semiangle cutoff (a parallel
+beam).</p>
 </dd></dl>
 
 <dl class="py property">
@@ -980,10 +983,12 @@ aperture [Å].</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>max_angle</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The maximum diffraction angle in radians. If not provided, the maximum angle
-will be determined based on the <cite>self._max_semiangle_cutoff</cite> attribute of
-the instance. If neither <cite>max_angle</cite> nor <cite>self._max_semiangle_cutoff</cite> is
-available, a <cite>RuntimeError</cite> will be raised.</p></li>
+<li><p><strong>max_angle</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The maximum diffraction angle [mrad]. If not provided, the maximum angle
+is the semiangle cutoff of the instance (<cite>self._max_semiangle_cutoff</cite>),
+or 50 mrad if that cutoff is infinite (no aperture). A zero cutoff (a
+parallel beam) raises a <cite>ValueError</cite>, and so <cite>max_angle</cite> must be given.
+If neither <cite>max_angle</cite> nor <cite>self._max_semiangle_cutoff</cite> is available, a
+<cite>RuntimeError</cite> will be raised.</p></li>
 <li><p><strong>gpts</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – The number of grid points in reciprocal space for performing Fourier
 Transform. If not provided, a default value of 128 will be used.</p></li>
 </ul>
@@ -1029,7 +1034,7 @@ further.</p></li>
 <li><p><strong>num_rings</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of rings.</p></li>
 <li><p><strong>ring_width</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Open fraction of each radial ring period. Must be in the interval (0, 1],
 where 1 gives a fully open disk.</p></li>
-<li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The cutoff semiangle of the aperture [mrad].</p></li>
+<li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The cutoff semiangle of the aperture [mrad]. Must be positive.</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Electron energy [eV]. If not provided, inferred from the wave functions.</p></li>
 <li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>two float</em><em>, </em><em>optional</em>) – Lateral extent of wave functions [Å] in <cite>x</cite> and <cite>y</cite> directions. If a single
 float is given, both are set equal.</p></li>
@@ -1108,7 +1113,8 @@ See Chapter 3.2 in Kirkland (2010).</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The semiangle cutoff describes the sharp reciprocal-space cutoff due to the
-objective aperture [mrad] (default is no cutoff).</p></li>
+objective aperture [mrad] (default is no cutoff). Must be non-negative; a
+cutoff of 0 keeps only the zero-angle beam, i.e. a parallel beam.</p></li>
 <li><p><strong>soft</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, the edge of the aperture is softened (default is True).</p></li>
 <li><p><strong>focal_spread</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The 1/e width of the focal spread distribution due to chromatic aberration and
 lens current instability [Å] (default is 0). Note: this uses the 1/e width
@@ -1186,8 +1192,9 @@ aperture, temporal and spatial envelopes) of the contrast transfer function.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>gpts</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of grid points along the line profiles.</p></li>
 <li><p><strong>max_angle</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The maximum scattering angle included in the radial line profiles [mrad].
-The default is 1.5 times the semiangle cutoff or 50 mrad if no semiangle
-cutoff is set.</p></li>
+The default is 1.6 times the semiangle cutoff or 50 mrad if no semiangle
+cutoff is set. A zero semiangle cutoff (a parallel beam) raises a
+<cite>ValueError</cite>, and so <cite>max_angle</cite> must be given.</p></li>
 <li><p><strong>phi</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The azimuthal angle of the radial line profiles [rad]. Default is 0.</p></li>
 </ul>
 </dd>
@@ -1351,7 +1358,7 @@ ignored.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>quantum_number</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Quantum number of vortex beam.</p></li>
-<li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The cutoff semiangle of the aperture [mrad].</p></li>
+<li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The cutoff semiangle of the aperture [mrad]. Must be positive.</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Electron energy [eV]. If not provided, inferred from the wave functions.</p></li>
 <li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>two float</em><em>, </em><em>optional</em>) – Lateral extent of wave functions [Å] in <cite>x</cite> and <cite>y</cite> directions. If a single
 float is given, both are set equal.</p></li>
@@ -1384,9 +1391,9 @@ ignored.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>center_hole_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Cutoff semiangle of aperture hole [mrad].</p></li>
+<li><p><strong>center_hole_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Cutoff semiangle of aperture hole [mrad]. Must be non-negative.</p></li>
 <li><p><strong>phase_shift</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Phase shift of Zernike film [rad]</p></li>
-<li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The cutoff semiangle of the aperture [mrad].</p></li>
+<li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The cutoff semiangle of the aperture [mrad]. Must be positive.</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Electron energy [eV]. If not provided, inferred from the wave functions.</p></li>
 <li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>two float</em><em>, </em><em>optional</em>) – Lateral extent of wave functions [Å] in <cite>x</cite> and <cite>y</cite> directions. If a single
 float is given, both are set equal.</p></li>
@@ -1466,6 +1473,16 @@ item in the array of semiangle cutoffs.</p></li>
 <li><p><strong>semiangle_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Semiangle cutoff [mrad].</p></li>
 <li><p><strong>energy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Electron energy [eV].</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The Nyquist sampling [Å].</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – For a zero semiangle cutoff (a parallel beam), whose Nyquist sampling is not
+defined.</p>
 </dd>
 </dl>
 </dd></dl>

@@ -878,6 +878,18 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">a_kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">b_kwargs</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_prism_semiangle_cutoff</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># The plane-wave expansion keeps wave vectors strictly inside the cutoff, so a</span>
+    <span class="c1"># cutoff of zero would leave none, and a negative one is meaningless.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">semiangle_cutoff</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"PRISM requires a positive 'semiangle_cutoff', got "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">semiangle_cutoff</span><span class="si">!r}</span><span class="s2">. For a parallel beam (a semiangle cutoff of "</span>
+            <span class="s2">"0), use Probe(semiangle_cutoff=0) or PlaneWave with multislice "</span>
+            <span class="s2">"instead."</span>
+        <span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_pack_wave_vectors</span><span class="p">(</span><span class="n">wave_vectors</span><span class="p">):</span>
     <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
         <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">wave_vector</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">wave_vector</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="k">for</span> <span class="n">wave_vector</span> <span class="ow">in</span> <span class="n">wave_vectors</span>
@@ -1401,7 +1413,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Array defining the wave vectors corresponding to each plane wave.</span>
 <span class="sd">        Must have shape Nx2, where N is equal to the number of plane waves.</span>
 <span class="sd">    semiangle_cutoff : float</span>
-<span class="sd">        The radial cutoff of the plane-wave expansion [mrad].</span>
+<span class="sd">        The radial cutoff of the plane-wave expansion [mrad]. Must be positive.</span>
 <span class="sd">    energy : float</span>
 <span class="sd">        Electron energy [eV].</span>
 <span class="sd">    sampling : one or two float, optional</span>
@@ -1460,6 +1472,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
         <span class="p">)</span>
 
+        <span class="n">_validate_prism_semiangle_cutoff</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span> <span class="o">=</span> <span class="n">semiangle_cutoff</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_window_gpts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">window_gpts</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_window_offset</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">window_offset</span><span class="p">)</span>
@@ -2144,7 +2157,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    dense_indices : numpy.ndarray</span>
 <span class="sd">        Integer Fourier-space indices of the dense plane waves of shape (N, 2).</span>
 <span class="sd">    semiangle_cutoff : float</span>
-<span class="sd">        The radial cutoff of the plane-wave expansion [mrad].</span>
+<span class="sd">        The radial cutoff of the plane-wave expansion [mrad]. Must be positive.</span>
 <span class="sd">    energy : float</span>
 <span class="sd">        Electron energy [eV].</span>
 <span class="sd">    extent : two float</span>
@@ -2195,6 +2208,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="o">.</span><span class="n">_grid</span> <span class="o">=</span> <span class="n">Grid</span><span class="p">(</span><span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span> <span class="n">gpts</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:],</span> <span class="n">lock_gpts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_accelerator</span> <span class="o">=</span> <span class="n">Accelerator</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">)</span>
 
+        <span class="n">_validate_prism_semiangle_cutoff</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span> <span class="o">=</span> <span class="n">semiangle_cutoff</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_interpolation</span> <span class="o">=</span> <span class="n">interpolation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_window_gpts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">window_gpts</span><span class="p">)</span>
@@ -2259,6 +2273,22 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">vh_dense</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Right singular vectors at the dense plane-wave expansion."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vh_dense</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dense_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Integer Fourier-space indices of the dense plane waves, shape (N, 2)."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dense_indices</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">position_quantization</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Quantization of the probe positions, as given to the constructor."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_position_quantization</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reference_depth</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Depth inside the specimen [Å] the beams are referenced to; reduced waves</span>
+<span class="sd">        are propagated from it to the exit surface. 0 means the exit surface."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reference_depth</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">rank</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -4174,7 +4204,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    semiangle_cutoff : float</span>
-<span class="sd">        The radial cutoff of the plane-wave expansion [mrad].</span>
+<span class="sd">        The radial cutoff of the plane-wave expansion [mrad]. Must be positive;</span>
+<span class="sd">        for a parallel beam (a cutoff of 0) use Probe or PlaneWave multislice.</span>
 <span class="sd">    energy : float or list of float</span>
 <span class="sd">        Electron energy [eV]. A single float runs a standard single-energy</span>
 <span class="sd">        calculation. A list or array of floats builds the scattering matrix</span>
@@ -4314,6 +4345,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">store_on_host</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="n">_validate_prism_semiangle_cutoff</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">downsample</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">downsample</span> <span class="o">=</span> <span class="s2">"cutoff"</span>
 
@@ -4400,8 +4433,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="o">.</span><span class="n">_window_gpts</span> <span class="o">=</span> <span class="n">window_gpts</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_store_on_host</span> <span class="o">=</span> <span class="n">store_on_host</span>
-
-        <span class="k">assert</span> <span class="n">semiangle_cutoff</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_upsample</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
             <span class="n">n</span> <span class="o">%</span> <span class="n">f</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interpolation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">)</span>
@@ -5357,7 +5388,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <span class="k">def</span><span class="w"> </span><span class="nf">_embed_wave_vectors</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">n_union</span><span class="p">):</span>
 <span class="w">                </span><span class="sd">"""Embed arr (n_wv, ...) into (n_union, ...) at the given indices."""</span>
-                <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_union</span><span class="p">,)</span> <span class="o">+</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+                <span class="c1"># arr's own module: a NumPy array cannot take a CuPy block</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">n_union</span><span class="p">,)</span> <span class="o">+</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span>
+                <span class="p">)</span>
                 <span class="n">out</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span>
                 <span class="k">return</span> <span class="n">out</span>
 
@@ -5382,6 +5416,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span class="n">_embed_wave_vectors</span><span class="p">,</span>
                             <span class="n">dtype</span><span class="o">=</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
                             <span class="n">chunks</span><span class="o">=</span><span class="n">new_chunks</span><span class="p">,</span>
+                            <span class="n">meta</span><span class="o">=</span><span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
                             <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">,</span>
                             <span class="n">n_union</span><span class="o">=</span><span class="n">n_union</span><span class="p">,</span>
                         <span class="p">)</span>
@@ -5389,7 +5424,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span class="n">embedded</span> <span class="o">=</span> <span class="n">_embed_wave_vectors</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">n_union</span><span class="p">)</span>
                     <span class="n">embedded_arrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">embedded</span><span class="p">)</span>
 
-            <span class="n">stacked_array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">embedded_arrays</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">lazy</span><span class="p">:</span>
+                <span class="n">stacked_array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">embedded_arrays</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">embedded_arrays</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">stacked_array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">embedded_arrays</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">energy_ax</span> <span class="o">=</span> <span class="n">EnergyAxis</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energies</span><span class="p">))</span>
             <span class="k">return</span> <span class="n">SMatrixArray</span><span class="p">(</span>
                 <span class="n">array</span><span class="o">=</span><span class="n">stacked_array</span><span class="p">,</span>

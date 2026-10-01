@@ -2639,12 +2639,20 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
 
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-
+        <span class="n">transmission</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">conjugate</span><span class="p">:</span>
-            <span class="n">waves</span><span class="o">.</span><span class="n">_array</span> <span class="o">*=</span> <span class="n">xp</span><span class="o">.</span><span class="n">conjugate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">waves</span><span class="o">.</span><span class="n">_array</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># the method, not xp.conjugate: a CuPy function rejects a dask array</span>
+            <span class="n">transmission</span> <span class="o">=</span> <span class="n">transmission</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
+
+        <span class="n">lazy_waves</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">_array</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transmission</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">lazy_waves</span><span class="p">:</span>
+            <span class="c1"># The waves are transmitted in place, and an in-place NumPy or CuPy</span>
+            <span class="c1"># product cannot take a dask operand. Keep eager waves eager: compute</span>
+            <span class="c1"># the (single-slice) transmission function, synchronously so CuPy</span>
+            <span class="c1"># tasks never run concurrently.</span>
+            <span class="n">transmission</span> <span class="o">=</span> <span class="n">transmission</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">"synchronous"</span><span class="p">)</span>
+
+        <span class="n">waves</span><span class="o">.</span><span class="n">_array</span> <span class="o">*=</span> <span class="n">transmission</span>
 
         <span class="k">return</span> <span class="n">waves</span></div>
 </div>
@@ -2928,7 +2936,26 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">else</span><span class="p">:</span>
             <span class="n">old_chunks</span> <span class="o">=</span> <span class="n">chunks</span>
 
+        <span class="n">potential_unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span>
+        <span class="c1"># A lazily built PotentialArray unit is computed once, here, for all</span>
+        <span class="c1"># ensemble members. Left lazy, every member's generate_slices would</span>
+        <span class="c1"># compute it again, as a nested compute inside that member's task.</span>
+        <span class="n">unit_is_lazy</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">potential_unit</span><span class="p">,</span> <span class="n">PotentialArray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">potential_unit</span><span class="o">.</span><span class="n">is_lazy</span>
+        <span class="p">)</span>
+
         <span class="k">if</span> <span class="n">lazy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">unit_is_lazy</span><span class="p">:</span>
+                <span class="c1"># one task of this graph, which every block depends on</span>
+                <span class="n">lazy_unit</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span>
+                    <span class="n">partial</span><span class="p">(</span>
+                        <span class="n">potential_unit</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span>
+                        <span class="o">**</span><span class="n">potential_unit</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,)),</span>
+                    <span class="p">)</span>
+                <span class="p">)(</span><span class="n">potential_unit</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lazy_unit</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">potential_unit</span><span class="p">)</span>
+
             <span class="n">arrays</span> <span class="o">=</span> <span class="p">[]</span>
 
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chunk_ranges</span><span class="p">(</span><span class="n">chunks</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
@@ -2937,8 +2964,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">seeds</span> <span class="o">=</span> <span class="kc">None</span>
 
-                <span class="n">lazy_atoms</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span><span class="p">)</span>
-                <span class="n">lazy_args</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">_wrap_with_array</span><span class="p">)((</span><span class="n">lazy_atoms</span><span class="p">,</span> <span class="n">seeds</span><span class="p">),</span> <span class="n">ndims</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">lazy_args</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">_wrap_with_array</span><span class="p">)((</span><span class="n">lazy_unit</span><span class="p">,</span> <span class="n">seeds</span><span class="p">),</span> <span class="n">ndims</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
                 <span class="n">lazy_array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">from_delayed</span><span class="p">(</span><span class="n">lazy_args</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
                 <span class="n">arrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lazy_array</span><span class="p">)</span>
 
@@ -2948,7 +2974,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">potential_unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span>
+            <span class="k">if</span> <span class="n">unit_is_lazy</span><span class="p">:</span>
+                <span class="n">potential_unit</span> <span class="o">=</span> <span class="n">potential_unit</span><span class="o">.</span><span class="n">ensure_computed</span><span class="p">(</span><span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
             <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="mi">0</span><span class="p">]),),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chunk_ranges</span><span class="p">(</span><span class="n">chunks</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
@@ -3069,6 +3096,19 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">potentials</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
             <span class="n">potentials</span> <span class="o">=</span> <span class="n">potentials</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
+        <span class="c1"># A lazily-built PotentialArray unit (the default of Potential.build())</span>
+        <span class="c1"># carries a dask array, and tiling it would yield dask-backed slices:</span>
+        <span class="c1"># eager consumers such as build(lazy=False) cannot place those into a</span>
+        <span class="c1"># CuPy array, and on CPU compute them one slice at a time. The unit cell</span>
+        <span class="c1"># is small; materialise it once, into a new object, so that the caller's</span>
+        <span class="c1"># unit stays lazy. Blocks from _partition_args already receive it in</span>
+        <span class="c1"># memory; this covers direct calls. The synchronous scheduler keeps a</span>
+        <span class="c1"># compute that runs inside a task from starting a nested thread pool,</span>
+        <span class="c1"># and CuPy kernels from running concurrently.</span>
+        <span class="n">potentials</span> <span class="o">=</span> <span class="n">potentials</span><span class="o">.</span><span class="n">ensure_computed</span><span class="p">(</span>
+            <span class="n">scheduler</span><span class="o">=</span><span class="s2">"synchronous"</span><span class="p">,</span> <span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
         <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">member_seed</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -3095,14 +3135,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">n_configs</span> <span class="o">=</span> <span class="n">potentials</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="c1"># The mosaic path (frozen-phonon pools, n_configs &gt; 1) needs random</span>
-        <span class="c1"># per-tile access into the pool, so materialise the (small unit-cell)</span>
-        <span class="c1"># pool array once. A lazily-built PotentialArray unit carries a dask</span>
-        <span class="c1"># array here; compute it so per-tile fancy indexing works and stays on</span>
-        <span class="c1"># the target device.</span>
+        <span class="c1"># per-tile access into the pool; the pool array is eager (see above).</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">_pool_array</span> <span class="o">=</span> <span class="n">potentials</span><span class="o">.</span><span class="n">array</span>
-        <span class="k">if</span> <span class="n">n_configs</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">_pool_array</span><span class="p">,</span> <span class="s2">"compute"</span><span class="p">):</span>
-            <span class="n">_pool_array</span> <span class="o">=</span> <span class="n">_pool_array</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">_tiled_slice</span><span class="p">(</span><span class="n">config_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PotentialArray</span><span class="p">:</span>
             <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">config_idx</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
@@ -3276,6 +3311,13 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">else</span><span class="p">:</span>
             <span class="n">unit_built</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span>
 
+        <span class="c1"># A lazily-built PotentialArray unit (the default of Potential.build())</span>
+        <span class="c1"># carries a dask array here, which the device's tile below does not</span>
+        <span class="c1"># accept for CuPy. The unit cell is small; materialise it once, as in</span>
+        <span class="c1"># generate_slices.</span>
+        <span class="n">unit_built</span> <span class="o">=</span> <span class="n">unit_built</span><span class="o">.</span><span class="n">ensure_computed</span><span class="p">(</span>
+            <span class="n">scheduler</span><span class="o">=</span><span class="s2">"synchronous"</span><span class="p">,</span> <span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
         <span class="n">unit_arr</span> <span class="o">=</span> <span class="n">unit_built</span><span class="o">.</span><span class="n">array</span>  <span class="c1"># (n_unit_slices, h, w) or (n_configs, n_unit_slices, h, w)</span>
         <span class="k">if</span> <span class="n">unit_arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
             <span class="n">unit_arr</span> <span class="o">=</span> <span class="n">unit_arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>  <span class="c1"># → (1, n_unit_slices, h, w)</span>

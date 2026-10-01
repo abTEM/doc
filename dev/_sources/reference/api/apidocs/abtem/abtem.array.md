@@ -280,6 +280,15 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.Equalit
 
 ````
 
+````{py:method} ensure_computed(...) -> typing.Self
+:canonical: abtem.array.ArrayObject.ensure_computed
+
+```{autodoc2-docstring} abtem.array.ArrayObject.ensure_computed
+:parser: rst
+```
+
+````
+
 ````{py:method} ensure_lazy(...) -> typing.Self
 :canonical: abtem.array.ArrayObject.ensure_lazy
 

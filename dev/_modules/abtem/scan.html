@@ -574,7 +574,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">Grid</span><span class="p">,</span> <span class="n">HasGrid2DMixin</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span><span class="p">,</span> <span class="n">itemset</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.iam</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasePotential</span><span class="p">,</span> <span class="n">validate_potential</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.transfer</span><span class="w"> </span><span class="kn">import</span> <span class="n">nyquist_sampling</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.transfer</span><span class="w"> </span><span class="kn">import</span> <span class="n">_raise_if_parallel_beam</span><span class="p">,</span> <span class="n">nyquist_sampling</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReciprocalSpaceMultiplication</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.visualize.visualizations</span><span class="w"> </span><span class="kn">import</span> <span class="n">Visualization</span>
 
@@ -647,6 +647,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">semiangle_cutoff</span> <span class="o">=</span> <span class="n">probe</span><span class="o">.</span><span class="n">aperture</span><span class="o">.</span><span class="n">_max_semiangle_cutoff</span>
 
+        <span class="n">_raise_if_parallel_beam</span><span class="p">(</span>
+            <span class="n">semiangle_cutoff</span><span class="p">,</span>
+            <span class="s2">"The default scan sampling (the probe's Nyquist sampling)"</span><span class="p">,</span>
+            <span class="s2">"Give the scan an explicit `sampling` or `gpts`. A parallel beam is "</span>
+            <span class="s2">"translation invariant, so a single position (`gpts=1`) gives the whole "</span>
+            <span class="s2">"result."</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="n">scan</span><span class="o">.</span><span class="n">sampling</span> <span class="o">=</span> <span class="mf">0.99</span> <span class="o">*</span> <span class="n">nyquist_sampling</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="n">probe</span><span class="o">.</span><span class="n">_valid_energy</span><span class="p">)</span>
 
 
@@ -1023,9 +1030,9 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    gpts : int, optional</span>
 <span class="sd">        Number of scan positions. Default is None. Provide one of gpts or sampling.</span>
 <span class="sd">    sampling : float, optional</span>
-<span class="sd">        Sampling rate of scan positions [1 / Å]. Provide one of gpts or sampling.</span>
+<span class="sd">        Sampling rate of scan positions [Å]. Provide one of gpts or sampling.</span>
 <span class="sd">        If not provided the sampling will match the Nyquist sampling of the Probe</span>
-<span class="sd">        in a multislice simulation.</span>
+<span class="sd">        in a multislice simulation, which requires a positive semiangle cutoff.</span>
 <span class="sd">    endpoint : bool, optional</span>
 <span class="sd">        If True, end is the last position. Otherwise, it is not included.</span>
 <span class="sd">        Default is True.</span>
@@ -1445,9 +1452,9 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Number of scan positions in the `x`- and `y`-direction of the scan. Provide one</span>
 <span class="sd">        of gpts or sampling.</span>
 <span class="sd">    sampling : two float, optional</span>
-<span class="sd">        Sampling rate of scan positions [1 / Å]. Provide one of gpts or sampling.</span>
-<span class="sd">        If not provided the sampling will match the Nyquist sampling of the  Probe</span>
-<span class="sd">        in a multislice simulation.</span>
+<span class="sd">        Sampling rate of scan positions [Å]. Provide one of gpts or sampling.</span>
+<span class="sd">        If not provided the sampling will match the Nyquist sampling of the Probe</span>
+<span class="sd">        in a multislice simulation, which requires a positive semiangle cutoff.</span>
 <span class="sd">    endpoint : bool, optional</span>
 <span class="sd">        If True, end is the last position. Otherwise, it is not included.</span>
 <span class="sd">        Default is False.</span>

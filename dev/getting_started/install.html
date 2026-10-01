@@ -748,20 +748,8 @@ merely slow.</p>
 </pre></div>
 </div>
 <p>The extra is restricted to macOS on Apple silicon, since Metal exists nowhere else.</p>
-<p>To enable the backend, set <code class="docutils literal notranslate"><span class="pre">enable_mps</span></code> <strong>before</strong> <em>ab</em>TEM is imported — either through the environment:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ABTEM_ENABLE_MPS</span><span class="o">=</span><span class="n">true</span> <span class="n">python</span> <span class="n">your_script</span><span class="o">.</span><span class="n">py</span>
-</pre></div>
-</div>
-<p>or in <code class="docutils literal notranslate"><span class="pre">~/.config/abtem/abtem.yaml</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">enable_mps</span><span class="p">:</span> <span class="n">true</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">abtem.config.set(enable_mps=True)</span></code> does <strong>not</strong> work: the setting decides whether PyTorch is imported before
-FFTW, and by the time the call runs that has already been settled. PyTorch and FFTW each bundle their own copy
-of <code class="docutils literal notranslate"><span class="pre">libomp</span></code>, and a process that loaded FFTW’s first crashes inside ordinary PyTorch operations.</p>
-</div>
+<p>Nothing needs enabling: <em>ab</em>TEM imports PyTorch the first time the <code class="docutils literal notranslate"><span class="pre">mps</span></code> device is used, so importing <em>ab</em>TEM
+stays as fast as without it.</p>
 <p>You can verify that Metal support is available using the code below:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">mps</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span>
@@ -775,6 +763,16 @@ of <code class="docutils literal notranslate"><span class="pre">libomp</span></c
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">potential</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">gpts</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"mps"</span><span class="p">)</span>
 <span class="n">probe</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Probe</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="mf">200e3</span><span class="p">,</span> <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"mps"</span><span class="p">)</span>
 </pre></div>
+</div>
+<p>or make Metal the default device, with <code class="docutils literal notranslate"><span class="pre">abtem.config.set({&quot;device&quot;:</span> <span class="pre">&quot;mps&quot;})</span></code> or in <code class="docutils literal notranslate"><span class="pre">~/.config/abtem/abtem.yaml</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">device</span><span class="p">:</span> <span class="n">mps</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Import <em>ab</em>TEM (or PyTorch) before importing <code class="docutils literal notranslate"><span class="pre">pyfftw</span></code> yourself. PyTorch and FFTW each bundle their own copy of
+<code class="docutils literal notranslate"><span class="pre">libomp</span></code>, and PyTorch’s has to be loaded first; <em>ab</em>TEM arranges that when it is imported. If <code class="docutils literal notranslate"><span class="pre">pyfftw</span></code> was
+imported earlier, using the <code class="docutils literal notranslate"><span class="pre">mps</span></code> device raises an error explaining this, rather than letting PyTorch crash.</p>
 </div>
 <p>Two things are worth knowing before you benchmark:</p>
 <ul class="simple">

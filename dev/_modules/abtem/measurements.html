@@ -1106,6 +1106,11 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="n">output</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_array_module_function</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Apply the element-wise function ``name`` of ``array``'s own module."""</span>
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">),</span> <span class="n">name</span><span class="p">)(</span><span class="n">array</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="BaseMeasurements">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.measurements.html#abtem.measurements.BaseMeasurements">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BaseMeasurements</span><span class="p">(</span><span class="n">ArrayObject</span><span class="p">,</span> <span class="n">EqualityMixin</span><span class="p">,</span> <span class="n">CopyMixin</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
@@ -1182,9 +1187,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">real</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Returns the real part of a complex-valued measurement."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_is_complex</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"real"</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"arb. unit"</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_element_wise_func</span><span class="p">(</span><span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">real</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_element_wise_func</span><span class="p">(</span><span class="s2">"real"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"real"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"arb. unit"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="BaseMeasurements.imag">
@@ -1192,9 +1195,9 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">imag</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Returns the imaginary part of a complex-valued measurement."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_is_complex</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"imaginary"</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"arb. unit"</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_element_wise_func</span><span class="p">(</span><span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_element_wise_func</span><span class="p">(</span>
+            <span class="s2">"imag"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"imaginary"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"arb. unit"</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="BaseMeasurements.phase">
@@ -1202,9 +1205,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">phase</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Calculates the phase of a complex-valued measurement."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_is_complex</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"phase"</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"rad."</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_element_wise_func</span><span class="p">(</span><span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">angle</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_element_wise_func</span><span class="p">(</span><span class="s2">"angle"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"phase"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"rad."</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="BaseMeasurements.abs">
@@ -1212,9 +1213,9 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">abs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Calculates the absolute value of a complex-valued measurement."""</span>
         <span class="c1"># self._check_is_complex()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"amplitude"</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"arb. unit"</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_element_wise_func</span><span class="p">(</span><span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_element_wise_func</span><span class="p">(</span>
+            <span class="s2">"abs"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"amplitude"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"arb. unit"</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="BaseMeasurements.intensity">
@@ -1222,9 +1223,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">intensity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Calculates the squared norm of a complex-valued measurement."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_is_complex</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"intensity"</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"arb. unit"</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_element_wise_func</span><span class="p">(</span><span class="n">abs2</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_element_wise_func</span><span class="p">(</span><span class="n">abs2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"intensity"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"arb. unit"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="BaseMeasurements.relative_difference">
@@ -1254,12 +1253,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">difference</span> <span class="o">=</span> <span class="bp">self</span> <span class="o">-</span> <span class="n">other</span>
 
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
-
-        <span class="n">valid</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">min_relative_tol</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-        <span class="n">difference</span><span class="o">.</span><span class="n">_array</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
-        <span class="n">difference</span><span class="o">.</span><span class="n">_array</span><span class="p">[</span><span class="n">valid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="n">difference</span><span class="o">.</span><span class="n">_array</span> <span class="o">*=</span> <span class="mf">100.0</span>
+        <span class="c1"># Built out of place with `where`, which works for NumPy, CuPy and dask</span>
+        <span class="c1"># alike: in-place boolean-mask assignment fails on a dask array, and</span>
+        <span class="c1"># `abs` (rather than `xp.abs`) keeps a lazy CuPy array away from a CuPy</span>
+        <span class="c1"># function. Dividing by 1 outside `valid` avoids warnings from entries</span>
+        <span class="c1"># that are then discarded.</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">where</span> <span class="k">if</span> <span class="n">difference</span><span class="o">.</span><span class="n">is_lazy</span> <span class="k">else</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">where</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">min_relative_tol</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">ratio</span> <span class="o">=</span> <span class="n">difference</span><span class="o">.</span><span class="n">array</span> <span class="o">/</span> <span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">difference</span><span class="o">.</span><span class="n">_array</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">ratio</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span> <span class="o">*</span> <span class="mf">100.0</span>
 
         <span class="n">difference</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"Relative difference"</span>
         <span class="n">difference</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"%"</span>
@@ -1328,9 +1330,35 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_element_wise_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_element_wise_func</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Apply an element-wise array function, returning a new measurement with the</span>
+<span class="sd">        given label and units. The measurement itself is not modified.</span>
+
+<span class="sd">        A string names a function of the array's own module (NumPy or CuPy),</span>
+<span class="sd">        looked up per block. CuPy's ufuncs (``cp.abs``) must not enter a dask</span>
+<span class="sd">        graph themselves: dask has no tokenizer for them and falls back to</span>
+<span class="sd">        pickling, which segfaults, and a distributed scheduler would have to</span>
+<span class="sd">        pickle them again to ship the graph.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">_array_module_function</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">func</span><span class="p">)</span>
+
         <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,))</span>
-        <span class="n">d</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">"metadata"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">d</span><span class="p">[</span><span class="s2">"metadata"</span><span class="p">],</span> <span class="s2">"label"</span><span class="p">:</span> <span class="n">label</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">:</span> <span class="n">units</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
+            <span class="c1"># Applied per block: CuPy functions reject a dask array, unlike NumPy's,</span>
+            <span class="c1"># which dispatch to dask. The output meta is evaluated on the input's</span>
+            <span class="c1"># zero-size meta, so it stays a CuPy array for CuPy chunks; left to</span>
+            <span class="c1"># dask, the dtype would be inferred from a NumPy dummy, which CuPy</span>
+            <span class="c1"># functions also reject.</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">da</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">meta_from_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">))</span>
+            <span class="n">d</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">d</span><span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -1471,11 +1499,12 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="p">]</span>
         <span class="k">return</span> <span class="n">array</span>
 
-    <span class="n">x</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">corner</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">corner</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">new_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span> <span class="o">%</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">corner</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">corner</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">new_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span> <span class="o">%</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-
-    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">"ij"</span><span class="p">)</span>
-    <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">ravel</span><span class="p">()]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">new_shape</span><span class="p">)</span>
+    <span class="c1"># Gather one axis at a time: dask supports an integer array on only one axis</span>
+    <span class="c1"># per indexing operation, and indexes with host arrays.</span>
+    <span class="n">index_xp</span> <span class="o">=</span> <span class="n">np</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="k">else</span> <span class="n">xp</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">index_xp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">corner</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">corner</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">new_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">index_xp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">corner</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">corner</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">new_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">x</span> <span class="o">%</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="p">:][</span><span class="o">...</span><span class="p">,</span> <span class="n">y</span> <span class="o">%</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
     <span class="k">return</span> <span class="n">array</span></div>
 
 
@@ -1546,8 +1575,8 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">elif</span> <span class="n">border</span> <span class="o">==</span> <span class="s2">"raise"</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">corner</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">))</span>
-            <span class="o">|</span> <span class="p">(</span><span class="n">corner</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">integration_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">measurement</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="o">|</span> <span class="p">(</span><span class="n">corner</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">integration_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">measurement</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="o">|</span> <span class="p">(</span><span class="n">corner</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">integration_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">measurement</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+            <span class="o">|</span> <span class="p">(</span><span class="n">corner</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">integration_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">measurement</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="p">):</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"The integration region is outside the image."</span><span class="p">)</span>
 
@@ -1579,6 +1608,8 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">mean_sampling</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_axis</span><span class="o">.</span><span class="n">sampling</span> <span class="o">+</span> <span class="n">y_axis</span><span class="o">.</span><span class="n">sampling</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 
     <span class="n">mask</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">((</span><span class="n">r</span> <span class="o">-</span> <span class="n">radius</span><span class="p">)</span> <span class="o">/</span> <span class="n">mean_sampling</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># on the crop's device: a CuPy crop cannot be multiplied by a NumPy mask</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">cropped</span><span class="p">)</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">return_mean</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">cropped</span> <span class="o">*</span> <span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
@@ -4017,6 +4048,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">sigma</span><span class="o">=</span><span class="n">padded_sigma</span><span class="p">,</span>
                 <span class="n">mode</span><span class="o">=</span><span class="s2">"wrap"</span><span class="p">,</span>
                 <span class="n">depth</span><span class="o">=</span><span class="n">depth</span><span class="p">,</span>
+                <span class="n">boundary</span><span class="o">=</span><span class="s2">"periodic"</span><span class="p">,</span>
                 <span class="n">meta</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">measurements</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -4031,9 +4063,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">measurements</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
-            <span class="c1"># No explicit `boundary=` here, matching the xp is np branch</span>
-            <span class="c1"># above (and the pre-existing behavior of this lazy path), which</span>
-            <span class="c1"># also lets dask's own default apply at true array edges.</span>
+            <span class="c1"># `boundary="periodic"` makes the overlap wrap at the true array</span>
+            <span class="c1"># edges, matching the eager path's `mode="wrap"`.</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">measurements</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">map_overlap</span><span class="p">(</span>
                 <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
                     <span class="n">_apply_convolve_2d_on_axes</span><span class="p">,</span>
@@ -4044,6 +4075,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="n">cval</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                 <span class="p">),</span>
                 <span class="n">depth</span><span class="o">=</span><span class="n">depth</span><span class="p">,</span>
+                <span class="n">boundary</span><span class="o">=</span><span class="s2">"periodic"</span><span class="p">,</span>
                 <span class="n">meta</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">measurements</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -4312,8 +4344,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scan_axes</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
-
         <span class="n">tiling</span> <span class="o">=</span> <span class="p">()</span>
         <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)):</span>
@@ -4323,7 +4353,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">tiling</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span>
 
-        <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">tiling</span><span class="p">)</span>
+        <span class="c1"># np.tile dispatches to da.tile or cupy.tile; cupy.tile rejects a dask array</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">tiling</span><span class="p">)</span>
 
         <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,))</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span>
@@ -4688,7 +4719,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">new_sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
                 <span class="n">new_gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
                 <span class="n">chunks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">chunks</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">((</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],),</span> <span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">],)),</span>
-                <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+                <span class="c1"># explicit: inference calls the function on a zero-size block,</span>
+                <span class="c1"># which it cannot interpolate, and would fall back to a NumPy</span>
+                <span class="c1"># meta, so a CuPy result would report its device as "cpu"</span>
+                <span class="n">meta</span><span class="o">=</span><span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                    <span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="p">),</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_batch_interpolate_bilinear</span><span class="p">(</span>
@@ -5251,8 +5287,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_com</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="n">com_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">array</span> <span class="o">*</span> <span class="n">x</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-        <span class="n">com_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">array</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">total_intensity</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">com_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">array</span> <span class="o">*</span> <span class="n">x</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">total_intensity</span>
+        <span class="n">com_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">array</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">total_intensity</span>
         <span class="n">com</span> <span class="o">=</span> <span class="n">com_x</span> <span class="o">+</span> <span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">com_y</span>
         <span class="k">return</span> <span class="n">com</span>
 
@@ -5590,7 +5627,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        ----------</span>
 <span class="sd">        radius : float, optional</span>
 <span class="sd">            The radius of the zeroth-order reflection to block [mrad]. If not given this</span>
-<span class="sd">            will be inferred from the metadata, if available.</span>
+<span class="sd">            will be inferred from the metadata, if available. Must be non-negative. A</span>
+<span class="sd">            zero `semiangle_cutoff` in the metadata (a parallel beam) raises a</span>
+<span class="sd">            `ValueError`; pass `radius=0, margin=False` to block only the zero-angle</span>
+<span class="sd">            pixel.</span>
 <span class="sd">        margin : bool, optional</span>
 <span class="sd">            If True adds a margin to the blocking radius to fully block soft apertures.</span>
 <span class="sd">            Margin is true by default for diffraction patterns with `semiangle_cutoff`</span>
@@ -5602,11 +5642,26 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">            The diffraction pattern(s) with the direct beam removed.</span>
 <span class="sd">        """</span>
 
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.transfer</span><span class="w"> </span><span class="kn">import</span> <span class="n">_raise_if_parallel_beam</span>
+
         <span class="k">if</span> <span class="n">radius</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">"semiangle_cutoff"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                 <span class="n">radius</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"semiangle_cutoff"</span><span class="p">]</span>
+                <span class="n">_raise_if_parallel_beam</span><span class="p">(</span>
+                    <span class="n">radius</span><span class="p">,</span>
+                    <span class="s2">"The direct-beam radius"</span><span class="p">,</span>
+                    <span class="s2">"Pass `radius` explicitly; `radius=0, margin=False` blocks only "</span>
+                    <span class="s2">"the zero-angle pixel, which is the whole direct beam of a "</span>
+                    <span class="s2">"parallel beam."</span><span class="p">,</span>
+                <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">radius</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0001</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">radius</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="c1"># a negative radius would block nothing</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The direct-beam radius must be non-negative, got </span><span class="si">{</span><span class="n">radius</span><span class="si">!r}</span><span class="s2">."</span>
+            <span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">"semiangle_cutoff"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="n">margin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">margin</span> <span class="o">=</span> <span class="kc">True</span>
@@ -5617,6 +5672,29 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bandlimit</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">outer</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span></div>
 </div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_complex_from_real_and_imag</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">imag</span><span class="p">):</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">real</span><span class="p">)</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="n">array</span><span class="o">.</span><span class="n">real</span> <span class="o">=</span> <span class="n">real</span>
+    <span class="n">array</span><span class="o">.</span><span class="n">imag</span> <span class="o">=</span> <span class="n">imag</span>
+    <span class="k">return</span> <span class="n">array</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_polar_bins_to_grid</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">regions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Place polar-bin values (..., nbins_radial, nbins_azimuthal) on a regular grid.</span>
+
+<span class="sd">    ``regions`` labels each grid pixel with its flat bin index (radial major, as</span>
+<span class="sd">    from ``_polar_detector_bins``), or a negative value outside every bin, which</span>
+<span class="sd">    becomes NaN. Gathers with the array's own module, so it works for NumPy and</span>
+<span class="sd">    CuPy, and per block of a dask array.</span>
+<span class="sd">    """</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+    <span class="n">flat</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,))</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">regions</span><span class="p">)</span>
+    <span class="n">gathered</span> <span class="o">=</span> <span class="n">flat</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">xp</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">labels</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span> <span class="n">gathered</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="PolarMeasurements">
@@ -6134,13 +6212,19 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">return_indices</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="n">new_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span> <span class="o">+</span> <span class="n">regions</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">indices</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">label_to_index</span><span class="p">(</span><span class="n">regions</span><span class="p">)):</span>
-            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">regions</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-            <span class="n">radial</span><span class="p">,</span> <span class="n">azimuthal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">nbins_radial</span><span class="p">,</span> <span class="n">nbins_azimuthal</span><span class="p">))</span>
-            <span class="n">new_array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">radial</span><span class="p">,</span> <span class="n">azimuthal</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
-
-        <span class="n">new_array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">regions</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
+            <span class="c1"># per block, over whole polar bins, so the graph runs once and the</span>
+            <span class="c1"># result stays lazy</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">rechunk</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">chunks</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+            <span class="n">new_array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span>
+                <span class="n">_polar_bins_to_grid</span><span class="p">,</span>
+                <span class="n">regions</span><span class="o">=</span><span class="n">regions</span><span class="p">,</span>
+                <span class="n">chunks</span><span class="o">=</span><span class="n">array</span><span class="o">.</span><span class="n">chunks</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">((</span><span class="n">regions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],),</span> <span class="p">(</span><span class="n">regions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],)),</span>
+                <span class="n">meta</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_array</span> <span class="o">=</span> <span class="n">_polar_bins_to_grid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">regions</span><span class="p">)</span>
 
         <span class="n">wavelength</span> <span class="o">=</span> <span class="n">energy2wavelength</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_energy</span><span class="p">())</span>
         <span class="n">sampling</span> <span class="o">=</span> <span class="p">(</span>
@@ -6204,12 +6288,21 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="p">)</span>
             <span class="k">return</span> <span class="n">stacked</span>
 
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
-
-        <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">differential_1</span><span class="o">.</span><span class="n">array</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-
-        <span class="n">array</span><span class="o">.</span><span class="n">real</span> <span class="o">=</span> <span class="n">differential_1</span><span class="o">.</span><span class="n">array</span>
-        <span class="n">array</span><span class="o">.</span><span class="n">imag</span> <span class="o">=</span> <span class="n">differential_2</span><span class="o">.</span><span class="n">array</span>
+        <span class="k">if</span> <span class="n">differential_1</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span>
+                <span class="n">_complex_from_real_and_imag</span><span class="p">,</span>
+                <span class="n">differential_1</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                <span class="n">differential_2</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="n">meta</span><span class="o">=</span><span class="n">_complex_from_real_and_imag</span><span class="p">(</span>
+                    <span class="n">da</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">meta_from_array</span><span class="p">(</span><span class="n">differential_1</span><span class="o">.</span><span class="n">array</span><span class="p">),</span>
+                    <span class="n">da</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">meta_from_array</span><span class="p">(</span><span class="n">differential_2</span><span class="o">.</span><span class="n">array</span><span class="p">),</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">_complex_from_real_and_imag</span><span class="p">(</span>
+                <span class="n">differential_1</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">differential_2</span><span class="o">.</span><span class="n">array</span>
+            <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">Images</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="o">**</span><span class="n">differential_1</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,)))</span></div>
 
@@ -6228,9 +6321,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">image_axes</span> <span class="o">=</span> <span class="n">_scan_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
-
-        <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">image_axes</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+        <span class="c1"># np.moveaxis dispatches to da.moveaxis or cupy.moveaxis; cupy.moveaxis</span>
+        <span class="c1"># rejects a dask array</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">image_axes</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
 
         <span class="n">ensemble_axes_metadata</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">axis</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>

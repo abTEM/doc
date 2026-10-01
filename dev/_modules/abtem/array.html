@@ -722,6 +722,26 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="n">array</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">*</span><span class="n">order</span><span class="p">,</span> <span class="o">*</span><span class="n">trailing</span><span class="p">)</span>
 
 
+<span class="c1"># Scheduler priority of the tasks that pull each output out of a packed</span>
+<span class="c1"># multi-output block. A packed block (every detector's output of one multislice</span>
+<span class="c1"># task, exit waves included) is released only after all of its extracts have</span>
+<span class="c1"># run. Without a priority, the distributed scheduler can run an extract that</span>
+<span class="c1"># feeds only a final output long after its block was computed, so the packed</span>
+<span class="c1"># blocks accumulate; with it, each extract runs as soon as its block exists.</span>
+<span class="c1">#</span>
+<span class="c1"># Only a block with several outputs is annotated. Blockwise fusion gives a fused</span>
+<span class="c1"># layer the maximum priority of its parts, and a block with a single output has</span>
+<span class="c1"># a single dependent, so the multislice task fuses with its extract and with</span>
+<span class="c1"># everything downstream of it: annotating it would raise the priority of the</span>
+<span class="c1"># multislice work itself, and workers would start new multislice tasks before</span>
+<span class="c1"># combining the results of earlier ones. With several outputs the packed block</span>
+<span class="c1"># has several dependents and stays a task of its own.</span>
+<span class="c1">#</span>
+<span class="c1"># The priority survives graph optimisation only with low-level fusion off, see</span>
+<span class="c1"># _keep_annotations_guard.</span>
+<span class="n">_EXTRACT_PRIORITY</span> <span class="o">=</span> <span class="mi">1</span>
+
+
 <div class="viewcode-block" id="multi_output_blockwise">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.array.html#abtem.array.multi_output_blockwise">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">multi_output_blockwise</span><span class="p">(</span>
@@ -798,14 +818,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">drop_chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
         <span class="n">drop_chunks</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">drop_chunks</span><span class="p">)</span>
 
-        <span class="n">new_output</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span>
-            <span class="n">_extract_blockwise_multi_output</span><span class="p">,</span>
-            <span class="n">out_array</span><span class="p">,</span>
-            <span class="n">chunks</span><span class="o">=</span><span class="n">drop_chunks</span><span class="p">,</span>
-            <span class="n">drop_axis</span><span class="o">=</span><span class="n">drop_axis</span><span class="p">,</span>
-            <span class="n">index</span><span class="o">=</span><span class="n">i</span><span class="p">,</span>
-            <span class="n">meta</span><span class="o">=</span><span class="n">out_meta</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="k">with</span> <span class="p">(</span>
+            <span class="n">dask</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">priority</span><span class="o">=</span><span class="n">_EXTRACT_PRIORITY</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_metas</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
+            <span class="k">else</span> <span class="n">nullcontext</span><span class="p">()</span>
+        <span class="p">):</span>
+            <span class="n">new_output</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span>
+                <span class="n">_extract_blockwise_multi_output</span><span class="p">,</span>
+                <span class="n">out_array</span><span class="p">,</span>
+                <span class="n">chunks</span><span class="o">=</span><span class="n">drop_chunks</span><span class="p">,</span>
+                <span class="n">drop_axis</span><span class="o">=</span><span class="n">drop_axis</span><span class="p">,</span>
+                <span class="n">index</span><span class="o">=</span><span class="n">i</span><span class="p">,</span>
+                <span class="n">meta</span><span class="o">=</span><span class="n">out_meta</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="n">outputs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">new_output</span><span class="p">,)</span>
     <span class="k">return</span> <span class="n">outputs</span></div>
 
@@ -1126,10 +1151,13 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="n">is_gpu</span><span class="p">:</span>
             <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_resolve_gpu_scheduler</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span>
 
-        <span class="k">with</span> <span class="n">_nested_compute_guard</span><span class="p">(</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_compute_context</span><span class="p">(</span>
+        <span class="n">arrays</span> <span class="o">=</span> <span class="p">[</span><span class="n">array</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">arrays_to_write</span><span class="p">]</span>
+        <span class="k">with</span> <span class="n">_nested_compute_guard</span><span class="p">(</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_keep_annotations_guard</span><span class="p">(</span>
+            <span class="n">arrays</span><span class="p">,</span> <span class="n">kwargs</span>
+        <span class="p">),</span> <span class="n">_compute_context</span><span class="p">(</span>
             <span class="n">progress_bar</span><span class="p">,</span> <span class="n">profiler</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">resource_profiler</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span> <span class="k">as</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">profiler</span><span class="p">,</span> <span class="n">resource_profiler</span><span class="p">):</span>
-            <span class="n">arrays</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">([</span><span class="n">array</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">arrays_to_write</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">arrays</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">arrays</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">output</span> <span class="o">=</span> <span class="n">write_func</span><span class="p">(</span>
             <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span> <span class="n">array</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">arrays_to_write</span><span class="p">,</span> <span class="n">arrays</span><span class="p">)],</span>
@@ -1247,12 +1275,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    """</span>
     <span class="n">check_cupy_is_installed</span><span class="p">()</span>
 
-    <span class="kn">from</span><span class="w"> </span><span class="nn">distributed</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_client</span>
-
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">client</span> <span class="o">=</span> <span class="n">get_client</span><span class="p">()</span>
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-        <span class="n">client</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">_active_client</span><span class="p">()</span>
 
     <span class="n">multi_gpu</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"dask.multi-gpu"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
@@ -1306,6 +1329,84 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">yield</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_active_client</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""The active distributed client, or None when there is none or distributed</span>
+<span class="sd">    is not installed."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">distributed</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_client</span>
+
+        <span class="k">return</span> <span class="n">get_client</span><span class="p">()</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_runs_on_distributed_client</span><span class="p">(</span><span class="n">arrays</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether ``dask.compute(*arrays, **kwargs)`` would run on a distributed</span>
+<span class="sd">    client: an active default client, or one named by ``scheduler`` (the client</span>
+<span class="sd">    itself, its ``get``, or ``"distributed"``), unless a local scheduler is named</span>
+<span class="sd">    by ``scheduler`` or the ``scheduler`` configuration. ``arrays`` must all be</span>
+<span class="sd">    dask collections."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">distributed</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="n">scheduler</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">get_scheduler</span><span class="p">(</span>
+        <span class="n">scheduler</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"scheduler"</span><span class="p">),</span> <span class="n">collections</span><span class="o">=</span><span class="n">arrays</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="s2">"__self__"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">Client</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_has_annotated_layer</span><span class="p">(</span><span class="n">arrays</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether any of the arrays' graphs has a layer with dask annotations.</span>
+<span class="sd">    ``arrays`` must all be dask collections."""</span>
+    <span class="k">for</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">arrays</span><span class="p">:</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">__dask_graph__</span><span class="p">(),</span> <span class="s2">"layers"</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">"annotations"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">layers</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_keep_annotations_guard</span><span class="p">(</span><span class="n">arrays</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Keep dask annotations through graph optimisation when a distributed</span>
+<span class="sd">    client runs the compute.</span>
+
+<span class="sd">    dask's low-level task fusion (``optimization.fuse.active``, on by default</span>
+<span class="sd">    for arrays) discards layer annotations, so the priority that</span>
+<span class="sd">    multi_output_blockwise gives its extract tasks would not reach the</span>
+<span class="sd">    scheduler. Blockwise fusion keeps and merges annotations and stays on.</span>
+<span class="sd">    Only the distributed scheduler reads annotations, so low-level fusion is</span>
+<span class="sd">    switched off only while a distributed client runs a graph that carries</span>
+<span class="sd">    annotations; a local scheduler (named by ``scheduler`` or by the</span>
+<span class="sd">    ``scheduler`` configuration, e.g. the synchronous one forced on a single</span>
+<span class="sd">    GPU), a graph without annotations, and an explicit</span>
+<span class="sd">    ``optimization.fuse.active`` setting are left alone.</span>
+
+<span class="sd">    Only computes through abTEM's own ``compute`` and ``ComputableList``</span>
+<span class="sd">    (``compute`` and ``to_zarr``) pass through this guard. A graph computed any</span>
+<span class="sd">    other way -- ``dask.compute(measurement.array)``, ``client.compute``,</span>
+<span class="sd">    ``to_zarr(..., compute=False)``, ``to_tiff`` of a lazy array -- runs with</span>
+<span class="sd">    dask's default fusion, which drops the extract priority.</span>
+
+<span class="sd">    Items that are already computed (a ``ComputableList`` may mix them with lazy</span>
+<span class="sd">    ones) are passed through by ``dask.compute`` unchanged and play no part here.</span>
+<span class="sd">    """</span>
+    <span class="n">lazy</span> <span class="o">=</span> <span class="p">[</span><span class="n">array</span> <span class="k">for</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">arrays</span> <span class="k">if</span> <span class="n">dask</span><span class="o">.</span><span class="n">is_dask_collection</span><span class="p">(</span><span class="n">array</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">dask</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"optimization.fuse.active"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="ow">or</span> <span class="ow">not</span> <span class="n">_has_annotated_layer</span><span class="p">(</span><span class="n">lazy</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="ow">not</span> <span class="n">_runs_on_distributed_client</span><span class="p">(</span><span class="n">lazy</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="k">yield</span>
+        <span class="k">return</span>
+
+    <span class="k">with</span> <span class="n">dask</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">"optimization.fuse.active"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"optimization.annotations.fuse"</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+    <span class="p">):</span>
+        <span class="k">yield</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_push_config_to_active_client</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">"""Mirror the configuration onto an active distributed client's workers.</span>
 
@@ -1315,11 +1416,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    ``abtem.config.set``. Deduplicated inside push_config_to_workers, so</span>
 <span class="sd">    calling this on every dispatch is cheap.</span>
 <span class="sd">    """</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">distributed</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_client</span>
-
-        <span class="n">client</span> <span class="o">=</span> <span class="n">get_client</span><span class="p">()</span>
-    <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">_active_client</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">client</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="n">push_config_to_workers</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
 
@@ -1340,10 +1438,13 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">if</span> <span class="n">is_gpu</span><span class="p">:</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_resolve_gpu_scheduler</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="k">with</span> <span class="n">_nested_compute_guard</span><span class="p">(</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_compute_context</span><span class="p">(</span>
+    <span class="n">arrays</span> <span class="o">=</span> <span class="p">[</span><span class="n">wrapper</span><span class="o">.</span><span class="n">array</span> <span class="k">for</span> <span class="n">wrapper</span> <span class="ow">in</span> <span class="n">array_objects</span><span class="p">]</span>
+    <span class="k">with</span> <span class="n">_nested_compute_guard</span><span class="p">(</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_keep_annotations_guard</span><span class="p">(</span>
+        <span class="n">arrays</span><span class="p">,</span> <span class="n">kwargs</span>
+    <span class="p">),</span> <span class="n">_compute_context</span><span class="p">(</span>
         <span class="n">progress_bar</span><span class="p">,</span> <span class="n">profiler</span><span class="o">=</span><span class="n">profiler</span><span class="p">,</span> <span class="n">resource_profiler</span><span class="o">=</span><span class="n">resource_profiler</span>
     <span class="p">)</span> <span class="k">as</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">profiler</span><span class="p">,</span> <span class="n">resource_profiler</span><span class="p">):</span>
-        <span class="n">arrays</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">([</span><span class="n">wrapper</span><span class="o">.</span><span class="n">array</span> <span class="k">for</span> <span class="n">wrapper</span> <span class="ow">in</span> <span class="n">array_objects</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">arrays</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">arrays</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">for</span> <span class="n">array</span><span class="p">,</span> <span class="n">wrapper</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">arrays</span><span class="p">,</span> <span class="n">array_objects</span><span class="p">):</span>
         <span class="n">wrapper</span><span class="o">.</span><span class="n">_array</span> <span class="o">=</span> <span class="n">array</span>
@@ -1620,8 +1721,10 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">chunks</span> <span class="o">=</span> <span class="n">chunks</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">max</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">),</span> <span class="mi">0</span><span class="p">))</span>
 
         <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lazy_array</span><span class="o">.</span><span class="n">rechunk</span><span class="p">(</span><span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># by keyword: not every subclass takes the array as its first argument</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
@@ -2165,13 +2268,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,)))</span></div>
+        <span class="c1"># by keyword: not every subclass takes the array as its first argument</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,))</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ArrayObject.lazy">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.array.html#abtem.array.ArrayObject.lazy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">lazy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunks</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensure_lazy</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ArrayObject.ensure_computed">
+<a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.array.html#abtem.array.ArrayObject.ensure_computed">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ensure_computed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Creates an equivalent in-memory version of the array object, leaving</span>
+<span class="sd">        this object unchanged.</span>
+
+<span class="sd">        The counterpart of `ensure_lazy`: an object already in memory is returned</span>
+<span class="sd">        as it is, and a lazy one is computed into a new object. `compute` works in</span>
+<span class="sd">        place, so this is the way to get an in-memory array while the caller's</span>
+<span class="sd">        object stays lazy.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        kwargs :</span>
+<span class="sd">            Keyword arguments passed to `compute`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        computed_array_object : ArrayObject or subclass of ArrayObject</span>
+<span class="sd">            In-memory version of the array object.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="c1"># by keyword: not every subclass takes the array as its first argument</span>
+        <span class="n">new_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,))</span>
+        <span class="n">new_kwargs</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">new_kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ArrayObject.compute">
@@ -2908,7 +3044,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">meta</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">array</span>
+            <span class="c1"># Partitioning (e.g. of a lazy potential for an eager multislice)</span>
+            <span class="c1"># leaves the caller's object lazy</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensure_computed</span><span class="p">()</span><span class="o">.</span><span class="n">array</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">blocks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -3229,7 +3367,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">arrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">arrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">has_array</span><span class="o">.</span><span class="n">is_lazy</span> <span class="k">for</span> <span class="n">has_array</span> <span class="ow">in</span> <span class="n">arrays</span><span class="p">):</span>
         <span class="n">array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">has_array</span><span class="o">.</span><span class="n">array</span> <span class="k">for</span> <span class="n">has_array</span> <span class="ow">in</span> <span class="n">arrays</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">has_array</span><span class="o">.</span><span class="n">array</span> <span class="k">for</span> <span class="n">has_array</span> <span class="ow">in</span> <span class="n">arrays</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>

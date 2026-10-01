@@ -863,16 +863,24 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        using the ASE standard. If list or array, a displacement standard deviation</span>
 <span class="sd">        should be provided for each atom.</span>
 
-<span class="sd">        Anistropic displacements may be given by providing a standard deviation for each</span>
-<span class="sd">        principal direction. This may be a tuple of three numbers for identical</span>
-<span class="sd">        displacements for all atoms. A dict of tuples of three numbers to specify</span>
-<span class="sd">        displacements for each species. A list or array with three numbers for each</span>
-<span class="sd">        atom.</span>
+<span class="sd">        The standard deviation applies to each displaced direction separately: every</span>
+<span class="sd">        direction in `directions` receives an independent Gaussian displacement with</span>
+<span class="sd">        standard deviation sigma, so sigma squared is the mean-square displacement</span>
+<span class="sd">        along one direction (the isotropic displacement parameter U_iso), not the</span>
+<span class="sd">        total mean-square displacement, which is 3 sigma squared for the default</span>
+<span class="sd">        `directions`.</span>
+
+<span class="sd">        Anisotropic displacements may be given by providing a standard deviation for</span>
+<span class="sd">        each Cartesian direction (`x`, `y`, `z`). This may be a tuple of three numbers</span>
+<span class="sd">        for identical displacements for all atoms. A dict of tuples of three numbers to</span>
+<span class="sd">        specify displacements for each species. A list or array with three numbers for</span>
+<span class="sd">        each atom.</span>
 
 <span class="sd">    directions : str, optional</span>
-<span class="sd">        The displacement directions of the atoms as a string; for example 'xy' (default)</span>
-<span class="sd">        for displacement in the `x`- and `y`-direction (i.e. perpendicular to the</span>
-<span class="sd">        propagation direction).</span>
+<span class="sd">        The Cartesian directions in which the atoms are displaced, as a string of one or</span>
+<span class="sd">        more of 'x', 'y' and 'z'. The default, 'xyz', displaces the atoms in all three</span>
+<span class="sd">        directions, including along the propagation direction; 'xy' restricts the</span>
+<span class="sd">        displacements to the plane perpendicular to the propagation direction.</span>
 <span class="sd">    ensemble_mean : bool, optional</span>
 <span class="sd">        If True (default), the mean of the ensemble of results from a multislice</span>
 <span class="sd">        simulation is calculated, otherwise, the result of every frozen phonon</span>
@@ -906,6 +914,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_sigmas</span> <span class="o">=</span> <span class="n">validate_sigmas</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">sigmas</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_directions</span> <span class="o">=</span> <span class="n">directions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_axes</span>  <span class="c1"># raises on an invalid direction now rather than when displacing</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_atoms</span> <span class="o">=</span> <span class="n">atoms</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_seed</span> <span class="o">=</span> <span class="n">validate_seeds</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">num_seeds</span><span class="o">=</span><span class="n">num_configs</span><span class="p">)</span>
 
@@ -965,7 +974,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="k">elif</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">"z"</span><span class="p">:</span>
                 <span class="n">axes</span> <span class="o">+=</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Directions must be 'x', 'y' or 'z', not </span><span class="si">{</span><span class="n">axes</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Directions must be 'x', 'y' or 'z', not </span><span class="si">{</span><span class="n">direction</span><span class="si">!r}</span><span class="s2">."</span>
+                <span class="p">)</span>
         <span class="k">return</span> <span class="n">axes</span>
 
 <div class="viewcode-block" id="FrozenPhonons.randomize">

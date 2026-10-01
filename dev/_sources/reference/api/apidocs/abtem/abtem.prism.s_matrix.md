@@ -177,6 +177,16 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.utils.Cop
 
 ````
 
+````{py:property} dense_indices
+:canonical: abtem.prism.s_matrix.CompressedSMatrixArray.dense_indices
+:type: numpy.ndarray
+
+```{autodoc2-docstring} abtem.prism.s_matrix.CompressedSMatrixArray.dense_indices
+:parser: rst
+```
+
+````
+
 ````{py:property} ensemble_axes_metadata
 :canonical: abtem.prism.s_matrix.CompressedSMatrixArray.ensemble_axes_metadata
 :type: list[abtem.core.axes.AxisMetadata]
@@ -219,6 +229,16 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.utils.Cop
 
 ````
 
+````{py:property} position_quantization
+:canonical: abtem.prism.s_matrix.CompressedSMatrixArray.position_quantization
+:type: int | None
+
+```{autodoc2-docstring} abtem.prism.s_matrix.CompressedSMatrixArray.position_quantization
+:parser: rst
+```
+
+````
+
 ````{py:property} rank
 :canonical: abtem.prism.s_matrix.CompressedSMatrixArray.rank
 :type: int
@@ -233,6 +253,16 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.utils.Cop
 :canonical: abtem.prism.s_matrix.CompressedSMatrixArray.reduce
 
 ```{autodoc2-docstring} abtem.prism.s_matrix.CompressedSMatrixArray.reduce
+:parser: rst
+```
+
+````
+
+````{py:property} reference_depth
+:canonical: abtem.prism.s_matrix.CompressedSMatrixArray.reference_depth
+:type: float
+
+```{autodoc2-docstring} abtem.prism.s_matrix.CompressedSMatrixArray.reference_depth
 :parser: rst
 ```
 

@@ -720,10 +720,12 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        max_angle : float, optional</span>
-<span class="sd">            The maximum diffraction angle in radians. If not provided, the maximum angle</span>
-<span class="sd">            will be determined based on the `self._max_semiangle_cutoff` attribute of</span>
-<span class="sd">            the instance. If neither `max_angle` nor `self._max_semiangle_cutoff` is</span>
-<span class="sd">            available, a `RuntimeError` will be raised.</span>
+<span class="sd">            The maximum diffraction angle [mrad]. If not provided, the maximum angle</span>
+<span class="sd">            is the semiangle cutoff of the instance (`self._max_semiangle_cutoff`),</span>
+<span class="sd">            or 50 mrad if that cutoff is infinite (no aperture). A zero cutoff (a</span>
+<span class="sd">            parallel beam) raises a `ValueError`, and so `max_angle` must be given.</span>
+<span class="sd">            If neither `max_angle` nor `self._max_semiangle_cutoff` is available, a</span>
+<span class="sd">            `RuntimeError` will be raised.</span>
 <span class="sd">        gpts : int | tuple[int, int], optional</span>
 <span class="sd">            The number of grid points in reciprocal space for performing Fourier</span>
 <span class="sd">            Transform. If not provided, a default value of 128 will be used.</span>
@@ -738,7 +740,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">max_angle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">max_angle</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_max_semiangle_cutoff"</span><span class="p">):</span>
+                <span class="n">_raise_if_parallel_beam</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_max_semiangle_cutoff</span><span class="p">,</span>
+                    <span class="s2">"The default angular range"</span><span class="p">,</span>
+                    <span class="s2">"Pass `max_angle` explicitly."</span><span class="p">,</span>
+                <span class="p">)</span>
                 <span class="n">max_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_semiangle_cutoff</span>
+                <span class="k">if</span> <span class="n">max_angle</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
+                    <span class="c1"># no aperture: the same default range as CTF.profiles</span>
+                    <span class="n">max_angle</span> <span class="o">=</span> <span class="mf">50.0</span>
 
             <span class="k">elif</span> <span class="n">max_angle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">()</span>
@@ -781,6 +791,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="k">class</span><span class="w"> </span><span class="nc">BaseAperture</span><span class="p">(</span><span class="n">BaseTransferFunction</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Base class for apertures. Documented in the subclasses."""</span>
 
+    <span class="c1"># Why a zero semiangle cutoff is invalid for this aperture type, or None where</span>
+    <span class="c1"># it is valid: an Aperture or CTF with a zero cutoff keeps the zero-angle pixel,</span>
+    <span class="c1"># i.e. a parallel beam.</span>
+    <span class="n">_zero_semiangle_cutoff_error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
@@ -790,7 +805,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">sampling</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">distributions</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
     <span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span> <span class="o">=</span> <span class="n">semiangle_cutoff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_semiangle_cutoff</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
             <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
@@ -826,7 +841,9 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">nyquist_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Nyquist sampling corresponding to the semiangle cutoff of the</span>
-<span class="sd">        aperture [Å]."""</span>
+<span class="sd">        aperture [Å]. Raises a ValueError for a zero semiangle cutoff (a parallel</span>
+<span class="sd">        beam)."""</span>
+        <span class="n">_raise_if_parallel_beam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_semiangle_cutoff</span><span class="p">,</span> <span class="s2">"The Nyquist sampling"</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_semiangle_cutoff</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -836,7 +853,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="nd">@semiangle_cutoff</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">semiangle_cutoff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span> <span class="o">=</span> <span class="n">semiangle_cutoff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_semiangle_cutoff</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_semiangle_cutoff</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Reject a negative (or NaN) semiangle cutoff, and a zero one where this</span>
+<span class="sd">        aperture type has no use for it. None (not set) passes through."""</span>
+        <span class="k">if</span> <span class="n">semiangle_cutoff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">semiangle_cutoff</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="n">shown</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"a distribution with values </span><span class="si">{</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="n">shown</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">values</span><span class="p">))</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">values</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"semiangle_cutoff must be non-negative, got </span><span class="si">{</span><span class="n">shown</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zero_semiangle_cutoff_error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">values</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="n">article</span> <span class="o">=</span> <span class="s2">"An"</span> <span class="k">if</span> <span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s2">"AEIOU"</span> <span class="k">else</span> <span class="s2">"A"</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">article</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> with semiangle_cutoff=0 "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_zero_semiangle_cutoff_error</span><span class="si">}</span><span class="s2">; give a positive "</span>
+                <span class="s2">"semiangle_cutoff."</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">semiangle_cutoff</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_cropped_aperture</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseAperture</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_semiangle_cutoff</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
@@ -960,7 +1006,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    ----------</span>
 <span class="sd">    semiangle_cutoff : float or BaseDistribution</span>
 <span class="sd">        The cutoff semiangle of the aperture [mrad]. Alternatively, a distribution of</span>
-<span class="sd">        angles may be provided.</span>
+<span class="sd">        angles may be provided. Must be non-negative; a cutoff of 0 keeps only the</span>
+<span class="sd">        zero-angle beam, i.e. a parallel beam.</span>
 <span class="sd">    soft : bool, optional</span>
 <span class="sd">        If True, the edge of the aperture is softened (default is True).</span>
 <span class="sd">    energy : float, optional</span>
@@ -1077,7 +1124,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Open fraction of each radial ring period. Must be in the interval (0, 1],</span>
 <span class="sd">        where 1 gives a fully open disk.</span>
 <span class="sd">    semiangle_cutoff : float</span>
-<span class="sd">        The cutoff semiangle of the aperture [mrad].</span>
+<span class="sd">        The cutoff semiangle of the aperture [mrad]. Must be positive.</span>
 <span class="sd">    energy : float, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
 <span class="sd">    extent : float or two float, optional</span>
@@ -1093,6 +1140,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    corner_radius : float, optional</span>
 <span class="sd">        Corner radius in mrads. Default value is 0.0</span>
 <span class="sd">    """</span>
+
+    <span class="n">_zero_semiangle_cutoff_error</span> <span class="o">=</span> <span class="s2">"has no open area"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1290,7 +1339,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    quantum_number : int</span>
 <span class="sd">        Quantum number of vortex beam.</span>
 <span class="sd">    semiangle_cutoff : float</span>
-<span class="sd">        The cutoff semiangle of the aperture [mrad].</span>
+<span class="sd">        The cutoff semiangle of the aperture [mrad]. Must be positive.</span>
 <span class="sd">    energy : float, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
 <span class="sd">    extent : float or two float, optional</span>
@@ -1302,6 +1351,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Lateral sampling of wave functions [1 / Å]. If 'gpts' is also given, will be</span>
 <span class="sd">        ignored.</span>
 <span class="sd">    """</span>
+
+    <span class="n">_zero_semiangle_cutoff_error</span> <span class="o">=</span> <span class="s2">"has no open area"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1360,9 +1411,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    inner_cutoff : float</span>
-<span class="sd">        The cutoff semiangle of inner radius of the aperture [mrad].</span>
+<span class="sd">        The cutoff semiangle of inner radius of the aperture [mrad]. Must be</span>
+<span class="sd">        non-negative and smaller than `semiangle_cutoff`.</span>
 <span class="sd">    semiangle_cutoff : float</span>
-<span class="sd">        The cutoff semiangle of the aperture [mrad].</span>
+<span class="sd">        The cutoff semiangle of the aperture [mrad]. Must be positive.</span>
 <span class="sd">    energy : float, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
 <span class="sd">    extent : float or two float, optional</span>
@@ -1375,6 +1427,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        ignored.</span>
 <span class="sd">    """</span>
 
+    <span class="n">_zero_semiangle_cutoff_error</span> <span class="o">=</span> <span class="s2">"has no open area"</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">inner_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -1384,6 +1438,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">gpts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inner_cutoff</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"inner_cutoff must be non-negative, got </span><span class="si">{</span><span class="n">inner_cutoff</span><span class="si">!r}</span><span class="s2">."</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_inner_cutoff</span> <span class="o">=</span> <span class="n">inner_cutoff</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
@@ -1392,6 +1450,31 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
             <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
         <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_semiangle_cutoff</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Also reject a semiangle cutoff that does not exceed the inner cutoff,</span>
+<span class="sd">        for which the annulus is empty; run by __init__ and the setter alike."""</span>
+        <span class="n">semiangle_cutoff</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_validate_semiangle_cutoff</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">semiangle_cutoff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">semiangle_cutoff</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
+            <span class="n">smallest</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="o">.</span><span class="n">values</span><span class="p">))</span>
+            <span class="n">shown</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"a distribution with smallest value </span><span class="si">{</span><span class="n">smallest</span><span class="si">!r}</span><span class="s2">"</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">smallest</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">)</span>
+            <span class="n">shown</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner_cutoff</span> <span class="o">&gt;=</span> <span class="n">smallest</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"inner_cutoff (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_inner_cutoff</span><span class="si">!r}</span><span class="s2">) must be smaller than "</span>
+                <span class="sa">f</span><span class="s2">"semiangle_cutoff (</span><span class="si">{</span><span class="n">shown</span><span class="si">}</span><span class="s2">); otherwise the AnnularAperture has "</span>
+                <span class="s2">"no open area."</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">semiangle_cutoff</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">inner_cutoff</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -1428,11 +1511,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    center_hole_cutoff : float</span>
-<span class="sd">        Cutoff semiangle of aperture hole [mrad].</span>
+<span class="sd">        Cutoff semiangle of aperture hole [mrad]. Must be non-negative.</span>
 <span class="sd">    phase_shift: float</span>
 <span class="sd">        Phase shift of Zernike film [rad]</span>
 <span class="sd">    semiangle_cutoff : float</span>
-<span class="sd">        The cutoff semiangle of the aperture [mrad].</span>
+<span class="sd">        The cutoff semiangle of the aperture [mrad]. Must be positive.</span>
 <span class="sd">    energy : float, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
 <span class="sd">    extent : float or two float, optional</span>
@@ -1445,6 +1528,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        ignored.</span>
 <span class="sd">    """</span>
 
+    <span class="n">_zero_semiangle_cutoff_error</span> <span class="o">=</span> <span class="s2">"has no open area"</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">center_hole_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -1455,6 +1540,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">gpts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">center_hole_cutoff</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"center_hole_cutoff must be non-negative, got </span><span class="si">{</span><span class="n">center_hole_cutoff</span><span class="si">!r}</span><span class="s2">."</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_center_hole_cutoff</span> <span class="o">=</span> <span class="n">center_hole_cutoff</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_phase_shift</span> <span class="o">=</span> <span class="n">phase_shift</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -1507,6 +1596,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="viewcode-block" id="RadialPhasePlate">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.transfer.html#abtem.transfer.RadialPhasePlate">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RadialPhasePlate</span><span class="p">(</span><span class="n">BaseAperture</span><span class="p">):</span>
+    <span class="n">_zero_semiangle_cutoff_error</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">"has a phase pattern of zero radius, so it does nothing"</span>
+    <span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">num_flips</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -2269,7 +2362,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    ----------</span>
 <span class="sd">    semiangle_cutoff: float, optional</span>
 <span class="sd">        The semiangle cutoff describes the sharp reciprocal-space cutoff due to the</span>
-<span class="sd">        objective aperture [mrad] (default is no cutoff).</span>
+<span class="sd">        objective aperture [mrad] (default is no cutoff). Must be non-negative; a</span>
+<span class="sd">        cutoff of 0 keeps only the zero-angle beam, i.e. a parallel beam.</span>
 <span class="sd">    soft : bool, optional</span>
 <span class="sd">        If True, the edge of the aperture is softened (default is True).</span>
 <span class="sd">    focal_spread: float, optional</span>
@@ -2435,7 +2529,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="nd">@semiangle_cutoff</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">semiangle_cutoff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_semiangle_cutoff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_semiangle_cutoff</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">focal_spread</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span><span class="p">:</span>
@@ -2574,8 +2668,9 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">            Number of grid points along the line profiles.</span>
 <span class="sd">        max_angle : float</span>
 <span class="sd">            The maximum scattering angle included in the radial line profiles [mrad].</span>
-<span class="sd">            The default is 1.5 times the semiangle cutoff or 50 mrad if no semiangle</span>
-<span class="sd">            cutoff is set.</span>
+<span class="sd">            The default is 1.6 times the semiangle cutoff or 50 mrad if no semiangle</span>
+<span class="sd">            cutoff is set. A zero semiangle cutoff (a parallel beam) raises a</span>
+<span class="sd">            `ValueError`, and so `max_angle` must be given.</span>
 <span class="sd">        phi : float</span>
 <span class="sd">            The azimuthal angle of the radial line profiles [rad]. Default is 0.</span>
 
@@ -2586,6 +2681,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">            represents the different</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">max_angle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_raise_if_parallel_beam</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_max_semiangle_cutoff</span><span class="p">,</span>
+                <span class="s2">"The default angular range"</span><span class="p">,</span>
+                <span class="s2">"Pass `max_angle` explicitly."</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">semiangle_cutoff</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
                 <span class="n">max_angle</span> <span class="o">=</span> <span class="mf">50.0</span>
             <span class="k">else</span><span class="p">:</span>
@@ -2648,6 +2748,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_raise_if_parallel_beam</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="n">quantity</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">remedy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Raise a ValueError for a zero semiangle cutoff (a parallel beam), for which</span>
+<span class="sd">    `quantity`, derived from the cutoff, is not defined."""</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">semiangle_cutoff</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">quantity</span><span class="si">}</span><span class="s2"> is derived from the semiangle cutoff and is not defined for "</span>
+            <span class="sa">f</span><span class="s2">"semiangle_cutoff=0 (a parallel beam). </span><span class="si">{</span><span class="n">remedy</span><span class="si">}</span><span class="s2">"</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+        <span class="p">)</span>
+
+
 <div class="viewcode-block" id="nyquist_sampling">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.transfer.html#abtem.transfer.nyquist_sampling">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">nyquist_sampling</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -2660,7 +2770,23 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Semiangle cutoff [mrad].</span>
 <span class="sd">    energy: float</span>
 <span class="sd">        Electron energy [eV].</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The Nyquist sampling [Å].</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        For a zero semiangle cutoff (a parallel beam), whose Nyquist sampling is not</span>
+<span class="sd">        defined.</span>
 <span class="sd">    """</span>
+    <span class="n">_raise_if_parallel_beam</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="s2">"The Nyquist sampling"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">semiangle_cutoff</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"semiangle_cutoff must be positive, got </span><span class="si">{</span><span class="n">semiangle_cutoff</span><span class="si">!r}</span><span class="s2">."</span>
+        <span class="p">)</span>
     <span class="n">wavelength</span> <span class="o">=</span> <span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
     <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">semiangle_cutoff</span> <span class="o">/</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">)</span></div>
 
