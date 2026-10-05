@@ -110,6 +110,26 @@ Bugfixes:
     - Warnings replace silent fallbacks: multi-GPU requested but declined (with the reason), a missing
       `if __name__ == "__main__"` guard, and a grid size that forces the Bluestein fallback (naming the
       next fast size)
+- Distribution weights (`gaussian`, `lorentzian`, `voigtian`, `pseudo_voigtian`, `from_values`) are now
+  applied as probabilities when an ensemble is reduced
+  ([PR #466](https://github.com/abTEM/abTEM/pull/466), [issue #305](https://github.com/abTEM/abTEM/issues/305)).
+  They previously multiplied the wave amplitude, which gave wrong partial-coherence results:
+    - **STEM probes ignored the weights.** Each ensemble member was normalized after weighting, so
+      `Probe(defocus=gaussian(σ))` averaged its samples equally, as if the distribution were a top-hat.
+      For a 200 kV, α = 25 mrad probe, the peak of the reduced intensity is 1.76× the old value at
+      σ = 2.5 nm (25 Å) and 2.21× at σ = 5 nm (50 Å). STEM results with a defocus distribution are
+      worth repeating
+    - **HRTEM spreads were too narrow.** Weights on the amplitude entered the intensity squared, so a
+      Gaussian of standard deviation σ acted as one of σ/√2, and Lorentzian and Voigt spreads gained
+      $x^{-4}$ tails
+    - The weights of tilt, energy and aperture distributions were ignored
+    - Each ensemble member is now the unweighted wave function for its parameter value, the ensemble axis
+      carries the weights, and `reduce_ensemble()` returns $\sum_i p_i I_i / \sum_i p_i$. Frozen-phonon
+      results are unchanged. `reduce_ensemble(axis=...)` reduces an axis kept with `ensemble_mean=False`,
+      and `.sum()`/`.mean()` over a weighted axis warn that they ignore the weights
+    - The `.weights` of the distributions now sum to one (previously their squares did), and
+      `normalize="intensity"`/`"amplitude"` are deprecated. A `gaussian(σ)` defocus spread corresponds to
+      the 1/e focal-spread width `focal_spread = √2·σ` of the temporal envelope
 
 Documentation:
 
