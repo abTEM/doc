@@ -9,6 +9,11 @@ Features:
 - Energy ensemble support across the codebase: `PlaneWave`, `Probe`, `SMatrix`, `BlochWaves` and `CTF`
   accept a list of energies, and the resulting `EnergyAxis` propagates through indexing, angular sampling,
   unit conversion and diffraction-spot indexing ([PR #257](https://github.com/abTEM/abTEM/pull/257))
+    - Bloch-wave rotation ensembles: `BlochWaves(..., energy=[...]).rotate(axis, angles)` with a
+      distribution of angles computes every energy. Diffraction patterns and exit waves get an `EnergyAxis`
+      after the rotation axes, the axis order of a multislice rotation series, and each energy and
+      orientation keeps its own beams within the union beam set
+      ([PR #521](https://github.com/abTEM/abTEM/pull/521))
 - C-PRISM: `SMatrix(upsample=True)` reduces every probe from the complete plane-wave expansion of the
   aperture, so the interpolation factor only sets the number of multislice runs. Adds
   `CompressedSMatrixArray` and `GridScan.commensurate` ([PR #318](https://github.com/abTEM/abTEM/pull/318))
