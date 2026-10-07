@@ -110,6 +110,31 @@ Bugfixes:
     - Warnings replace silent fallbacks: multi-GPU requested but declined (with the reason), a missing
       `if __name__ == "__main__"` guard, and a grid size that forces the Bluestein fallback (naming the
       next fast size)
+- Backscattered and full-expansion real-space multislice, detector output declarations, and smaller fixes
+  ([PR #499](https://github.com/abTEM/abTEM/pull/499))
+    - Backscattered waves of an ensemble potential (frozen phonons, `CrystalPotential`) are now back-propagated
+      per configuration, through that configuration's own slices; before, any ensemble potential raised
+      `Wrong shapes`, or returned wrong backscattered waves when the number of configurations equalled the
+      number of exit planes. Backscattering now requires `potential.exit_planes` to start with the entrance
+      plane `-1`, and raises a `ValueError` otherwise (exit planes such as `(2, 5)` returned all zeros). The
+      back-propagation holds one summed slice per exit plane instead of every slice of the configuration
+    - The full-expansion multislice lost its correction term at every `potential_chunk_size` boundary, so
+      transmitted and backscattered waves depended on the chunk size (backscattered waves by about 100 % of
+      their maximum in the test case). It now gives the one-chunk result for every chunk size
+    - The full-expansion series raised `NotConvergedError` for a wave that is exactly zero (identical
+      consecutive slices, a slab followed by vacuum, an empty potential)
+    - `PixelatedDetector(reciprocal_space=False)` and `WavesDetector(gpts=...)` now declare the shape and
+      sampling of what they return, so scans, multislice, PRISM and lazy `detect` work with them;
+      `PixelatedDetector(reciprocal_space=False, resample="uniform")` raises a `ValueError`
+    - `SegmentedDetector(outer=None)` no longer crashes eagerly or integrates to a stale angle, and no radial
+      detector writes the automatic outer angle onto the detector it is given
+    - `build(first_slice, last_slice)` of a potential declares its own slice count and exit planes
+    - `DiffractionPatterns.block_direct()` no longer grows an array-valued `semiangle_cutoff` in place, and
+      GPAW's radial atom solvers no longer swap the process-wide `sys.stdout`
+    - **Behaviour change:** an `AnnularDetector` with an automatic outer angle (`outer=None`) now integrates to
+      `min(waves.cutoff_angles)` instead of its floor, the angle `show` draws and PRISM already used. Detected
+      values change by up to 1.2e-3 relative (WSe2, 100 keV, `inner=50`), so results computed earlier shift
+      slightly
 
 Documentation:
 
