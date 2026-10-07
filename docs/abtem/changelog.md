@@ -53,6 +53,9 @@ Performance:
 - The projection integrator is shared by reference across ensemble members instead of being deep-copied
   (and re-uploaded to the GPU) for each ([PR #350](https://github.com/abTEM/abTEM/pull/350))
 - Removed a redundant potential rebuild on every scan chunk ([PR #340](https://github.com/abTEM/abTEM/pull/340))
+- `CrystalPotential` builds its unit once per simulation instead of once per ensemble member and lazy scan
+  block, unless every member reseeds its own frozen-phonon pool; a list of three `.gpw` files with six members
+  is read 3 times instead of 18 ([PR #524](https://github.com/abTEM/abTEM/pull/524))
 
 Dependencies:
 
@@ -110,6 +113,21 @@ Bugfixes:
     - Warnings replace silent fallbacks: multi-GPU requested but declined (with the reason), a missing
       `if __name__ == "__main__"` guard, and a grid size that forces the Bluestein fallback (naming the
       next fast size)
+- A `CrystalPotential` without `seeds` is one crystal per simulation: every lazy scan block, potential chunk
+  and backscattering pass sees the same mosaic of frozen-phonon configurations. The mosaic, and with
+  `num_frozen_phonons` the member seeds, follow from the seeds of the unit's `FrozenPhonons`, so a seeded unit
+  makes the crystal reproducible; two crystals made from one `FrozenPhonons` unit are the same crystal, and
+  independent crystals need different `seeds`. `seeds` also accepts an int or a list, as documented
+  ([PR #524](https://github.com/abTEM/abTEM/pull/524))
+- `TransmissionFunction` could not be run through multislice, sliced or loaded with `from_zarr`, and
+  `PotentialArray.transmission_function` dropped the potential's exit planes, ensemble axes and metadata
+  ([PR #524](https://github.com/abTEM/abTEM/pull/524))
+- Lazy results declare the dtype their blocks return, which is also the eager result's dtype. `Waves.dtype`
+  is the dtype of the array instead of the configured precision, and lazy FFTs, transforms, detectors and
+  measurements of 64-bit data under `float32` (or 32-bit data under `float64`) no longer declare, and
+  accumulate reductions in, the configured precision. `Waves.multislice` and
+  `Waves.transition_potential_multislice` cast waves in the other precision to the configured one before
+  propagating, so every path returns the configured precision ([PR #524](https://github.com/abTEM/abTEM/pull/524))
 
 Documentation:
 
