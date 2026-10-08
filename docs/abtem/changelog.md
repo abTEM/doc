@@ -23,9 +23,12 @@ Features:
   signals much weaker than the total. `phonon_loss_diffraction_patterns` now builds on it and gains the
   same options. Its keyword `component` becomes `components`, and the components `"incoherent"`,
   `"coherent"` and `"tds"` become `"total"`, `"elastic"` and `"diffuse"`; the old names raise a
-  `ValueError` naming the new one. `"all"` stacks `("total", "elastic", "diffuse")`, and the metadata key
-  `phonon_loss_component` becomes `frozen_phonon_component`
-  ([PR #484](https://github.com/abTEM/abTEM/pull/484))
+  `ValueError` naming the new one. `"all"` stacks `("total", "elastic", "diffuse")`, a tuple or list of names
+  stacks them in the order given, and the metadata key `phonon_loss_component` becomes
+  `frozen_phonon_component`. The loss/gain unfolding refuses a bool, negative or non-finite `temperature`;
+  at zero the whole signal is on the loss side. `momentum_resolved_spectrum` takes the diffuse component from a
+  stacked result and raises a `ValueError` for the total or elastic component, which contain the Bragg
+  intensity ([PR #484](https://github.com/abTEM/abTEM/pull/484))
 - Linear-scaling PRISM-EELS for core-loss simulations: `SMatrix.transition_potential_scan`, with
   single- and double-channel scattering and an optional windowed inelastic crop
   ([PR #289](https://github.com/abTEM/abTEM/pull/289))
@@ -132,8 +135,9 @@ Documentation:
 - `sampling="auto"`/`slice_thickness="auto"` documented in detail in the potentials walkthrough, including a
   worked example of the commensurability artifact they remove; cross-referenced from the convergence appendix
   (manual commensurate sampling) and the performance-tips appendix (fast FFT sizes)
-- New tutorial on phonon-loss spectroscopy: energy-resolved frozen phonons, the TDS decomposition, the
-  momentum-resolved spectrum $S(q, E)$, the spectral detectors and detailed-balance thermal weighting
+- New tutorial on phonon-loss spectroscopy: energy-resolved frozen phonons, the decomposition into total, elastic
+  and diffuse intensity, the momentum-resolved spectrum $S(q, E)$, the spectral detectors and detailed-balance
+  thermal weighting
 - Energy ensembles documented in the wave-function walkthrough, with an energy series added to the
   multislice walkthrough
 - PRISM-EELS added to the core-loss tutorial, compared against the equivalent multislice scan
