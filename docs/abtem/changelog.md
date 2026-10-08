@@ -17,6 +17,15 @@ Features:
   the `SpectralAnnularDetector` and `SpectralSlitDetector`, and detailed-balance thermal weighting that
   splits the classical TDS signal into loss and gain sides
   ([PR #324](https://github.com/abTEM/abTEM/pull/324), [PR #351](https://github.com/abTEM/abTEM/pull/351))
+- `elastic_diffuse_diffraction_patterns` (also a `Waves` method) forms the total, elastic and diffuse
+  intensity of any exit waves with a frozen-phonon axis, keeping every other ensemble axis. It has
+  `unbiased=True` for the $(N - 1)/N$ bias of the diffuse part and `reduction_dtype="float64"` for diffuse
+  signals much weaker than the total. `phonon_loss_diffraction_patterns` now builds on it and gains the
+  same options. Its keyword `component` becomes `components`, and the components `"incoherent"`,
+  `"coherent"` and `"tds"` become `"total"`, `"elastic"` and `"diffuse"`; the old names raise a
+  `ValueError` naming the new one. `"all"` stacks `("total", "elastic", "diffuse")`, and the metadata key
+  `phonon_loss_component` becomes `frozen_phonon_component`
+  ([PR #484](https://github.com/abTEM/abTEM/pull/484))
 - Linear-scaling PRISM-EELS for core-loss simulations: `SMatrix.transition_potential_scan`, with
   single- and double-channel scattering and an optional windowed inelastic crop
   ([PR #289](https://github.com/abTEM/abTEM/pull/289))
@@ -61,6 +70,13 @@ Dependencies:
 
 Bugfixes:
 
+- `block_direct=True` in `Waves.diffraction_patterns` blocked a fixed 1 mrad radius. It now blocks the
+  bright-field disk plus a margin for a probe with a semiangle cutoff, as `DiffractionPatterns.block_direct()`
+  does. For a plane wave, or a cutoff below half a pixel, it blocks the zero-frequency pixel only, now also
+  with `fftshift=False` ([PR #484](https://github.com/abTEM/abTEM/pull/484))
+- Lazy diffraction patterns of complex128 waves were declared float32, so later dask reductions
+  accumulated in float32; they now keep the precision of the waves
+  ([PR #484](https://github.com/abTEM/abTEM/pull/484))
 - `GPAWPotential` for the new-style GPAW calculator API (GPAW 26+), and `GPAWPotential.from_file` on
   old-style restarted calculators ([PR #325](https://github.com/abTEM/abTEM/pull/325))
 - `GPAWPotential` single-calculator `frozen_phonons` ensemble building
