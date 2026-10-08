@@ -110,6 +110,34 @@ Bugfixes:
     - Warnings replace silent fallbacks: multi-GPU requested but declined (with the reason), a missing
       `if __name__ == "__main__"` guard, and a grid size that forces the Bluestein fallback (naming the
       next fast size)
+- Changed results of `integrate_gradient` and `block_direct()`, and fixes to lazy `Waves.normalize()`, eager
+  `SMatrix.build()`, `GPAWPotential` with a trajectory and arithmetic on CuPy data
+  ([PR #556](https://github.com/abTEM/abTEM/pull/556))
+    - **Behaviour change:** `Images.integrate_gradient` shifts every image of an ensemble so that its own
+      minimum is 0. An eager ensemble previously shared one constant, the minimum over the whole ensemble, and
+      a lazy result was shifted by the minimum of each dask block, so it depended on the chunking. Only the
+      offset of an ensemble member differs; a single image gives the same result. This applies to
+      `DiffractionPatterns.integrated_center_of_mass` as well
+    - **Behaviour change:** `DiffractionPatterns.block_direct()` without a `semiangle_cutoff` in the metadata
+      blocks only the zero-angle pixel: the default radius is half the smaller angular sampling. It was the
+      larger angular sampling, which also zeroed the neighbouring pixels (four, for similar samplings); for the
+      pattern of a single unit cell those are the first-order reflections. Patterns with a `semiangle_cutoff`
+      and calls with an explicit `radius` are unchanged. With `margin=True` and no `radius`, the margin (the
+      larger angular sampling) is added to the new, smaller radius, so fewer pixels are blocked than before
+    - Lazy `Waves.normalize()` raised `AttributeError`; it now gives the eager result for any chunking,
+      whether the waves are stored in real or reciprocal space
+    - Under `float64` the eager `SMatrix.build()` stored `complex64` plane waves; it now follows the configured
+      precision, as the lazy build does. The eager S-matrix, on the device or on the host, is `complex128` and
+      takes twice the memory it did; `float32` is unchanged
+    - Eager `SMatrix.build()` with `store_on_host=True` raised `AttributeError` on the CPU device
+    - A `GPAWPotential` of a single calculator with an `AtomsEnsemble` or `EnergyResolvedAtomsEnsemble` as
+      `frozen_phonons` raises a `ValueError` at construction. It was accepted, and then raised `TypeError` in
+      every build and multislice. One calculator takes `FrozenPhonons`; for a trajectory, pass one calculator
+      per frame
+    - Arithmetic between CuPy data and a host operand raised `TypeError`. `+`, `-`, `*`, `/` and `**`,
+      including the reflected forms, move a NumPy array, a dask array of NumPy chunks or an array object with
+      CPU data to the device. The result is on the device of the CuPy data, and lazy if either side is. The
+      in-place forms (`+=`, `-=`, `*=`, `/=`) accept a NumPy array or an eager CPU object
 
 Documentation:
 
