@@ -110,6 +110,32 @@ Bugfixes:
     - Warnings replace silent fallbacks: multi-GPU requested but declined (with the reason), a missing
       `if __name__ == "__main__"` guard, and a grid size that forces the Bluestein fallback (naming the
       next fast size)
+- Slice, grid and scan counts one too many when the step divides the extent exactly, precision-dependent and
+  overlapping `DiffractionPatterns.azimuthal_average()` bins, and the license file missing from the wheel
+  ([PR #564](https://github.com/abTEM/abTEM/pull/564))
+    - **Behaviour change:** a `slice_thickness` or `sampling` that divides the depth or extent exactly gives
+      exactly that many slices or grid points. Rounding noise in the quotient (`10.8 / 0.3` is
+      `36.00000000000001`) used to add one: 37 slices of 0.2919 Å instead of 36 of 0.3 Å, `gpts=(37, 19)`
+      instead of `(36, 18)`. This applies to `Potential`, `CrystalPotential`, `Grid`, `GridScan`,
+      `Images.interpolate`, the line-profile `interpolate`, the detectors' `resample`, the grid of
+      `Potential(sampling="auto")` and the target grid of `commensurate_gpts`. A quotient with a genuine
+      remainder still rounds up. A repeated `GPAWPotential` with a transformed cell now matches the tiled
+      one-cell potential, where its slices took one z sample more from the sixth slice on
+    - **Behaviour change:** `LineScan(sampling=...)` with `endpoint=True` (the default) spaces its positions
+      at or below the requested sampling, like `GridScan(endpoint=True)`: 10 Å at 0.3 Å gives 35 positions,
+      not 34 positions 0.303 Å apart
+    - A zero-length `LineScan` with a sampling, and an axis of zero extent in a `GridScan` with
+      `endpoint=False`, have one position and simulate it, where a scan raised an error.
+      `Images.interpolate_line` over a zero-length line gives the value at that point for `width=0` and
+      raises `ValueError` for `width > 0`
+    - **Behaviour change:** the step bins of `DiffractionPatterns.azimuthal_average()` are the half-open rings
+      `c - width / 2 <= r < c + width / 2`. The default bins no longer overlap: every pixel counts in exactly
+      one bin, and bin 0 is the direct beam alone. Each bin averages about half as many pixels as before.
+      `width` is the full width of the ring, so `width=1.5` gives a ring of full width 1.5, where it gave 3.
+      Which pixels a bin holds no longer depends on the precision or the pattern size, and a lazy result has
+      the shape of the eager one. The Gaussian weighting is unchanged. A lazy call with an unknown
+      `weighting_function` raises at the call, not at `compute()`
+    - The wheel ships the `LICENSE` file
 
 Documentation:
 
