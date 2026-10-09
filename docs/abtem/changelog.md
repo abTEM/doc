@@ -111,7 +111,7 @@ Bugfixes:
       `if __name__ == "__main__"` guard, and a grid size that forces the Bluestein fallback (naming the
       next fast size)
 - Changed results of `integrate_gradient` and `block_direct()`, and fixes to lazy `Waves.normalize()`, eager
-  `SMatrix.build()`, `GPAWPotential` with a trajectory and arithmetic on CuPy data
+  `SMatrix.build()`, `GPAWPotential` with a trajectory and arithmetic between CPU and GPU data
   ([PR #556](https://github.com/abTEM/abTEM/pull/556))
     - **Behaviour change:** `Images.integrate_gradient` shifts every image of an ensemble so that its own
       minimum is 0. An eager ensemble previously shared one constant, the minimum over the whole ensemble, and
@@ -134,10 +134,11 @@ Bugfixes:
       `frozen_phonons` raises a `ValueError` at construction. It was accepted, and then raised `TypeError` in
       every build and multislice. One calculator takes `FrozenPhonons`; for a trajectory, pass one calculator
       per frame
-    - Arithmetic between CuPy data and a host operand raised `TypeError`. `+`, `-`, `*`, `/` and `**`,
-      including the reflected forms, move a NumPy array, a dask array of NumPy chunks or an array object with
-      CPU data to the device. The result is on the device of the CuPy data, and lazy if either side is. The
-      in-place forms (`+=`, `-=`, `*=`, `/=`) accept a NumPy array or an eager CPU object
+    - Arithmetic between CPU and GPU data (an array object with CuPy data and a NumPy array, a dask array of
+      NumPy chunks or an array object with CPU data, or the reverse) raises a `TypeError` that says to move
+      one operand with `copy_to_device`, in either operand order and for lazy data when the expression is
+      built. It raised CuPy's `TypeError` before, for lazy data only at compute time. NumPy scalars and Python
+      numbers are accepted as before
 
 Documentation:
 
