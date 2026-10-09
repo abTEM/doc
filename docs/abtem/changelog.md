@@ -53,6 +53,13 @@ Performance:
 - The projection integrator is shared by reference across ensemble members instead of being deep-copied
   (and re-uploaded to the GPU) for each ([PR #350](https://github.com/abTEM/abTEM/pull/350))
 - Removed a redundant potential rebuild on every scan chunk ([PR #340](https://github.com/abTEM/abTEM/pull/340))
+- The automatic batch sizes of PRISM count the exit planes: the plane waves per chunk of `SMatrix.build`
+  hold every exit plane within `dask.chunk-size`, and the positions per reduction batch of
+  `SMatrixArray.reduce`, `SMatrix.reduce` and `SMatrix.scan` hold the reduced waves of every exit plane
+  and ensemble member. The peak memory of an eager scan with 9 exit planes on a 128 x 128 grid falls from
+  9.2 GB to 1.3 GB; an integer `max_batch*`, and a potential with one exit plane and no ensemble, are
+  batched as before. Where a batch changes, values move by float32 rounding of the reduction only
+  ([PR #563](https://github.com/abTEM/abTEM/pull/563))
 
 Dependencies:
 
@@ -110,6 +117,23 @@ Bugfixes:
     - Warnings replace silent fallbacks: multi-GPU requested but declined (with the reason), a missing
       `if __name__ == "__main__"` guard, and a grid size that forces the Bluestein fallback (naming the
       next fast size)
+- PRISM with several exit planes, ensembles and single positions
+  ([PR #563](https://github.com/abTEM/abTEM/pull/563)):
+    - **Behaviour change:** PRISM `reduce` without a scan, and `reduce`/`scan` at a single `(x, y)`
+      position, return no position axis, as multislice does. Before, the result kept a length-1 position
+      axis, except for pixelated detectors on the default lazy path, so eager and lazy results disagreed;
+      code that indexed that axis must drop the index. `scan(scan=None)` is a full `GridScan` and is
+      unchanged
+    - Elastic PRISM with a potential that has more than one exit plane: `SMatrix.build`, `reduce` and
+      `scan` (eager and lazy) carry an exit-plane axis, placed after the potential ensemble axes as in
+      multislice, instead of raising a broadcast or axes-metadata error. `upsample=True` with more than
+      one exit plane raises `NotImplementedError`
+    - Eager PRISM scans with a `WavesDetector` over `FrozenPhonons(ensemble_mean=True)` keep the exit
+      waves of every configuration, as multislice and lazy PRISM do, instead of averaging them
+    - Lazy and eager `SMatrix.transition_potential_scan` with `upsample=True` no longer compute the
+      compressed S-matrix, so frozen phonons and several exit planes work; the dummy probes of an
+      upsampled elastic scan size a default `PixelatedDetector` and `FlexibleAnnularDetector` from the
+      downsampled grid on non-square grids
 
 Documentation:
 
