@@ -110,6 +110,21 @@ Bugfixes:
     - Warnings replace silent fallbacks: multi-GPU requested but declined (with the reason), a missing
       `if __name__ == "__main__"` guard, and a grid size that forces the Bluestein fallback (naming the
       next fast size)
+- Exports of reciprocal-space `Waves` and of `DiffractionPatterns(fftshift=False)` on axes that match the data,
+  and the `to_quantem()` origin ([PR #572](https://github.com/abTEM/abTEM/pull/572))
+    - **Behaviour change:** `to_data_array()`, `to_hyperspy()` and `to_quantem()` of a `Waves` with
+      `reciprocal_space=True` give fftshifted data on `kx`/`ky` axes in 1/Å, where they gave the unshifted
+      coefficients on real-space `x`/`y` axes in Å. The `to_quantem` dataset name is `"DiffractionPatterns"`.
+      The waves' own `axes_metadata` and `to_zarr()` are unchanged
+    - **Behaviour change:** the same exports of a `DiffractionPatterns` with `fftshift=False` give a shifted
+      copy, so the data match the centred axes and the `DataArray` coordinates increase. Selection by
+      coordinate value is unchanged; positional indexing is not. Data that are already centred need
+      `fftshift=True`, or the exports shift them
+    - **Behaviour change:** `to_quantem()` writes each axis's offset as its quantem `origin`, where it wrote 0,
+      so a centred diffraction pattern has its zero frequency at k = 0, and scan axes, the radial and azimuthal
+      axes of `PolarMeasurements` and offset axes cropped away from index 0 keep their offsets
+    - `to_quantem()` of reciprocal-space `Waves` and of `DiffractionPatterns(fftshift=False)` leaves a lazy
+      object lazy
 
 Documentation:
 
