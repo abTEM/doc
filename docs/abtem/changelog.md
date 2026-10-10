@@ -110,6 +110,24 @@ Bugfixes:
     - Warnings replace silent fallbacks: multi-GPU requested but declined (with the reason), a missing
       `if __name__ == "__main__"` guard, and a grid size that forces the Bluestein fallback (naming the
       next fast size)
+- Core-loss PRISM detector outputs and frames
+  ([PR #573](https://github.com/abTEM/abTEM/pull/573)):
+    - **Behaviour change:** Core-loss PRISM at `interpolation=1` returns real-space outputs
+      (`WavesDetector`, `PixelatedDetector(reciprocal_space=False)`) in the cell frame, as core-loss
+      multislice and elastic PRISM do. Previously each position was rolled by half the window minus its
+      pixel, so the image of a position did not sit at that position. Outputs in reciprocal space are
+      unchanged, and so are those at `interpolation > 1`
+    - **Behaviour change:** The results of the eager core-loss PRISM scan over a static potential carry
+      `semiangle_cutoff` and `base_tilt_x`/`base_tilt_y` in their metadata, as the lazy and ensemble
+      results and core-loss multislice do. `block_direct()` of such a diffraction pattern blocks the
+      direct disk, where it blocked only the zero-angle pixel without them
+    - Core-loss PRISM (`SMatrix.transition_potential_scan`, eager and lazy) with a downsampled (the
+      default) or an upsampled S-matrix sizes the output of a `PixelatedDetector`, a
+      `FlexibleAnnularDetector` and a `WavesDetector` from the waves the reduction detects instead of
+      from the elastic probes. Eager scans over `FrozenPhonons` with a `PixelatedDetector` or
+      `FlexibleAnnularDetector` no longer fail to broadcast, the shape a lazy scan declares equals the
+      computed one, and a `WavesDetector` no longer raises `AttributeError: 'Waves' object has no
+      attribute 'reduce_ensemble'`
 
 Documentation:
 
