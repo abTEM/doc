@@ -134,11 +134,11 @@ Bugfixes:
       `frozen_phonons` raises a `ValueError` at construction. It was accepted, and then raised `TypeError` in
       every build and multislice. One calculator takes `FrozenPhonons`; for a trajectory, pass one calculator
       per frame
-    - Arithmetic between CPU and GPU data (an array object with CuPy data and a NumPy array, a dask array of
-      NumPy chunks or an array object with CPU data, or the reverse) raises a `TypeError` that says to move
-      one operand with `copy_to_device`, in either operand order and for lazy data when the expression is
-      built. It raised CuPy's `TypeError` before, for lazy data only at compute time. NumPy scalars and Python
-      numbers are accepted as before
+    - Arithmetic between CPU and GPU data (an array object with CuPy data and a dask array of NumPy chunks or
+      an array object with CPU data, or the reverse) gives the GPU result: the side on the host is moved to the
+      device, in either operand order, and a lazy one block by block at compute time. It raised CuPy's
+      `TypeError`, for two lazy operands only at compute time. NumPy scalars and Python numbers are handled as
+      before
 
 Documentation:
 
