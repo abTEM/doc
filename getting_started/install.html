@@ -774,6 +774,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-dependencies">Optional dependencies</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gpaw-not-available-on-windows">GPAW (not available on Windows)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-only-nvidia">GPU (only NVIDIA)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#metal-on-apple-silicon-experimental">Metal on Apple silicon (experimental)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#development-installation">Development installation</a></li>
 </ul>
 </li>
@@ -869,6 +870,31 @@ pip</label><div class="sd-tab-content docutils">
 </div>
 </div>
 </section>
+<section id="metal-on-apple-silicon-experimental">
+<h3>Metal on Apple silicon (experimental)<a class="headerlink" href="#metal-on-apple-silicon-experimental" title="Link to this heading">#</a></h3>
+<p>A subset of features in <em>ab</em>TEM can be accelerated on Apple silicon processors using their <a class="reference external" href="https://developer.apple.com/metal/">Metal API</a>.
+To enable this features requires a working installation of <a class="reference external" href="https://pytorch.org/">PyTorch</a>. Metal support is
+currently highly experimental, and not all features are supported. Features not currently supported, will fall
+back to the NumPy implementation.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">pytorch</span> <span class="n">torchvision</span> <span class="n">torchaudio</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span><span class="o">-</span><span class="n">nightly</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">abtem</span> <span class="n">jupyterlab</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">scipy</span> <span class="o">--</span><span class="n">force</span><span class="o">-</span><span class="n">reinstall</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">deps</span>
+</pre></div>
+</div>
+<p>To enable this feature you need to configure <code class="docutils literal notranslate"><span class="pre">enable_mps</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">abtem</span>
+<span class="n">abtem</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">enable_mps</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can verify that mps support is available using the code below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">mps</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span>
+
+<span class="n">wave</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">PlaneWave</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="mf">100e3</span><span class="p">,</span> <span class="n">gpts</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">wave</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">copy_to_device</span><span class="p">(</span><span class="s2">"mps"</span><span class="p">)</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"mps"</span>
+</pre></div>
+</div>
+</section>
 <section id="development-installation">
 <h3>Development installation<a class="headerlink" href="#development-installation" title="Link to this heading">#</a></h3>
 <p>See <a class="reference internal" href="../abtem/contribute.html#contributing-clone-and-install"><span class="std std-ref">our guide to contributing</span></a> for instructions on a development installation of
@@ -946,6 +972,7 @@ pip</label><div class="sd-tab-content docutils">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-dependencies">Optional dependencies</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gpaw-not-available-on-windows">GPAW (not available on Windows)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-only-nvidia">GPU (only NVIDIA)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#metal-on-apple-silicon-experimental">Metal on Apple silicon (experimental)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#development-installation">Development installation</a></li>
 </ul>
 </li>
