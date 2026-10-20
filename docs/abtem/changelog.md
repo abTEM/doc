@@ -9,11 +9,6 @@ Features:
 - Energy ensemble support across the codebase: `PlaneWave`, `Probe`, `SMatrix`, `BlochWaves` and `CTF`
   accept a list of energies, and the resulting `EnergyAxis` propagates through indexing, angular sampling,
   unit conversion and diffraction-spot indexing ([PR #257](https://github.com/abTEM/abTEM/pull/257))
-    - Bloch-wave rotation ensembles: `BlochWaves(..., energy=[...]).rotate(axis, angles)` with a
-      distribution of angles computes every energy. Diffraction patterns and exit waves get an `EnergyAxis`
-      after the rotation axes, the axis order of a multislice rotation series, and each energy and
-      orientation keeps its own beams within the union beam set
-      ([PR #521](https://github.com/abTEM/abTEM/pull/521))
 - C-PRISM: `SMatrix(upsample=True)` reduces every probe from the complete plane-wave expansion of the
   aperture, so the interpolation factor only sets the number of multislice runs. Adds
   `CompressedSMatrixArray` and `GridScan.commensurate` ([PR #318](https://github.com/abTEM/abTEM/pull/318))
@@ -52,34 +47,6 @@ Features:
     - `cupy.fft-cache-size`'s previous `0 MB` default silently disabled the cuFFT plan cache; changed to
       `-1` (unlimited) here, then to the device-relative `auto` default below once unbounded retention
       turned out to cost tens of GB on FFT-unfriendly grids
-- **Bloch waves default to the non-paraxial wave equation, `use_wave_eq="exact"`**, the counterpart of the
-  default exact multislice propagator, `FourierMultislice(order="exact")`
-  ([PR #447](https://github.com/abTEM/abTEM/pull/447), [PR #448](https://github.com/abTEM/abTEM/pull/448)).
-  `use_wave_eq=True` remains the paraxial counterpart of `order=1`, and `use_wave_eq=False` the standard
-  (textbook) Bloch-wave equation, which was the default before
-    - **Results computed with default arguments change.** For Si with `sg_max=0.5`, the R factor between the
-      old and new defaults stays below 1 % at 100–300 keV, but reaches 5 % at 20 keV on zone axis and 24 %
-      at 20 keV, 1000 Å thick and 7° off zone axis. Passing `use_wave_eq=False` does not restore the old
-      numbers exactly, because of the metric fix under Bugfixes
-    - `get_kinematical_diffraction_pattern` weights each reflection with the excitation error of the selected
-      form, so kinematical patterns also change slightly off zone axis. Beam selection (`sg_max`) and
-      diffraction-spot indexing keep the Ewald-sphere excitation error
-    - With `"exact"`, beams with $\lambda |g_\perp| \geq 1$ cannot propagate; `BlochWaves` excludes them with
-      a warning. This happens only at low energies with a large `g_max` (it needs
-      $|g| \approx \sqrt{2}/\lambda$, about $3.6 \ \mathrm{Å^{-1}}$ at 1 keV)
-- `BlochWaves.calculate_scattering_matrix(z, lazy=True)` returns a dask array; the method also no longer
-  fails on GPU ([PR #448](https://github.com/abTEM/abTEM/pull/448))
-- Bloch waves follow the `precision` setting like the rest of abTEM, so the default is now single
-  precision; set `precision="float64"` for the previous double-precision results ([PR #449](https://github.com/abTEM/abTEM/pull/449)).
-  Single precision is accurate to about $2 \times 10^{-4}$ relative for beams down to $10^{-3}$ of the
-  strongest, even at 10–20 kÅ, and any single-precision Bloch-wave propagation emits a
-  `BlochWavePrecisionWarning` recommending a double-precision check. The scattering matrix
-  (`calculate_scattering_matrix`) is always exponentiated in double precision internally, as scaling and
-  squaring breaks down in single precision for realistic beam counts
-- Multi-energy `BlochWaves`: `excitation_errors()` returns one row per energy over the union beam set,
-  `get_kinematical_diffraction_pattern()` returns patterns with an `EnergyAxis`, and the new
-  `select_energy(energy)` returns the single-energy Bloch waves; `calculate_structure_matrix` and
-  `calculate_scattering_matrix` still need a single energy and point to it ([PR #456](https://github.com/abTEM/abTEM/pull/456))
 
 Performance:
 
@@ -143,33 +110,6 @@ Bugfixes:
     - Warnings replace silent fallbacks: multi-GPU requested but declined (with the reason), a missing
       `if __name__ == "__main__"` guard, and a grid size that forces the Bluestein fallback (naming the
       next fast size)
-- The Bloch-wave metric $M = \mathrm{diag}\big((1 + g_z/K)^{-1/2}\big)$ was applied inconsistently
-  ([PR #448](https://github.com/abTEM/abTEM/pull/448)):
-    - The eigendecomposition path (`calculate_diffraction_patterns`) and the matrix-exponential path
-      (`calculate_scattering_matrix`) disagreed off zone axis, by up to $1.4 \times 10^{-4}$ in amplitude
-      for Si 7° off [001] at 100 keV; they now agree to $10^{-13}$
-    - The wave-equation forms (`use_wave_eq=True` and `"exact"`) carried the metric of the standard form,
-      where it does not belong. Without it, `"exact"` agrees with the full Helmholtz equation to
-      R = 0.03–1 % (previously up to 33 %), and better with multislice off zone axis: R against exact
-      multislice drops from 6.7 % to 3.5 % for Si at 100 keV, 1000 Å, 7° off zone axis
-    - `use_wave_eq=False` now solves the textbook Bloch-wave equation exactly, which moves its results by
-      up to about 5 % R at 100 keV off zone axis. They move *away* from the full Helmholtz equation: the
-      old, inconsistent metric approximated the $\gamma^2$ term that the textbook equation drops. The
-      default `"exact"` form is the accurate choice
-- Multi-energy `BlochWaves` methods that answered silently for the first energy only, and multi-energy
-  `calculate_exit_waves(lazy=False)` / `calculate_diffraction_patterns(lazy=False)`, which returned a lazy
-  result or raised ([PR #456](https://github.com/abTEM/abTEM/pull/456))
-- `StructureFactor.get_projected_potential` ignored `sampling`, failed on an integer `gpts` and on a
-  sequence `slice_thickness` ([PR #456](https://github.com/abTEM/abTEM/pull/456)), and `StructureFactorArray.get_projected_potential` ignored its
-  `lazy` argument ([PR #487](https://github.com/abTEM/abTEM/pull/487))
-- `IndexedDiffractionPatterns.sort()` always raised, and `positions_dict` returned three entries
-  whatever the number of spots ([PR #456](https://github.com/abTEM/abTEM/pull/456))
-- `index_diffraction_spots` on an energy ensemble indexed every member with the highest energy; each
-  member now uses its own wavelength ([PR #446](https://github.com/abTEM/abTEM/pull/446))
-- `BlochwaveEnsemble` rotations failed with SciPy 1.18, and eager (`lazy=False`) ensemble results gave
-  every orientation the last orientation's pattern ([PR #450](https://github.com/abTEM/abTEM/pull/450))
-- A-, B- and C-centred cells crashed `StructureFactor`, and their detection used the wrong centring
-  vectors, which would have removed allowed reflections such as graphene's (100) ([PR #487](https://github.com/abTEM/abTEM/pull/487))
 
 Documentation:
 
