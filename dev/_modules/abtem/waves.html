@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -607,7 +605,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.detectors</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseDetector</span><span class="p">,</span> <span class="n">FlexibleAnnularDetector</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.inelastic.core_loss</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">BaseTransitionPotential</span><span class="p">,</span>
-    <span class="n">_extract_scattering_sites</span><span class="p">,</span>
+    <span class="n">_resolve_scattering_sites</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.measurements</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">BaseMeasurements</span><span class="p">,</span>
@@ -617,13 +615,19 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.multislice</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">_DETECTORS_ELASTIC_MESSAGE</span><span class="p">,</span>
+    <span class="n">_FULL_EXPANSION_SCOPE_MESSAGE</span><span class="p">,</span>
     <span class="n">MultisliceTransform</span><span class="p">,</span>
+    <span class="n">_is_full_expansion_scope</span><span class="p">,</span>
     <span class="n">transition_potential_multislice_and_detect</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.iam</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasePotential</span><span class="p">,</span> <span class="n">PotentialArray</span><span class="p">,</span> <span class="n">validate_potential</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.scan</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseScan</span><span class="p">,</span> <span class="n">CustomScan</span><span class="p">,</span> <span class="n">GridScan</span><span class="p">,</span> <span class="n">validate_scan</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.slicing</span><span class="w"> </span><span class="kn">import</span> <span class="n">SliceIndexedAtoms</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.distributions</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseDistribution</span><span class="p">,</span> <span class="n">EnsembleFromDistributions</span><span class="p">,</span> <span class="n">validate_distribution</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.distributions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseDistribution</span><span class="p">,</span>
+    <span class="n">EnsembleFromDistributions</span><span class="p">,</span>
+    <span class="n">validate_distribution</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.tilt</span><span class="w"> </span><span class="kn">import</span> <span class="n">TiltType2D</span><span class="p">,</span> <span class="n">validate_tilt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.transfer</span><span class="w"> </span><span class="kn">import</span> <span class="n">CTF</span><span class="p">,</span> <span class="n">Aberrations</span><span class="p">,</span> <span class="n">Aperture</span><span class="p">,</span> <span class="n">BaseAperture</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">WavesToWavesTransform</span>
@@ -707,6 +711,17 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="n">potential</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_refuse_unsupported_core_loss_options</span><span class="p">(</span><span class="n">multislice_func_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+    <span class="c1"># Refused before any wave function is built or a graph is made: a check in the</span>
+    <span class="c1"># per-chunk driver alone would fail only at compute time, inside a dask</span>
+    <span class="c1"># traceback, and after an eager probe was built at every scan position.</span>
+    <span class="k">if</span> <span class="n">multislice_func_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"detectors_elastic"</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">_DETECTORS_ELASTIC_MESSAGE</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">_is_full_expansion_scope</span><span class="p">(</span><span class="n">multislice_func_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"algorithm"</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">_FULL_EXPANSION_SCOPE_MESSAGE</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="BaseWaves">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.waves.html#abtem.waves.BaseWaves">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BaseWaves</span><span class="p">(</span><span class="n">HasGrid2DMixin</span><span class="p">,</span> <span class="n">HasAcceleratorMixin</span><span class="p">):</span>
@@ -739,7 +754,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">base_axes_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""List of AxisMetadata for the base axes in real space."""</span>
+<span class="w">        </span><span class="sd">"""AxisMetadata of the real-space grid the waves are defined on, also when</span>
+<span class="sd">        `reciprocal_space` is True."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="p">[</span>
@@ -880,6 +896,69 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_squeeze_flagged_axes</span><span class="p">(</span><span class="n">ensemble</span><span class="p">:</span> <span class="n">Waves</span> <span class="o">|</span> <span class="n">BaseMeasurements</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The ensemble without its axes flagged ``_squeeze`` (the position axis of a</span>
+<span class="sd">    bare scan position)."""</span>
+    <span class="k">return</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span>
+        <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">i</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">axes_metadata</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ensemble</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">axes_metadata</span><span class="o">.</span><span class="n">_squeeze</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_average_frozen_phonon_waves</span><span class="p">(</span><span class="n">waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Waves</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The configuration-averaged wave function &lt;ψ&gt; of waves from a ``WavesDetector``</span>
+<span class="sd">    with ``average_frozen_phonons``: the last ``FrozenPhononsAxis`` is averaged,</span>
+<span class="sd">    coherently and over that axis alone, and every other ensemble axis is kept."""</span>
+    <span class="n">axes</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
+    <span class="c1"># With more than one FrozenPhononsAxis, the last one is reduced.</span>
+    <span class="n">fp_axis_idx</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">i</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">axes</span><span class="p">)))</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">FrozenPhononsAxis</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">fp_axis_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"a WavesDetector with average_frozen_phonons needs a FrozenPhononsAxis in "</span>
+            <span class="s2">"the ensemble axes, e.g. from FrozenPhonons as the potential of the "</span>
+            <span class="s2">"multislice simulation."</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">axes</span><span class="p">[</span><span class="n">fp_axis_idx</span><span class="p">]</span><span class="o">.</span><span class="n">_ensemble_mean</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"a WavesDetector with average_frozen_phonons needs the frozen phonons "</span>
+            <span class="s2">"averaged: build them with ensemble_mean=True."</span>
+        <span class="p">)</span>
+
+    <span class="n">num_configurations</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">fp_axis_idx</span><span class="p">]</span>
+    <span class="c1"># The mean of the array (a dask tree reduction when lazy).</span>
+    <span class="n">averaged</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">_weighted_ensemble_mean</span><span class="p">(</span><span class="n">fp_axis_idx</span><span class="p">)</span>
+
+    <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">value</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">averaged</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="s2">"frozen_phonon_average"</span>
+    <span class="p">}</span>
+    <span class="n">metadata</span><span class="p">[</span><span class="s2">"num_configurations"</span><span class="p">]</span> <span class="o">=</span> <span class="n">num_configurations</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">averaged</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"metadata"</span><span class="p">,))</span>
+    <span class="k">return</span> <span class="n">averaged</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_average_ensemble_axes</span><span class="p">(</span><span class="n">ensemble</span><span class="p">:</span> <span class="n">Waves</span> <span class="o">|</span> <span class="n">BaseMeasurements</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The ensemble with its axes flagged for averaging averaged, without squeezing</span>
+<span class="sd">    any axis. Wave functions keep every member of an ensemble, except the frozen</span>
+<span class="sd">    phonons of those from a ``WavesDetector`` with ``average_frozen_phonons``."""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ensemble</span><span class="p">,</span> <span class="n">BaseMeasurements</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">reduce_ensemble</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"frozen_phonon_average"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_average_frozen_phonon_waves</span><span class="p">(</span><span class="n">ensemble</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ensemble</span>
+
+
 <span class="nd">@overload</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">reduce_ensemble</span><span class="p">(</span><span class="n">ensemble</span><span class="p">:</span> <span class="n">Waves</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Waves</span><span class="p">:</span> <span class="o">...</span>
 
@@ -902,7 +981,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Reduce an ensemble of wave functions or measurements by squeezing or averaging</span>
 <span class="sd">    ensemble axes tagged for reduction with the "_squeeze" or "_ensemble_mean"</span>
-<span class="sd">    attribute of the axis metadata.</span>
+<span class="sd">    attribute of the axis metadata. Wave functions are passed through unchanged, except</span>
+<span class="sd">    those of a ``WavesDetector`` with ``average_frozen_phonons``, whose frozen-phonon</span>
+<span class="sd">    axis is averaged, and the measurements of a ``PixelatedDetector`` with</span>
+<span class="sd">    ``components``, which are split into elastic and diffuse intensity after the</span>
+<span class="sd">    frozen-phonon average.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -923,29 +1006,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="k">return</span> <span class="n">outputs</span>
 
-    <span class="n">squeeze</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-        <span class="n">i</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">axes_metadata</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ensemble</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">axes_metadata</span><span class="o">.</span><span class="n">_squeeze</span>
-    <span class="p">)</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">squeeze</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_squeeze_flagged_axes</span><span class="p">(</span><span class="n">ensemble</span><span class="p">)</span>
 
-    <span class="n">reduced_output</span><span class="p">:</span> <span class="n">Waves</span> <span class="o">|</span> <span class="n">BaseMeasurements</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">BaseMeasurements</span><span class="p">):</span>
-        <span class="n">reduced_output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">reduce_ensemble</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
-            <span class="nb">isinstance</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">FrozenPhononsAxis</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">ax</span><span class="o">.</span><span class="n">_ensemble_mean</span>
-            <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">output</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
-        <span class="p">):</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="s2">"ensemble_mean=False returns the full frozen-phonon ensemble as "</span>
-                <span class="s2">"individual wave functions. Use detectors to obtain averaged "</span>
-                <span class="s2">"measurements."</span>
-            <span class="p">)</span>
-        <span class="n">reduced_output</span> <span class="o">=</span> <span class="n">output</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">BaseMeasurements</span><span class="p">)</span> <span class="ow">and</span> <span class="n">output</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+        <span class="s2">"frozen_phonon_average"</span>
+    <span class="p">):</span>
+        <span class="k">return</span> <span class="n">_average_frozen_phonon_waves</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">reduced_output</span></div>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">BaseMeasurements</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span>
+        <span class="nb">isinstance</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">FrozenPhononsAxis</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">ax</span><span class="o">.</span><span class="n">_ensemble_mean</span>
+        <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">output</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
+    <span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">"ensemble_mean=False returns the full frozen-phonon ensemble as "</span>
+            <span class="s2">"individual wave functions. Use detectors to obtain averaged "</span>
+            <span class="s2">"measurements."</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_average_ensemble_axes</span><span class="p">(</span><span class="n">output</span><span class="p">)</span></div>
 
 
 
@@ -953,6 +1031,15 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">space</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">in_place</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_space</span> <span class="o">=</span> <span class="n">space</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_in_place</span> <span class="o">=</span> <span class="n">in_place</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_space</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">in_place</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_in_place</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_new_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="n">array</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">_eager_array</span>
@@ -999,7 +1086,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Sampling of wave functions in `x` and `y` [Å].</span>
 <span class="sd">    reciprocal_space : bool, optional</span>
 <span class="sd">        If True, the wave functions are assumed to be represented in reciprocal space</span>
-<span class="sd">        instead of real space (default is False).</span>
+<span class="sd">        instead of real space (default is False). Their exports (`to_data_array`,</span>
+<span class="sd">        `to_hyperspy`, `to_quantem`) are those of the corresponding</span>
+<span class="sd">        `DiffractionPatterns` [1/Å]: the fftshifted Fourier coefficients on</span>
+<span class="sd">        spatial-frequency axes `kx` and `ky`, with the zero frequency at the centre.</span>
 <span class="sd">    ensemble_axes_metadata : list of AxesMetadata</span>
 <span class="sd">        Axis metadata for each ensemble axis. The axis metadata must be compatible with</span>
 <span class="sd">        the shape of the array.</span>
@@ -1009,6 +1099,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    """</span>
 
     <span class="n">_base_dims</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="c1"># The dtype of the array, as for every ArrayObject. BaseWaves.dtype, the</span>
+    <span class="c1"># precision a builder builds in, would otherwise precede it in the MRO.</span>
+    <span class="n">dtype</span> <span class="o">=</span> <span class="n">ArrayObject</span><span class="o">.</span><span class="n">dtype</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1029,9 +1123,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
             <span class="n">energy</span> <span class="o">=</span> <span class="n">validate_distribution</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
-            <span class="n">energy_axis</span> <span class="o">=</span> <span class="n">EnergyAxis</span><span class="p">(</span>
-                <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">energy</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-                <span class="n">_ensemble_mean</span><span class="o">=</span><span class="n">energy</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
+            <span class="n">energy_axis</span> <span class="o">=</span> <span class="n">EnergyAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span>
+                <span class="n">energy</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">energy</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="n">ensemble_axes_metadata</span> <span class="o">=</span> <span class="p">[</span><span class="n">energy_axis</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">ensemble_axes_metadata</span><span class="p">)</span>
             <span class="n">energy</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># energy stored in ensemble axis, not accelerator</span>
@@ -1163,8 +1256,9 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">            shape of the array. The last two axes must be RealSpaceAxis.</span>
 <span class="sd">        metadata :</span>
 <span class="sd">            A dictionary defining wave function metadata. All items will be added to the</span>
-<span class="sd">            metadata of measurements derived from the waves. The metadata must contain</span>
-<span class="sd">            the electron energy [eV].</span>
+<span class="sd">            metadata of measurements derived from the waves. The electron energy [eV]</span>
+<span class="sd">            is read from the metadata; without it, or with None, the waves have no</span>
+<span class="sd">            scalar energy, as for a probe built with several energies.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1174,7 +1268,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"metadata must be provided to create Waves"</span><span class="p">)</span>
 
-        <span class="n">energy</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">"energy"</span><span class="p">]</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">)</span>
         <span class="n">reciprocal_space</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"reciprocal_space"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
         <span class="n">x_axis</span><span class="p">,</span> <span class="n">y_axis</span> <span class="o">=</span> <span class="n">axes_metadata</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">axes_metadata</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -1192,6 +1286,58 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="n">axes_metadata</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span>
             <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
         <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_as_diffraction_patterns</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DiffractionPatterns</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The Fourier coefficients of reciprocal-space waves, as unshifted</span>
+<span class="sd">        diffraction patterns on spatial-frequency axes [1/Å]. The exports shift</span>
+<span class="sd">        them directly: they are unshifted by construction, so the warning of</span>
+<span class="sd">        `DiffractionPatterns` about unshifted exports does not apply."""</span>
+        <span class="k">return</span> <span class="n">DiffractionPatterns</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_space_sampling</span><span class="p">,</span>
+            <span class="n">fftshift</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">),</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="Waves.to_hyperspy">
+<a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.waves.html#abtem.waves.Waves.to_hyperspy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_hyperspy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transpose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Convert to a Hyperspy signal, see `ArrayObject.to_hyperspy`.</span>
+
+<span class="sd">        Reciprocal-space waves are exported as described under `reciprocal_space` in</span>
+<span class="sd">        `Waves`.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_space</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_as_diffraction_patterns</span><span class="p">()</span><span class="o">.</span><span class="n">_fftshifted</span><span class="p">()</span><span class="o">.</span><span class="n">to_hyperspy</span><span class="p">(</span><span class="n">transpose</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_hyperspy</span><span class="p">(</span><span class="n">transpose</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Waves.to_data_array">
+<a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.waves.html#abtem.waves.Waves.to_data_array">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_data_array</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Convert to a xarray DataArray, see `ArrayObject.to_data_array`.</span>
+
+<span class="sd">        Reciprocal-space waves are exported as described under `reciprocal_space` in</span>
+<span class="sd">        `Waves`.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_space</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_as_diffraction_patterns</span><span class="p">()</span><span class="o">.</span><span class="n">_fftshifted</span><span class="p">()</span><span class="o">.</span><span class="n">to_data_array</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_data_array</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Waves.to_quantem">
+<a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.waves.html#abtem.waves.Waves.to_quantem">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_quantem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Convert to a quantem Dataset, see `ArrayObject.to_quantem`.</span>
+
+<span class="sd">        Reciprocal-space waves are exported as described under `reciprocal_space` in</span>
+<span class="sd">        `Waves`.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_space</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_as_diffraction_patterns</span><span class="p">()</span><span class="o">.</span><span class="n">_fftshifted</span><span class="p">()</span><span class="o">.</span><span class="n">to_quantem</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_quantem</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="Waves.convolve">
@@ -1289,7 +1435,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">            The normalized wave functions.</span>
 <span class="sd">        """</span>
         <span class="n">transform</span> <span class="o">=</span> <span class="n">_WavesNormalization</span><span class="p">(</span><span class="n">space</span><span class="o">=</span><span class="n">space</span><span class="p">,</span> <span class="n">in_place</span><span class="o">=</span><span class="n">in_place</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">transform</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="c1"># The norm sums over the whole grid, so a lazy block must hold all of it.</span>
+        <span class="k">return</span> <span class="n">transform</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_base_chunks</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="Waves.tile">
@@ -1330,7 +1477,14 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span>
 
         <span class="k">if</span> <span class="n">renormalize</span><span class="p">:</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">/=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">repetitions</span><span class="p">))</span>
+            <span class="c1"># A Python scalar, not a NumPy one and not a 0-d array: under NEP 50</span>
+            <span class="c1"># both of those take part in promotion, so dividing a complex64 wave</span>
+            <span class="c1"># by them returns complex128 -- silently doubling the precision and</span>
+            <span class="c1"># the memory of the result, against the configured precision. A</span>
+            <span class="c1"># Python int leaves the dtype alone. It also keeps the divisor off</span>
+            <span class="c1"># the device, which is what let a dask array and a Metal array meet</span>
+            <span class="c1"># here as operands neither of them could accept.</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">/=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">repetitions</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
@@ -1390,6 +1544,16 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">return</span> <span class="n">waves</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_in_configured_precision</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Waves</span><span class="p">:</span>
+        <span class="c1"># The multislice algorithm runs in the configured precision.</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">dtype</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,))</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">d</span><span class="p">)</span>
+
 <div class="viewcode-block" id="Waves.phase_shift">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.waves.html#abtem.waves.Waves.phase_shift">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">phase_shift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">amount</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Waves</span><span class="p">:</span>
@@ -1407,12 +1571,16 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        """</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">_phase_shift</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
-            <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">amount</span><span class="p">)</span> <span class="o">*</span> <span class="n">array</span>
+            <span class="c1"># np.exp of a Python complex is a NumPy complex128 scalar, which</span>
+            <span class="c1"># under NEP 50 promotes complex64 waves to complex128 (and that</span>
+            <span class="c1"># dtype is refused outright by the Metal backend). The factor is a</span>
+            <span class="c1"># host scalar in the waves' own dtype, which every backend and dask</span>
+            <span class="c1"># multiply into the array without changing its dtype.</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">amount</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">array</span>
 
         <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,))</span>
         <span class="n">d</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_phase_shift</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
-        <span class="n">d</span><span class="p">[</span><span class="s2">"reciprocal_space"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">d</span><span class="p">)</span></div>
 
 
@@ -1426,15 +1594,17 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        images : Images</span>
 <span class="sd">            The wave functions as an image.</span>
 <span class="sd">        """</span>
-        <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">metadata</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
+        <span class="n">waves</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensure_real_space</span><span class="p">()</span>
+        <span class="c1"># The inverse FFT of reciprocal-space waves is already a new array.</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">if</span> <span class="n">waves</span> <span class="ow">is</span> <span class="bp">self</span> <span class="k">else</span> <span class="n">waves</span><span class="o">.</span><span class="n">array</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
         <span class="n">metadata</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"intensity"</span>
         <span class="n">metadata</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"arb. unit"</span>
 
         <span class="n">images</span> <span class="o">=</span> <span class="n">Images</span><span class="p">(</span>
             <span class="n">array</span><span class="p">,</span>
-            <span class="n">sampling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_valid_sampling</span><span class="p">,</span>
-            <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">_valid_sampling</span><span class="p">,</span>
+            <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">,</span>
             <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -1531,9 +1701,12 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        depth_profile : Images</span>
-<span class="sd">            2D image(s) with the depth (z) as the first base axis and the</span>
-<span class="sd">            remaining spatial axis as the second. Any additional ensemble axes</span>
-<span class="sd">            (e.g. scan positions) are preserved.</span>
+<span class="sd">            2D image(s) with the remaining spatial axis as the first base axis</span>
+<span class="sd">            and the depth (z) as the second, with one z row per exit plane.</span>
+<span class="sd">            The z sampling is the exit-plane spacing. Since images have no</span>
+<span class="sd">            coordinate offset, z is measured from the first exit plane (the</span>
+<span class="sd">            entrance surface, z = 0, for integer ``exit_planes``). Any</span>
+<span class="sd">            additional ensemble axes (e.g. scan positions) are preserved.</span>
 <span class="sd">        """</span>
         <span class="n">thickness_idx</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">):</span>
@@ -1582,10 +1755,26 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">else</span><span class="p">:</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">thickness_idx</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="n">thickness_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">[</span><span class="n">thickness_idx</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-        <span class="n">z_extent</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">thickness_values</span><span class="p">)</span>
+        <span class="n">thickness_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">[</span><span class="n">thickness_idx</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span>
+        <span class="p">)</span>
         <span class="n">n_z</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">thickness_values</span><span class="p">)</span>
-        <span class="n">z_sampling</span> <span class="o">=</span> <span class="n">z_extent</span> <span class="o">/</span> <span class="n">n_z</span> <span class="k">if</span> <span class="n">n_z</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">1.0</span>
+        <span class="k">if</span> <span class="n">n_z</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># One row per exit plane: n_z points spanning [t_0, t_{n_z-1}] are</span>
+            <span class="c1"># separated by n_z - 1 intervals. For uniformly spaced exit planes</span>
+            <span class="c1"># this is exactly their spacing.</span>
+            <span class="n">z_sampling</span> <span class="o">=</span> <span class="p">(</span><span class="n">thickness_values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">thickness_values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_z</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">thickness_values</span><span class="p">),</span> <span class="n">z_sampling</span><span class="p">):</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="s2">"The exit planes are not uniformly spaced (thicknesses "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">thickness_values</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2"> Å), but the depth "</span>
+                    <span class="s2">"profile has a uniform z-axis with their mean spacing "</span>
+                    <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">z_sampling</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> Å); intermediate rows are not drawn at "</span>
+                    <span class="s2">"their exact thickness. Use exit_planes that evenly divide "</span>
+                    <span class="s2">"the number of slices for an exact z-axis."</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">z_sampling</span> <span class="o">=</span> <span class="n">thickness_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">thickness_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">1.0</span>
 
         <span class="n">remaining_metadata</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">ax</span>
@@ -1740,13 +1929,22 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">visualization</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">spatial_label</span><span class="si">}</span><span class="s2"> [Å]"</span><span class="p">)</span>
         <span class="n">visualization</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"z [Å]"</span><span class="p">)</span>
 
-        <span class="n">z_sampling</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># The profile's z-axis starts at 0 with row i centred on</span>
+        <span class="c1"># i * sampling; shift it so that row i is centred on the thickness of</span>
+        <span class="c1"># exit plane i, which need not start at 0 for explicit exit_planes.</span>
+        <span class="n">z_offset</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+            <span class="nb">next</span><span class="p">(</span>
+                <span class="n">ax_meta</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">ax_meta</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ax_meta</span><span class="p">,</span> <span class="n">ThicknessAxis</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
         <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndindex</span><span class="p">(</span><span class="n">visualization</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
             <span class="n">artist</span> <span class="o">=</span> <span class="n">visualization</span><span class="o">.</span><span class="n">artists</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
             <span class="n">xlim</span> <span class="o">=</span> <span class="n">artist</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">()</span>
             <span class="n">ylim</span> <span class="o">=</span> <span class="n">artist</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
             <span class="n">artist</span><span class="o">.</span><span class="n">set_extent</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">z_sampling</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">z_sampling</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="p">(</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">z_offset</span><span class="p">,</span> <span class="n">ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">z_offset</span><span class="p">)</span>
             <span class="p">)</span>
 
         <span class="n">visualization</span><span class="o">.</span><span class="n">adjust_coordinate_limits_to_artists</span><span class="p">()</span>
@@ -1817,49 +2015,58 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">            The downsampled wave functions.</span>
 <span class="sd">        """</span>
 
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+        <span class="n">waves</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensure_real_space</span><span class="p">()</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">gpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpts_within_angle</span><span class="p">(</span><span class="n">max_angle</span><span class="p">)</span>
+            <span class="n">gpts</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">_gpts_within_angle</span><span class="p">(</span><span class="n">max_angle</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">waves</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span>
                 <span class="n">fft_interpolate</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                <span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
                 <span class="n">new_shape</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
                 <span class="n">normalization</span><span class="o">=</span><span class="n">normalization</span><span class="p">,</span>
-                <span class="n">chunks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_lazy_array</span><span class="o">.</span><span class="n">chunks</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">gpts</span><span class="p">,</span>
+                <span class="n">chunks</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">_lazy_array</span><span class="o">.</span><span class="n">chunks</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">gpts</span><span class="p">,</span>
                 <span class="n">meta</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">fft_interpolate</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_eager_array</span><span class="p">,</span> <span class="n">new_shape</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span> <span class="n">normalization</span><span class="o">=</span><span class="n">normalization</span>
+                <span class="n">waves</span><span class="o">.</span><span class="n">_eager_array</span><span class="p">,</span> <span class="n">new_shape</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span> <span class="n">normalization</span><span class="o">=</span><span class="n">normalization</span>
             <span class="p">)</span>
 
-        <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,))</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,))</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"sampling"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_valid_extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_valid_extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">waves</span><span class="o">.</span><span class="n">_valid_extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">waves</span><span class="o">.</span><span class="n">_valid_extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
         <span class="p">)</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"metadata"</span><span class="p">][</span><span class="s2">"adjusted_antialias_cutoff_gpts"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">antialias_cutoff_gpts</span>
+            <span class="n">waves</span><span class="o">.</span><span class="n">antialias_cutoff_gpts</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="n">downsampled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_space</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">downsampled</span><span class="o">.</span><span class="n">ensure_reciprocal_space</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">downsampled</span></div>
 
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_diffraction_pattern_fft</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">normalize</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_diffraction_pattern_fft</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">normalize</span><span class="p">,</span> <span class="n">reciprocal_space</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Compute the (un-cropped) FFT that all diffraction-pattern flavours</span>
 <span class="sd">        (full/cutoff/valid crop, real or complex, block-direct or not) are</span>
 <span class="sd">        derived from. Factored out of ``_diffraction_pattern`` so it can be</span>
 <span class="sd">        shared (and cached) across several downstream cropping calls that</span>
 <span class="sd">        differ only in ``new_gpts``/``return_complex``/``fftshift``.</span>
+
+<span class="sd">        A reciprocal-space ``array`` already holds these Fourier coefficients:</span>
+<span class="sd">        it is only normalized, into a new array as the FFT would return.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">array</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]))</span>
+        <span class="k">elif</span> <span class="n">reciprocal_space</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="n">fft2</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">array</span> <span class="k">if</span> <span class="n">reciprocal_space</span> <span class="k">else</span> <span class="n">fft2</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_diffraction_pattern_from_fft</span><span class="p">(</span><span class="n">fft_array</span><span class="p">,</span> <span class="n">new_gpts</span><span class="p">,</span> <span class="n">return_complex</span><span class="p">,</span> <span class="n">fftshift</span><span class="p">):</span>
@@ -1884,8 +2091,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">return</span> <span class="n">array</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_diffraction_pattern</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">new_gpts</span><span class="p">,</span> <span class="n">return_complex</span><span class="p">,</span> <span class="n">fftshift</span><span class="p">,</span> <span class="n">normalize</span><span class="p">):</span>
-        <span class="n">fft_array</span> <span class="o">=</span> <span class="n">Waves</span><span class="o">.</span><span class="n">_diffraction_pattern_fft</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">normalize</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_diffraction_pattern</span><span class="p">(</span>
+        <span class="n">array</span><span class="p">,</span> <span class="n">new_gpts</span><span class="p">,</span> <span class="n">return_complex</span><span class="p">,</span> <span class="n">fftshift</span><span class="p">,</span> <span class="n">normalize</span><span class="p">,</span> <span class="n">reciprocal_space</span>
+    <span class="p">):</span>
+        <span class="n">fft_array</span> <span class="o">=</span> <span class="n">Waves</span><span class="o">.</span><span class="n">_diffraction_pattern_fft</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">normalize</span><span class="p">,</span> <span class="n">reciprocal_space</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Waves</span><span class="o">.</span><span class="n">_diffraction_pattern_from_fft</span><span class="p">(</span>
             <span class="n">fft_array</span><span class="p">,</span> <span class="n">new_gpts</span><span class="o">=</span><span class="n">new_gpts</span><span class="p">,</span> <span class="n">return_complex</span><span class="o">=</span><span class="n">return_complex</span><span class="p">,</span> <span class="n">fftshift</span><span class="o">=</span><span class="n">fftshift</span>
         <span class="p">)</span>
@@ -1924,7 +2133,11 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span> <span class="n">renormalize</span>
         <span class="p">)</span>
         <span class="k">with</span> <span class="n">share_diffraction_pattern_fft</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">normalize</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diffraction_pattern_fft</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">normalize</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">normalize</span><span class="p">,</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diffraction_pattern_fft</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">normalize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_space</span>
+            <span class="p">),</span>
         <span class="p">):</span>
             <span class="k">yield</span>
 
@@ -1963,8 +2176,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">                    [mrad].</span>
 
 <span class="sd">        block_direct : bool or float, optional</span>
-<span class="sd">            If True the direct beam is masked (default is False). If given as a float,</span>
-<span class="sd">            masks up to that scattering angle [mrad].</span>
+<span class="sd">            If True, block the direct beam: the bright-field disk and a margin for a</span>
+<span class="sd">            probe with a semiangle cutoff, otherwise the zero-frequency pixel (the rule</span>
+<span class="sd">            is in ``DiffractionPatterns._apply_block_direct``). If given as a float,</span>
+<span class="sd">            masks up to that scattering angle [mrad]. Default is False.</span>
 <span class="sd">        fftshift : bool, optional</span>
 <span class="sd">            If False, do not shift the direct beam to the center of the diffraction</span>
 <span class="sd">            patterns (default is True).</span>
@@ -1985,12 +2200,31 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        diffraction_patterns : DiffractionPatterns</span>
 <span class="sd">            The diffraction pattern(s).</span>
 <span class="sd">        """</span>
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
-
         <span class="k">if</span> <span class="n">max_angle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">max_angle</span> <span class="o">=</span> <span class="s2">"full"</span>
 
         <span class="n">new_gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpts_within_angle</span><span class="p">(</span><span class="n">max_angle</span><span class="p">,</span> <span class="n">parity</span><span class="o">=</span><span class="n">parity</span><span class="p">)</span>
+        <span class="n">diffraction_patterns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diffraction_patterns</span><span class="p">(</span>
+            <span class="n">new_gpts</span><span class="p">,</span>
+            <span class="n">fftshift</span><span class="o">=</span><span class="n">fftshift</span><span class="p">,</span>
+            <span class="n">return_complex</span><span class="o">=</span><span class="n">return_complex</span><span class="p">,</span>
+            <span class="n">renormalize</span><span class="o">=</span><span class="n">renormalize</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">diffraction_patterns</span><span class="o">.</span><span class="n">_apply_block_direct</span><span class="p">(</span><span class="n">block_direct</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_diffraction_patterns</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">new_gpts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">fftshift</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">return_complex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">renormalize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DiffractionPatterns</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The diffraction patterns cropped to `new_gpts` pixels around the zero</span>
+<span class="sd">        frequency, without blocking the direct beam (see `diffraction_patterns`).</span>
+<span class="sd">        """</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
 
         <span class="n">metadata</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
         <span class="n">metadata</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"intensity"</span>
@@ -1999,7 +2233,15 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">normalize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diffraction_pattern_should_normalize</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">renormalize</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
-            <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="n">return_complex</span><span class="p">)</span>
+            <span class="c1"># Declare the precision the blocks return, which follows the waves</span>
+            <span class="c1"># as in the eager branch: complex128 waves give float64 patterns</span>
+            <span class="c1"># under a float32 configuration. A declared dtype below the blocks'</span>
+            <span class="c1"># would make later dask reductions (e.g. sum) accumulate in it.</span>
+            <span class="n">dtype</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span>
+                <span class="k">if</span> <span class="n">return_complex</span>
+                <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">dtype</span>
+            <span class="p">)</span>
 
             <span class="n">pattern</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_diffraction_pattern</span><span class="p">,</span>
@@ -2008,6 +2250,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">fftshift</span><span class="o">=</span><span class="n">fftshift</span><span class="p">,</span>
                 <span class="n">return_complex</span><span class="o">=</span><span class="n">return_complex</span><span class="p">,</span>
                 <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
+                <span class="n">reciprocal_space</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_space</span><span class="p">,</span>
                 <span class="n">chunks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_lazy_array</span><span class="o">.</span><span class="n">chunks</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">((</span><span class="n">new_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],),</span> <span class="p">(</span><span class="n">new_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">],)),</span>
                 <span class="n">meta</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span>
             <span class="p">)</span>
@@ -2020,7 +2263,11 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="c1"># runs per call, so this is bit-for-bit identical to calling</span>
             <span class="c1"># ``_diffraction_pattern`` directly.</span>
             <span class="n">fft_array</span> <span class="o">=</span> <span class="n">get_shared_diffraction_pattern_fft</span><span class="p">(</span>
-                <span class="bp">self</span><span class="p">,</span> <span class="n">normalize</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diffraction_pattern_fft</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">normalize</span><span class="p">)</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="n">normalize</span><span class="p">,</span>
+                <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diffraction_pattern_fft</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">normalize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_space</span>
+                <span class="p">),</span>
             <span class="p">)</span>
             <span class="n">pattern</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diffraction_pattern_from_fft</span><span class="p">(</span>
                 <span class="n">fft_array</span><span class="p">,</span>
@@ -2040,19 +2287,25 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">block_direct</span><span class="p">:</span>
-            <span class="n">diffraction_patterns</span> <span class="o">=</span> <span class="n">diffraction_patterns</span><span class="o">.</span><span class="n">block_direct</span><span class="p">(</span>
-                <span class="n">radius</span><span class="o">=</span><span class="n">block_direct</span>
-            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">diffraction_patterns</span>
 
-        <span class="k">return</span> <span class="n">diffraction_patterns</span></div>
+<div class="viewcode-block" id="Waves.elastic_diffuse_diffraction_patterns">
+<a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.waves.html#abtem.waves.Waves.elastic_diffuse_diffraction_patterns">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">elastic_diffuse_diffraction_patterns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Elastic, diffuse and total diffraction intensity from frozen-phonon</span>
+<span class="sd">        exit waves. See</span>
+<span class="sd">        :func:`abtem.measurements.elastic_diffuse_diffraction_patterns` for full</span>
+<span class="sd">        documentation."""</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.measurements</span><span class="w"> </span><span class="kn">import</span> <span class="n">elastic_diffuse_diffraction_patterns</span>
+
+        <span class="k">return</span> <span class="n">elastic_diffuse_diffraction_patterns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Waves.phonon_loss_diffraction_patterns">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.waves.html#abtem.waves.Waves.phonon_loss_diffraction_patterns">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">phonon_loss_diffraction_patterns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Compute inelastic (TDS) diffraction patterns from energy-resolved</span>
-<span class="sd">        frozen-phonon exit waves.  See</span>
+<span class="w">        </span><span class="sd">"""Energy-resolved phonon-loss diffraction patterns from frozen-phonon</span>
+<span class="sd">        exit waves. See</span>
 <span class="sd">        :func:`abtem.measurements.phonon_loss_diffraction_patterns` for full</span>
 <span class="sd">        documentation."""</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.measurements</span><span class="w"> </span><span class="kn">import</span> <span class="n">phonon_loss_diffraction_patterns</span>
@@ -2071,7 +2324,12 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        ctf : CTF, optional</span>
-<span class="sd">            Contrast transfer function to be applied.</span>
+<span class="sd">            Contrast transfer function to be applied. For a multi-energy ensemble</span>
+<span class="sd">            of wave functions it is evaluated for each energy member at its own</span>
+<span class="sd">            wavelength; its energy must then be unset, or a distribution of</span>
+<span class="sd">            exactly the ensemble's energies. Only the energy values are matched:</span>
+<span class="sd">            the ensemble's own weights decide its ensemble mean, and those of the</span>
+<span class="sd">            CTF's distribution are not used.</span>
 <span class="sd">        max_batch : int, optional</span>
 <span class="sd">            The number of wave functions in each chunk of the Dask array. If 'auto'</span>
 <span class="sd">            (default), the batch size is automatically chosen based on the abtem user</span>
@@ -2086,61 +2344,12 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">            The wave functions with the contrast transfer function applied.</span>
 <span class="sd">        """</span>
 
-        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.array</span><span class="w"> </span><span class="kn">import</span> <span class="n">stack</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnergyAxis</span>
-
         <span class="k">if</span> <span class="n">ctf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ctf</span> <span class="o">=</span> <span class="n">CTF</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="c1"># Multi-energy ensemble: a single CTF cannot represent several</span>
-        <span class="c1"># wavelengths at once.  Apply the CTF to each energy member at its own</span>
-        <span class="c1"># wavelength and restack along the EnergyAxis.</span>
-        <span class="n">energy_axes</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">ax</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">EnergyAxis</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
-        <span class="p">]</span>
-        <span class="k">if</span> <span class="n">energy_axes</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">ctf</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">"Cannot apply a CTF with a fixed energy to a multi-energy "</span>
-                    <span class="s2">"ensemble: each energy member requires its own wavelength. "</span>
-                    <span class="s2">"Pass a CTF without an energy so the per-member energies are "</span>
-                    <span class="s2">"used."</span>
-                <span class="p">)</span>
-            <span class="n">axis_idx</span><span class="p">,</span> <span class="n">energy_axis</span> <span class="o">=</span> <span class="n">energy_axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">members</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">energy</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">energy_axis</span><span class="o">.</span><span class="n">values</span><span class="p">):</span>
-                <span class="n">index</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-                    <span class="n">i</span> <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">axis_idx</span> <span class="k">else</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">))</span>
-                <span class="p">)</span>
-                <span class="n">member_ctf</span> <span class="o">=</span> <span class="n">ctf</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-                <span class="n">member_ctf</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
-                <span class="n">members</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">apply_ctf</span><span class="p">(</span><span class="n">member_ctf</span><span class="p">,</span> <span class="n">max_batch</span><span class="o">=</span><span class="n">max_batch</span><span class="p">)</span>
-                <span class="p">)</span>
-            <span class="n">waves</span> <span class="o">=</span> <span class="n">stack</span><span class="p">(</span><span class="n">members</span><span class="p">,</span> <span class="n">energy_axis</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis_idx</span><span class="p">)</span>
-            <span class="c1"># The stacked object must remain a genuine multi-energy ensemble:</span>
-            <span class="c1"># its scalar accelerator/metadata energy come from member[0] and</span>
-            <span class="c1"># would misrepresent the other members.</span>
-            <span class="n">waves</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">waves</span><span class="o">.</span><span class="n">_metadata</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="n">Waves</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">waves</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">ctf</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">energy</span><span class="p">:</span>
-            <span class="c1"># Single energy: resolve the wavelength from the wave functions</span>
-            <span class="c1"># (ordinary waves, or an indexed ensemble member whose per-member</span>
-            <span class="c1"># energy lives in metadata) without mutating ``self``.</span>
-            <span class="n">ctf</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid_energy</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># CTF fixes the energy: verify it does not disagree with a concrete</span>
-            <span class="c1"># wave energy, but do not overwrite ``self``.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">ctf</span><span class="o">.</span><span class="n">accelerator</span><span class="p">)</span>
-
-        <span class="n">ctf</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
-
+        <span class="c1"># The energies are matched and checked in</span>
+        <span class="c1"># `BaseTransferFunction._match_ensemble`; a multi-energy ensemble is then</span>
+        <span class="c1"># evaluated one energy at a time, each at its own wavelength.</span>
         <span class="n">waves</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_transform</span><span class="p">(</span><span class="n">ctf</span><span class="p">,</span> <span class="n">max_batch</span><span class="o">=</span><span class="n">max_batch</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="n">Waves</span><span class="p">)</span>  <span class="c1"># Type narrowing for MyPy</span>
         <span class="k">return</span> <span class="n">waves</span></div>
@@ -2178,22 +2387,23 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">sites</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SliceIndexedAtoms</span> <span class="o">|</span> <span class="n">Atoms</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">multislice_func_kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Waves</span> <span class="o">|</span> <span class="n">BaseMeasurements</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Run the inelastic multislice algorithm from these wave functions; see</span>
+<span class="sd">        :meth:`Probe.transition_potential_scan` for the parameters."""</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_potentials</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
             <span class="n">transition_potentials</span> <span class="o">=</span> <span class="p">[</span><span class="n">transition_potentials</span><span class="p">]</span>
 
-        <span class="c1"># Refuse here rather than only in the driver: abTEM is lazy by default,</span>
-        <span class="c1"># so a check inside the per-chunk worker lets the caller build a whole</span>
-        <span class="c1"># measurement object without complaint and only fail later, from inside</span>
-        <span class="c1"># a dask traceback.</span>
-        <span class="k">if</span> <span class="n">multislice_func_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"detectors_elastic"</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">_DETECTORS_ELASTIC_MESSAGE</span><span class="p">)</span>
+        <span class="n">_refuse_unsupported_core_loss_options</span><span class="p">(</span><span class="n">multislice_func_kwargs</span><span class="p">)</span>
 
         <span class="n">potential</span> <span class="o">=</span> <span class="n">validate_potential</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
 
         <span class="c1"># Resolve sites from the potential's atoms before it is potentially</span>
         <span class="c1"># pre-built into a bare PotentialArray below, which carries no atoms</span>
         <span class="c1"># and would otherwise make site extraction fail (abTEM issue #340).</span>
-        <span class="n">sites</span> <span class="o">=</span> <span class="n">_extract_scattering_sites</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
+        <span class="c1"># With sites=None, a frozen-phonon ensemble gets the sites of each of</span>
+        <span class="c1"># its configurations, which the multislice pairs with that</span>
+        <span class="c1"># configuration's slices (abTEM issue #581). Resolved once for the</span>
+        <span class="c1"># ensemble, every configuration ionised the first one's atoms.</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="n">_resolve_scattering_sites</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
 
         <span class="n">potential</span> <span class="o">=</span> <span class="n">_prebuild_reused_potential</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
 
@@ -2326,14 +2536,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        potential : BasePotential or Atoms</span>
-<span class="sd">            The scattering potential.</span>
-<span class="sd">        scan : BaseScan</span>
-<span class="sd">            Positions of the probe wave functions. If not given, scans across the entire</span>
-<span class="sd">            potential at Nyquist sampling.</span>
+<span class="sd">        scan : BaseScan or np.ndarray</span>
+<span class="sd">            Positions of the probe wave functions.</span>
+<span class="sd">        potential : BasePotential or Atoms, optional</span>
+<span class="sd">            The scattering potential. If not given, the shifted wave functions are</span>
+<span class="sd">            returned without running the multislice algorithm.</span>
 <span class="sd">        detectors : BaseDetector, list of BaseDetector, optional</span>
 <span class="sd">            A detector or a list of detectors defining how the wave functions should be</span>
-<span class="sd">            converted to measurements after running the multislice algorithm.</span>
+<span class="sd">            converted to measurements after running the multislice algorithm. If not</span>
+<span class="sd">            given, the exit wave functions are returned (equivalent to</span>
+<span class="sd">            :class:`WavesDetector`).</span>
 <span class="sd">            See abtem.measurements.detect for a list of implemented detectors.</span>
 <span class="sd">        max_batch : int, optional</span>
 <span class="sd">            The number of wave functions in each chunk of the Dask array.</span>
@@ -2432,10 +2644,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnergyAxis</span>
         <span class="n">e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">EnergyAxis</span><span class="p">(</span>
-                <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-                <span class="n">_ensemble_mean</span><span class="o">=</span><span class="n">e</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
-            <span class="p">)]</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="n">EnergyAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span>
+                    <span class="n">e</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
         <span class="k">return</span> <span class="p">[]</span></div>
 
 
@@ -3014,8 +3227,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">waves</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_validated</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="n">lazy</span><span class="p">,</span> <span class="n">max_batch</span><span class="o">=</span><span class="n">max_batch</span><span class="p">)</span>
 
-        <span class="c1"># Ensure each energy value occupies its own dask chunk so that</span>
-        <span class="c1"># conventional_multislice_step receives a scalar energy via _valid_energy.</span>
+        <span class="c1"># Give each energy its own dask chunk, so the energies are propagated as</span>
+        <span class="c1"># separate tasks rather than one after another within a task (see</span>
+        <span class="c1"># abtem.array._calculate_new_array_per_energy).</span>
         <span class="k">if</span> <span class="n">waves</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnergyAxis</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">):</span>
@@ -3368,7 +3582,9 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        detectors : BaseDetector or list of BaseDetector, optional</span>
 <span class="sd">            A detector or a list of detectors defining how the wave functions should be</span>
 <span class="sd">            converted to measurements after running the multislice algorithm. If not</span>
-<span class="sd">            given, defaults to the flexible annular detector.</span>
+<span class="sd">            given, the exit wave functions are returned (equivalent to</span>
+<span class="sd">            :class:`WavesDetector`). Use :meth:`Probe.scan` for a STEM simulation</span>
+<span class="sd">            that defaults to the :class:`FlexibleAnnularDetector`.</span>
 <span class="sd">        max_batch : int, optional</span>
 <span class="sd">            The number of wave functions in each chunk of the Dask array.</span>
 <span class="sd">            If 'auto' (default), the batch size is automatically chosen based on the</span>
@@ -3383,6 +3599,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        measurements : BaseMeasurements or Waves or list of BaseMeasurements</span>
+<span class="sd">            The detected measurement(s), or the exit wave functions if no detector is</span>
+<span class="sd">            given.</span>
 <span class="sd">        """</span>
         <span class="n">probe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
@@ -3392,11 +3610,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">waves</span> <span class="o">=</span> <span class="n">probe</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">scan</span><span class="o">=</span><span class="n">scan</span><span class="p">,</span> <span class="n">max_batch</span><span class="o">=</span><span class="n">max_batch</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="n">lazy</span><span class="p">)</span>
 
-        <span class="c1"># Ensure each energy value occupies its own dask chunk so that</span>
-        <span class="c1"># conventional_multislice_step receives a scalar energy via _valid_energy.</span>
-        <span class="c1"># Do this before _prebuild_reused_potential below, so it sees the true</span>
-        <span class="c1"># final chunk count (and therefore how many times the potential will</span>
-        <span class="c1"># actually be reused) rather than the pre-rechunk chunking.</span>
+        <span class="c1"># Give each energy its own dask chunk, so the energies are propagated as</span>
+        <span class="c1"># separate tasks rather than one after another within a task (see</span>
+        <span class="c1"># abtem.array._calculate_new_array_per_energy). Do this before</span>
+        <span class="c1"># _prebuild_reused_potential below, so it sees the true final chunk</span>
+        <span class="c1"># count (and therefore how many times the potential will actually be</span>
+        <span class="c1"># reused) rather than the pre-rechunk chunking.</span>
         <span class="k">if</span> <span class="n">waves</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnergyAxis</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">):</span>
@@ -3457,7 +3676,9 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">            the value set in the user configuration file.</span>
 <span class="sd">        **multislice_func_kwargs</span>
 <span class="sd">            Additional keyword arguments forwarded to the inelastic multislice function</span>
-<span class="sd">            (e.g. ``double_channel``, ``threshold``).</span>
+<span class="sd">            (e.g. ``double_channel``, ``threshold``, ``algorithm``). ``algorithm`` is</span>
+<span class="sd">            a :class:`.FourierMultislice` (default) or a</span>
+<span class="sd">            :class:`.RealSpaceMultislice` with ``expansion_scope="propagator"``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -3470,6 +3691,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="k">if</span> <span class="n">detectors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">detectors</span> <span class="o">=</span> <span class="n">FlexibleAnnularDetector</span><span class="p">()</span>
+
+        <span class="n">_refuse_unsupported_core_loss_options</span><span class="p">(</span><span class="n">multislice_func_kwargs</span><span class="p">)</span>
 
         <span class="n">probe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">potential</span> <span class="o">=</span> <span class="n">validate_potential</span><span class="p">(</span><span class="n">potential</span><span class="p">)</span>
@@ -3510,7 +3733,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">            potential at Nyquist sampling.</span>
 <span class="sd">        detectors : BaseDetector, list of BaseDetector, optional</span>
 <span class="sd">            A detector or a list of detectors defining how the wave functions should be</span>
-<span class="sd">            converted to measurements after running the multislice algorithm.</span>
+<span class="sd">            converted to measurements after running the multislice algorithm. If not</span>
+<span class="sd">            given, defaults to the :class:`FlexibleAnnularDetector`. To obtain the</span>
+<span class="sd">            exit wave functions, pass :class:`WavesDetector` or use</span>
+<span class="sd">            :meth:`Probe.multislice`.</span>
 <span class="sd">            See abtem.measurements.detect for a list of implemented detectors.</span>
 <span class="sd">        max_batch : int, optional</span>
 <span class="sd">            The number of wave functions in each chunk of the Dask array.</span>
@@ -3525,11 +3751,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        detected_waves : BaseMeasurements or list of BaseMeasurements</span>
-<span class="sd">            The detected measurement (if detector(s) given).</span>
-<span class="sd">        exit_waves : Waves</span>
-<span class="sd">            Wave functions at the exit plane(s) of the potential</span>
-<span class="sd">            (if no detector(s) given).</span>
+<span class="sd">        detected_waves : BaseMeasurements or Waves or list of BaseMeasurements or Waves</span>
+<span class="sd">            The detected measurement(s). These are :class:`Waves` only if a</span>
+<span class="sd">            :class:`WavesDetector` is given.</span>
 <span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">scan</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>

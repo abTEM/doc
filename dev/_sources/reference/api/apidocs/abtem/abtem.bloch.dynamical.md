@@ -310,6 +310,24 @@
 
 `````
 
+````{py:exception} BlochWavePrecisionWarning()
+:canonical: abtem.bloch.dynamical.BlochWavePrecisionWarning
+
+Bases: {py:obj}`UserWarning`
+
+```{autodoc2-docstring} abtem.bloch.dynamical.BlochWavePrecisionWarning
+:parser: rst
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.bloch.dynamical.BlochWavePrecisionWarning.__init__
+:parser: rst
+```
+
+````
+
 `````{py:class} BlochWaves(...)
 :canonical: abtem.bloch.dynamical.BlochWaves
 
@@ -342,7 +360,7 @@
 
 ````
 
-````{py:method} calculate_scattering_matrix(...) -> numpy.ndarray
+````{py:method} calculate_scattering_matrix(...) -> numpy.ndarray | dask.array.core.Array
 :canonical: abtem.bloch.dynamical.BlochWaves.calculate_scattering_matrix
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.calculate_scattering_matrix
@@ -477,6 +495,15 @@
 
 ````
 
+````{py:method} select_energy(...) -> abtem.bloch.dynamical.BlochWaves
+:canonical: abtem.bloch.dynamical.BlochWaves.select_energy
+
+```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.select_energy
+:parser: rst
+```
+
+````
+
 ````{py:property} sg_max
 :canonical: abtem.bloch.dynamical.BlochWaves.sg_max
 :type: float
@@ -509,7 +536,7 @@
 
 ````{py:property} use_wave_eq
 :canonical: abtem.bloch.dynamical.BlochWaves.use_wave_eq
-:type: bool
+:type: bool | typing.Literal[exact]
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.use_wave_eq
 :parser: rst
@@ -685,7 +712,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 
 ````{py:property} use_wave_eq
 :canonical: abtem.bloch.dynamical.BlochwaveEnsemble.use_wave_eq
-:type: bool
+:type: bool | typing.Literal[exact]
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.use_wave_eq
 :parser: rst

@@ -21,11 +21,6 @@
     :parser: rst
     :summary:
     ```
-* - {py:obj}`are_vectors_orthogonal <abtem.bloch.utils.are_vectors_orthogonal>`
-  - ```{autodoc2-docstring} abtem.bloch.utils.are_vectors_orthogonal
-    :parser: rst
-    :summary:
-    ```
 * - {py:obj}`auto_detect_centering <abtem.bloch.utils.auto_detect_centering>`
   - ```{autodoc2-docstring} abtem.bloch.utils.auto_detect_centering
     :parser: rst
@@ -43,11 +38,6 @@
     ```
 * - {py:obj}`cell_bounds <abtem.bloch.utils.cell_bounds>`
   - ```{autodoc2-docstring} abtem.bloch.utils.cell_bounds
-    :parser: rst
-    :summary:
-    ```
-* - {py:obj}`check_orthogonality <abtem.bloch.utils.check_orthogonality>`
-  - ```{autodoc2-docstring} abtem.bloch.utils.check_orthogonality
     :parser: rst
     :summary:
     ```
@@ -116,6 +106,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`validate_use_wave_eq <abtem.bloch.utils.validate_use_wave_eq>`
+  - ```{autodoc2-docstring} abtem.bloch.utils.validate_use_wave_eq
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`wrapped_is_close <abtem.bloch.utils.wrapped_is_close>`
   - ```{autodoc2-docstring} abtem.bloch.utils.wrapped_is_close
     :parser: rst
@@ -129,14 +124,6 @@
 :canonical: abtem.bloch.utils.all_positions_have_relative_periodic_pair
 
 ```{autodoc2-docstring} abtem.bloch.utils.all_positions_have_relative_periodic_pair
-:parser: rst
-```
-````
-
-````{py:function} are_vectors_orthogonal(...) -> bool
-:canonical: abtem.bloch.utils.are_vectors_orthogonal
-
-```{autodoc2-docstring} abtem.bloch.utils.are_vectors_orthogonal
 :parser: rst
 ```
 ````
@@ -169,14 +156,6 @@
 :canonical: abtem.bloch.utils.cell_bounds
 
 ```{autodoc2-docstring} abtem.bloch.utils.cell_bounds
-:parser: rst
-```
-````
-
-````{py:function} check_orthogonality(...) -> bool
-:canonical: abtem.bloch.utils.check_orthogonality
-
-```{autodoc2-docstring} abtem.bloch.utils.check_orthogonality
 :parser: rst
 ```
 ````
@@ -281,6 +260,14 @@
 :canonical: abtem.bloch.utils.retrieve_structure_factor_values
 
 ```{autodoc2-docstring} abtem.bloch.utils.retrieve_structure_factor_values
+:parser: rst
+```
+````
+
+````{py:function} validate_use_wave_eq(...) -> bool | typing.Literal[exact]
+:canonical: abtem.bloch.utils.validate_use_wave_eq
+
+```{autodoc2-docstring} abtem.bloch.utils.validate_use_wave_eq
 :parser: rst
 ```
 ````

@@ -66,6 +66,19 @@
     ```
 ````
 
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`FACE_SLICE_WARNING_DISTANCE <abtem.slicing.FACE_SLICE_WARNING_DISTANCE>`
+  - ```{autodoc2-docstring} abtem.slicing.FACE_SLICE_WARNING_DISTANCE
+    :parser: rst
+    :summary:
+    ```
+````
+
 ### API
 
 `````{py:class} BaseSlicedAtoms(...)
@@ -163,6 +176,17 @@ Bases: {py:obj}`abtem.core.utils.EqualityMixin`
 ````
 
 `````
+
+````{py:data} FACE_SLICE_WARNING_DISTANCE
+:canonical: abtem.slicing.FACE_SLICE_WARNING_DISTANCE
+:value: >
+   2.0
+
+```{autodoc2-docstring} abtem.slicing.FACE_SLICE_WARNING_DISTANCE
+:parser: rst
+```
+
+````
 
 `````{py:class} SliceIndexedAtoms(...)
 :canonical: abtem.slicing.SliceIndexedAtoms

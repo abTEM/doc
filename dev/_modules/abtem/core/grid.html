@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -564,7 +562,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">device_name_from_array_module</span><span class="p">,</span> <span class="n">get_array_module</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">CopyMixin</span><span class="p">,</span> <span class="n">EqualityMixin</span><span class="p">,</span> <span class="n">get_dtype</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">CopyMixin</span><span class="p">,</span> <span class="n">EqualityMixin</span><span class="p">,</span> <span class="n">get_dtype</span><span class="p">,</span> <span class="n">safe_ceiling_int</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_fast_fft_rounding_mode</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -661,14 +659,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    tuple of float</span>
 <span class="sd">        The new sampling [Å].</span>
 <span class="sd">    """</span>
-    <span class="n">new_sampling</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-        <span class="n">d</span> <span class="o">*</span> <span class="n">n</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="p">(</span><span class="n">d</span> <span class="o">/</span> <span class="n">d_target</span><span class="p">)))</span>
-        <span class="k">for</span> <span class="n">d_target</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">target_sampling</span><span class="p">,</span> <span class="n">old_sampling</span><span class="p">,</span> <span class="n">old_gpts</span><span class="p">)</span>
-    <span class="p">)</span>
     <span class="n">new_gpts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-        <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="p">(</span><span class="n">d</span> <span class="o">/</span> <span class="n">d_target</span><span class="p">)))</span>
+        <span class="nb">max</span><span class="p">(</span><span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="p">(</span><span class="n">d</span> <span class="o">/</span> <span class="n">d_target</span><span class="p">)),</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">d_target</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">target_sampling</span><span class="p">,</span> <span class="n">old_sampling</span><span class="p">,</span> <span class="n">old_gpts</span><span class="p">)</span>
     <span class="p">)</span>
+    <span class="n">new_sampling</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">d</span> <span class="o">*</span> <span class="n">n</span> <span class="o">/</span> <span class="n">g</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">old_sampling</span><span class="p">,</span> <span class="n">old_gpts</span><span class="p">,</span> <span class="n">new_gpts</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">new_sampling</span><span class="p">,</span> <span class="n">new_gpts</span></div>
 
 
@@ -892,7 +887,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="p">):</span>
         <span class="k">if</span> <span class="n">extent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">sampling</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_gpts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-                <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">r</span> <span class="o">/</span> <span class="n">d</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">e</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">r</span> <span class="o">/</span> <span class="n">d</span><span class="p">))</span>
+                <span class="nb">max</span><span class="p">(</span><span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">r</span> <span class="o">/</span> <span class="n">d</span><span class="p">)</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">extent</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_endpoint</span><span class="p">)</span>
             <span class="p">)</span>
 
@@ -955,9 +950,15 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        check_match : bool</span>
 <span class="sd">            If true check whether grids can match without overriding already defined</span>
 <span class="sd">            grid parameters.</span>
+
+<span class="sd">        A grid with locked gpts (built `Waves`, `PotentialArray`, `SMatrixArray`) is</span>
+<span class="sd">        checked, not changed: it raises on a mismatch and is assigned only where its</span>
+<span class="sd">        own value is undefined.</span>
 <span class="sd">        """</span>
 
-        <span class="k">if</span> <span class="n">check_match</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">check_match</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock_gpts</span><span class="p">:</span>
+            <span class="c1"># the gpts of a locked grid are those of its data: a grid that differs</span>
+            <span class="c1"># is refused, not matched, and one that agrees within tolerance is kept</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
         <span class="c1"># if (self.extent is None) &amp; (other.extent is None):</span>
@@ -965,8 +966,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="k">if</span> <span class="n">other</span><span class="o">.</span><span class="n">extent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">other</span><span class="o">.</span><span class="n">extent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span>
-        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock_gpts</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="p">)</span>
         <span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">extent</span>
 
@@ -980,8 +984,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="k">if</span> <span class="n">other</span><span class="o">.</span><span class="n">sampling</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">other</span><span class="o">.</span><span class="n">sampling</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span>
-        <span class="k">elif</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock_gpts</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="p">)</span>
         <span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">sampling</span></div>
 
@@ -1187,7 +1195,12 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="viewcode-block" id="HasGrid2DMixin.match_grid">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.grid.html#abtem.core.grid.HasGrid2DMixin.match_grid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">match_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">HasGrid2DMixin</span><span class="p">,</span> <span class="n">check_match</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Match the grid to another object with a Grid."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Match the grid to another object with a Grid.</span>
+
+<span class="sd">        A grid with locked gpts (built `Waves`, `PotentialArray`, `SMatrixArray`) is</span>
+<span class="sd">        checked, not changed, and raises on a mismatch.</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">check_match</span><span class="o">=</span><span class="n">check_match</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 

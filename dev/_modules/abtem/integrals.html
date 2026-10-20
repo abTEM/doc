@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -555,13 +553,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">numba</span>  <span class="c1"># type: ignore</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atoms</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">chemical_symbols</span>
@@ -570,7 +568,9 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">brentq</span>  <span class="c1"># type: ignore</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">erf</span>  <span class="c1"># type: ignore</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">backend</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">asnumpy</span><span class="p">,</span>
     <span class="n">cp</span><span class="p">,</span>
     <span class="n">cupyx</span><span class="p">,</span>
     <span class="n">device_name_from_array_module</span><span class="p">,</span>
@@ -584,7 +584,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">spatial_frequencies</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">CopyMixin</span><span class="p">,</span> <span class="n">EqualityMixin</span><span class="p">,</span> <span class="n">get_dtype</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.parametrizations</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate_parametrization</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.parametrizations</span><span class="w"> </span><span class="kn">import</span> <span class="n">PengParametrization</span><span class="p">,</span> <span class="n">validate_parametrization</span>
 
 <span class="k">if</span> <span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core._cuda</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -771,6 +771,10 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">np</span><span class="p">:</span>
         <span class="k">return</span> <span class="s2">"cpu"</span>
+    <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span><span class="p">:</span>
+        <span class="c1"># Metal exposes a single device, so its identity needs no index -- and</span>
+        <span class="c1"># a torch device carries no `id` to read one from.</span>
+        <span class="k">return</span> <span class="s2">"mps"</span>
     <span class="k">if</span> <span class="n">like</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">like</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">np</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span><span class="s2">"gpu"</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">like</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
     <span class="k">return</span> <span class="p">(</span><span class="s2">"gpu"</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Device</span><span class="p">()</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
@@ -923,105 +927,53 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">if</span> <span class="n">device_key</span> <span class="o">==</span> <span class="s2">"cpu"</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">sinc</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="s2">"cpu"</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">device_key</span> <span class="o">==</span> <span class="s2">"mps"</span><span class="p">:</span>
+        <span class="c1"># one Metal device, and no context to enter</span>
+        <span class="k">return</span> <span class="n">sinc</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="s2">"mps"</span><span class="p">)</span>
+
     <span class="kn">import</span><span class="w"> </span><span class="nn">cupy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cp</span>  <span class="c1"># noqa: PLC0415 -- optional dependency</span>
 
     <span class="k">with</span> <span class="n">cp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Device</span><span class="p">(</span><span class="n">device_key</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
         <span class="k">return</span> <span class="n">sinc</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="s2">"gpu"</span><span class="p">)</span>
 
 
-<span class="c1"># The largest scale-relative deviation a Gaussian-form parametrization may show</span>
-<span class="c1"># when rebuilt from its own parameters. Peng, the only one abTEM ships, reaches</span>
-<span class="c1"># 1.8e-07 at float32 and 1.8e-16 at float64 over all 98 elements it covers on a</span>
-<span class="c1"># 128^2 grid; the nearest rejection, Kirkland, is 0.275, and Lobato is 2.3-3.8.</span>
-<span class="c1"># Three decades of headroom above the former and three below the latter.</span>
+<span class="c1"># Largest scale-relative deviation between a Gaussian-form parametrization and</span>
+<span class="c1"># the Gaussian sum rebuilt from its own parameters. Peng reaches 1.8e-07 at</span>
+<span class="c1"># float32; Kirkland and Lobato are 0.275 and 2.3-3.8.</span>
 <span class="n">_GAUSSIAN_FORM_TOLERANCE</span> <span class="o">=</span> <span class="mf">1e-4</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_validate_gaussian_form</span><span class="p">(</span><span class="n">parametrization</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Reject a parametrization that is not a superposition of Gaussians.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_gaussian_form</span><span class="p">(</span><span class="n">parametrization</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Raise if the parametrization's own projected scattering factor is not the</span>
+<span class="sd">    Gaussian sum of its ``scaled_parameters`` on the grid about to be used.</span>
 
-<span class="sd">    ``gaussian_parametrization`` is documented as requiring that form and</span>
-<span class="sd">    nothing checked it: ``gaussian_projected_scattering_factors`` evaluates</span>
-<span class="sd">    ``a exp(-b k^2)`` on whatever ``(2, n)`` array it is handed, so Lobato --</span>
-<span class="sd">    same shape, different functional form -- produced a potential whose plane</span>
-<span class="sd">    integral is 3.3x too large for carbon and 4.8x for silicon, finite</span>
-<span class="sd">    everywhere.</span>
-
-<span class="sd">    The test is functional rather than a name check: rebuild the scattering</span>
-<span class="sd">    factor from the parameters as a Gaussian sum and compare with the</span>
-<span class="sd">    parametrization's own.</span>
-
-<span class="sd">    **On the grid the call is about to use**, not on a fixed window. An earlier</span>
-<span class="sd">    version sampled ``linspace(0.01, 4.0, 32)``, which covers 2.3 % of the k^2</span>
-<span class="sd">    a 128^2 build evaluates and 0.1 % of a 512^2 one -- and 32 points across</span>
-<span class="sd">    that window sit 0.13 apart, so a feature narrower than that fell between</span>
-<span class="sd">    them as well. Both holes were reachable: a Peng subclass carrying a bump at</span>
-<span class="sd">    k^2 = 20, or one between two sample points, passed the check and built a</span>
-<span class="sd">    potential several per cent to tens of per cent wrong. Using the real grid</span>
-<span class="sd">    costs nothing, since ``gaussian_projected_scattering_factors`` computes it</span>
-<span class="sd">    one call later.</span>
-
-<span class="sd">    Both sides are evaluated at the configured precision. Mixing them made the</span>
-<span class="sd">    verdict depend on ``abtem.config``: ``scaled_parameters`` is float64 while</span>
-<span class="sd">    ``Parametrization._get_function`` casts to ``get_dtype``, so the same</span>
-<span class="sd">    parametrization could be accepted at float64 and rejected at float32.</span>
-
-<span class="sd">    Checked **per element, for the element actually being used**, not once at</span>
-<span class="sd">    construction for a fixed one. A first version validated only carbon, which</span>
-<span class="sd">    rejected the shipped ``peng_ionic.json`` (all ions, no carbon) and let a</span>
-<span class="sd">    parametrization whose carbon entry is sound but whose silicon entry is not</span>
-<span class="sd">    through silently.</span>
-
-<span class="sd">    This also rejects a parametrization whose ``scaled_parameters`` and whose</span>
-<span class="sd">    own scattering-factor function disagree about the number of terms -- which</span>
-<span class="sd">    is what Peng does if its parameter table is extended past five, because</span>
-<span class="sd">    ``scattering_factor_k2`` is hardcoded to five. That rejection is wanted:</span>
-<span class="sd">    the extra Gaussians would be added to the field while ``get_corrections``</span>
-<span class="sd">    and ``cutoff`` still saw five.</span>
+<span class="sd">    The class check in ``GaussianProjectionIntegrals`` admits any Peng subclass,</span>
+<span class="sd">    including one whose function is not Gaussian-form or whose table has a</span>
+<span class="sd">    different number of terms from the function. Both sides are evaluated at the</span>
+<span class="sd">    configured precision, so the verdict does not depend on it.</span>
 <span class="sd">    """</span>
     <span class="n">fp_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">parameters</span> <span class="o">=</span> <span class="n">parametrization</span><span class="o">.</span><span class="n">scaled_parameters</span><span class="p">(</span>
-            <span class="n">symbol</span><span class="p">,</span> <span class="s2">"projected_scattering_factor"</span>
-        <span class="p">)</span>
-        <span class="n">own_function</span> <span class="o">=</span> <span class="n">parametrization</span><span class="o">.</span><span class="n">projected_scattering_factor</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># noqa: BLE001 -- re-raised with context</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">parametrization</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> cannot provide a projected "</span>
-            <span class="sa">f</span><span class="s2">"scattering factor for </span><span class="si">{</span><span class="n">symbol</span><span class="si">!r}</span><span class="s2">, so it cannot be used as "</span>
-            <span class="s2">"gaussian_parametrization"</span>
-        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
-
-    <span class="n">parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">parameters</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">parameters</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">parametrization</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is not a superposition of "</span>
-            <span class="sa">f</span><span class="s2">"Gaussians for </span><span class="si">{</span><span class="n">symbol</span><span class="si">!r}</span><span class="s2">: expected (2, n) amplitude/width "</span>
-            <span class="sa">f</span><span class="s2">"parameters, got </span><span class="si">{</span><span class="n">parameters</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span>
-        <span class="p">)</span>
-
+    <span class="n">parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+        <span class="n">parametrization</span><span class="o">.</span><span class="n">scaled_parameters</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="s2">"projected_scattering_factor"</span><span class="p">),</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="n">k</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">polar_spatial_frequencies</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
     <span class="n">k2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span>
-    <span class="n">own</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">own_function</span><span class="p">(</span><span class="n">k2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span>
-    <span class="n">reconstructed</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">parameters</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">k2</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span>
-    <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-
-    <span class="c1"># Scale-relative, not np.allclose: these span many orders of magnitude</span>
-    <span class="c1"># across the grid, and at large k^2 both sides are ~0, where a per-element</span>
-    <span class="c1"># relative tolerance compares noise with noise.</span>
-    <span class="n">deviation</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">reconstructed</span> <span class="o">-</span> <span class="n">own</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">own</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+    <span class="n">own</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+        <span class="n">parametrization</span><span class="o">.</span><span class="n">projected_scattering_factor</span><span class="p">(</span><span class="n">symbol</span><span class="p">)(</span><span class="n">k2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span>
+    <span class="p">)</span>
+    <span class="n">gaussians</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+        <span class="o">-</span><span class="n">parameters</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">k2</span>
+    <span class="p">)</span>
+    <span class="c1"># Scale-relative: at large k^2 both sides are ~0 and a per-element relative</span>
+    <span class="c1"># tolerance compares noise with noise.</span>
+    <span class="n">deviation</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">gaussians</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">own</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">own</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">deviation</span> <span class="o">&lt;=</span> <span class="n">_GAUSSIAN_FORM_TOLERANCE</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">parametrization</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is not a superposition of "</span>
-            <span class="sa">f</span><span class="s2">"Gaussians for </span><span class="si">{</span><span class="n">symbol</span><span class="si">!r}</span><span class="s2">: rebuilding its projected scattering "</span>
-            <span class="s2">"factor from its own parameters as a sum of Gaussians does not "</span>
-            <span class="sa">f</span><span class="s2">"reproduce it on a </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">gpts</span><span class="p">)</span><span class="si">}</span><span class="s2"> grid (max deviation "</span>
-            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">deviation</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2"> of peak, tolerance "</span>
-            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_GAUSSIAN_FORM_TOLERANCE</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">). gaussian_parametrization requires "</span>
-            <span class="s2">"a Gaussian-form parametrization such as Peng, and its parameter "</span>
-            <span class="s2">"table must have the same number of terms its own "</span>
-            <span class="s2">"scattering-factor function uses."</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">parametrization</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is not a superposition of Gaussians "</span>
+            <span class="sa">f</span><span class="s2">"for </span><span class="si">{</span><span class="n">symbol</span><span class="si">!r}</span><span class="s2">: its projected scattering factor differs from the "</span>
+            <span class="sa">f</span><span class="s2">"Gaussian sum of its parameters by </span><span class="si">{</span><span class="n">deviation</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2"> of the peak "</span>
+            <span class="sa">f</span><span class="s2">"(tolerance </span><span class="si">{</span><span class="n">_GAUSSIAN_FORM_TOLERANCE</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">)"</span>
         <span class="p">)</span>
 
 
@@ -1036,9 +988,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        correcting the dependence of the potential close to the nuclear core.</span>
 <span class="sd">        Default is the Lobato parametrization.</span>
 <span class="sd">    gaussian_parametrization : str or Parametrization, optional</span>
-<span class="sd">        The Gaussian radial potential parametrization to integrate. Must be</span>
-<span class="sd">        parametrization described by a superposition of Gaussians. Default is the Peng</span>
-<span class="sd">        parametrization.</span>
+<span class="sd">        The Gaussian radial potential parametrization to integrate. Must be a</span>
+<span class="sd">        :class:`~abtem.parametrizations.PengParametrization` (or a subclass of it)</span>
+<span class="sd">        whose projected scattering factor is a superposition of Gaussians, as</span>
+<span class="sd">        built from its ``scaled_parameters``; other parametrizations raise a</span>
+<span class="sd">        ValueError. Default is the Peng parametrization.</span>
 <span class="sd">    cutoff_tolerance : float, optional</span>
 <span class="sd">        The error tolerance used for deciding the radial cutoff distance of the</span>
 <span class="sd">        potential [eV / e]. Default is 1e-3.</span>
@@ -1052,18 +1006,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    added to the one slice the atom's centre falls in.</span>
 
 <span class="sd">    Summed over slices the two terms recover the full projection of</span>
-<span class="sd">    ``parametrization`` -- exact up to ``_GAUSSIAN_FORM_TOLERANCE``, not</span>
-<span class="sd">    unconditionally. The identity holds only where the Gaussian sum built from</span>
+<span class="sd">    ``parametrization``. The identity holds where the Gaussian sum built from</span>
 <span class="sd">    ``scaled_parameters`` equals the parametrization's own</span>
-<span class="sd">    ``projected_scattering_factor``, and the form check bounds their</span>
-<span class="sd">    disagreement globally, as ``max|difference| / max|own|``. A discrepancy</span>
-<span class="sd">    parked where ``own`` is small relative to the grid's peak therefore costs</span>
-<span class="sd">    almost nothing globally while being large locally: a Peng subclass with a</span>
-<span class="sd">    bump at k^2 = 150 on a 128^2 grid is accepted at a global deviation of</span>
-<span class="sd">    5.5e-05 while differing by 4.8 % locally, leaving the total off by 3.2e-04.</span>
-<span class="sd">    For the shipped Peng/Lobato default the disagreement is ~1.8e-07 and the</span>
-<span class="sd">    total is exact to that, but a custom ``gaussian_parametrization`` should not</span>
-<span class="sd">    read this as an unconditional guarantee.</span>
+<span class="sd">    ``projected_scattering_factor``; for Peng they differ by ~1.8e-07 of the</span>
+<span class="sd">    peak, and the total is exact to that.</span>
 
 <span class="sd">    Distribution between slices is a separate matter, and a worse one: it is a</span>
 <span class="sd">    good approximation only if the difference between the two parametrizations</span>
@@ -1101,6 +1047,15 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_parametrization</span> <span class="o">=</span> <span class="n">validate_parametrization</span><span class="p">(</span>
             <span class="n">gaussian_parametrization</span>
         <span class="p">)</span>
+        <span class="c1"># The Gaussians are built from the (2, n) amplitude/width table of</span>
+        <span class="c1"># scaled_parameters, which other parametrizations (Lobato) also have</span>
+        <span class="c1"># but which they do not evaluate as a Gaussian sum.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_parametrization</span><span class="p">,</span> <span class="n">PengParametrization</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"gaussian_parametrization must be a superposition of Gaussians, "</span>
+                <span class="s2">"such as Peng, got "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_parametrization</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_correction_parametrization</span> <span class="o">=</span> <span class="n">validate_parametrization</span><span class="p">(</span><span class="n">parametrization</span><span class="p">)</span>
 
@@ -1128,7 +1083,8 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_parametrization</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""The Gaussian radial potential parametrization that is superposed to build</span>
-<span class="sd">        the projected field. Must be a superposition of Gaussians."""</span>
+<span class="sd">        the projected field: a :class:`~abtem.parametrizations.PengParametrization`</span>
+<span class="sd">        whose projected scattering factor is a superposition of Gaussians."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_parametrization</span>
 
     <span class="nd">@property</span>
@@ -1161,7 +1117,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">cached</span>
 
-        <span class="n">_validate_gaussian_form</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_parametrization</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
+        <span class="n">_check_gaussian_form</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_parametrization</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gaussians</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
             <span class="n">key</span><span class="p">,</span>
@@ -1179,14 +1135,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">cached</span>
 
-        <span class="c1"># Validated here too, not only in get_gaussians. The correction is</span>
-        <span class="c1"># short_range - long_range with long_range = gaussian_parametrization,</span>
-        <span class="c1"># so a non-Gaussian one yields a plausible-looking array rather than an</span>
-        <span class="c1"># error. integrate_on_grid happens to call get_gaussians first, which</span>
-        <span class="c1"># would raise before this is reached -- but that is an ordering</span>
-        <span class="c1"># accident, and get_corrections is public. Validating both makes the</span>
-        <span class="c1"># guarantee a property of the methods rather than of their call order.</span>
-        <span class="n">_validate_gaussian_form</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_parametrization</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
+        <span class="n">_check_gaussian_form</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_gaussian_parametrization</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_corrections</span><span class="o">.</span><span class="n">put</span><span class="p">(</span>
             <span class="n">key</span><span class="p">,</span>
@@ -1520,6 +1469,12 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="n">device_key</span> <span class="o">==</span> <span class="s2">"cpu"</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_scattering_factor</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="s2">"cpu"</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">device_key</span> <span class="o">==</span> <span class="s2">"mps"</span><span class="p">:</span>
+            <span class="c1"># Metal has one device and no context to enter, so the allocation</span>
+            <span class="c1"># needs no steering -- the concern this method exists for does not</span>
+            <span class="c1"># arise there.</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_scattering_factor</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="s2">"mps"</span><span class="p">)</span>
+
         <span class="kn">import</span><span class="w"> </span><span class="nn">cupy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cp</span>  <span class="c1"># noqa: PLC0415 -- optional dependency</span>
 
         <span class="k">with</span> <span class="n">cp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Device</span><span class="p">(</span><span class="n">device_key</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
@@ -1640,10 +1595,21 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="n">_INTERPOLATION_BUFFER_BUDGET</span> <span class="o">=</span> <span class="mi">256</span> <span class="o">*</span> <span class="mi">1024</span><span class="o">**</span><span class="mi">2</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_interpolation_threads</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The thread count of the interpolation pool.</span>
+
+<span class="sd">    Numba's launch-time thread count rather than ``os.cpu_count()``: abTEM</span>
+<span class="sd">    seeds it from ``OMP_NUM_THREADS`` (see abtem.core._numba_threads), so a</span>
+<span class="sd">    job limited to a few cores, e.g. by an HPC scheduler or one pytest-xdist</span>
+<span class="sd">    worker among many, is not oversubscribed by this pool.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">numba</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">NUMBA_NUM_THREADS</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_interpolation_pool</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">ThreadPoolExecutor</span><span class="p">:</span>
     <span class="k">global</span> <span class="n">_interpolation_pool</span>
     <span class="k">if</span> <span class="n">_interpolation_pool</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">_interpolation_pool</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">())</span>
+        <span class="n">_interpolation_pool</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">_interpolation_threads</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">_interpolation_pool</span>
 
 
@@ -1666,7 +1632,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    (whose workqueue backend aborts on concurrent launches, e.g. from dask).</span>
 <span class="sd">    """</span>
     <span class="n">num_chunks</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">_interpolation_threads</span><span class="p">(),</span>
         <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">),</span>
         <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">_INTERPOLATION_BUFFER_BUDGET</span> <span class="o">//</span> <span class="nb">max</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">nbytes</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="mi">1</span><span class="p">),</span>
     <span class="p">)</span>
@@ -2124,7 +2090,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">xp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">radial_potential</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">xp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">radial_gpts_device</span><span class="p">)[</span><span class="kc">None</span><span class="p">]</span>
             <span class="p">)</span>
 
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parametrization</span><span class="o">.</span><span class="n">sigmas</span><span class="p">):</span>
+            <span class="c1"># An element with a smoothing width is accumulated into its own</span>
+            <span class="c1"># buffer, smoothed, and then added; every other element goes</span>
+            <span class="c1"># straight into the slice.</span>
+            <span class="n">symbol</span> <span class="o">=</span> <span class="n">chemical_symbols</span><span class="p">[</span><span class="n">number</span><span class="p">]</span>
+            <span class="n">smoothed</span> <span class="o">=</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parametrization</span><span class="o">.</span><span class="n">sigmas</span>
+            <span class="k">if</span> <span class="n">smoothed</span><span class="p">:</span>
                 <span class="n">temp</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">temp</span> <span class="o">=</span> <span class="n">array</span>
@@ -2186,6 +2157,24 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span class="n">chunk_offset</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
                         <span class="p">)</span>
                         <span class="k">del</span> <span class="n">disk_chunk</span>
+            <span class="k">elif</span> <span class="n">device_name_from_array_module</span><span class="p">(</span><span class="n">xp</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"mps"</span><span class="p">:</span>
+                <span class="c1"># The threaded interpolation is a numba routine over host</span>
+                <span class="c1"># memory and Metal has no kernel of its own, so it runs on the</span>
+                <span class="c1"># host and the result is added back. Finite projections are</span>
+                <span class="c1"># thereby available on Metal rather than unsupported; the</span>
+                <span class="c1"># multislice they feed still runs on the device.</span>
+                <span class="n">host_temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">temp</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">)</span>
+                <span class="n">_threaded_interpolate_radial_functions</span><span class="p">(</span>
+                    <span class="n">array</span><span class="o">=</span><span class="n">host_temp</span><span class="p">,</span>
+                    <span class="n">positions</span><span class="o">=</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">positions</span><span class="p">),</span>
+                    <span class="n">disk_indices</span><span class="o">=</span><span class="n">disk</span><span class="p">,</span>
+                    <span class="n">disk_counts</span><span class="o">=</span><span class="n">disk_counts</span><span class="p">,</span>
+                    <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">,</span>
+                    <span class="n">radial_gpts</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">radial_gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">fp_dtype</span><span class="p">),</span>
+                    <span class="n">radial_functions</span><span class="o">=</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">radial_potential</span><span class="p">),</span>
+                    <span class="n">radial_derivative</span><span class="o">=</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">radial_potential_derivative</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="n">temp</span> <span class="o">+=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">host_temp</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">_threaded_interpolate_radial_functions</span><span class="p">(</span>
                     <span class="n">array</span><span class="o">=</span><span class="n">temp</span><span class="p">,</span>
@@ -2198,9 +2187,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="n">radial_derivative</span><span class="o">=</span><span class="n">radial_potential_derivative</span><span class="p">,</span>
                 <span class="p">)</span>
 
-            <span class="n">symbol</span> <span class="o">=</span> <span class="n">chemical_symbols</span><span class="p">[</span><span class="n">number</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parametrization</span><span class="o">.</span><span class="n">sigmas</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">smoothed</span><span class="p">:</span>
                 <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parametrization</span><span class="o">.</span><span class="n">sigmas</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sampling</span><span class="p">)</span>
                 <span class="n">temp</span> <span class="o">=</span> <span class="n">get_ndimage_module</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span>
                     <span class="n">temp</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"wrap"</span>

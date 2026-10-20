@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -834,7 +832,10 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">if</span> <span class="n">max_elements</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">device</span> <span class="o">==</span> <span class="s2">"gpu"</span><span class="p">:</span>
             <span class="n">chunk_bytes</span> <span class="o">=</span> <span class="n">parse_bytes</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"dask.chunk-size-gpu"</span><span class="p">))</span>
-        <span class="k">elif</span> <span class="n">device</span> <span class="o">==</span> <span class="s2">"cpu"</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">device</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"cpu"</span><span class="p">,</span> <span class="s2">"mps"</span><span class="p">):</span>
+            <span class="c1"># Metal shares the machine's memory with the host instead of having</span>
+            <span class="c1"># its own VRAM, so the host chunk size is what actually bounds a</span>
+            <span class="c1"># chunk there -- 'chunk-size-gpu' is sized for a discrete card.</span>
             <span class="n">chunk_bytes</span> <span class="o">=</span> <span class="n">parse_bytes</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"dask.chunk-size"</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown device: </span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
@@ -1006,7 +1007,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="viewcode-block" id="estimate_potential_chunk_size">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.chunks.html#abtem.core.chunks.estimate_potential_chunk_size">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">estimate_potential_chunk_size</span><span class="p">(</span>
-    <span class="n">gpts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">slice_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
     <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -1039,8 +1040,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    gpts : tuple of int</span>
-<span class="sd">        The number of grid points (y, x).</span>
+<span class="sd">    slice_shape : tuple of int</span>
+<span class="sd">        The shape of what one slice allocates: the number of grid points</span>
+<span class="sd">        (y, x), preceded by the length of a component axis for a field with</span>
+<span class="sd">        components, and by the shape of the ensemble axes when a chunk holds</span>
+<span class="sd">        every member of an ensemble.</span>
 <span class="sd">    device : str</span>
 <span class="sd">        The device ('cpu' or 'gpu').</span>
 <span class="sd">    dtype : numpy.dtype, optional</span>
@@ -1062,7 +1066,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">if</span> <span class="n">chunk_size_setting</span> <span class="o">!=</span> <span class="s2">"auto"</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunk_size_setting</span><span class="p">)</span>
 
-    <span class="n">slice_bytes</span> <span class="o">=</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dtype</span><span class="o">.</span><span class="n">itemsize</span>
+    <span class="n">slice_bytes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">slice_shape</span><span class="p">))</span> <span class="o">*</span> <span class="n">dtype</span><span class="o">.</span><span class="n">itemsize</span>
 
     <span class="k">if</span> <span class="n">device</span> <span class="o">==</span> <span class="s2">"gpu"</span><span class="p">:</span>
         <span class="c1"># Deliberately no Bluestein-overhead factor here, unlike the sibling</span>

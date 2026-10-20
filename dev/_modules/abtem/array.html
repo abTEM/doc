@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -556,7 +554,9 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">operator</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span><span class="p">,</span> <span class="n">nullcontext</span>
@@ -583,17 +583,20 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.dask</span><span class="w"> </span><span class="kn">import</span> <span class="n">TqdmCallback</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem._version</span><span class="w"> </span><span class="kn">import</span> <span class="n">__version__</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">backend</span><span class="p">,</span> <span class="n">config</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AxesMetadataList</span><span class="p">,</span>
     <span class="n">AxisMetadata</span><span class="p">,</span>
+    <span class="n">EnergyAxis</span><span class="p">,</span>
     <span class="n">LinearAxis</span><span class="p">,</span>
     <span class="n">OrdinalAxis</span><span class="p">,</span>
     <span class="n">UnknownAxis</span><span class="p">,</span>
+    <span class="n">_normalized_axis_weights</span><span class="p">,</span>
     <span class="n">axis_from_dict</span><span class="p">,</span>
     <span class="n">axis_to_dict</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">asnumpy</span><span class="p">,</span>
     <span class="n">check_cupy_is_installed</span><span class="p">,</span>
     <span class="n">copy_to_device</span><span class="p">,</span>
     <span class="n">cp</span><span class="p">,</span>
@@ -608,6 +611,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">CopyMixin</span><span class="p">,</span>
     <span class="n">EqualityMixin</span><span class="p">,</span>
+    <span class="n">get_dtype</span><span class="p">,</span>
     <span class="n">interleave</span><span class="p">,</span>
     <span class="n">itemset</span><span class="p">,</span>
     <span class="n">normalize_axes</span><span class="p">,</span>
@@ -620,31 +624,28 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayObjectTransform</span>
 
 
+<span class="c1"># Optional dependencies, imported on first use by _optional_module rather than</span>
+<span class="c1"># here: importing them made every `import abtem` slower, whether or not it ever</span>
+<span class="c1"># exported a TIFF, a HyperSpy signal or a quantem Dataset. A module set here</span>
+<span class="c1"># (as the tests do with stand-ins) is used as it is.</span>
 <span class="n">tifffile</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ModuleType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">tifffile</span>  <span class="c1"># type: ignore</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="k">pass</span>
-
-
 <span class="n">hs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ModuleType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">hyperspy.api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">hs</span>  <span class="c1"># type: ignore</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="k">pass</span>
-
-
-<span class="n">xr</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ModuleType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>  <span class="c1"># type: ignore</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="k">pass</span>
-
 <span class="n">em</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ModuleType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">quantem</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">em</span>  <span class="c1"># type: ignore</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="k">pass</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_optional_module</span><span class="p">(</span>
+    <span class="n">attribute</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">error</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="ne">Exception</span><span class="p">]</span> <span class="o">=</span> <span class="ne">ImportError</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModuleType</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The module `name`, imported once into this module's `attribute`; raises</span>
+<span class="sd">    `error` with `message` if it is not installed."""</span>
+    <span class="n">module</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">attribute</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">module</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">import_error</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">import_error</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="n">module</span>
+    <span class="k">return</span> <span class="n">module</span>
 
 
 <span class="n">ArrayObjectType</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">"ArrayObjectType"</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s2">"ArrayObject"</span><span class="p">)</span>
@@ -694,6 +695,11 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="n">arr</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_inverse_permutation</span><span class="p">(</span><span class="n">order</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""The permutation that undoes `order`."""</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">order</span><span class="p">))</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_to_natural_order</span><span class="p">(</span>
     <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">order</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
@@ -701,14 +707,97 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    recovering the size each of the first `len(order)` (ensemble) axes would</span>
 <span class="sd">    have in the array's own natural (undeclared) axis order. Any trailing</span>
 <span class="sd">    (base) axes beyond that span are untouched."""</span>
-    <span class="n">ensemble_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
-    <span class="n">inverse</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">ensemble_len</span>
-    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">order</span><span class="p">):</span>
-        <span class="n">inverse</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="nb">tuple</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="n">inverse</span><span class="p">[</span><span class="n">p</span><span class="p">]]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ensemble_len</span><span class="p">))</span>
-        <span class="o">+</span> <span class="n">shape</span><span class="p">[</span><span class="n">ensemble_len</span><span class="p">:]</span>
-    <span class="p">)</span>
+    <span class="n">inverse</span> <span class="o">=</span> <span class="n">_inverse_permutation</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inverse</span><span class="p">)</span> <span class="o">+</span> <span class="n">shape</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">)</span> <span class="p">:]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_transpose_from_ensemble_source</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""The inverse of `_transpose_to_ensemble_source`: permute an array whose</span>
+<span class="sd">    first `len(order)` axes are in the declared order back into the natural</span>
+<span class="sd">    order, the one every `_calculate_new_array` returns."""</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">))):</span>
+        <span class="k">return</span> <span class="n">array</span>
+    <span class="n">trailing</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">),</span> <span class="n">array</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">array</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">*</span><span class="n">_inverse_permutation</span><span class="p">(</span><span class="n">order</span><span class="p">),</span> <span class="o">*</span><span class="n">trailing</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_multi_energy_axis</span><span class="p">(</span><span class="n">array_object</span><span class="p">:</span> <span class="s2">"ArrayObject"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""The index of the ensemble axis holding more than one energy, if any."""</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">axis</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">array_object</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="n">EnergyAxis</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">axis</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">i</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_contradicting_energy_axis</span><span class="p">(</span><span class="n">scalar</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EnergyAxis</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""The first `EnergyAxis` among `axes` holding an energy other than the scalar</span>
+<span class="sd">    energy `scalar` (compared to a relative 1e-9, not exactly), or None. A scalar</span>
+<span class="sd">    that is not a number, such as None, contradicts nothing."""</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scalar</span><span class="p">,</span> <span class="n">Number</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="n">EnergyAxis</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
+            <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">axis</span><span class="o">.</span><span class="n">values</span><span class="p">],</span> <span class="nb">float</span><span class="p">(</span><span class="n">scalar</span><span class="p">),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.0</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="n">axis</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_drop_stale_scalar_energy</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">scalar_holders</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Set to None the scalar energy (the "energy" entry of each dict in</span>
+<span class="sd">    `scalar_holders`) that contradicts an `EnergyAxis` among `axes`, with a warning.</span>
+
+<span class="sd">    Files written before an `EnergyAxis` was the one record of the energies of an</span>
+<span class="sd">    energy ensemble (such as the output of `stack` over energies) kept the scalar</span>
+<span class="sd">    energy of the first member beside the axis; `ArrayObject` now refuses that</span>
+<span class="sd">    combination, and the axis is what holds the energies, so loading drops the</span>
+<span class="sd">    leftover instead of failing."""</span>
+    <span class="k">for</span> <span class="n">holder</span> <span class="ow">in</span> <span class="n">scalar_holders</span><span class="p">:</span>
+        <span class="n">scalar</span> <span class="o">=</span> <span class="n">holder</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">)</span>
+        <span class="n">axis</span> <span class="o">=</span> <span class="n">_contradicting_energy_axis</span><span class="p">(</span><span class="n">scalar</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">axis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> holds the scalar energy </span><span class="si">{</span><span class="n">scalar</span><span class="si">}</span><span class="s2"> eV beside an EnergyAxis "</span>
+                <span class="sa">f</span><span class="s2">"with the energies </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">axis</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s2"> eV, a leftover of an older "</span>
+                <span class="s2">"abTEM version; the scalar energy is ignored and the energies of the "</span>
+                <span class="s2">"EnergyAxis are used."</span>
+            <span class="p">)</span>
+            <span class="n">holder</span><span class="p">[</span><span class="s2">"energy"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_calculate_new_array_per_energy</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">array_object</span><span class="p">:</span> <span class="s2">"ArrayObject"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""`transform._calculate_new_array(array_object)`, evaluated for each energy of</span>
+<span class="sd">    a multi-energy ensemble on its own when the transform depends on the</span>
+<span class="sd">    wavelength (`_splits_energy_ensembles`).</span>
+
+<span class="sd">    A detector or a multislice run uses one angular sampling and one wavelength</span>
+<span class="sd">    for the whole array it is given, which is right for one energy only. Each</span>
+<span class="sd">    energy member is therefore transformed separately and the results are</span>
+<span class="sd">    restacked where indexing removed the energy axis: after the transform's own</span>
+<span class="sd">    ensemble axes, among the array object's own axes in their natural order,</span>
+<span class="sd">    which is the order every `_calculate_new_array` returns. This runs on the</span>
+<span class="sd">    whole array of an eager call and on every block of a lazy one, whatever</span>
+<span class="sd">    energies the block holds.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="s2">"_splits_energy_ensembles"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">transform</span><span class="o">.</span><span class="n">_calculate_new_array</span><span class="p">(</span><span class="n">array_object</span><span class="p">)</span>
+
+    <span class="n">index</span> <span class="o">=</span> <span class="n">_multi_energy_axis</span><span class="p">(</span><span class="n">array_object</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">transform</span><span class="o">.</span><span class="n">_calculate_new_array</span><span class="p">(</span><span class="n">array_object</span><span class="p">)</span>
+
+    <span class="n">members</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">array_object</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">[</span><span class="n">index</span><span class="p">]):</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="n">array_object</span><span class="o">.</span><span class="n">get_items</span><span class="p">((</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),)</span> <span class="o">*</span> <span class="n">index</span> <span class="o">+</span> <span class="p">(</span><span class="n">j</span><span class="p">,))</span>
+        <span class="n">members</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">_calculate_new_array</span><span class="p">(</span><span class="n">array_object</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">items</span><span class="p">)))</span>
+
+    <span class="n">axis</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span> <span class="o">+</span> <span class="n">index</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">members</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">get_array_module</span><span class="p">(</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">outputs</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">members</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">members</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">members</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_transpose_to_ensemble_source</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]):</span>
@@ -842,6 +931,28 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="c1"># under it (also a more sensible chunk size for parallel IO in general) by</span>
 <span class="c1"># halving the largest axis of the chunk shape until it fits the budget.</span>
 <span class="n">_MAX_ZARR_CHUNK_BYTES</span> <span class="o">=</span> <span class="mi">512</span> <span class="o">*</span> <span class="mi">1024</span><span class="o">**</span><span class="mi">2</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_json_safe</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Convert a metadata value into something ``json`` can encode.</span>
+
+<span class="sd">    Metadata can carry array-backed values -- an accumulated defocus that was</span>
+<span class="sd">    computed on the device, for instance -- and both zarr attributes and the</span>
+<span class="sd">    JSON metadata export run through ``json.dumps``, which understands neither</span>
+<span class="sd">    a CuPy array nor a Metal one (nor, for that matter, a NumPy scalar). Bring</span>
+<span class="sd">    anything array-like back to the host and hand over plain Python types.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">_json_safe</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">_json_safe</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"dtype"</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"shape"</span><span class="p">):</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">array</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">if</span> <span class="n">array</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">array</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">value</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_safe_zarr_chunks</span><span class="p">(</span>
@@ -1045,12 +1156,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         <span class="k">for</span> <span class="n">metadata_dict</span> <span class="ow">in</span> <span class="n">metadata_list</span><span class="p">:</span>
                             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">metadata_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                                <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                                <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_json_safe</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
                         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">computed_array</span> <span class="ow">in</span> <span class="n">computed_arrays</span><span class="p">:</span>
                             <span class="n">root</span><span class="o">.</span><span class="n">create_array</span><span class="p">(</span>
                                 <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"array</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-                                <span class="n">data</span><span class="o">=</span><span class="n">computed_array</span><span class="p">,</span>
+                                <span class="n">data</span><span class="o">=</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">computed_array</span><span class="p">),</span>
                                 <span class="n">chunks</span><span class="o">=</span><span class="n">_safe_zarr_chunks</span><span class="p">(</span>
                                     <span class="n">computed_array</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
                                     <span class="n">computed_array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">itemsize</span><span class="p">,</span>
@@ -1098,12 +1209,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="k">try</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">metadata_dict</span> <span class="ow">in</span> <span class="n">metadata_list</span><span class="p">:</span>
                         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">metadata_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                            <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                            <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_json_safe</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
                     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">computed_array</span> <span class="ow">in</span> <span class="n">computed_arrays</span><span class="p">:</span>
                         <span class="n">root</span><span class="o">.</span><span class="n">create_array</span><span class="p">(</span>
                             <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"array</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-                            <span class="n">data</span><span class="o">=</span><span class="n">computed_array</span><span class="p">,</span>
+                            <span class="n">data</span><span class="o">=</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">computed_array</span><span class="p">),</span>
                             <span class="n">chunks</span><span class="o">=</span><span class="n">_safe_zarr_chunks</span><span class="p">(</span>
                                 <span class="n">computed_array</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
                                 <span class="n">computed_array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">itemsize</span><span class="p">,</span>
@@ -1146,10 +1257,15 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">is_gpu</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"device"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"gpu"</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
             <span class="n">_is_gpu_array_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span>
         <span class="p">)</span>
+        <span class="n">is_mps</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"device"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"mps"</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="n">_is_mps_array_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span>
+        <span class="p">)</span>
         <span class="n">_push_config_to_active_client</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">is_gpu</span><span class="p">:</span>
             <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_resolve_gpu_scheduler</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">is_mps</span><span class="p">:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_resolve_mps_scheduler</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span>
 
         <span class="n">arrays</span> <span class="o">=</span> <span class="p">[</span><span class="n">array</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">arrays_to_write</span><span class="p">]</span>
         <span class="k">with</span> <span class="n">_nested_compute_guard</span><span class="p">(</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_keep_annotations_guard</span><span class="p">(</span>
@@ -1250,6 +1366,47 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">"device"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="s2">"gpu"</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_mps_array_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Return True if obj's computation involves Metal (MPS) arrays."""</span>
+    <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">"device"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="s2">"mps"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_mps_scheduler</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Resolve the dask scheduler for a Metal computation.</span>
+
+<span class="sd">    A process holds a single Metal context, and PyTorch's MPS backend aborts</span>
+<span class="sd">    the process when several of dask's threaded-scheduler workers drive it at</span>
+<span class="sd">    once -- the same constraint that rules out the threaded scheduler for CuPy</span>
+<span class="sd">    in ``_resolve_gpu_scheduler``, and resolved the same way: a running</span>
+<span class="sd">    distributed client whose workers are each single-threaded is left in</span>
+<span class="sd">    charge, since the caller started it to run the computation, and anything</span>
+<span class="sd">    else gets the synchronous scheduler. (In-process workers then share the</span>
+<span class="sd">    one context, which the backend's own lock serializes.)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    kwargs : dict</span>
+<span class="sd">        Keyword arguments destined for ``dask.compute``. A ``scheduler`` key</span>
+<span class="sd">        set by the caller is always respected.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        The keyword arguments, with ``scheduler="synchronous"`` injected when</span>
+<span class="sd">        no suitable client is available.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="s2">"scheduler"</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">kwargs</span>
+
+    <span class="n">client</span> <span class="o">=</span> <span class="n">_active_client</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">is_gpu_dask_client</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+        <span class="n">push_config_to_workers</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"scheduler"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"synchronous"</span>
+
+    <span class="k">return</span> <span class="n">kwargs</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_gpu_scheduler</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Resolve the dask scheduler for a GPU computation.</span>
 
@@ -1340,6 +1497,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">return</span> <span class="kc">None</span>
 
 
+<span class="n">_LOCAL_SCHEDULER_WARNING</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"Running on a single-machine scheduler when a distributed client"</span>
+<span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_runs_on_distributed_client</span><span class="p">(</span><span class="n">arrays</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Whether ``dask.compute(*arrays, **kwargs)`` would run on a distributed</span>
 <span class="sd">    client: an active default client, or one named by ``scheduler`` (the client</span>
@@ -1351,9 +1513,15 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="n">scheduler</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">get_scheduler</span><span class="p">(</span>
-        <span class="n">scheduler</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"scheduler"</span><span class="p">),</span> <span class="n">collections</span><span class="o">=</span><span class="n">arrays</span>
-    <span class="p">)</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="c1"># Only asks which scheduler would run, but older dask (e.g. 2025.3) warns</span>
+        <span class="c1"># whenever a local scheduler is named while a client is active.</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span>
+            <span class="s2">"ignore"</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">_LOCAL_SCHEDULER_WARNING</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span>
+        <span class="p">)</span>
+        <span class="n">scheduler</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">get_scheduler</span><span class="p">(</span>
+            <span class="n">scheduler</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"scheduler"</span><span class="p">),</span> <span class="n">collections</span><span class="o">=</span><span class="n">arrays</span>
+        <span class="p">)</span>
     <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="s2">"__self__"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">Client</span><span class="p">)</span>
 
 
@@ -1432,11 +1600,16 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">is_gpu</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"device"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"gpu"</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
         <span class="n">_is_gpu_array_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">array_objects</span>
     <span class="p">)</span>
+    <span class="n">is_mps</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"device"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"mps"</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
+        <span class="n">_is_mps_array_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">array_objects</span>
+    <span class="p">)</span>
 
     <span class="n">_push_config_to_active_client</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">is_gpu</span><span class="p">:</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_resolve_gpu_scheduler</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">is_mps</span><span class="p">:</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_resolve_mps_scheduler</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">arrays</span> <span class="o">=</span> <span class="p">[</span><span class="n">wrapper</span><span class="o">.</span><span class="n">array</span> <span class="k">for</span> <span class="n">wrapper</span> <span class="ow">in</span> <span class="n">array_objects</span><span class="p">]</span>
     <span class="k">with</span> <span class="n">_nested_compute_guard</span><span class="p">(</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">_keep_annotations_guard</span><span class="p">(</span>
@@ -1554,6 +1727,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_axes_metadata</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_energy_matches_energy_axes</span><span class="p">()</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -1610,6 +1784,31 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">"number of values for ordinal axis (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span><span class="si">}</span><span class="s2">), does not match"</span>
                     <span class="sa">f</span><span class="s2">"size of dimension (</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">)"</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_energy_matches_energy_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Refuse a scalar energy that is not the energy of every member of an</span>
+<span class="sd">        `EnergyAxis`. The axis is the one record of the energies of an energy</span>
+<span class="sd">        ensemble, which leaves its scalar energy (`accelerator.energy` and</span>
+<span class="sd">        `metadata["energy"]`) unset, as a probe built with several energies does;</span>
+<span class="sd">        a scalar energy beside the axis would be read as the energy of every</span>
+<span class="sd">        member."""</span>
+        <span class="n">accelerator</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_accelerator"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">scalars</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"energy"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">accelerator</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">accelerator</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span>
+            <span class="s1">'metadata["energy"]'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">scalar</span> <span class="ow">in</span> <span class="n">scalars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">axis</span> <span class="o">=</span> <span class="n">_contradicting_energy_axis</span><span class="p">(</span><span class="n">scalar</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensemble_axes_metadata</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">axis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">scalar</span><span class="si">}</span><span class="s2"> eV contradicts the EnergyAxis with the "</span>
+                    <span class="sa">f</span><span class="s2">"energies </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">axis</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s2"> eV of this "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">; the axis carries the energy "</span>
+                    <span class="s2">"of each member, leave the scalar energy unset (None). When "</span>
+                    <span class="s2">"reading a file written by an older abTEM version, load it "</span>
+                    <span class="s2">"with abtem.from_zarr, which drops such a leftover scalar "</span>
+                    <span class="s2">"energy."</span>
                 <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_is_base_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -1833,6 +2032,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        reduced_array : ArrayObject or subclass of ArrayObject</span>
 <span class="sd">            The reduced array object.</span>
 <span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_warn_if_weighted_axes</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction</span><span class="p">(</span>
             <span class="s2">"mean"</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="n">keepdims</span><span class="p">,</span> <span class="n">split_every</span><span class="o">=</span><span class="n">split_every</span>
         <span class="p">)</span></div>
@@ -1865,6 +2065,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        reduced_array : ArrayObject or subclass of ArrayObject</span>
 <span class="sd">            The reduced array object.</span>
 <span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_warn_if_weighted_axes</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="s2">"sum"</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction</span><span class="p">(</span>
             <span class="s2">"sum"</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="n">keepdims</span><span class="p">,</span> <span class="n">split_every</span><span class="o">=</span><span class="n">split_every</span>
         <span class="p">)</span></div>
@@ -1970,6 +2171,115 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="p">)</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_weighted_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Normalized probability weights of the given (non-negative) axes, for the</span>
+<span class="sd">        axes that carry non-uniform weights."""</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+            <span class="n">axis_weights</span> <span class="o">=</span> <span class="n">_normalized_axis_weights</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">axes_metadata</span><span class="p">[</span><span class="n">axis</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">axis_weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">weights</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="n">axis_weights</span>
+        <span class="k">return</span> <span class="n">weights</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_warn_if_weighted_axes</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">reduction_func</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">axes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># A reduction over all axes includes every ensemble axis.</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="n">axis</span> <span class="k">if</span> <span class="n">axis</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">+</span> <span class="n">axis</span>
+                <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">axis</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">):</span>
+                <span class="k">return</span>  <span class="c1"># _reduction raises for base axes</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_weighted_axes</span><span class="p">(</span><span class="n">axes</span><span class="p">):</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"`</span><span class="si">{</span><span class="n">reduction_func</span><span class="si">}</span><span class="s2">` over an ensemble axis carrying distribution "</span>
+                <span class="s2">"(probability) weights ignores the weights. The ensemble members "</span>
+                <span class="s2">"are unweighted and the distribution weights are applied when the "</span>
+                <span class="s2">"ensemble is reduced: use `reduce_ensemble(axis=...)` for the "</span>
+                <span class="s2">"probability-weighted mean."</span><span class="p">,</span>
+                <span class="ne">UserWarning</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_weighted_ensemble_mean</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">split_every</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Probability-weighted mean over ensemble axes.</span>
+
+<span class="sd">        Computes ``Σ_i p_i A_i / Σ_i p_i`` over each axis, where ``p_i`` are the</span>
+<span class="sd">        weights carried by the axis metadata (see :class:`OrdinalAxis`); axes</span>
+<span class="sd">        without (or with equal) weights are averaged with a plain mean. Over</span>
+<span class="sd">        several axes the weights are the outer product of the per-axis weights.</span>
+<span class="sd">        Works for NumPy, CuPy and lazy Dask arrays (the result stays lazy) and</span>
+<span class="sd">        preserves the array dtype.</span>
+<span class="sd">        """</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">axis</span> <span class="k">if</span> <span class="n">axis</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">+</span> <span class="n">axis</span>
+            <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_base_axis</span><span class="p">(</span><span class="n">axes</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"base axes cannot be reduced"</span><span class="p">)</span>
+
+        <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_weighted_axes</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">weights</span><span class="p">:</span>
+            <span class="c1"># Equal weights (e.g. frozen phonons): the plain mean is exact, and</span>
+            <span class="c1"># keeping it leaves such results bitwise unchanged.</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction</span><span class="p">(</span><span class="s2">"mean"</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">axes</span><span class="p">,</span> <span class="n">split_every</span><span class="o">=</span><span class="n">split_every</span><span class="p">)</span>
+
+        <span class="c1"># Integer arrays (e.g. counts) take the configured float precision rather</span>
+        <span class="c1"># than truncating the weights.</span>
+        <span class="n">array_object</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s2">"fc"</span><span class="p">:</span>
+            <span class="n">array_object</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+                <span class="o">**</span><span class="p">{</span>
+                    <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,)),</span>
+                    <span class="s2">"array"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)),</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Average the equal-weight axes first: it shrinks the array before the</span>
+        <span class="c1"># weighted pass, and the outer-product weights factorize over the axes.</span>
+        <span class="n">unweighted</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">axis</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">axes</span> <span class="k">if</span> <span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">weights</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">unweighted</span><span class="p">:</span>
+            <span class="n">array_object</span> <span class="o">=</span> <span class="n">array_object</span><span class="o">.</span><span class="n">_reduction</span><span class="p">(</span>
+                <span class="s2">"mean"</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">unweighted</span><span class="p">,</span> <span class="n">split_every</span><span class="o">=</span><span class="n">split_every</span>
+            <span class="p">)</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">axis</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">other</span> <span class="o">&lt;</span> <span class="n">axis</span> <span class="k">for</span> <span class="n">other</span> <span class="ow">in</span> <span class="n">unweighted</span><span class="p">):</span> <span class="n">axis_weights</span>
+                <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">axis_weights</span> <span class="ow">in</span> <span class="n">weights</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+
+        <span class="c1"># A single multiply by the outer product of the per-axis weights, a small</span>
+        <span class="c1"># host array spanning only the weighted axes. The real dtype matches the</span>
+        <span class="c1"># array's precision (complex64 -&gt; float32, ...), so the weights never</span>
+        <span class="c1"># promote the result.</span>
+        <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">array_object</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">combined</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">axis_weights</span> <span class="ow">in</span> <span class="n">weights</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">ndim</span>
+            <span class="n">shape</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">axis_weights</span><span class="p">)</span>
+            <span class="n">combined</span> <span class="o">=</span> <span class="n">combined</span> <span class="o">*</span> <span class="n">axis_weights</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array_object</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+        <span class="n">real_dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">array_object</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">array_object</span><span class="o">.</span><span class="n">array</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">real_dtype</span><span class="p">)</span>
+
+        <span class="n">weighted</span> <span class="o">=</span> <span class="n">array_object</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+            <span class="o">**</span><span class="p">{</span><span class="o">**</span><span class="n">array_object</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,)),</span> <span class="s2">"array"</span><span class="p">:</span> <span class="n">array</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">weighted</span><span class="o">.</span><span class="n">_reduction</span><span class="p">(</span>
+            <span class="s2">"sum"</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="n">split_every</span><span class="o">=</span><span class="n">split_every</span>
+        <span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_reduction</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">reduction_func</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -2007,6 +2317,14 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">default_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">reduction_func</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"std"</span><span class="p">,</span> <span class="s2">"var"</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="s2">"mps"</span><span class="p">:</span>
+                <span class="c1"># dask's moment_combine step casts to float64, which the</span>
+                <span class="c1"># single-precision torch backend refuses. Reducing each axis in</span>
+                <span class="c1"># one aggregate step skips it; the per-block partials it gathers</span>
+                <span class="c1"># have the reduced shape.</span>
+                <span class="n">split_every</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">axis</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">numblocks</span><span class="p">[</span><span class="n">axis</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">axes</span>
+                <span class="p">}</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">da</span><span class="p">,</span> <span class="n">reduction_func</span><span class="p">)(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">split_every</span><span class="o">=</span><span class="n">split_every</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="n">keepdims</span>
             <span class="p">)</span>
@@ -2025,15 +2343,66 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_check_is_compatible</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
             <span class="n">other_array</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">array</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">Number</span><span class="p">)):</span>
+        <span class="k">elif</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">Number</span><span class="p">))</span>
+            <span class="ow">or</span> <span class="p">(</span><span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">cp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">))</span>
+            <span class="ow">or</span> <span class="p">(</span>
+                <span class="n">backend</span><span class="o">.</span><span class="n">TorchNDArray</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">TorchNDArray</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">):</span>
             <span class="n">other_array</span> <span class="o">=</span> <span class="n">other</span>
+        <span class="k">elif</span> <span class="n">func</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"__r"</span><span class="p">):</span>
+            <span class="c1"># The left operand's own method has already declined, so Python</span>
+            <span class="c1"># raises its usual TypeError naming both types.</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"arithmetic operation not implemented for </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
 
+        <span class="n">self_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span>
+        <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">self_array</span><span class="p">)</span> <span class="ow">is</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span><span class="p">:</span>
+            <span class="c1"># dask infers a lazy result's dtype with NumPy's rules, under which a</span>
+            <span class="c1"># NumPy scalar or array is strongly typed (float32 times np.float64(2)</span>
+            <span class="c1"># is float64), and Metal holds no double precision. A Python scalar</span>
+            <span class="c1"># is weakly typed to NumPy and torch alike, and a device array is</span>
+            <span class="c1"># single precision.</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other_array</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">generic</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">other_array</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">other_array</span> <span class="o">=</span> <span class="n">other_array</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">other_array</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">other_array</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span>
+            <span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other_array</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">cp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">))</span>
+            <span class="ow">and</span> <span class="p">{</span><span class="n">get_array_module</span><span class="p">(</span><span class="n">self_array</span><span class="p">),</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">other_array</span><span class="p">)}</span>
+            <span class="o">==</span> <span class="p">{</span><span class="n">np</span><span class="p">,</span> <span class="n">cp</span><span class="p">}</span>
+        <span class="p">):</span>
+            <span class="c1"># CuPy refuses a host array as an operand, a 0-d one included,</span>
+            <span class="c1"># though it takes a NumPy scalar. The side on the host, measurement</span>
+            <span class="c1"># or operand, is moved to the device, so both operand orders give</span>
+            <span class="c1"># the same result there. On the device an array keeps its dtype, so</span>
+            <span class="c1"># the result is promoted as NumPy promotes it on the CPU. A lazy</span>
+            <span class="c1"># host operand is copied to the device block by block when the</span>
+            <span class="c1"># result is computed.</span>
+            <span class="k">if</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">self_array</span><span class="p">)</span> <span class="ow">is</span> <span class="n">cp</span><span class="p">:</span>
+                <span class="n">other_array</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="n">other_array</span><span class="p">,</span> <span class="s2">"gpu"</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">self_array</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="n">self_array</span><span class="p">,</span> <span class="s2">"gpu"</span><span class="p">)</span>
+
+        <span class="c1"># Through the operator module rather than a direct call of the method</span>
+        <span class="c1"># named by func, so that an operand that returns NotImplemented hands</span>
+        <span class="c1"># over to the other operand's reflected method, and a pair neither side</span>
+        <span class="c1"># supports raises TypeError.</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">operator</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">operator</span><span class="p">,</span> <span class="n">name</span><span class="p">)(</span><span class="n">self_array</span><span class="p">,</span> <span class="n">other_array</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># a reflected operation: "__rtruediv__" is other / self</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">operator</span><span class="p">,</span> <span class="n">name</span><span class="p">[</span><span class="mi">1</span><span class="p">:])(</span><span class="n">other_array</span><span class="p">,</span> <span class="n">self_array</span><span class="p">)</span>
+
         <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,))</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">func</span><span class="p">)(</span><span class="n">other_array</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_in_place_arithmetic</span><span class="p">(</span>
@@ -2060,10 +2429,16 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arithmetic</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">"__truediv__"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__itruediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arithmetic</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">"__itruediv__"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_in_place_arithmetic</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">"__itruediv__"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rtruediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arithmetic</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">"__rtruediv__"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arithmetic</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">"__sub__"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rsub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arithmetic</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">"__rsub__"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__isub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_in_place_arithmetic</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">"__isub__"</span><span class="p">)</span>
@@ -2077,8 +2452,24 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="fm">__pow__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arithmetic</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">"__pow__"</span><span class="p">)</span>
 
-    <span class="fm">__rmul__</span> <span class="o">=</span> <span class="fm">__mul__</span>
-    <span class="fm">__rtruediv__</span> <span class="o">=</span> <span class="fm">__truediv__</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__radd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arithmetic</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">"__radd__"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arithmetic</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">"__rmul__"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rpow__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arithmetic</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">"__rpow__"</span><span class="p">)</span>
+
+    <span class="c1"># NumPy scalars and arrays, dask arrays and CuPy arrays on the left of an</span>
+    <span class="c1"># operator defer to the reflected methods above, instead of coercing this</span>
+    <span class="c1"># object to an array through __len__ and __getitem__, because their priority</span>
+    <span class="c1"># is lower. __array_ufunc__ = None would also defer them, but dask treats any</span>
+    <span class="c1"># object with shape, dtype and __array_ufunc__ as array-like and then reads</span>
+    <span class="c1"># its ndim, which an ArrayObject lacks. The same deferral applies to NumPy's</span>
+    <span class="c1"># in-place operators: `ndarray += m` leaves the ndarray unchanged and binds</span>
+    <span class="c1"># the name to the new object returned by `m.__radd__`.</span>
+    <span class="n">__array_priority__</span> <span class="o">=</span> <span class="mi">1000</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_ensemble_axes_metadata_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">):</span>
         <span class="n">expanded_axes_metadatas</span> <span class="o">=</span> <span class="p">[</span>
@@ -2453,7 +2844,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="p">}</span>
         <span class="n">metadata</span><span class="p">[</span><span class="s2">"data_origin"</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"abTEM_v</span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s2">"</span>
         <span class="n">metadata</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
-        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">_json_safe</span><span class="p">(</span><span class="n">metadata</span><span class="p">))</span>
 
 <div class="viewcode-block" id="ArrayObject.to_tiff">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.array.html#abtem.array.ArrayObject.to_tiff">[docs]</a>
@@ -2467,10 +2858,12 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        kwargs :</span>
 <span class="sd">            Keyword arguments passed to `tifffile.imwrite`.</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="n">tifffile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">"This functionality of abTEM requires tifffile, see https://github.com/cgohlke/tifffile."</span>
-            <span class="p">)</span>
+        <span class="n">tifffile</span> <span class="o">=</span> <span class="n">_optional_module</span><span class="p">(</span>
+            <span class="s2">"tifffile"</span><span class="p">,</span>
+            <span class="s2">"tifffile"</span><span class="p">,</span>
+            <span class="s2">"This functionality of abTEM requires tifffile, see https://github.com/cgohlke/tifffile."</span><span class="p">,</span>
+            <span class="n">error</span><span class="o">=</span><span class="ne">RuntimeError</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
@@ -2532,6 +2925,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">transform_partial</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
         <span class="n">array_object_partial</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
         <span class="n">base_ndims</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">out_ndim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="n">axes</span> <span class="o">=</span> <span class="n">unpack_blockwise_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
 
@@ -2545,13 +2939,12 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">array_object</span> <span class="o">=</span> <span class="n">array_object_partial</span><span class="p">((</span><span class="n">array</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">ensemble_axes</span><span class="p">)))</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
         <span class="n">transform</span> <span class="o">=</span> <span class="n">transform_partial</span><span class="p">(</span><span class="o">*</span><span class="n">transform_axes</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
-        <span class="n">out_arrays</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">_calculate_new_array</span><span class="p">(</span><span class="n">array_object</span><span class="p">)</span>
+        <span class="n">out_arrays</span> <span class="o">=</span> <span class="n">_calculate_new_array_per_energy</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">array_object</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">out_arrays</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
             <span class="n">out_arrays</span> <span class="o">=</span> <span class="p">(</span><span class="n">out_arrays</span><span class="p">,)</span>
 
-        <span class="n">ndims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">transform_axes</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-        <span class="n">packing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">ndims</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+        <span class="n">packing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">out_ndim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
         <span class="n">itemset</span><span class="p">(</span><span class="n">packing</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">out_arrays</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">packing</span>
 
@@ -2577,6 +2970,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        transformed_array_object : ArrayObject</span>
 <span class="sd">            The transformed array object.</span>
 <span class="sd">        """</span>
+
+        <span class="c1"># A transform whose output size depends on the ensemble (a pixelated</span>
+        <span class="c1"># detector's crop of a multi-energy ensemble) is fixed against the whole</span>
+        <span class="c1"># ensemble here, before an eager call or a lazy block sees one energy.</span>
+        <span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">_match_ensemble</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="n">new_arrays</span><span class="p">:</span> <span class="p">(</span>
             <span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span>
@@ -2619,6 +3017,16 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">new_axes</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">_partition_args</span><span class="p">(</span>
                 <span class="n">validated_chunks</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)]</span>
             <span class="p">)</span>
+
+            <span class="c1"># A block of multi_output_blockwise has one dimension per axis of</span>
+            <span class="c1"># this array plus one per dimension of each partitioned transform</span>
+            <span class="c1"># argument, not one per argument: MultisliceTransform passes a</span>
+            <span class="c1"># frozen-phonon potential with several exit planes as one 2D</span>
+            <span class="c1"># argument, and large constants as 0D arguments whose blocks can be</span>
+            <span class="c1"># bare objects, so the count comes from the declared arguments. A</span>
+            <span class="c1"># packed block with fewer dimensions breaks dask's concatenation</span>
+            <span class="c1"># over dropped axes (AnnularDetector drops the wave-function axes).</span>
+            <span class="n">out_ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">axis</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">new_axes</span><span class="p">)</span>
 
             <span class="n">num_dropped_axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
                 <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_shape</span><span class="p">)</span> <span class="k">for</span> <span class="n">out_shape</span> <span class="ow">in</span> <span class="n">transform</span><span class="o">.</span><span class="n">_out_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -2676,9 +3084,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">array_object_partial</span><span class="o">=</span><span class="n">array_object_partial</span><span class="p">,</span>
                 <span class="n">transform_partial</span><span class="o">=</span><span class="n">transform_partial</span><span class="p">,</span>
                 <span class="n">base_ndims</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_shape</span><span class="p">),</span>
+                <span class="n">out_ndim</span><span class="o">=</span><span class="n">out_ndim</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">new_arrays</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">_calculate_new_array</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">new_arrays</span> <span class="o">=</span> <span class="n">_calculate_new_array_per_energy</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_arrays</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
                 <span class="n">new_arrays</span> <span class="o">=</span> <span class="p">(</span><span class="n">new_arrays</span><span class="p">,)</span>
             <span class="n">ensemble_sources</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">_out_ensemble_source</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -2704,14 +3113,15 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">output</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_array_and_metadata</span><span class="p">(</span>
                 <span class="n">array</span><span class="p">,</span> <span class="n">axes_metadata</span><span class="o">=</span><span class="n">axes_metadata</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span>
             <span class="p">)</span>
-            <span class="c1"># When the source was on GPU but the output is CPU-resident</span>
-            <span class="c1"># Record the computation device on the output so _compute()</span>
-            <span class="c1"># selects the synchronous scheduler for GPU work.  Check</span>
+            <span class="c1"># When the source was on an accelerator but the output is</span>
+            <span class="c1"># CPU-resident, record the computation device on the output so</span>
+            <span class="c1"># _compute() selects the synchronous scheduler for the device work</span>
+            <span class="c1"># still in its graph -- CuPy and Metal both need it.  Check</span>
             <span class="c1"># self.device (which honours _device on lazy arrays) rather</span>
             <span class="c1"># than inspecting the dask-array module, which always returns</span>
             <span class="c1"># numpy for a not-yet-computed lazy array.</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="s2">"gpu"</span><span class="p">:</span>
-                <span class="n">output</span><span class="o">.</span><span class="n">_device</span> <span class="o">=</span> <span class="s2">"gpu"</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"gpu"</span><span class="p">,</span> <span class="s2">"mps"</span><span class="p">):</span>
+                <span class="n">output</span><span class="o">.</span><span class="n">_device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span>
             <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -2779,10 +3189,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        This method requires Hyperspy to be installed. You can find more information</span>
 <span class="sd">        about Hyperspy at https://hyperspy.org.</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="n">hs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
-                <span class="s2">"This functionality of *ab*TEM requires Hyperspy, see https://hyperspy.org."</span>
-            <span class="p">)</span>
+        <span class="n">hs</span> <span class="o">=</span> <span class="n">_optional_module</span><span class="p">(</span>
+            <span class="s2">"hs"</span><span class="p">,</span>
+            <span class="s2">"hyperspy.api"</span><span class="p">,</span>
+            <span class="s2">"This functionality of *ab*TEM requires Hyperspy, see https://hyperspy.org."</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_dims</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">signal_type</span> <span class="o">=</span> <span class="n">hs</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">Signal1D</span>
@@ -2829,6 +3240,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">else</span><span class="p">:</span>
             <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span>
 
+        <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span><span class="p">:</span>
+            <span class="c1"># HyperSpy holds NumPy, dask or CuPy data, not torch backend arrays.</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">asnumpy</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+
         <span class="n">s</span> <span class="o">=</span> <span class="n">signal_type</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">ensemble_axes_metadata</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">axes_base</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
@@ -2852,10 +3267,13 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        ImportError</span>
 <span class="sd">            If xarray is not installed.</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="n">xr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Imported here: xarray (with pandas) adds ~0.4 s to `import abtem`.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>  <span class="c1"># type: ignore</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
                 <span class="s2">"This functionality of *ab*TEM requires xarray, see https://xarray.dev/."</span>
-            <span class="p">)</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span>
 
         <span class="n">coords</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">dims</span> <span class="o">=</span> <span class="p">[]</span>
@@ -2876,8 +3294,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <span class="n">coords</span><span class="p">[</span><span class="n">axis</span><span class="o">.</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">dr</span>
 
-        <span class="n">attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span>
-        <span class="n">attrs</span><span class="p">[</span><span class="s2">"long_name"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"label"</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">"long_name"</span><span class="p">]</span> <span class="o">=</span> <span class="n">attrs</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">)</span></div>
 
@@ -2886,13 +3305,29 @@ document.addEventListener("DOMContentLoaded", () => {
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.array.html#abtem.array.ArrayObject.to_quantem">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_quantem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Convert ArrayObject to quantem Dataset object.</span>
+<span class="sd">        Convert ArrayObject to quantem Dataset object. For an axis with an offset, the</span>
+<span class="sd">        origin is the coordinate of its first sample, in the units of the sampling; other</span>
+<span class="sd">        axes get origin 0 and sampling 1.</span>
+
+<span class="sd">        The units of the axes are converted to quantem's spelling (for example "A" and</span>
+<span class="sd">        "A^-1"), and an axis without units gets "pixels". The signal units are the</span>
+<span class="sd">        "units" entry of the metadata, passed on unchanged; if there is none they are</span>
+<span class="sd">        "arb. unit". The metadata is deep-copied into the metadata of the Dataset, so</span>
+<span class="sd">        changing one does not change the other.</span>
+
+<span class="sd">        A quantem Dataset holds NumPy arrays only: a lazy object is computed (the</span>
+<span class="sd">        object itself stays lazy) and an array on a GPU is copied to the host.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dataset : quantem.core.datastructures.Dataset</span>
 <span class="sd">        """</span>
 
-        <span class="k">if</span> <span class="n">em</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
-                <span class="s2">"This functionality of *ab*TEM requires quantem, see https://github.com/electronmicroscopy/quantem."</span>
-            <span class="p">)</span>
+        <span class="n">em</span> <span class="o">=</span> <span class="n">_optional_module</span><span class="p">(</span>
+            <span class="s2">"em"</span><span class="p">,</span>
+            <span class="s2">"quantem"</span><span class="p">,</span>
+            <span class="s2">"This functionality of *ab*TEM requires quantem, see https://github.com/electronmicroscopy/quantem."</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">unit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -2916,23 +3351,34 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes_metadata</span><span class="p">:</span>
             <span class="n">sampling</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="s2">"sampling"</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
             <span class="n">units</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_normalize_unit</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)))</span>
-            <span class="n">origin</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+            <span class="n">origin</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="s2">"offset"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+        <span class="c1"># The signal units are the metadata units, as abTEM's own measurements set them</span>
+        <span class="c1"># ("arb. unit" by default). quantem only displays them, and reads the same</span>
+        <span class="c1"># symbols as abTEM ("Å", "%", "electrons"), so they are not normalized like</span>
+        <span class="c1"># the axis units. An empty string is a dimensionless signal and stays empty.</span>
+        <span class="n">signal_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"units"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">signal_units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">signal_units</span> <span class="o">=</span> <span class="s2">"arb. unit"</span>
 
+        <span class="c1"># compute() replaces the array of the object it is called on; computing a</span>
+        <span class="c1"># shallow copy leaves the caller lazy.</span>
+        <span class="n">exported</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span> <span class="k">else</span> <span class="bp">self</span>
+
+        <span class="c1"># A quantem Dataset holds NumPy arrays only: it rejects CuPy arrays.</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="n">em</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">datastructures</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span>
-            <span class="n">array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+            <span class="n">array</span><span class="o">=</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">exported</span><span class="o">.</span><span class="n">array</span><span class="p">),</span>
             <span class="n">name</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
             <span class="n">origin</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">origin</span><span class="p">),</span>
             <span class="n">sampling</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sampling</span><span class="p">),</span>
             <span class="n">units</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">units</span><span class="p">),</span>
-            <span class="n">signal_units</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">,</span> <span class="s2">"arb. units"</span><span class="p">),</span>
+            <span class="n">signal_units</span><span class="o">=</span><span class="n">signal_units</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c1"># preserve abTEM metadata if present</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"metadata"</span><span class="p">):</span>
-            <span class="n">dataset</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
+        <span class="c1"># Dataset.from_array takes no metadata; Dataset.metadata is the dict it</span>
+        <span class="c1"># holds, empty for a new dataset. Deep-copied, as in to_data_array, so that</span>
+        <span class="c1"># nested values are not shared with this object.</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">dataset</span></div>
 
@@ -2971,6 +3417,13 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="p">]</span>
         <span class="n">ensemble_axes_metadata</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="n">axis_metadata</span><span class="p">)</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"ensemble_axes_metadata"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ensemble_axes_metadata</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axis_metadata</span><span class="p">,</span> <span class="n">EnergyAxis</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">axis_metadata</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># The axis carries every member's energy, as for a probe built with</span>
+            <span class="c1"># several energies; the first member's scalar energy is not theirs.</span>
+            <span class="k">if</span> <span class="s2">"energy"</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">"energy"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="s2">"energy"</span> <span class="ow">in</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"metadata"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}):</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">"metadata"</span><span class="p">][</span><span class="s2">"energy"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_partition_ensemble_axes_metadata</span><span class="p">(</span>
@@ -3147,15 +3600,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="c1"># --- Detect format ---</span>
     <span class="k">if</span> <span class="s2">"metadata0"</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_from_zarr_canonical</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="n">decode_types</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_from_zarr_canonical</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="n">decode_types</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
     <span class="k">elif</span> <span class="s2">"kwargs0"</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_from_zarr_legacy</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="n">decode_types</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_from_zarr_legacy</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="n">decode_types</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Zarr file does not contain recognizable abTEM metadata."</span><span class="p">)</span></div>
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_from_zarr_canonical</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="n">decode_types</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_from_zarr_canonical</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="n">decode_types</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
 
     <span class="kn">import</span><span class="w"> </span><span class="nn">abtem</span>
@@ -3203,6 +3656,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">zarr_array</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">array_chunks</span><span class="p">)</span>
 
+        <span class="n">_drop_stale_scalar_energy</span><span class="p">(</span>
+            <span class="n">axes_list</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">metadata</span><span class="p">,</span> <span class="o">*</span><span class="p">([]</span> <span class="k">if</span> <span class="n">kwargs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[</span><span class="n">kwargs</span><span class="p">])],</span>
+            <span class="sa">f</span><span class="s2">"The zarr file </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">)</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_array_and_metadata</span><span class="p">(</span>
                 <span class="n">array</span><span class="p">,</span>
@@ -3226,7 +3685,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="n">imported</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">imported</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">imported</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_from_zarr_legacy</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="n">decode_types</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_from_zarr_legacy</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="n">decode_types</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">dask</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
 
@@ -3265,6 +3724,12 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">array_chunks</span> <span class="o">=</span> <span class="n">chunks</span>
 
         <span class="n">array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">zarr_array</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">array_chunks</span><span class="p">)</span>
+
+        <span class="n">_drop_stale_scalar_energy</span><span class="p">(</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">"ensemble_axes_metadata"</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"metadata"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}],</span>
+            <span class="sa">f</span><span class="s2">"The zarr file </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="k">with</span> <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">({</span><span class="s2">"warnings.overspecified-grid"</span><span class="p">:</span> <span class="kc">False</span><span class="p">}):</span>
             <span class="n">imported</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
@@ -3383,8 +3848,14 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">axes_metadata</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">arrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axes_metadata</span><span class="p">)</span>
     <span class="n">axes_metadata</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="n">concatenated_axes_metadata</span>
 
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">arrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">metadata</span>
+    <span class="c1"># The scalar energy of the first array is not that of the others once the</span>
+    <span class="c1"># EnergyAxis holds theirs (see `stack`).</span>
+    <span class="k">if</span> <span class="n">_contradicting_energy_axis</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">),</span> <span class="n">axes_metadata</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">metadata</span><span class="p">,</span> <span class="s2">"energy"</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+
     <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_array_and_metadata</span><span class="p">(</span>
-        <span class="n">array</span><span class="o">=</span><span class="n">array</span><span class="p">,</span> <span class="n">axes_metadata</span><span class="o">=</span><span class="n">axes_metadata</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">arrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">metadata</span>
+        <span class="n">array</span><span class="o">=</span><span class="n">array</span><span class="p">,</span> <span class="n">axes_metadata</span><span class="o">=</span><span class="n">axes_metadata</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span>
     <span class="p">)</span></div>
 
 

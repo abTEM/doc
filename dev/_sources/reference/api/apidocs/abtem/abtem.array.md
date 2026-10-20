@@ -112,11 +112,6 @@
     :parser: rst
     :summary:
     ```
-* - {py:obj}`xr <abtem.array.xr>`
-  - ```{autodoc2-docstring} abtem.array.xr
-    :parser: rst
-    :summary:
-    ```
 ````
 
 ### API
@@ -697,16 +692,4 @@ Bases: {py:obj}`list`
 ```{autodoc2-docstring} abtem.array.validate_lazy
 :parser: rst
 ```
-````
-
-````{py:data} xr
-:canonical: abtem.array.xr
-:type: typing.Optional[types.ModuleType]
-:value: >
-   None
-
-```{autodoc2-docstring} abtem.array.xr
-:parser: rst
-```
-
 ````

@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -551,17 +549,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 <article class="bd-article">
                   
   <h1>Source code for abtem.core.complex</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numba</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nb</span>  <span class="c1"># type: ignore</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">backend</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_cupy_is_installed</span><span class="p">,</span> <span class="n">cp</span>
 
 
-<span class="nd">@nb</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span>
-    <span class="p">[</span><span class="n">nb</span><span class="o">.</span><span class="n">complex64</span><span class="p">(</span><span class="n">nb</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">nb</span><span class="o">.</span><span class="n">complex128</span><span class="p">(</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="n">nb</span><span class="o">.</span><span class="n">complex64</span><span class="p">(</span><span class="n">nb</span><span class="o">.</span><span class="n">complex64</span><span class="p">)]</span>
-<span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_complex_exponential</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_complex_exponential_kernel</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculate the complex exponential.</span>
 
@@ -572,12 +570,30 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 
-<span class="nd">@nb</span><span class="o">.</span><span class="n">vectorize</span><span class="p">([</span><span class="n">nb</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">nb</span><span class="o">.</span><span class="n">complex64</span><span class="p">),</span> <span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">nb</span><span class="o">.</span><span class="n">complex128</span><span class="p">)])</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_abs2</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_abs2_kernel</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculate the absolute square of a complex number.</span>
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">real</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">imag</span><span class="o">**</span><span class="mi">2</span>
+
+
+<span class="c1"># The ufuncs are compiled on first use, not at import: with their signatures</span>
+<span class="c1"># given, Numba compiles them when they are made, which was ~0.6 s of every</span>
+<span class="c1"># `import abtem` (every process, every pytest-xdist worker). cache=True keeps</span>
+<span class="c1"># the compiled code on disk between processes.</span>
+<span class="nd">@functools</span><span class="o">.</span><span class="n">cache</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_complex_exponential_ufunc</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">nb</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">nb</span><span class="o">.</span><span class="n">complex64</span><span class="p">(</span><span class="n">nb</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">nb</span><span class="o">.</span><span class="n">complex128</span><span class="p">(</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="n">nb</span><span class="o">.</span><span class="n">complex64</span><span class="p">(</span><span class="n">nb</span><span class="o">.</span><span class="n">complex64</span><span class="p">)],</span>
+        <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)(</span><span class="n">_complex_exponential_kernel</span><span class="p">)</span>
+
+
+<span class="nd">@functools</span><span class="o">.</span><span class="n">cache</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_abs2_ufunc</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">nb</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">nb</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">nb</span><span class="o">.</span><span class="n">complex64</span><span class="p">),</span> <span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">nb</span><span class="o">.</span><span class="n">complex128</span><span class="p">)],</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)(</span><span class="n">_abs2_kernel</span><span class="p">)</span>
 
 
 <span class="k">if</span> <span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -639,10 +655,13 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    Fast calculation of the absolute square of a complex number.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">_abs2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_abs2_ufunc</span><span class="p">()(</span><span class="n">x</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span><span class="n">abs2</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">TorchNDArray</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">real</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">imag</span><span class="o">**</span><span class="mi">2</span>
 
     <span class="n">check_cupy_is_installed</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 
@@ -672,10 +691,13 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="c1"># cos(z) + i sin(z) overflows for large |Im z| (strongly evanescent</span>
             <span class="c1"># propagator components); exp is overflow-safe and decays to zero.</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">_complex_exponential</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_complex_exponential_ufunc</span><span class="p">()(</span><span class="n">x</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span><span class="n">complex_exponential</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">TorchNDArray</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
 
     <span class="n">check_cupy_is_installed</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 
@@ -715,10 +737,13 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Scalar multiplier applied before the exponential.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">_complex_exponential</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_complex_exponential_ufunc</span><span class="p">()(</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span><span class="n">complex_exponential_scaled</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">TorchNDArray</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">scale</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
 
     <span class="n">check_cupy_is_installed</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 

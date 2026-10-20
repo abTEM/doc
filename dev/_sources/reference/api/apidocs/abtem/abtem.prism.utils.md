@@ -41,13 +41,13 @@
     :parser: rst
     :summary:
     ```
-* - {py:obj}`wrapped_crop_2d <abtem.prism.utils.wrapped_crop_2d>`
-  - ```{autodoc2-docstring} abtem.prism.utils.wrapped_crop_2d
+* - {py:obj}`window_crop <abtem.prism.utils.window_crop>`
+  - ```{autodoc2-docstring} abtem.prism.utils.window_crop
     :parser: rst
     :summary:
     ```
-* - {py:obj}`wrapped_slices <abtem.prism.utils.wrapped_slices>`
-  - ```{autodoc2-docstring} abtem.prism.utils.wrapped_slices
+* - {py:obj}`wrapped_crop_2d <abtem.prism.utils.wrapped_crop_2d>`
+  - ```{autodoc2-docstring} abtem.prism.utils.wrapped_crop_2d
     :parser: rst
     :summary:
     ```
@@ -95,18 +95,18 @@
 ```
 ````
 
-````{py:function} wrapped_crop_2d(...) -> numpy.ndarray
-:canonical: abtem.prism.utils.wrapped_crop_2d
+````{py:function} window_crop(...)
+:canonical: abtem.prism.utils.window_crop
 
-```{autodoc2-docstring} abtem.prism.utils.wrapped_crop_2d
+```{autodoc2-docstring} abtem.prism.utils.window_crop
 :parser: rst
 ```
 ````
 
-````{py:function} wrapped_slices(...) -> typing.Tuple[slice, slice]
-:canonical: abtem.prism.utils.wrapped_slices
+````{py:function} wrapped_crop_2d(...) -> numpy.ndarray
+:canonical: abtem.prism.utils.wrapped_crop_2d
 
-```{autodoc2-docstring} abtem.prism.utils.wrapped_slices
+```{autodoc2-docstring} abtem.prism.utils.wrapped_crop_2d
 :parser: rst
 ```
 ````

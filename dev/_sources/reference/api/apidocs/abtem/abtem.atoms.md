@@ -169,6 +169,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`BOX_STRAIN_WARNING_THRESHOLD <abtem.atoms.BOX_STRAIN_WARNING_THRESHOLD>`
+  - ```{autodoc2-docstring} abtem.atoms.BOX_STRAIN_WARNING_THRESHOLD
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`axis_mapping <abtem.atoms.axis_mapping>`
   - ```{autodoc2-docstring} abtem.atoms.axis_mapping
     :parser: rst
@@ -184,6 +189,17 @@
    None
 
 ```{autodoc2-docstring} abtem.atoms.AtomProperties
+:parser: rst
+```
+
+````
+
+````{py:data} BOX_STRAIN_WARNING_THRESHOLD
+:canonical: abtem.atoms.BOX_STRAIN_WARNING_THRESHOLD
+:value: >
+   0.001
+
+```{autodoc2-docstring} abtem.atoms.BOX_STRAIN_WARNING_THRESHOLD
 :parser: rst
 ```
 

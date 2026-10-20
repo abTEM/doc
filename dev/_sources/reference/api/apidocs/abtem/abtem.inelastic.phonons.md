@@ -67,6 +67,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`SOURCE_INDEX <abtem.inelastic.phonons.SOURCE_INDEX>`
+  - ```{autodoc2-docstring} abtem.inelastic.phonons.SOURCE_INDEX
+    :parser: rst
+    :summary:
+    ```
 ````
 
 ### API
@@ -405,6 +410,10 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 ````{py:method} randomize(...) -> ase.Atoms
 :canonical: abtem.inelastic.phonons.FrozenPhonons.randomize
 
+```{autodoc2-docstring} abtem.inelastic.phonons.FrozenPhonons.randomize
+:parser: rst
+```
+
 ````
 
 ````{py:property} seed
@@ -445,6 +454,17 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
    None
 
 ```{autodoc2-docstring} abtem.inelastic.phonons.Reader
+:parser: rst
+```
+
+````
+
+````{py:data} SOURCE_INDEX
+:canonical: abtem.inelastic.phonons.SOURCE_INDEX
+:value: >
+   'abtem_source_index'
+
+```{autodoc2-docstring} abtem.inelastic.phonons.SOURCE_INDEX
 :parser: rst
 ```
 

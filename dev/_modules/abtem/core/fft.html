@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -558,13 +556,14 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">product</span> <span class="k">as</span> <span class="n">_product</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">overload</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">overload</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dask.array.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">broadcast_chunks</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">threadpoolctl</span><span class="w"> </span><span class="kn">import</span> <span class="n">threadpool_limits</span>  <span class="c1"># type: ignore</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">backend</span><span class="p">,</span> <span class="n">config</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_cupy_is_installed</span><span class="p">,</span> <span class="n">get_array_module</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.complex</span><span class="w"> </span><span class="kn">import</span> <span class="n">complex_exponential</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">spatial_frequencies</span>
@@ -792,15 +791,52 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="n">direction</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_new_fftw_object</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()):</span>
-    <span class="n">dummy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_fftw_aligned_copy</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A C-contiguous copy of ``array`` aligned for FFTW's SIMD codelets."""</span>
+    <span class="n">copy</span> <span class="o">=</span> <span class="n">pyfftw</span><span class="o">.</span><span class="n">empty_aligned</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">copy</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span>
+    <span class="k">return</span> <span class="n">copy</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_fftw_aligned</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    ``array`` in the one layout the FFTW plans in this module are made for.</span>
+
+<span class="sd">    pyfftw quietly adds ``FFTW_UNALIGNED`` to a plan whose buffer is not</span>
+<span class="sd">    ``pyfftw.simd_alignment``-aligned, and an unaligned plan selects different</span>
+<span class="sd">    codelets that round differently (~1e-7 relative, the order of float32</span>
+<span class="sd">    epsilon). That alignment is 32 bytes on x86 while malloc only guarantees 16,</span>
+<span class="sd">    so planning for whatever buffer arrives would make the result depend on</span>
+<span class="sd">    where malloc happened to place it. Every buffer is instead brought to an</span>
+<span class="sd">    aligned, C-contiguous layout -- by copying when it is not in it already,</span>
+<span class="sd">    which changes no arithmetic -- so that it always gets the same plan.</span>
+
+<span class="sd">    A copy is a new buffer, so a caller passing ``overwrite_x=True`` must use the</span>
+<span class="sd">    returned result rather than expect its own array to hold it.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">array</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">c_contiguous</span> <span class="ow">and</span> <span class="n">pyfftw</span><span class="o">.</span><span class="n">is_byte_aligned</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">array</span>
+    <span class="k">return</span> <span class="n">_fftw_aligned_copy</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_new_fftw_object</span><span class="p">(</span>
+    <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">flags</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+    <span class="n">axes</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+<span class="p">):</span>
+    <span class="c1"># Planning overwrites the buffer, hence the scratch array. It must be laid out</span>
+    <span class="c1"># like `array` and as aligned (see `_fftw_aligned`), both for</span>
+    <span class="c1"># `update_arrays` to accept `array` and for the wisdom it leaves behind to be</span>
+    <span class="c1"># the wisdom for `array`'s plan.</span>
+    <span class="n">dummy</span> <span class="o">=</span> <span class="n">pyfftw</span><span class="o">.</span><span class="n">zeros_aligned</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
     <span class="n">direction</span> <span class="o">=</span> <span class="n">_fft_name_to_fftw_direction</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="n">fftw_object</span> <span class="o">=</span> <span class="n">pyfftw</span><span class="o">.</span><span class="n">FFTW</span><span class="p">(</span>
         <span class="n">dummy</span><span class="p">,</span>
         <span class="n">dummy</span><span class="p">,</span>
-        <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">axes</span><span class="o">=</span><span class="n">axes</span><span class="p">,</span>
         <span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">,</span>
         <span class="n">threads</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"fftw.threads"</span><span class="p">),</span>
         <span class="n">flags</span><span class="o">=</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"fftw.planning_effort"</span><span class="p">),)</span> <span class="o">+</span> <span class="n">flags</span><span class="p">,</span>
@@ -846,15 +882,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    hit is the previous call's array, so the cached plans are re-pointed at the</span>
 <span class="sd">    current array on every call and not only when they are built.</span>
 
-<span class="sd">    The plans are deliberately built with the same flags every time, never flags</span>
-<span class="sd">    derived from the buffer being transformed. An ``FFTW_UNALIGNED`` plan</span>
-<span class="sd">    selects different codelets and so returns slightly different numbers (~1e-7</span>
-<span class="sd">    relative, the order of float32 epsilon) than an aligned one. Since malloc</span>
-<span class="sd">    only guarantees 16-byte alignment while FFTW's ``simd_alignment`` is 32 on</span>
-<span class="sd">    x86, choosing the flag from the incoming array would make the result depend</span>
-<span class="sd">    on where the buffer happened to land -- two runs differing only in chunking</span>
-<span class="sd">    would then disagree. A buffer the plan will not accept is aligned by copying</span>
-<span class="sd">    instead, which changes no arithmetic.</span>
+<span class="sd">    The plans are always built for an aligned, C-contiguous buffer, and the</span>
+<span class="sd">    input is brought to that layout by ``_fftw_aligned`` rather than planned for</span>
+<span class="sd">    as it is: an ``FFTW_UNALIGNED`` plan rounds differently, so the result would</span>
+<span class="sd">    otherwise depend on where the buffer happened to land -- two runs differing</span>
+<span class="sd">    only in chunking would then disagree.</span>
 
 <span class="sd">    The cache is thread-local. Dask's threaded scheduler can drive a single</span>
 <span class="sd">    shared propagator from several worker threads at once, and because a plan</span>
@@ -895,23 +927,14 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">kernel</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite_x</span><span class="p">:</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">_fftw_aligned</span><span class="p">(</span><span class="n">array</span><span class="p">)</span> <span class="k">if</span> <span class="n">overwrite_x</span> <span class="k">else</span> <span class="n">_fftw_aligned_copy</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
         <span class="n">fftw_objects</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_fftw_objects</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
-        <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># A cache hit returns plans still bound to an earlier call's buffer,</span>
-            <span class="c1"># so they must be re-pointed even though nothing was rebuilt.</span>
-            <span class="k">for</span> <span class="n">fftw_object</span> <span class="ow">in</span> <span class="n">fftw_objects</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                <span class="n">fftw_object</span><span class="o">.</span><span class="n">update_arrays</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="c1"># The plan demands more alignment than this buffer has. Align the</span>
-            <span class="c1"># buffer rather than re-planning for it: a copy preserves the</span>
-            <span class="c1"># arithmetic, a differently aligned plan would not.</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">pyfftw</span><span class="o">.</span><span class="n">byte_align</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">fftw_object</span> <span class="ow">in</span> <span class="n">fftw_objects</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                <span class="n">fftw_object</span><span class="o">.</span><span class="n">update_arrays</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span>
+        <span class="c1"># A cache hit returns plans still bound to an earlier call's buffer,</span>
+        <span class="c1"># so they must be re-pointed even though nothing was rebuilt.</span>
+        <span class="k">for</span> <span class="n">fftw_object</span> <span class="ow">in</span> <span class="n">fftw_objects</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">fftw_object</span><span class="o">.</span><span class="n">update_arrays</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span>
 
         <span class="n">array</span> <span class="o">=</span> <span class="n">fftw_objects</span><span class="p">[</span><span class="s2">"fft2"</span><span class="p">]()</span>
         <span class="n">array</span> <span class="o">*=</span> <span class="n">kernel</span>
@@ -930,8 +953,13 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">axes</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Get a pyfftw object for a given array and a given FFT function.</span>
-<span class="sd">    The object is cached and reused if the array shape is the same.</span>
+<span class="sd">    Get an in-place pyfftw object for a given array and a given FFT function.</span>
+<span class="sd">    The plan is made from FFTW wisdom, which is created and kept the first time a</span>
+<span class="sd">    layout is seen.</span>
+
+<span class="sd">    The object transforms ``array`` itself if it is aligned and C-contiguous, and</span>
+<span class="sd">    otherwise an aligned copy of it (see ``_fftw_aligned``), so the result must be</span>
+<span class="sd">    taken from calling the object, not read back from ``array``.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -943,12 +971,15 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Allow new wisdom to be created.</span>
 <span class="sd">    overwrite_x : bool, optional</span>
 <span class="sd">        Allow the input array to be overwritten.</span>
+<span class="sd">    axes : tuple of int, optional</span>
+<span class="sd">        Axes over which to compute the FFT.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    pyfftw.FFTW</span>
 <span class="sd">        FFTW object.</span>
 <span class="sd">    """</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">_fftw_aligned</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
     <span class="n">direction</span> <span class="o">=</span> <span class="n">_fft_name_to_fftw_direction</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
@@ -970,12 +1001,12 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="k">raise</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_new_wisdom</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"fftw.allow_fallback"</span><span class="p">):</span>
-            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pyfftw</span><span class="o">.</span><span class="n">builders</span><span class="p">,</span> <span class="n">name</span><span class="p">)(</span><span class="n">array</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pyfftw</span><span class="o">.</span><span class="n">builders</span><span class="p">,</span> <span class="n">name</span><span class="p">)(</span><span class="n">array</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">axes</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">allow_new_wisdom</span><span class="p">:</span>
             <span class="k">raise</span>
 
-        <span class="n">_new_fftw_object</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">flags</span><span class="p">)</span>
+        <span class="n">_new_fftw_object</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">flags</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">axes</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">get_fftw_object</span><span class="p">(</span>
             <span class="n">array</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">allow_new_wisdom</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">axes</span>
@@ -1002,7 +1033,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">_raise_fft_lib_not_present</span><span class="p">(</span><span class="s2">"pyfftw"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite_x</span><span class="p">:</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="c1"># the copy is made aligned, so `get_fftw_object` need not copy again</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">_fftw_aligned_copy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">get_fftw_object</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)()</span>
 
@@ -1168,6 +1200,18 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">cache</span><span class="o">.</span><span class="n">set_memsize</span><span class="p">(</span><span class="n">memsize</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_fft_dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The dtype NumPy's and CuPy's FFTs return for input of the given dtype.</span>
+
+<span class="sd">    Half- and single-precision input gives complex64, anything that is not a</span>
+<span class="sd">    float or a complex number (integers, as in detector images) is transformed</span>
+<span class="sd">    in double precision and gives complex128.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inexact</span><span class="p">):</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">result_type</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">complex64</span><span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_fft_dispatch</span><span class="p">(</span>
     <span class="n">x</span><span class="p">:</span> <span class="n">U</span><span class="p">,</span>
     <span class="n">func_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1193,8 +1237,11 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">func_name</span><span class="o">=</span><span class="n">func_name</span><span class="p">,</span>
             <span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-            <span class="n">meta</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span>
+            <span class="n">meta</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">_fft_dtype</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">)),</span>
         <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">TorchNDArray</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">tp</span><span class="o">.</span><span class="n">fft</span><span class="p">,</span> <span class="n">func_name</span><span class="p">)(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="n">check_cupy_is_installed</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 
@@ -1374,11 +1421,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_fft2_convolve</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">U</span><span class="p">,</span> <span class="n">kernel</span><span class="p">:</span> <span class="n">U</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">U</span><span class="p">:</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">fft2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
+    <span class="c1"># In place, keeping the dtype of the transform, unless x is the side that</span>
+    <span class="c1"># broadcasts: the product is then larger than x. Decided from the shapes, as</span>
+    <span class="c1"># the backends refuse an in-place broadcast with different errors (NumPy and</span>
+    <span class="c1"># CuPy a ValueError, torch a RuntimeError).</span>
+    <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">broadcast_shapes</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">kernel</span><span class="o">.</span><span class="n">shape</span><span class="p">)))</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span>
+        <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+    <span class="p">):</span>
         <span class="n">x</span> <span class="o">*=</span> <span class="n">kernel</span>
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+    <span class="k">else</span><span class="p">:</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">kernel</span>
     <span class="k">return</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_chunk_kernel_like</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The kernel as a dask array chunked like `x` along every axis where both are</span>
+<span class="sd">    longer than 1, and in one chunk along the axes where either has length 1 or `x`</span>
+<span class="sd">    has no axis. The axes are aligned from the end, as in NumPy broadcasting.</span>
+
+<span class="sd">    None if a kernel axis longer than 1 meets an axis of `x` of unknown length</span>
+<span class="sd">    (NaN, as after a filtering operation): the blocks of the kernel cannot be</span>
+<span class="sd">    matched to those of `x` then.</span>
+<span class="sd">    """</span>
+    <span class="c1"># Raises the ValueError of the eager product for shapes that do not broadcast;</span>
+    <span class="c1"># an axis of unknown length is checked when the blocks are computed.</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">broadcast_shapes</span><span class="p">(</span>
+        <span class="nb">tuple</span><span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">length</span><span class="p">)</span> <span class="k">else</span> <span class="n">length</span> <span class="k">for</span> <span class="n">length</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">kernel</span><span class="o">.</span><span class="n">shape</span>
+    <span class="p">)</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">kernel</span><span class="o">.</span><span class="n">ndim</span>
+    <span class="n">chunks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kernel</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
+        <span class="n">x_axis</span> <span class="o">=</span> <span class="n">axis</span> <span class="o">+</span> <span class="n">offset</span>
+        <span class="k">if</span> <span class="n">x_axis</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">n</span><span class="p">,))</span>
+        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">x_axis</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">x_axis</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">n</span><span class="p">,))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">chunks</span><span class="p">[</span><span class="n">x_axis</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">kernel</span><span class="o">.</span><span class="n">rechunk</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">chunks</span><span class="p">))</span>
+    <span class="c1"># A random name: the default names the array by a hash of its data, which</span>
+    <span class="c1"># reads the whole kernel on every call.</span>
+    <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">chunks</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 
 <span class="nd">@overload</span>
@@ -1421,13 +1509,39 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">return</span> <span class="n">_fft2_convolve</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">):</span>
+        <span class="c1"># The product is taken in place, so the blocks keep the dtype of the transform.</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">_fft_dtype</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="c1"># The kernel goes in as a second dask array, so each block of x meets</span>
+        <span class="c1"># the matching block of the kernel. Passed whole, it is broadcast</span>
+        <span class="c1"># against every block, and a kernel axis longer than a block of x</span>
+        <span class="c1"># would make each block as long as the kernel.</span>
+        <span class="n">chunked_kernel</span> <span class="o">=</span> <span class="n">_chunk_kernel_like</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">chunked_kernel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># An axis of x of unknown length: the kernel goes in whole, which is</span>
+            <span class="c1"># right where it fits every block of x along that axis.</span>
+            <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span>
+                <span class="n">_fft2_convolve</span><span class="p">,</span>
+                <span class="n">x</span><span class="p">,</span>
+                <span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span>
+                <span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">,</span>
+                <span class="n">meta</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="n">chunks</span> <span class="o">=</span> <span class="n">broadcast_chunks</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">chunks</span><span class="p">,</span> <span class="n">chunked_kernel</span><span class="o">.</span><span class="n">chunks</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">chunks</span> <span class="o">!=</span> <span class="n">x</span><span class="o">.</span><span class="n">chunks</span><span class="p">:</span>
+            <span class="c1"># x is the side that broadcasts, so the product cannot be taken in</span>
+            <span class="c1"># place and is promoted to the dtype of the kernel, as eagerly.</span>
+            <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">result_type</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">kernel</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span>
             <span class="n">_fft2_convolve</span><span class="p">,</span>
             <span class="n">x</span><span class="p">,</span>
-            <span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span>
+            <span class="n">chunked_kernel</span><span class="p">,</span>
             <span class="n">overwrite_x</span><span class="o">=</span><span class="n">overwrite_x</span><span class="p">,</span>
-            <span class="n">meta</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span>
+            <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">,</span>
+            <span class="n">meta</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span>
         <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">TorchNDArray</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_fft2_convolve</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="p">)</span>
 
     <span class="n">check_cupy_is_installed</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
 
@@ -1457,8 +1571,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    """</span>
     <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">cp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="n">positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
+    <span class="n">positions</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
 
     <span class="k">assert</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
     <span class="n">dims</span> <span class="o">=</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -1468,12 +1581,12 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dims</span><span class="p">):</span>
         <span class="n">d</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="n">dims</span><span class="p">))</span>
         <span class="k">del</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">n</span><span class="p">]</span>
-        <span class="n">expanded_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span>
+        <span class="n">expanded_positions</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span>
             <span class="n">positions</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="n">dims</span><span class="p">))</span>
         <span class="p">)</span>
 
         <span class="n">k</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">complex_exponential</span><span class="p">(</span>
-            <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="o">*</span> <span class="n">expanded_positions</span>
+            <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="o">*</span> <span class="n">expanded_positions</span>
         <span class="p">)</span>
 
     <span class="n">array</span> <span class="o">=</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>

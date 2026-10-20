@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -561,7 +559,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegularGridInterpolator</span>  <span class="c1"># type: ignore</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">NonLinearAxis</span><span class="p">,</span> <span class="n">SampleAxis</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_array_module</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">asnumpy</span><span class="p">,</span> <span class="n">get_array_module</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.distributions</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseDistribution</span><span class="p">,</span> <span class="n">validate_distribution</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.inelastic.phonons</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate_seeds</span>
@@ -572,9 +570,97 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">AxisMetadata</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_poisson_sample</span><span class="p">(</span>
+    <span class="n">expected</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">base_dims</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">offset</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">seeds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">sample_axis</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Draw Poisson counts, one base array (image, diffraction pattern, ...) at a</span>
+<span class="sd">    time, each from its own random generator keyed on its global ensemble</span>
+<span class="sd">    index. The draw of a base array therefore does not depend on how the full</span>
+<span class="sd">    array is chunked, so a lazy result equals the eager one for the same seeds.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    expected : np.ndarray</span>
+<span class="sd">        Expected counts; a block of the full array when evaluated lazily.</span>
+<span class="sd">    base_dims : int</span>
+<span class="sd">        Number of trailing base dimensions, sampled whole.</span>
+<span class="sd">    offset : tuple of int</span>
+<span class="sd">        Global index of the first entry of the block along each ensemble axis.</span>
+<span class="sd">    seeds : int or tuple of int</span>
+<span class="sd">        A single seed, or one seed per entry of the sample axis.</span>
+<span class="sd">    sample_axis : int, optional</span>
+<span class="sd">        The ensemble axis indexing `seeds`, if there is one.</span>
+<span class="sd">    """</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span>
+    <span class="c1"># Poisson sampling requires CPU arrays; move back to GPU afterwards</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">expected</span><span class="p">),</span> <span class="n">a_min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
+
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndindex</span><span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span> <span class="n">expected</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">base_dims</span><span class="p">]):</span>
+        <span class="n">global_index</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">o</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">offset</span><span class="p">))</span>
+        <span class="n">seed</span> <span class="o">=</span> <span class="n">seeds</span> <span class="k">if</span> <span class="n">sample_axis</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">seeds</span><span class="p">[</span><span class="n">global_index</span><span class="p">[</span><span class="n">sample_axis</span><span class="p">]]</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">spawn_key</span><span class="o">=</span><span class="n">global_index</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">counts</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">expected</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_block_offset</span><span class="p">(</span><span class="n">block_info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">base_dims</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Global index of a dask block's first entry along each ensemble axis."""</span>
+    <span class="n">location</span> <span class="o">=</span> <span class="n">block_info</span><span class="p">[</span><span class="kc">None</span><span class="p">][</span><span class="s2">"array-location"</span><span class="p">]</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">start</span> <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">location</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">location</span><span class="p">)</span> <span class="o">-</span> <span class="n">base_dims</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_poisson_sample_block</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">block_info</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="n">_block_offset</span><span class="p">(</span><span class="n">block_info</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">"base_dims"</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">_poisson_sample</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_map_whole_base_arrays</span><span class="p">(</span><span class="n">array_object</span><span class="p">:</span> <span class="n">ArrayObject</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayObject</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Apply `func(block, block_info=..., **kwargs)` to a lazy array object, with</span>
+<span class="sd">    every base array (image, diffraction pattern, ...) held whole in one block.</span>
+
+<span class="sd">    A block inside `apply_transform` does not know its global position, which</span>
+<span class="sd">    the chunk-independent noise draws need; dask's `map_blocks` provides it.</span>
+<span class="sd">    """</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">array_object</span><span class="o">.</span><span class="n">array</span>
+    <span class="n">ensemble_dims</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">array_object</span><span class="o">.</span><span class="n">base_shape</span><span class="p">)</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">rechunk</span><span class="p">(</span>
+        <span class="n">array</span><span class="o">.</span><span class="n">chunks</span><span class="p">[:</span><span class="n">ensemble_dims</span><span class="p">]</span>
+        <span class="o">+</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">n</span><span class="p">,)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">ensemble_dims</span><span class="p">:])</span>
+    <span class="p">)</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+    <span class="n">dtype</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"dtype"</span><span class="p">,</span> <span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span>
+        <span class="n">func</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span>
+
+    <span class="n">new_array_object</span> <span class="o">=</span> <span class="n">array_object</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">from_array_and_metadata</span><span class="p">(</span>
+        <span class="n">array</span><span class="p">,</span>
+        <span class="n">axes_metadata</span><span class="o">=</span><span class="n">array_object</span><span class="o">.</span><span class="n">axes_metadata</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="n">array_object</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">array_object</span><span class="o">.</span><span class="n">device</span> <span class="o">!=</span> <span class="s2">"cpu"</span><span class="p">:</span>
+        <span class="n">new_array_object</span><span class="o">.</span><span class="n">_device</span> <span class="o">=</span> <span class="n">array_object</span><span class="o">.</span><span class="n">device</span>
+    <span class="k">return</span> <span class="n">new_array_object</span>
+
+
 <div class="viewcode-block" id="NoiseTransform">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.noise.html#abtem.noise.NoiseTransform">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NoiseTransform</span><span class="p">(</span><span class="n">EnsembleTransform</span><span class="p">):</span>
+    <span class="c1"># `samples` is implied by `seeds` (one seed per sample), so it is not passed</span>
+    <span class="c1"># on when the transform is rebuilt for a chunk: a chunk receives a sub-block</span>
+    <span class="c1"># of the seeds, which would not match the full sample count</span>
+    <span class="n">_exclude_from_copy</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"samples"</span><span class="p">,)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dose</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">BaseDistribution</span><span class="p">,</span>
@@ -638,8 +724,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">"units"</span><span class="p">:</span> <span class="s2">"electrons"</span><span class="p">,</span> <span class="s2">"label"</span><span class="p">:</span> <span class="s2">"Counts"</span><span class="p">}</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_new_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array_object</span><span class="p">:</span> <span class="n">ArrayObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="n">array</span> <span class="o">=</span> <span class="n">array_object</span><span class="o">.</span><span class="n">_eager_array</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_expected_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seeds</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
@@ -653,35 +738,68 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">else</span><span class="p">:</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">array</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dose</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
 
+        <span class="k">return</span> <span class="n">array</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sampling_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_dims</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seeds</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
-            <span class="n">seed</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seeds</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="c1"># the sample axis follows the dose axis, see _expected_counts</span>
+            <span class="n">seeds</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span> <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">seeds</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="n">sample_axis</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dose</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">seed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seeds</span>
+            <span class="c1"># unseeded: draw fresh entropy once, shared by all blocks, so that</span>
+            <span class="c1"># blocks are not correlated with each other</span>
+            <span class="n">seeds</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">()</span><span class="o">.</span><span class="n">entropy</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">seeds</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">seeds</span>
+            <span class="p">)</span>
+            <span class="n">sample_axis</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="n">seed_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"base_dims"</span><span class="p">:</span> <span class="n">base_dims</span><span class="p">,</span> <span class="s2">"seeds"</span><span class="p">:</span> <span class="n">seeds</span><span class="p">,</span> <span class="s2">"sample_axis"</span><span class="p">:</span> <span class="n">sample_axis</span><span class="p">}</span>
 
-        <span class="n">randomized_seed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">seed_rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">))</span>
-
-        <span class="n">poisson_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">randomized_seed</span><span class="p">)</span>
-
-        <span class="c1"># Poisson sampling requires CPU arrays; move back to GPU afterwards</span>
-        <span class="n">array_cpu</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="s2">"get"</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
-        <span class="n">array_cpu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">array_cpu</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-        <span class="n">array_cpu</span> <span class="o">=</span> <span class="n">poisson_rng</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">array_cpu</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">())</span>
-
-        <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">array_cpu</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_new_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array_object</span><span class="p">:</span> <span class="n">ArrayObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="c1"># called on the whole (eager) array, which starts at the global origin;</span>
+        <span class="c1"># lazy arrays are sampled per block in `apply`</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expected_counts</span><span class="p">(</span><span class="n">array_object</span><span class="o">.</span><span class="n">_eager_array</span><span class="p">)</span>
+        <span class="n">base_dims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">array_object</span><span class="o">.</span><span class="n">base_shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_poisson_sample</span><span class="p">(</span>
+            <span class="n">expected</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">base_dims</span><span class="p">),</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_sampling_kwargs</span><span class="p">(</span><span class="n">base_dims</span><span class="p">),</span>
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="NoiseTransform.apply">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.noise.html#abtem.noise.NoiseTransform.apply">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">array_object</span><span class="p">:</span> <span class="n">ArrayObject</span><span class="p">,</span> <span class="n">max_batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayObject</span><span class="p">:</span>
-        <span class="n">new_array_object</span> <span class="o">=</span> <span class="n">array_object</span><span class="o">.</span><span class="n">apply_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_array_object</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">new_array_object</span></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">array_object</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
+            <span class="n">new_array_object</span> <span class="o">=</span> <span class="n">array_object</span><span class="o">.</span><span class="n">apply_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_array_object</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">new_array_object</span>
+
+        <span class="c1"># build the expected counts through the ensemble machinery, then draw</span>
+        <span class="c1"># them with their global positions, see _map_whole_base_arrays</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">array_object</span><span class="o">.</span><span class="n">apply_transform</span><span class="p">(</span>
+            <span class="n">_PoissonExpectedCounts</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">()),</span> <span class="n">max_batch</span><span class="o">=</span><span class="n">max_batch</span>
+        <span class="p">)</span>
+        <span class="n">base_dims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">base_shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_map_whole_base_arrays</span><span class="p">(</span>
+            <span class="n">expected</span><span class="p">,</span>
+            <span class="n">_poisson_sample_block</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(),</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_sampling_kwargs</span><span class="p">(</span><span class="n">base_dims</span><span class="p">),</span>
+        <span class="p">)</span></div>
 </div>
 
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_PoissonExpectedCounts</span><span class="p">(</span><span class="n">NoiseTransform</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The deterministic part of `NoiseTransform`: sample tiling and dose</span>
+<span class="sd">    scaling, without the Poisson draw. `NoiseTransform.apply` uses it for lazy</span>
+<span class="sd">    arrays."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_new_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array_object</span><span class="p">:</span> <span class="n">ArrayObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expected_counts</span><span class="p">(</span><span class="n">array_object</span><span class="o">.</span><span class="n">_eager_array</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_pixel_times</span><span class="p">(</span>
@@ -699,7 +817,16 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    flyback_time : float</span>
 <span class="sd">        Flyback time for the scanning probe at the end of each scan line in s.</span>
 <span class="sd">    shape : two ints</span>
-<span class="sd">        Dimensions of a scan in pixels.</span>
+<span class="sd">        Dimensions of a scan in pixels. The first axis (x) is the fast scan axis,</span>
+<span class="sd">        i.e. a scan line runs along axis 0, and the second axis (y) is the slow</span>
+<span class="sd">        axis indexing the scan lines.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    times : np.ndarray</span>
+<span class="sd">        Time at each pixel. Consecutive pixels along a line are separated by</span>
+<span class="sd">        `dwell_time`, and consecutive lines by `shape[0] * dwell_time +</span>
+<span class="sd">        flyback_time`.</span>
 <span class="sd">    """</span>
 
     <span class="n">line_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">dwell_time</span> <span class="o">*</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">flyback_time</span>
@@ -708,9 +835,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="p">)</span>
 
     <span class="n">fast_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">line_time</span> <span class="o">-</span> <span class="n">flyback_time</span><span class="p">)</span> <span class="o">/</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">line_time</span> <span class="o">-</span> <span class="n">flyback_time</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="p">)[:,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">dwell_time</span><span class="p">,</span> <span class="n">line_time</span> <span class="o">-</span> <span class="n">flyback_time</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])[:,</span> <span class="kc">None</span><span class="p">],</span>
         <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">slow_time</span> <span class="o">+</span> <span class="n">fast_time</span>
@@ -768,18 +893,41 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">       Number of frequency components.</span>
 <span class="sd">    rms_power : float</span>
 <span class="sd">       Root-mean-square power of the distortion.</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">       Seed for the random distortions. The x and y distortions are drawn</span>
+<span class="sd">       independently of each other.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    profile_x, profile_y : np.ndarray</span>
+<span class="sd">       Displacements in pixels along axis 0 (x) and axis 1 (y).</span>
 <span class="sd">    """</span>
 
-    <span class="n">profile_x</span> <span class="o">=</span> <span class="n">_single_axis_distortion</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">max_frequency</span><span class="p">,</span> <span class="n">num_components</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
-    <span class="n">profile_y</span> <span class="o">=</span> <span class="n">_single_axis_distortion</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">max_frequency</span><span class="p">,</span> <span class="n">num_components</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">seed_x</span> <span class="o">=</span> <span class="n">seed_y</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">seed_x</span><span class="p">,</span> <span class="n">seed_y</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">generate_state</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="p">)</span>
 
-    <span class="n">x_mag_deviation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">profile_x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">y_mag_deviation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">profile_y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">profile_x</span> <span class="o">=</span> <span class="n">_single_axis_distortion</span><span class="p">(</span>
+        <span class="n">time</span><span class="p">,</span> <span class="n">max_frequency</span><span class="p">,</span> <span class="n">num_components</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed_x</span>
+    <span class="p">)</span>
+    <span class="n">profile_y</span> <span class="o">=</span> <span class="n">_single_axis_distortion</span><span class="p">(</span>
+        <span class="n">time</span><span class="p">,</span> <span class="n">max_frequency</span><span class="p">,</span> <span class="n">num_components</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed_y</span>
+    <span class="p">)</span>
+
+    <span class="c1"># profile_x (profile_y) displaces the image along axis 0 (axis 1), see</span>
+    <span class="c1"># _apply_displacement_field, so its magnification deviation is the</span>
+    <span class="c1"># derivative along that same axis</span>
+    <span class="n">x_mag_deviation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">profile_x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">y_mag_deviation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">profile_y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="n">frame_mag_deviation</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">x_mag_deviation</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">y_mag_deviation</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
     <span class="n">frame_mag_deviation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">frame_mag_deviation</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
 
-    <span class="c1"># 235.5 = 2.355 * 100 %; 2.355 converts from 1/e width to FWHM</span>
+    <span class="c1"># 235.5 = 2.355 * 100 %; 2.355 converts a standard deviation to a FWHM</span>
 
     <span class="n">profile_x</span> <span class="o">*=</span> <span class="n">rms_power</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.355</span> <span class="o">*</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">frame_mag_deviation</span><span class="p">)</span>
     <span class="n">profile_y</span> <span class="o">*=</span> <span class="n">rms_power</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.355</span> <span class="o">*</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">frame_mag_deviation</span><span class="p">)</span>
@@ -805,26 +953,94 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Displacement field along the y-axis.</span>
 <span class="sd">    """</span>
 
-    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># The image is periodic with period n along each axis: positions wrap</span>
+    <span class="c1"># modulo n, and the grid carries one wrapped row and column (nodes 0 ... n)</span>
+    <span class="c1"># so that a position in [n - 1, n) interpolates between the last and the</span>
+    <span class="c1"># first pixel.</span>
+    <span class="n">n_x</span><span class="p">,</span> <span class="n">n_y</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+    <span class="n">padded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"wrap"</span><span class="p">)</span>
 
-    <span class="n">interpolating_function</span> <span class="o">=</span> <span class="n">RegularGridInterpolator</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="n">image</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">interpolating_function</span> <span class="o">=</span> <span class="n">RegularGridInterpolator</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">padded</span><span class="p">)</span>
 
-    <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_y</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_x</span><span class="p">))</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">x</span> <span class="o">+</span> <span class="n">distortion_x</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="n">distortion_y</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span><span class="o">.</span><span class="n">T</span>
 
-    <span class="c1"># p[:, 0] = np.clip(p[:, 0], 0, x.max())</span>
-    <span class="n">p</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">%</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="c1"># p[:, 1] = np.clip(p[:, 1], 0, y.max())</span>
-    <span class="n">p</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">%</span> <span class="n">y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">p</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">%</span> <span class="n">n_x</span>
+    <span class="n">p</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">%</span> <span class="n">n_y</span>
 
     <span class="n">warped</span> <span class="o">=</span> <span class="n">interpolating_function</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">warped</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_scan_distort</span><span class="p">(</span>
+    <span class="n">images</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">offset</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">dwell_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">flyback_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">max_frequency</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">num_components</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">rms_powers</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">rms_axis</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">seeds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">sample_axis</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Distort each image of `images` with its own scan-noise displacement field.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    images : np.ndarray</span>
+<span class="sd">        Images, held whole; a block of the full array when evaluated lazily.</span>
+<span class="sd">    offset : tuple of int</span>
+<span class="sd">        Global index of the first entry of the block along each ensemble axis.</span>
+<span class="sd">    rms_powers : np.ndarray</span>
+<span class="sd">        The rms powers, indexed along `rms_axis` if given, else a single value.</span>
+<span class="sd">    seeds : int or tuple of int</span>
+<span class="sd">        One seed per entry of `sample_axis`, which is then shared by all images</span>
+<span class="sd">        of that sample; without a sample axis, entropy from which each image</span>
+<span class="sd">        gets its own seed, keyed on its global index.</span>
+<span class="sd">    """</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
+    <span class="c1"># the distortion is interpolated with scipy, which requires CPU arrays;</span>
+    <span class="c1"># move back to the original device afterwards</span>
+    <span class="n">images</span> <span class="o">=</span> <span class="n">asnumpy</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
+    <span class="n">distorted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">_pixel_times</span><span class="p">(</span><span class="n">dwell_time</span><span class="p">,</span> <span class="n">flyback_time</span><span class="p">,</span> <span class="n">images</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
+
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndindex</span><span class="p">(</span><span class="n">images</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]):</span>
+        <span class="n">global_index</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">o</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">offset</span><span class="p">))</span>
+        <span class="n">rms_power</span> <span class="o">=</span> <span class="n">rms_powers</span><span class="p">[</span><span class="mi">0</span> <span class="k">if</span> <span class="n">rms_axis</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">global_index</span><span class="p">[</span><span class="n">rms_axis</span><span class="p">]]</span>
+
+        <span class="k">if</span> <span class="n">sample_axis</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">(</span><span class="n">seeds</span><span class="p">,</span> <span class="n">spawn_key</span><span class="o">=</span><span class="n">global_index</span><span class="p">)</span><span class="o">.</span><span class="n">generate_state</span><span class="p">(</span>
+                    <span class="mi">1</span>
+                <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="n">seeds</span><span class="p">[</span><span class="n">global_index</span><span class="p">[</span><span class="n">sample_axis</span><span class="p">]]</span>
+
+        <span class="n">displacement_x</span><span class="p">,</span> <span class="n">displacement_y</span> <span class="o">=</span> <span class="n">_make_displacement_field</span><span class="p">(</span>
+            <span class="n">time</span><span class="p">,</span> <span class="n">max_frequency</span><span class="p">,</span> <span class="n">num_components</span><span class="p">,</span> <span class="n">rms_power</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span>
+        <span class="p">)</span>
+        <span class="n">distorted</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">_apply_displacement_field</span><span class="p">(</span>
+            <span class="n">images</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">displacement_x</span><span class="p">,</span> <span class="n">displacement_y</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">distorted</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_scan_distort_block</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">block_info</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_scan_distort</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">_block_offset</span><span class="p">(</span><span class="n">block_info</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="ScanNoiseTransform">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.noise.html#abtem.noise.ScanNoiseTransform">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ScanNoiseTransform</span><span class="p">(</span><span class="n">EnsembleTransform</span><span class="p">):</span>
+    <span class="c1"># see NoiseTransform._exclude_from_copy</span>
+    <span class="n">_exclude_from_copy</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"samples"</span><span class="p">,)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">rms_power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">BaseDistribution</span><span class="p">,</span>
@@ -844,7 +1060,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">seeds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">samples</span> <span class="o">=</span> <span class="mi">1</span>
 
-        <span class="k">if</span> <span class="n">seeds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># one seed per sample; unseeded samples &gt; 1 get random per-sample seeds</span>
+        <span class="k">if</span> <span class="n">seeds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">samples</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">seeds_distribution</span> <span class="o">=</span> <span class="n">validate_distribution</span><span class="p">(</span><span class="n">validate_seeds</span><span class="p">(</span><span class="n">seeds</span><span class="p">,</span> <span class="n">samples</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">seeds_distribution</span> <span class="o">=</span> <span class="kc">None</span>
@@ -853,7 +1070,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">distributions</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">"dose"</span><span class="p">,</span>
+                <span class="s2">"rms_power"</span><span class="p">,</span>
                 <span class="s2">"seeds"</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span>
@@ -910,59 +1127,83 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">"units"</span><span class="p">:</span> <span class="s2">"electrons"</span><span class="p">,</span> <span class="s2">"label"</span><span class="p">:</span> <span class="s2">"Counts"</span><span class="p">}</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_tile_ensemble</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="c1"># the sample axis, then the rms-power axis in front of it</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seeds</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">,)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rms_power</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span>
+                <span class="n">array</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rms_power</span><span class="o">.</span><span class="n">values</span><span class="p">),)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">array</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_distortion_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rms_power</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
+            <span class="n">rms_powers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rms_power</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
+            <span class="n">rms_axis</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rms_powers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">rms_power</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
+            <span class="n">rms_axis</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seeds</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
+            <span class="n">seeds</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span> <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">seeds</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="n">sample_axis</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">rms_axis</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># unseeded: draw entropy once, so that recomputing a lazy result</span>
+            <span class="c1"># gives the same images and each image still gets its own field</span>
+            <span class="n">seeds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">()</span><span class="o">.</span><span class="n">entropy</span>
+            <span class="n">sample_axis</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"dwell_time"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dwell_time</span><span class="p">,</span>
+            <span class="s2">"flyback_time"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">flyback_time</span><span class="p">,</span>
+            <span class="s2">"max_frequency"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_frequency</span><span class="p">,</span>
+            <span class="s2">"num_components"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_components</span><span class="p">,</span>
+            <span class="s2">"rms_powers"</span><span class="p">:</span> <span class="n">rms_powers</span><span class="p">,</span>
+            <span class="s2">"rms_axis"</span><span class="p">:</span> <span class="n">rms_axis</span><span class="p">,</span>
+            <span class="s2">"seeds"</span><span class="p">:</span> <span class="n">seeds</span><span class="p">,</span>
+            <span class="s2">"sample_axis"</span><span class="p">:</span> <span class="n">sample_axis</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_new_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array_object</span><span class="p">:</span> <span class="n">ArrayObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="c1"># called on the whole (eager) array, which starts at the global origin;</span>
+        <span class="c1"># lazy arrays are distorted per block in `apply`</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">array_object</span><span class="o">.</span><span class="n">base_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_ensemble</span><span class="p">(</span><span class="n">array_object</span><span class="o">.</span><span class="n">_eager_array</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_scan_distort</span><span class="p">(</span>
+            <span class="n">array</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,)</span> <span class="o">*</span> <span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">2</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_distortion_kwargs</span><span class="p">()</span>
+        <span class="p">)</span>
+
 <div class="viewcode-block" id="ScanNoiseTransform.apply">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.noise.html#abtem.noise.ScanNoiseTransform.apply">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">array_object</span><span class="p">:</span> <span class="n">ArrayObject</span><span class="p">,</span> <span class="n">max_batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayObject</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">array_object</span><span class="o">.</span><span class="n">apply_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">array_object</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">array_object</span><span class="o">.</span><span class="n">apply_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
+        <span class="c1"># Pixel times, the magnification normalisation and the periodic wrap</span>
+        <span class="c1"># all span the whole frame, so each image must be distorted whole and</span>
+        <span class="c1"># know its global position: tile the ensemble through the ensemble</span>
+        <span class="c1"># machinery, then distort, see _map_whole_base_arrays.</span>
+        <span class="n">tiled</span> <span class="o">=</span> <span class="n">array_object</span><span class="o">.</span><span class="n">apply_transform</span><span class="p">(</span>
+            <span class="n">_ScanNoiseTiling</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">()),</span> <span class="n">max_batch</span><span class="o">=</span><span class="n">max_batch</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">_map_whole_base_arrays</span><span class="p">(</span>
+            <span class="n">tiled</span><span class="p">,</span> <span class="n">_scan_distort_block</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_distortion_kwargs</span><span class="p">()</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_ScanNoiseTiling</span><span class="p">(</span><span class="n">ScanNoiseTransform</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The ensemble part of `ScanNoiseTransform`: tiling over samples and rms</span>
+<span class="sd">    powers, without the distortion. `ScanNoiseTransform.apply` uses it for</span>
+<span class="sd">    lazy arrays."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_new_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array_object</span><span class="p">:</span> <span class="n">ArrayObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="n">array</span> <span class="o">=</span> <span class="n">array_object</span><span class="o">.</span><span class="n">_eager_array</span>
-        <span class="n">base_shape</span> <span class="o">=</span> <span class="n">array_object</span><span class="o">.</span><span class="n">base_shape</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">base_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
-
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seeds</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">,)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
-
-        <span class="n">time</span> <span class="o">=</span> <span class="n">_pixel_times</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dwell_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flyback_time</span><span class="p">,</span> <span class="n">base_shape</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rms_power</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
-            <span class="n">rms_powers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rms_power</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">rms_powers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">rms_power</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">seeds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">seed</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seeds</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">seed</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="n">arrays</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">rms_power</span> <span class="ow">in</span> <span class="n">rms_powers</span><span class="p">:</span>
-            <span class="n">inner_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndindex</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]):</span>
-                <span class="n">displacement_x</span><span class="p">,</span> <span class="n">displacement_y</span> <span class="o">=</span> <span class="n">_make_displacement_field</span><span class="p">(</span>
-                    <span class="n">time</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">max_frequency</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">num_components</span><span class="p">,</span>
-                    <span class="n">rms_power</span><span class="p">,</span>
-                    <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
-                <span class="p">)</span>
-
-                <span class="n">inner_array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">_apply_displacement_field</span><span class="p">(</span>
-                    <span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">displacement_x</span><span class="p">,</span> <span class="n">displacement_y</span>
-                <span class="p">)</span>
-
-            <span class="n">arrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inner_array</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rms_power</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">arrays</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">arrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="k">return</span> <span class="n">array</span></div>
-
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_ensemble</span><span class="p">(</span><span class="n">array_object</span><span class="o">.</span><span class="n">_eager_array</span><span class="p">)</span>
 </pre></div>
 
                 </article>

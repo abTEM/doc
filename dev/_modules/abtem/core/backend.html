@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -555,15 +553,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib.util</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numbers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Number</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModuleType</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numba</span>  <span class="c1"># type: ignore</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>  <span class="c1"># type: ignore</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.ndimage</span>  <span class="c1"># type: ignore</span>
@@ -594,74 +595,74 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">cupyx.scipy.ndimage</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cupyx_ndimage</span>  <span class="c1"># type: ignore</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="c1"># same reasoning as the cupyx.scipy.signal guard below: this can fail even</span>
-    <span class="c1"># though cupyx itself imported, if the CUDA/ROCm libraries it eagerly</span>
-    <span class="c1"># pulls in aren't on the loader path. GPU code that needs cupyx_ndimage</span>
-    <span class="c1"># then fails at use time instead of blocking the abtem import.</span>
+    <span class="c1"># this can fail even though cupyx itself imported, if the CUDA/ROCm</span>
+    <span class="c1"># libraries it eagerly pulls in aren't on the loader path. GPU code that</span>
+    <span class="c1"># needs cupyx_ndimage then fails at use time instead of blocking the abtem</span>
+    <span class="c1"># import.</span>
     <span class="n">cupyx_ndimage</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<span class="k">try</span><span class="p">:</span>
-    <span class="c1"># cupyx.scipy exposes submodules lazily; signal must be imported explicitly</span>
-    <span class="c1"># before ``get_scipy_module(...).signal`` can resolve it (the import emits a</span>
-    <span class="c1"># FutureWarning about the experimental cupyx.jit interface it uses</span>
-    <span class="c1"># internally)</span>
-    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="ne">FutureWarning</span><span class="p">)</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">cupyx.scipy.signal</span>  <span class="c1"># type: ignore  # noqa: F401</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="c1"># this can fail even though cupyx itself imported: cupyx.scipy.signal</span>
-    <span class="c1"># eagerly imports cuBLAS-backed submodules, so an environment without the</span>
-    <span class="c1"># CUDA/ROCm libraries on the loader path fails here. GPU filters that need</span>
-    <span class="c1"># scipy.signal then fail at use time instead of blocking the abtem import.</span>
-    <span class="k">pass</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_macos</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether this machine can have a Metal (MPS) device.</span>
 
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_cap_numba_threads_to_omp_num_threads</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Cap Numba's own thread pool to ``OMP_NUM_THREADS``, if set.</span>
-
-<span class="sd">    A fallback for the case where something already imported numba before</span>
-<span class="sd">    abtem: ``abtem.core._numba_threads``, imported as abtem's own first</span>
-<span class="sd">    statement, is the primary mechanism (seeds ``NUMBA_NUM_THREADS`` itself</span>
-<span class="sd">    before numba's first import, which applies process-wide -- see that</span>
-<span class="sd">    module's docstring for why this function's own approach, calling</span>
-<span class="sd">    ``numba.set_num_threads()`` after the fact, is not equivalent: it only</span>
-<span class="sd">    rebinds the *calling* thread's own active count, not a spawned worker</span>
-<span class="sd">    thread's, such as one of dask's threaded-scheduler tasks).</span>
-
-<span class="sd">    Every ``@njit(parallel=True)`` kernel in this package (the CPU Laplacian</span>
-<span class="sd">    stencil in ``finite_difference.py``, the magnetism kernels in</span>
-<span class="sd">    ``magnetism/pauli.py``, the partitioned S-matrix kernel in</span>
-<span class="sd">    ``prism/_partitioned_s_matrix.py``) uses Numba's own internal thread</span>
-<span class="sd">    pool. That pool defaults to the full visible CPU count and reads</span>
-<span class="sd">    neither ``OMP_NUM_THREADS`` nor ``OPENBLAS_NUM_THREADS`` -- Numba's</span>
-<span class="sd">    default "workqueue" threading layer (the fallback when neither TBB nor</span>
-<span class="sd">    OpenMP is available) is independent of both. Skipped when</span>
-<span class="sd">    ``NUMBA_NUM_THREADS`` is already set explicitly, so a deliberate,</span>
-<span class="sd">    Numba-specific choice already made by the caller is never overridden.</span>
+<span class="sd">    Apple silicon and Intel Macs with an AMD GPU both can; whether this one</span>
+<span class="sd">    does is for PyTorch to answer.</span>
 <span class="sd">    """</span>
-    <span class="k">if</span> <span class="s2">"NUMBA_NUM_THREADS"</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
-        <span class="k">return</span>
+    <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">"darwin"</span>
 
-    <span class="n">omp_num_threads</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"OMP_NUM_THREADS"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">omp_num_threads</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span>
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_preload_torch_openmp</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Load PyTorch's own OpenMP runtime ahead of pyfftw's, without torch.</span>
+
+<span class="sd">    PyTorch and pyfftw each ship a copy of libomp.dylib, and the order the two</span>
+<span class="sd">    enter the process matters: if pyfftw's comes first, torch's work on the</span>
+<span class="sd">    CPU later segfaults -- including the dtype cast it makes before uploading</span>
+<span class="sd">    a double-precision host array to Metal, and its CPU fallback for large</span>
+<span class="sd">    eigendecompositions. Importing all of torch up front would win that</span>
+<span class="sd">    race, but costs about two seconds and 180 MB on every import of abTEM,</span>
+<span class="sd">    whether or not Metal is ever used. Only torch's runtime has to be first,</span>
+<span class="sd">    and loading that alone takes a few milliseconds -- after which pyfftw can</span>
+<span class="sd">    load as usual and torch can wait until something asks for the 'mps'</span>
+<span class="sd">    device. This module is imported before abtem.core.fft imports pyfftw.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        Whether torch can safely be imported later. False only when it is too</span>
+<span class="sd">        late: pyfftw's runtime is already in the process and torch's is not.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_macos</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># no Metal device to load torch for</span>
+    <span class="k">if</span> <span class="s2">"torch"</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># its runtime is already in, ahead of whatever follows</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">omp_num_threads</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-        <span class="k">return</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">"torch"</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">spec</span><span class="o">.</span><span class="n">submodule_search_locations</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># not installed; using Metal will say so</span>
+    <span class="n">runtime</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">submodule_search_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"lib"</span><span class="p">,</span> <span class="s2">"libomp.dylib"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">runtime</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># no runtime of its own to clash with</span>
+    <span class="k">if</span> <span class="s2">"pyfftw"</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ctypes</span><span class="o">.</span><span class="n">CDLL</span><span class="p">(</span><span class="n">runtime</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">RTLD_GLOBAL</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">pass</span>  <span class="c1"># importing torch will report whatever is wrong with it</span>
+    <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="c1"># set_num_threads raises ValueError above Numba's own launch-time</span>
-        <span class="c1"># ceiling (numba.config.NUMBA_NUM_THREADS, itself derived from the</span>
-        <span class="c1"># visible CPU count unless NUMBA_NUM_THREADS constrained it at</span>
-        <span class="c1"># process start) -- clamp rather than let a larger OMP_NUM_THREADS</span>
-        <span class="c1"># crash the import.</span>
-        <span class="n">numba</span><span class="o">.</span><span class="n">set_num_threads</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">numba</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">NUMBA_NUM_THREADS</span><span class="p">))</span>
 
+<span class="n">_TORCH_IMPORT_IS_SAFE</span> <span class="o">=</span> <span class="n">_preload_torch_openmp</span><span class="p">()</span>
 
-<span class="n">_cap_numba_threads_to_omp_num_threads</span><span class="p">()</span>
+<span class="c1"># The Metal (MPS) array namespace and its array type, loaded on first use of</span>
+<span class="c1"># the 'mps' device and None until then. Read them through the module</span>
+<span class="c1"># (``backend.tp``) rather than binding them by value, so every caller sees the</span>
+<span class="c1"># namespace once it is loaded. No Metal array can exist before then, so</span>
+<span class="c1"># ``backend.tp is None`` correctly answers "not a Metal array" either way.</span>
+<span class="n">tp</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">TorchNDArray</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">_TORCH_LOAD_LOCK</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
 
 
 <span class="n">ArrayModule</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ModuleType</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
@@ -677,6 +678,76 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"CuPy is not installed, GPU calculations disabled"</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="check_mps_is_available">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.backend.html#abtem.core.backend.check_mps_is_available">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_mps_is_available</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Load the Metal (MPS) array namespace, raising if it is unusable.</span>
+
+<span class="sd">    PyTorch is imported here, on the first request for the 'mps' device,</span>
+<span class="sd">    rather than with abTEM: see ``_preload_torch_openmp``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    module</span>
+<span class="sd">        The Metal array namespace, as returned by ``get_array_module('mps')``.</span>
+<span class="sd">    """</span>
+    <span class="k">global</span> <span class="n">tp</span><span class="p">,</span> <span class="n">TorchNDArray</span>
+
+    <span class="k">if</span> <span class="n">tp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">_TORCH_LOAD_LOCK</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">_TORCH_IMPORT_IS_SAFE</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                        <span class="s2">"The Metal (MPS) backend cannot be loaded: pyfftw was "</span>
+                        <span class="s2">"imported before abTEM, so its OpenMP runtime is already "</span>
+                        <span class="s2">"loaded, and importing PyTorch after it would crash the "</span>
+                        <span class="s2">"process. Import abtem (or torch) before pyfftw."</span>
+                    <span class="p">)</span>
+
+                <span class="n">torch_device</span> <span class="o">=</span> <span class="n">_config_get</span><span class="p">(</span><span class="s2">"torch.device"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">torch_device</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="n">torch_device</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span>
+                    <span class="s2">"mps"</span><span class="p">,</span>
+                    <span class="s2">"cpu"</span><span class="p">,</span>
+                <span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">"The configuration key 'torch.device' must be 'mps' or "</span>
+                        <span class="sa">f</span><span class="s2">"'cpu', got </span><span class="si">{</span><span class="n">torch_device</span><span class="si">!r}</span><span class="s2">."</span>
+                    <span class="p">)</span>
+                <span class="n">torch_device</span> <span class="o">=</span> <span class="n">torch_device</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+                <span class="c1"># Importing PyTorch can break CuPy's runtime kernel compilation</span>
+                <span class="c1"># in the same process (observed with ROCm), so a machine that</span>
+                <span class="c1"># cannot have a Metal device is refused before the import.</span>
+                <span class="k">if</span> <span class="n">torch_device</span> <span class="o">==</span> <span class="s2">"mps"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_is_macos</span><span class="p">():</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                        <span class="s2">"The Metal (MPS) backend is not available on this machine. "</span>
+                        <span class="s2">"Metal requires macOS; change the device to 'cpu'."</span>
+                    <span class="p">)</span>
+
+                <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">_torch</span>
+
+                <span class="n">_torch</span><span class="o">.</span><span class="n">DEVICE</span> <span class="o">=</span> <span class="n">torch_device</span>
+
+                <span class="n">_torch</span><span class="o">.</span><span class="n">_check_available</span><span class="p">()</span>
+
+                <span class="c1"># tp last: other threads test it without the lock, and must</span>
+                <span class="c1"># not see it before TorchNDArray is in place too.</span>
+                <span class="n">TorchNDArray</span> <span class="o">=</span> <span class="n">_torch</span><span class="o">.</span><span class="n">TorchNDArray</span>
+                <span class="n">tp</span> <span class="o">=</span> <span class="n">_torch</span><span class="o">.</span><span class="n">torch_numpy</span>
+
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"precision"</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">"float32"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">"Metal (MPS) is a single-precision backend, but the configured "</span>
+            <span class="sa">f</span><span class="s2">"precision is '</span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'precision'</span><span class="p">)</span><span class="si">}</span><span class="s2">'. Set "</span>
+            <span class="s2">"abtem.config.set({'precision': 'float32'}), or run on the 'cpu' or "</span>
+            <span class="s2">"'gpu' device for double precision."</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tp</span></div>
 
 
 
@@ -973,6 +1044,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">check_cupy_is_installed</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">cp</span>
 
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"torch"</span><span class="p">,</span> <span class="s2">"mps"</span><span class="p">,</span> <span class="s2">"metal"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">check_mps_is_available</span><span class="p">()</span>
+
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">np</span>
 
@@ -988,6 +1062,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="n">cp</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">cp</span>
+
+    <span class="k">if</span> <span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">TorchNDArray</span><span class="p">,</span> <span class="n">tp</span><span class="o">.</span><span class="n">Tensor</span><span class="p">))</span> <span class="ow">or</span> <span class="n">x</span> <span class="ow">is</span> <span class="n">tp</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">tp</span>
 
     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"array module specification </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> not recognized"</span><span class="p">)</span></div>
 
@@ -1016,7 +1093,12 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">if</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">cp</span><span class="p">:</span>
         <span class="k">return</span> <span class="s2">"gpu"</span>
 
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"array module must be NumPy or CuPy, not </span><span class="si">{</span><span class="n">xp</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">tp</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">"mps"</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"array module must be NumPy, CuPy or the Metal namespace, not </span><span class="si">{</span><span class="n">xp</span><span class="si">}</span><span class="s2">"</span>
+    <span class="p">)</span></div>
 
 
 
@@ -1045,6 +1127,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="k">elif</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">cp</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">cupyx</span><span class="o">.</span><span class="n">scipy</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">elif</span> <span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">tp</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">_torch</span>
+
+        <span class="k">return</span> <span class="n">_torch</span><span class="o">.</span><span class="n">scipy</span>
 
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"array module must be NumPy or CuPy, not </span><span class="si">{</span><span class="n">xp</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
@@ -1078,6 +1165,11 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">if</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">cp</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">cupyx_ndimage</span>  <span class="c1"># type: ignore</span>
 
+    <span class="k">if</span> <span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">tp</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">_torch</span>
+
+        <span class="k">return</span> <span class="n">_torch</span><span class="o">.</span><span class="n">ndimage</span>
+
     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Invalid array module"</span><span class="p">)</span></div>
 
 
@@ -1098,6 +1190,18 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    numpy.ndarray</span>
 <span class="sd">        The array converted to NumPy.</span>
 <span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="p">(</span><span class="n">TorchNDArray</span><span class="p">,</span> <span class="n">tp</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">tp</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+
+        <span class="c1"># A lazy array whose chunks live on Metal still has to be brought</span>
+        <span class="c1"># across. Without this it falls to the cp-less short-circuit below and</span>
+        <span class="c1"># is handed back untouched -- still device-backed, so the caller's next</span>
+        <span class="c1"># reduction runs against Metal chunks rather than host memory, having</span>
+        <span class="c1"># asked for NumPy.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="ow">and</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span> <span class="ow">is</span> <span class="n">tp</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">map_blocks</span><span class="p">(</span><span class="n">asnumpy</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">array</span>
 
@@ -1143,11 +1247,18 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
         <span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">old_xp</span> <span class="ow">is</span> <span class="n">tp</span><span class="p">:</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">tp</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+        <span class="n">old_xp</span> <span class="o">=</span> <span class="n">np</span>
+
     <span class="k">if</span> <span class="n">new_xp</span> <span class="ow">is</span> <span class="n">np</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">cp</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">array</span> <span class="k">if</span> <span class="n">old_xp</span> <span class="ow">is</span> <span class="n">np</span> <span class="k">else</span> <span class="n">cp</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">new_xp</span> <span class="ow">is</span> <span class="n">cp</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">cp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">new_xp</span> <span class="ow">is</span> <span class="n">tp</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">tp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Invalid device specified"</span><span class="p">)</span></div>
 

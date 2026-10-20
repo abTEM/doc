@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -553,10 +551,9 @@ document.addEventListener("DOMContentLoaded", () => {
   <h1>Source code for abtem.inelastic.core_loss</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">bisect</span><span class="w"> </span><span class="kn">import</span> <span class="n">bisect_left</span>
@@ -582,9 +579,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.array</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayObject</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">backend</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">AxisMetadata</span><span class="p">,</span> <span class="n">OrdinalAxis</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">copy_to_device</span><span class="p">,</span>
+    <span class="n">cp</span><span class="p">,</span>
     <span class="n">get_array_module</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="n">_ceil_to_multiple</span><span class="p">,</span> <span class="n">estimate_scan_batch_size</span><span class="p">,</span> <span class="n">validate_chunks</span>
@@ -829,8 +828,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="p">)</span>
     <span class="n">subshell_index</span> <span class="o">=</span> <span class="p">[</span><span class="n">shell</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">shell</span> <span class="ow">in</span> <span class="n">config_tuples</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">))</span>
 
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">,</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
-        <span class="n">ae</span> <span class="o">=</span> <span class="n">AllElectron</span><span class="p">(</span><span class="n">chemical_symbols</span><span class="p">[</span><span class="n">Z</span><span class="p">],</span> <span class="n">xcname</span><span class="o">=</span><span class="n">xc</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">AllElectron</span><span class="p">(</span><span class="n">chemical_symbols</span><span class="p">[</span><span class="n">Z</span><span class="p">],</span> <span class="n">xcname</span><span class="o">=</span><span class="n">xc</span><span class="p">,</span> <span class="n">txt</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="k">as</span> <span class="n">ae</span><span class="p">:</span>
         <span class="n">ae</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
     <span class="n">energy</span> <span class="o">=</span> <span class="n">ae</span><span class="o">.</span><span class="n">e_j</span><span class="p">[</span><span class="n">subshell_index</span><span class="p">]</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">Hartree</span>
@@ -848,7 +846,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="viewcode-block" id="radial_schroedinger_equation">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html#abtem.inelastic.core_loss.radial_schroedinger_equation">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">radial_schroedinger_equation</span><span class="p">(</span><span class="n">ef</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">vr</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">l</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">vr</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">/</span> <span class="n">r</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.02</span> <span class="o">-</span> <span class="n">ef</span></div>
+    <span class="k">return</span> <span class="n">l</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">vr</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">/</span> <span class="n">r</span> <span class="o">-</span> <span class="n">ef</span></div>
 
 
 
@@ -992,32 +990,61 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">envelope</span><span class="p">))</span>
 
 
-<div class="viewcode-block" id="calculate_continuum_radial_wavefunction">
-<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html#abtem.inelastic.core_loss.calculate_continuum_radial_wavefunction">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">calculate_continuum_radial_wavefunction</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">lprime</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="s2">"PBE"</span><span class="p">):</span>
+<span class="c1"># GPAW's xc kernels clamp the density from below at this value (measured: an</span>
+<span class="c1"># LDA/PBE atom's vxc is exactly constant wherever n &lt; 1e-10).</span>
+<span class="n">_GPAW_XC_DENSITY_FLOOR</span> <span class="o">=</span> <span class="mf">1e-10</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_atomic_rv</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="s2">"PBE"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""r*V(r) of the neutral ground-state atom [Rydberg * Bohr], from a scalar-</span>
+<span class="sd">    relativistic GPAW all-electron calculation. The potential the continuum</span>
+<span class="sd">    states are solved in.</span>
+
+<span class="sd">    GPAW evaluates the xc potential at a floored density, so in the vacuum</span>
+<span class="sd">    beyond ~17 Bohr (LDA) / ~27 Bohr (PBE) its vxc sits at a constant</span>
+<span class="sd">    -8.5e-4 Hartree instead of vanishing -- the same for every element, and</span>
+<span class="sd">    however far the radial grid extends. That constant made r*V grow</span>
+<span class="sd">    linearly to the edge of the grid and, extrapolated beyond it, shifted</span>
+<span class="sd">    the continuum's asymptotic wavenumber (q/k = 1.012 at 1 eV). Below the</span>
+<span class="sd">    floor vxc is scaled as n^(1/3), the low-density limit of LDA exchange and</span>
+<span class="sd">    correlation, which is continuous at the floor and vanishes in vacuum; r*V</span>
+<span class="sd">    of the neutral atom then goes to ~0 by the edge of the grid and is held</span>
+<span class="sd">    constant beyond it.</span>
+<span class="sd">    """</span>
     <span class="c1"># from gpaw.atom.all_electron import AllElectron</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">gpaw.atom.aeatom</span><span class="w"> </span><span class="kn">import</span> <span class="n">AllElectronAtom</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">pass</span>
+    <span class="n">ae</span> <span class="o">=</span> <span class="n">AllElectronAtom</span><span class="p">(</span><span class="n">chemical_symbols</span><span class="p">[</span><span class="n">Z</span><span class="p">],</span> <span class="n">xc</span><span class="o">=</span><span class="n">xc</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">())</span>
+    <span class="c1"># ae.f_j[subshell_index] -= 0.0</span>
+    <span class="n">ae</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="n">ae</span><span class="o">.</span><span class="n">scalar_relativistic</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">ae</span><span class="o">.</span><span class="n">refine</span><span class="p">()</span>
 
-    <span class="n">AllElectronAtom</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">f</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">ae</span><span class="o">.</span><span class="n">rgd</span><span class="o">.</span><span class="n">r_g</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">ae</span><span class="o">.</span><span class="n">n_sg</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">vr</span> <span class="o">=</span> <span class="n">ae</span><span class="o">.</span><span class="n">vr_sg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># r * (vxc + vH) - Z [Hartree * Bohr]</span>
+    <span class="n">below_floor</span> <span class="o">=</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">_GPAW_XC_DENSITY_FLOOR</span>
+    <span class="n">vxc</span> <span class="o">=</span> <span class="n">ae</span><span class="o">.</span><span class="n">vxc_sg</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">below_floor</span><span class="p">]</span>
+    <span class="n">vr</span><span class="p">[</span><span class="n">below_floor</span><span class="p">]</span> <span class="o">-=</span> <span class="n">r</span><span class="p">[</span><span class="n">below_floor</span><span class="p">]</span> <span class="o">*</span> <span class="n">vxc</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cbrt</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="n">below_floor</span><span class="p">]</span> <span class="o">/</span> <span class="n">_GPAW_XC_DENSITY_FLOOR</span><span class="p">)</span>
+    <span class="p">)</span>
 
+    <span class="c1"># -2: to the sign and Rydberg units of radial_schroedinger_equation.</span>
+    <span class="n">rv</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">vr</span>
+
+    <span class="k">return</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">rv</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="p">(</span><span class="n">rv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rv</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="calculate_continuum_radial_wavefunction">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html#abtem.inelastic.core_loss.calculate_continuum_radial_wavefunction">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_continuum_radial_wavefunction</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">lprime</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="s2">"PBE"</span><span class="p">):</span>
     <span class="n">check_valid_quantum_number</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
     <span class="c1"># config_tuples = config_str_to_config_tuples(</span>
     <span class="c1">#     electron_configurations[chemical_symbols[Z]]</span>
     <span class="c1"># )</span>
     <span class="c1"># subshell_index = [shell[:2] for shell in config_tuples].index((n, l))</span>
 
-    <span class="n">ae</span> <span class="o">=</span> <span class="n">AllElectronAtom</span><span class="p">(</span><span class="n">chemical_symbols</span><span class="p">[</span><span class="n">Z</span><span class="p">],</span> <span class="n">xc</span><span class="o">=</span><span class="n">xc</span><span class="p">)</span>
-    <span class="c1"># ae.f_j[subshell_index] -= 0.0</span>
-    <span class="n">ae</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-    <span class="n">ae</span><span class="o">.</span><span class="n">scalar_relativistic</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">ae</span><span class="o">.</span><span class="n">refine</span><span class="p">()</span>
-
-    <span class="n">vr</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span>
-        <span class="n">ae</span><span class="o">.</span><span class="n">rgd</span><span class="o">.</span><span class="n">r_g</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">ae</span><span class="o">.</span><span class="n">vr_sg</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">fill_value</span><span class="o">=</span><span class="s2">"extrapolate"</span><span class="p">,</span> <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span>
-    <span class="p">)</span>
+    <span class="n">vr</span> <span class="o">=</span> <span class="n">_atomic_rv</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="n">xc</span><span class="p">)</span>
 
     <span class="n">ef</span> <span class="o">=</span> <span class="n">epsilon</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">Rydberg</span>
 
@@ -1233,59 +1260,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="o">.</span><span class="n">_grid</span> <span class="o">=</span> <span class="n">Grid</span><span class="p">(</span><span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span> <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_accelerator</span> <span class="o">=</span> <span class="n">Accelerator</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_double_channel</span> <span class="o">=</span> <span class="n">double_channel</span>
-        <span class="c1"># Memo for _as_pure_delayed, keyed by nothing but object identity --</span>
-        <span class="c1"># see that method.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_delayed_pure_node</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_as_pure_delayed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""A ``dask.delayed(self, pure=True)`` wrapper, memoized on this object.</span>
-
-<span class="sd">        Computing this tokenizes the whole payload via a content hash (dask's</span>
-<span class="sd">        ``_normalize_pickle`` fallback for objects with no</span>
-<span class="sd">        ``__dask_tokenize__``), which costs ~0.4 ms per MB of the underlying</span>
-<span class="sd">        array. Building the same scan graph many times against the same live</span>
-<span class="sd">        object -- a frozen-phonon or energy sweep reusing one transition</span>
-<span class="sd">        potential -- currently pays that cost on every call; memoizing here</span>
-<span class="sd">        means it pays it once.</span>
-
-<span class="sd">        Identity-keyed rather than content-keyed: an id()-based token would</span>
-<span class="sd">        be unsafe on its own (ids are reused after garbage collection, and</span>
-<span class="sd">        using one to build a token breaks determinism across processes), but</span>
-<span class="sd">        caching the ``Delayed`` as an attribute of the object it wraps</span>
-<span class="sd">        sidesteps that -- there is exactly one per live object, and it is</span>
-<span class="sd">        dropped before this object is ever pickled (see ``__getstate__``), so</span>
-<span class="sd">        a stale copy can never outlive the object it was built from.</span>
-
-<span class="sd">        This memo is only valid while the wrapped object's payload is not</span>
-<span class="sd">        mutated in place after the first call. The cached ``Delayed``'s dask</span>
-<span class="sd">        *key* is frozen from the content tokenized at that first call, but</span>
-<span class="sd">        the node still wraps a live reference to ``self``; an in-place edit</span>
-<span class="sd">        to ``self.array`` (or to any other state dask would tokenize) leaves</span>
-<span class="sd">        the key describing stale content while the node computes against</span>
-<span class="sd">        whatever ``self`` currently holds -- the same staleness hazard a</span>
-<span class="sd">        cached content hash would have, just moved one level up rather than</span>
-<span class="sd">        eliminated. Nothing under ``abtem/`` mutates a transition potential's</span>
-<span class="sd">        payload in place after handing it to ``transition_potential_scan``</span>
-<span class="sd">        today, so the risk is latent rather than live; a caller that does</span>
-<span class="sd">        would need to build its own fresh ``dask.delayed`` instead of going</span>
-<span class="sd">        through this memo.</span>
-<span class="sd">        """</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delayed_pure_node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_delayed_pure_node</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pure</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delayed_pure_node</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># The memoized node wraps self -- pickling it verbatim alongside self</span>
-        <span class="c1"># would embed a self-referential graph node inside the pickle, which</span>
-        <span class="c1"># at best doubles the payload for no benefit (the memo is a</span>
-        <span class="c1"># per-process, per-object convenience, not part of this object's</span>
-        <span class="c1"># identity) and at worst is exactly the kind of thing that made this</span>
-        <span class="c1"># object expensive to tokenize in the first place. Recomputed fresh</span>
-        <span class="c1"># wherever it is next needed.</span>
-        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">state</span><span class="p">[</span><span class="s2">"_delayed_pure_node"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="n">state</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_task_local</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">match_to</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""A private view of this transition potential for one task.</span>
@@ -1311,12 +1286,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        that blanks an attribute there gets it blanked in this view as</span>
 <span class="sd">        well -- except ``TransitionPotentialArray``, which defines its own</span>
 <span class="sd">        ``__copy__`` that shares ``__dict__`` by reference instead (see that</span>
-<span class="sd">        method), so a ``_task_local`` view of an array transition potential</span>
-<span class="sd">        shares ``_delayed_pure_node`` with its source rather than getting it</span>
-<span class="sd">        blanked. That is inert today: ``_as_pure_delayed`` is only ever</span>
-<span class="sd">        called on the object handed directly to a scan method, never on a</span>
-<span class="sd">        ``_task_local``/``copy_to_device`` view, and pickling any view still</span>
-<span class="sd">        blanks the memo via ``__getstate__`` before it reaches a worker.</span>
+<span class="sd">        method).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1416,7 +1386,13 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_overlap_integral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lprimeprime</span><span class="p">,</span> <span class="n">bound</span><span class="p">,</span> <span class="n">excited</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-        <span class="n">radial_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.05</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">))</span>
+        <span class="c1"># np.arange stops short of its end by up to one step, so with only the 5 %</span>
+        <span class="c1"># margin a coarse grid (max(k) * extent below ~20, e.g. 16 pixels) ended</span>
+        <span class="c1"># below max(k) and interp1d refused the largest k. Reach at least one step</span>
+        <span class="c1"># past max(k); grids that already did are unchanged.</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">)</span>
+        <span class="n">k_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="n">radial_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">k_max</span> <span class="o">*</span> <span class="mf">1.05</span><span class="p">,</span> <span class="n">k_max</span> <span class="o">+</span> <span class="n">step</span><span class="p">),</span> <span class="n">step</span><span class="p">)</span>
         <span class="n">integration_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">bound</span><span class="o">.</span><span class="n">radial_grid</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">20000</span><span class="p">)</span>
 
         <span class="n">values</span> <span class="o">=</span> <span class="p">(</span>
@@ -1646,12 +1622,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="c1"># _local_potential_device_cache and _device_array_cache are derived state:</span>
     <span class="c1"># populated lazily from the array already compared and the requesting</span>
-    <span class="c1"># device. _delayed_pure_node is also derived (a memoized graph node, see</span>
-    <span class="c1"># _as_pure_delayed) and additionally would compare via Delayed.__eq__,</span>
-    <span class="c1"># which builds another lazy value rather than a bool -- exactly the</span>
-    <span class="c1"># "deferred content is guessed equal" trap fixed elsewhere in</span>
-    <span class="c1"># safe_equality, so it must be excluded rather than merely reset.</span>
-    <span class="c1"># __getstate__ already drops all three for pickling, for the same reason</span>
+    <span class="c1"># device. __getstate__ already drops both for pickling, for the same reason</span>
     <span class="c1"># -- they are a per-process convenience, not part of the object's</span>
     <span class="c1"># identity. Same pattern as Potential._sliced_atoms in</span>
     <span class="c1"># abtem/potentials/iam.py. _site_ceiling_cache is the same kind of</span>
@@ -1661,7 +1632,6 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">_eq_exclude</span> <span class="o">=</span> <span class="p">(</span>
         <span class="s2">"_local_potential_device_cache"</span><span class="p">,</span>
         <span class="s2">"_device_array_cache"</span><span class="p">,</span>
-        <span class="s2">"_delayed_pure_node"</span><span class="p">,</span>
         <span class="s2">"_site_ceiling_cache"</span><span class="p">,</span>
     <span class="p">)</span>
 
@@ -1786,6 +1756,16 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="viewcode-block" id="TransitionPotentialArray.absolute_threshold">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html#abtem.inelastic.core_loss.TransitionPotentialArray.absolute_threshold">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">absolute_threshold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The overlap cut that ``filter_sites`` applies for a relative</span>
+<span class="sd">        ``threshold``: ranking the overlap of a site placed at every pixel</span>
+<span class="sd">        with ``waves``, the most-overlapping pixels that together carry the</span>
+<span class="sd">        fraction ``threshold`` of the total overlap all lie above the cut.</span>
+<span class="sd">        Evaluate it on the waves that the sites are then filtered against</span>
+<span class="sd">        -- applied to a different (e.g. further propagated) wave, a group of</span>
+<span class="sd">        symmetry-tied sites at the cut falls below it all at once.</span>
+
+<span class="sd">        Returns 0.0, which disables filtering, for ``threshold &gt;= 1``.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">threshold</span> <span class="o">&gt;=</span> <span class="mf">1.0</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.0</span>
 
@@ -1793,13 +1773,13 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="c1"># The whole intensity is reduced to one host-side number: lazy waves are</span>
         <span class="c1"># computed once, into a copy, rather than piecewise by the operations below</span>
-        <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensure_computed</span><span class="p">(</span><span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensure_computed</span><span class="p">(</span><span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">ensure_real_space</span><span class="p">()</span>
 
         <span class="n">array</span> <span class="o">=</span> <span class="n">abs2</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
 
-        <span class="c1"># This runs once per task; reuse the local potential computed in</span>
-        <span class="c1"># __init__ and its cached device copy instead of re-deriving and</span>
-        <span class="c1"># re-uploading both on every call.</span>
+        <span class="c1"># This runs once per scattering slice; reuse the local potential</span>
+        <span class="c1"># computed in __init__ and its cached device copy instead of</span>
+        <span class="c1"># re-deriving and re-uploading both on every call.</span>
         <span class="n">local_potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential_on_device</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
         <span class="n">complex_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1808,13 +1788,42 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">fft2</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">complex_dtype</span><span class="p">)),</span>
         <span class="p">)</span><span class="o">.</span><span class="n">real</span>
 
-        <span class="n">overlap</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="n">overlap</span><span class="p">,</span> <span class="s2">"cpu"</span><span class="p">)</span>
+        <span class="c1"># Rank on a CUDA device, where only the cut itself then comes back to</span>
+        <span class="c1"># the host; any other backend (e.g. torch/MPS, whose NumPy layer this</span>
+        <span class="c1"># sort/reverse/searchsorted chain is not verified on) ranks on the host.</span>
+        <span class="k">if</span> <span class="n">cp</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">overlap</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">cp</span><span class="p">:</span>
+            <span class="n">overlap</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="n">overlap</span><span class="p">,</span> <span class="s2">"cpu"</span><span class="p">)</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">overlap</span><span class="p">)</span>
+        <span class="n">overlap</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">overlap</span><span class="o">.</span><span class="n">ravel</span><span class="p">())[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-        <span class="n">overlap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">overlap</span><span class="o">.</span><span class="n">ravel</span><span class="p">())[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">cumulative</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">overlap</span><span class="p">)</span>
+        <span class="n">cumulative</span> <span class="o">/=</span> <span class="n">cumulative</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-        <span class="n">cumulative</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">overlap</span><span class="p">)</span> <span class="o">/</span> <span class="n">overlap</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="c1"># The pixels ranked 0..index together carry at least the fraction</span>
+        <span class="c1"># ``threshold`` of the overlap, so the cut is the overlap of pixel</span>
+        <span class="c1"># ``index`` itself -- not of pixel ``index - 1``, which stopped the</span>
+        <span class="c1"># retained set short of the requested fraction (and, for a threshold</span>
+        <span class="c1"># below the largest single-pixel fraction, wrapped to -1, i.e. the</span>
+        <span class="c1"># *smallest* overlap, keeping almost every site).</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span>
+                <span class="n">xp</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span>
+                    <span class="n">cumulative</span><span class="p">,</span>
+                    <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">threshold</span><span class="p">),</span>
+                    <span class="n">side</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">overlap</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">overlap</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">cumulative</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span></div>
+        <span class="c1"># filter_sites keeps sites whose overlap is strictly greater than the</span>
+        <span class="c1"># returned value, recomputing it by direct summation, which differs</span>
+        <span class="c1"># from this FFT convolution by float round-off (~1 ulp of the largest</span>
+        <span class="c1"># overlap). Lower the cut by a few such ulps so that the pixel at the</span>
+        <span class="c1"># cut -- and any group of (symmetry-)tied pixels with it -- is kept</span>
+        <span class="c1"># whole rather than partly lost to round-off.</span>
+        <span class="n">tolerance</span> <span class="o">=</span> <span class="mi">8</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">overlap</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">overlap</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">overlap</span><span class="p">[</span><span class="n">index</span><span class="p">])</span> <span class="o">-</span> <span class="n">tolerance</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="TransitionPotentialArray.validate_sites">
@@ -1846,6 +1855,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">like</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">np</span><span class="p">:</span>
             <span class="n">device</span> <span class="o">=</span> <span class="s2">"cpu"</span>
+        <span class="k">elif</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">backend</span><span class="o">.</span><span class="n">tp</span><span class="p">:</span>
+            <span class="c1"># Metal exposes a single device, so its identity needs no index --</span>
+            <span class="c1"># and a torch device carries neither an `id` nor a context to enter.</span>
+            <span class="n">device</span> <span class="o">=</span> <span class="s2">"mps"</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># One process can drive several GPUs (outside the dask-cuda</span>
             <span class="c1"># process-per-GPU layout); an array cached for one device must</span>
@@ -1858,7 +1871,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cache</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">device</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">cache</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">np</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">xp</span> <span class="ow">is</span> <span class="n">np</span> <span class="ow">or</span> <span class="n">device</span> <span class="o">==</span> <span class="s2">"mps"</span><span class="p">:</span>
             <span class="n">on_device</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_potential</span><span class="p">,</span> <span class="n">like</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Allocate on like's device, whatever device is current.</span>
@@ -1905,15 +1918,19 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="k">if</span> <span class="n">array_on_device</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
                 <span class="n">local_potential_on_device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array_on_device</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="p">:</span>
-                    <span class="n">local_potential_on_device</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential</span><span class="p">,</span> <span class="n">array_on_device</span>
-                    <span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Only a cupy array's .device is the context manager that</span>
+                <span class="c1"># pins the upload to the right card. A torch tensor has a</span>
+                <span class="c1"># .device too, but entering it would change torch's default</span>
+                <span class="c1"># device for the block rather than pin anything.</span>
+                <span class="k">if</span> <span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array_on_device</span><span class="p">)</span> <span class="ow">is</span> <span class="n">cp</span><span class="p">:</span>
                     <span class="k">with</span> <span class="n">array_on_device</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
                         <span class="n">local_potential_on_device</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential</span><span class="p">,</span> <span class="n">array_on_device</span>
                         <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">local_potential_on_device</span> <span class="o">=</span> <span class="n">copy_to_device</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_local_potential</span><span class="p">,</span> <span class="n">array_on_device</span>
+                    <span class="p">)</span>
             <span class="n">cached</span> <span class="o">=</span> <span class="p">(</span><span class="n">array_on_device</span><span class="p">,</span> <span class="n">local_potential_on_device</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_device_array_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">cached</span>
 
@@ -1945,17 +1962,12 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">return</span> <span class="n">new</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># All three caches are a per-process convenience and must not ride</span>
-        <span class="c1"># through pickle: the two device caches may hold cupy arrays and</span>
-        <span class="c1"># would bloat every dask task carrying this object (and break</span>
-        <span class="c1"># unpickling on CPU-only workers); _delayed_pure_node wraps self, so</span>
-        <span class="c1"># pickling it verbatim would embed a self-referential graph node</span>
-        <span class="c1"># inside the pickle. This overrides BaseTransitionPotential's own</span>
-        <span class="c1"># __getstate__ rather than calling it, so its reset is repeated here.</span>
+        <span class="c1"># Both device caches are a per-process convenience and must not ride</span>
+        <span class="c1"># through pickle: they may hold cupy arrays and would bloat every dask</span>
+        <span class="c1"># task carrying this object (and break unpickling on CPU-only workers).</span>
         <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">state</span><span class="p">[</span><span class="s2">"_local_potential_device_cache"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">state</span><span class="p">[</span><span class="s2">"_device_array_cache"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">state</span><span class="p">[</span><span class="s2">"_delayed_pure_node"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">state</span>
 
 <div class="viewcode-block" id="TransitionPotentialArray.filter_sites">
@@ -1964,7 +1976,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="s2">"build"</span><span class="p">):</span>
             <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="c1"># As in absolute_threshold: the mask below needs the intensity in memory</span>
-        <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensure_computed</span><span class="p">(</span><span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensure_computed</span><span class="p">(</span><span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">ensure_real_space</span><span class="p">()</span>
 
         <span class="c1"># The mask below is computed over the validated array, which subsets</span>
         <span class="c1"># an Atoms input to this element -- index that same array at the end,</span>
@@ -2063,6 +2075,9 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">scatter</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">,</span> <span class="n">sites</span><span class="p">:</span> <span class="n">Atoms</span> <span class="o">|</span> <span class="n">Atom</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Waves</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Scatter ``waves`` at ``sites``. Waves in reciprocal space are converted to</span>
+<span class="sd">        real space, and the scattered waves are in real space."""</span>
+        <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensure_real_space</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
@@ -2162,6 +2177,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">max_batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
         <span class="n">threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Yield ``(sites, scattered_waves)`` for chunks of ``sites``. Waves in</span>
+<span class="sd">        reciprocal space are converted to real space once, and the scattered waves</span>
+<span class="sd">        are in real space."""</span>
+        <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensure_real_space</span><span class="p">()</span>
         <span class="c1"># Match before filtering: filter_sites reads self.sampling, and the</span>
         <span class="c1"># scatter path used to run this match first -- keep the immediate,</span>
         <span class="c1"># informative error for a grid mismatch.</span>
@@ -2262,28 +2281,48 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="k">def</span><span class="w"> </span><span class="nf">_extract_scattering_sites</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="n">sites</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Extract scattering sites from a potential, or validate provided sites.</span>
 
-<span class="sd">    Handles ``Potential`` (via ``get_sliced_atoms``), ``FrozenPhonons``-wrapped</span>
-<span class="sd">    potentials (via ``atoms``), and ``CrystalPotential`` (via</span>
-<span class="sd">    ``potential_unit.get_transformed_atoms`` tiled by ``repetitions``).</span>
+<span class="sd">    Handles ``Potential`` and ``CrystalPotential`` (via ``get_sliced_atoms``;</span>
+<span class="sd">    for a frozen-phonon ensemble these are the sites of its first member, see</span>
+<span class="sd">    `_resolve_scattering_sites`) and ``FrozenPhonons``-wrapped potentials (via</span>
+<span class="sd">    ``atoms``).</span>
 <span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.slicing</span><span class="w"> </span><span class="kn">import</span> <span class="n">SliceIndexedAtoms</span>
 
+    <span class="n">explicit</span> <span class="o">=</span> <span class="n">sites</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">sites</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="s2">"get_sliced_atoms"</span><span class="p">):</span>
         <span class="n">sites</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">get_sliced_atoms</span><span class="p">()</span>
     <span class="k">elif</span> <span class="n">sites</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="s2">"atoms"</span><span class="p">):</span>
         <span class="n">sites</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">atoms</span>
-    <span class="k">elif</span> <span class="n">sites</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="s2">"potential_unit"</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">potential_unit</span><span class="p">,</span> <span class="s2">"get_transformed_atoms"</span><span class="p">):</span>
-            <span class="n">unit_atoms</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">potential_unit</span><span class="o">.</span><span class="n">get_transformed_atoms</span><span class="p">()</span>
-            <span class="n">sites</span> <span class="o">=</span> <span class="n">unit_atoms</span> <span class="o">*</span> <span class="n">potential</span><span class="o">.</span><span class="n">repetitions</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
         <span class="c1"># Follow the potential's own convention, so explicitly passed sites</span>
         <span class="c1"># are sliced exactly as sites=None would be.</span>
+        <span class="n">periodic</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="s2">"periodic"</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">folds</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="s2">"_folds_atoms_far_outside_along_z"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">explicit</span> <span class="ow">and</span> <span class="n">folds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">folds</span><span class="p">():</span>
+            <span class="c1"># Such a potential takes the atoms it is given more than</span>
+            <span class="c1"># FACE_SLICE_WARNING_DISTANCE outside its cell along z as their</span>
+            <span class="c1"># images in the cell, and slices them there; the atoms closer to a</span>
+            <span class="c1"># face stay where they are and are clamped to the face slice below.</span>
+            <span class="c1"># The potential's own atoms (sites=None) are folded already, so</span>
+            <span class="c1"># only explicit sites are folded and warned about here, by the same</span>
+            <span class="c1"># rule. Without it, a site at z = -5 Å in a 20 Å cell was ionised</span>
+            <span class="c1"># in the entrance face slice, where the potential has the atom at</span>
+            <span class="c1"># z = 15 Å.</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.iam</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+                <span class="n">_fold_far_outside_faces</span><span class="p">,</span>
+                <span class="n">_warn_if_given_atoms_far_outside_along_z</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Explicit sites are in the potential's frame, along its z.</span>
+            <span class="n">_warn_if_given_atoms_far_outside_along_z</span><span class="p">([</span><span class="n">sites</span><span class="p">])</span>
+            <span class="n">sites</span> <span class="o">=</span> <span class="n">sites</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">_fold_far_outside_faces</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
+
         <span class="n">sites</span> <span class="o">=</span> <span class="n">SliceIndexedAtoms</span><span class="p">(</span>
             <span class="n">sites</span><span class="p">,</span>
             <span class="n">slice_thickness</span><span class="o">=</span><span class="n">potential</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">,</span>
-            <span class="n">wrap</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="s2">"periodic"</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+            <span class="n">wrap</span><span class="o">=</span><span class="n">periodic</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">SliceIndexedAtoms</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -2293,6 +2332,195 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">sites</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_SitesPerConfiguration</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The scattering sites of each configuration of a potential ensemble.</span>
+
+<span class="sd">    Holds an object array with the ensemble shape of the potential, one</span>
+<span class="sd">    ``SliceIndexedAtoms`` per configuration. The core-loss multislice indexes</span>
+<span class="sd">    it with the same ensemble index it runs that configuration's slices under,</span>
+<span class="sd">    so each configuration ionises its own displaced atoms (abTEM issue #581).</span>
+
+<span class="sd">    No ``__len__`` or ``__getitem__``, on purpose: numpy would then take an</span>
+<span class="sd">    instance for a sequence when it is stored as one element of an object array.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sites</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sites</span> <span class="o">=</span> <span class="n">sites</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sites</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">"""The sites of the configuration at ensemble index ``index``."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sites</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">configurations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The sites of every configuration."""</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sites</span><span class="o">.</span><span class="n">flat</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_pair_with_potential_blocks</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">potential_args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">chunks</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="n">lazy</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Attach to each block of a potential's partitioned argument the sites of</span>
+<span class="sd">        the configurations in that block, as a ``(potential_block, sites)`` pair.</span>
+
+<span class="sd">        The two cannot be passed as separate partitioned arguments: each</span>
+<span class="sd">        partitioned argument of a transform gets its own output dimensions, so</span>
+<span class="sd">        dask would pair every potential block with every block of sites rather</span>
+<span class="sd">        than with its own.</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="n">iterate_chunk_ranges</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">_wrap_with_array</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">itemset</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential_args</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">"per-configuration scattering sites need a potential that "</span>
+                <span class="s2">"partitions into a single argument"</span>
+            <span class="p">)</span>
+        <span class="p">(</span><span class="n">potential_blocks</span><span class="p">,)</span> <span class="o">=</span> <span class="n">potential_args</span>
+
+        <span class="n">numblocks</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">potential_blocks</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="n">numblocks</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"the potential partitions into blocks of shape "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">potential_blocks</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">, its sites into </span><span class="si">{</span><span class="n">numblocks</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
+
+        <span class="n">site_blocks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">numblocks</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">block_indices</span><span class="p">,</span> <span class="n">chunk_range</span> <span class="ow">in</span> <span class="n">iterate_chunk_ranges</span><span class="p">(</span><span class="n">chunks</span><span class="p">):</span>
+            <span class="n">itemset</span><span class="p">(</span>
+                <span class="n">site_blocks</span><span class="p">,</span>
+                <span class="n">block_indices</span><span class="p">,</span>
+                <span class="n">_SitesPerConfiguration</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sites</span><span class="p">[</span><span class="n">chunk_range</span><span class="p">]),</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">lazy</span><span class="p">:</span>
+            <span class="n">paired</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">numblocks</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndindex</span><span class="p">(</span><span class="n">numblocks</span><span class="p">):</span>
+                <span class="n">itemset</span><span class="p">(</span><span class="n">paired</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">potential_blocks</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">site_blocks</span><span class="p">[</span><span class="n">index</span><span class="p">]))</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">paired</span><span class="p">,)</span>
+
+        <span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
+
+        <span class="n">ndims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">numblocks</span><span class="p">)</span>
+
+        <span class="c1"># One graph node per block of sites, so a task receives the sites of</span>
+        <span class="c1"># its own configurations only.</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_nested</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="o">==</span> <span class="n">ndims</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">da</span><span class="o">.</span><span class="n">from_delayed</span><span class="p">(</span>
+                    <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">_wrap_with_array</span><span class="p">)(</span><span class="n">site_blocks</span><span class="p">[</span><span class="n">prefix</span><span class="p">],</span> <span class="n">ndims</span><span class="p">),</span>
+                    <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">ndims</span><span class="p">,</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">_nested</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">,))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numblocks</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)])]</span>
+
+        <span class="n">lazy_site_blocks</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="n">_nested</span><span class="p">(()))</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_pair</span><span class="p">(</span><span class="n">potential_block</span><span class="p">,</span> <span class="n">sites_block</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">_wrap_with_array</span><span class="p">((</span><span class="n">potential_block</span><span class="p">,</span> <span class="n">sites_block</span><span class="o">.</span><span class="n">item</span><span class="p">()),</span> <span class="n">ndims</span><span class="p">)</span>
+
+        <span class="n">index</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">ndims</span><span class="p">))</span>
+        <span class="n">paired</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">blockwise</span><span class="p">(</span>
+            <span class="n">_pair</span><span class="p">,</span>
+            <span class="n">index</span><span class="p">,</span>
+            <span class="n">potential_blocks</span><span class="p">,</span>
+            <span class="n">index</span><span class="p">,</span>
+            <span class="n">lazy_site_blocks</span><span class="p">,</span>
+            <span class="n">index</span><span class="p">,</span>
+            <span class="n">align_arrays</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">concatenate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span>
+            <span class="n">meta</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">paired</span><span class="p">,)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sites_differ_per_configuration</span><span class="p">(</span><span class="n">potential</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether each configuration of ``potential`` has sites of its own.</span>
+
+<span class="sd">    True for an atom-based potential with more than one configuration, e.g.</span>
+<span class="sd">    frozen phonons, whose ``get_sliced_atoms`` displaces the atoms of the</span>
+<span class="sd">    first configuration only.</span>
+
+<span class="sd">    A ``CrystalPotential`` ensemble qualifies when its unit is a pool of</span>
+<span class="sd">    displaced configurations: every member draws its own mosaic of them, and</span>
+<span class="sd">    its sites are the displaced atoms of that mosaic (abTEM issue #582, see</span>
+<span class="sd">    ``CrystalPotential.get_sliced_atoms``). The members of a crystal whose unit</span>
+<span class="sd">    has no frozen phonons all tile the same atoms, so their sites are resolved</span>
+<span class="sd">    once.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.iam</span><span class="w"> </span><span class="kn">import</span> <span class="n">CrystalPotential</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="n">CrystalPotential</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">potential</span><span class="o">.</span><span class="n">_has_displaced_atoms</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="nb">hasattr</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="s2">"get_sliced_atoms"</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="s2">"num_configurations"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_scattering_sites</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="n">sites</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The scattering sites of ``potential``, per configuration where they differ.</span>
+
+<span class="sd">    With ``sites=None`` and a potential whose configurations have sites of</span>
+<span class="sd">    their own (see ``_sites_differ_per_configuration``), returns a</span>
+<span class="sd">    ``_SitesPerConfiguration``, each configuration's sites taken from that</span>
+<span class="sd">    ensemble member's own atoms, i.e. those its slices are built from.</span>
+<span class="sd">    Resolved once for the whole ensemble, they were the first configuration's</span>
+<span class="sd">    for every configuration (abTEM issue #581). Otherwise, and for sites that</span>
+<span class="sd">    are already resolved, returns what ``_extract_scattering_sites`` does.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">itemset</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">_SitesPerConfiguration</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">sites</span>
+
+    <span class="k">if</span> <span class="n">sites</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">_sites_differ_per_configuration</span><span class="p">(</span><span class="n">potential</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_extract_scattering_sites</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
+
+    <span class="n">per_configuration</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">potential</span><span class="o">.</span><span class="n">generate_blocks</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">itemset</span><span class="p">(</span>
+            <span class="n">per_configuration</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">_extract_scattering_sites</span><span class="p">(</span><span class="n">member</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_SitesPerConfiguration</span><span class="p">(</span><span class="n">per_configuration</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_prism_eels_detected_waves</span><span class="p">(</span><span class="n">s_matrix</span><span class="p">,</span> <span class="n">scan</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The waves the PRISM-EELS reduction detects, one per position of ``scan``:</span>
+<span class="sd">    the downsampled grid of ``s_matrix`` divided by its interpolation factor.</span>
+<span class="sd">    They carry the probe metadata of the elastic dummy probes (semiangle cutoff</span>
+<span class="sd">    and base tilt), which the detectors of the results read, but not their</span>
+<span class="sd">    ``adjusted_antialias_cutoff_gpts``. They only describe the grid; the array</span>
+<span class="sd">    is a broadcast zero, so no memory is allocated for it."""</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">safe_ceiling_int</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="n">Waves</span>
+
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">s_matrix</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">ds_gpts</span> <span class="o">=</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">downsampled_gpts</span>
+    <span class="n">gpts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+        <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ds_gpts</span><span class="p">,</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">interpolation</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">extent</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+        <span class="n">g</span> <span class="o">*</span> <span class="n">length</span> <span class="o">/</span> <span class="n">n</span> <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">s_matrix</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span> <span class="n">ds_gpts</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span>
+        <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span> <span class="n">scan</span><span class="o">.</span><span class="n">shape</span> <span class="o">+</span> <span class="n">gpts</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">Waves</span><span class="p">(</span>
+        <span class="n">array</span><span class="p">,</span>
+        <span class="n">energy</span><span class="o">=</span><span class="n">s_matrix</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span>
+        <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+        <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="n">scan</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="n">s_matrix</span><span class="o">.</span><span class="n">dummy_probes</span><span class="p">()</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_prism_eels_common_setup</span><span class="p">(</span><span class="n">s_matrix</span><span class="p">,</span> <span class="n">transition_potentials</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="n">sites</span><span class="p">):</span>
@@ -2525,8 +2753,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    BaseMeasurements or list of BaseMeasurements</span>
-<span class="sd">        One measurement per detector.</span>
+<span class="sd">    BaseMeasurements, Waves or list of them</span>
+<span class="sd">        One measurement per detector. A ``WavesDetector`` gives the ``Waves``</span>
+<span class="sd">        at each scan position, which keep every member of an ensemble.</span>
 <span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
@@ -2541,10 +2770,10 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="p">)</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.prism.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
         <span class="n">batch_crop_2d</span><span class="p">,</span>
-        <span class="n">minimum_crop</span><span class="p">,</span>
+        <span class="n">window_crop</span><span class="p">,</span>
         <span class="n">wrapped_crop_2d</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="n">Waves</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="n">Waves</span><span class="p">,</span> <span class="n">_average_ensemble_axes</span>
 
     <span class="n">ctx</span> <span class="o">=</span> <span class="n">_prism_eels_common_setup</span><span class="p">(</span>
         <span class="n">s_matrix</span><span class="p">,</span> <span class="n">transition_potentials</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="n">sites</span>
@@ -2590,17 +2819,12 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">interpolation</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
         <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">interpolation</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
     <span class="p">)</span>
-    <span class="n">output_window_gpts</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">ds_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">interpolation</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
-        <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">ds_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">interpolation</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
-    <span class="p">)</span>
+    <span class="n">detected_waves</span> <span class="o">=</span> <span class="n">_prism_eels_detected_waves</span><span class="p">(</span><span class="n">s_matrix</span><span class="p">,</span> <span class="n">scan</span><span class="p">)</span>
+    <span class="n">output_window_gpts</span> <span class="o">=</span> <span class="n">detected_waves</span><span class="o">.</span><span class="n">gpts</span>
+    <span class="n">output_window_extent</span> <span class="o">=</span> <span class="n">detected_waves</span><span class="o">.</span><span class="n">extent</span>
     <span class="n">scatter_window_extent</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">scatter_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">full_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
         <span class="n">scatter_window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">full_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-    <span class="p">)</span>
-    <span class="n">output_window_extent</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">output_window_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">ds_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-        <span class="n">output_window_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">ds_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
     <span class="p">)</span>
 
     <span class="c1"># --- Inelastic crop window (Brown et al. Sec. IV B, independent of the</span>
@@ -2709,14 +2933,8 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="c1"># --- Allocate measurements with the scan shape ---</span>
     <span class="n">scan_axes_metadata</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
     <span class="n">scan_shape</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="n">shape</span>
-    <span class="n">dummy_scan_waves</span> <span class="o">=</span> <span class="n">Waves</span><span class="p">(</span>
-        <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">scan_shape</span> <span class="o">+</span> <span class="n">output_window_gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">complex_dtype</span><span class="p">),</span>
-        <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
-        <span class="n">extent</span><span class="o">=</span><span class="n">output_window_extent</span><span class="p">,</span>
-        <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="n">scan_axes_metadata</span><span class="p">,</span>
-    <span class="p">)</span>
     <span class="n">measurements</span> <span class="o">=</span> <span class="n">allocate_multislice_measurements</span><span class="p">(</span>
-        <span class="n">dummy_scan_waves</span><span class="p">,</span>
+        <span class="n">detected_waves</span><span class="p">,</span>
         <span class="n">detectors</span><span class="p">,</span>
         <span class="n">extra_ensemble_axes_shape</span><span class="p">,</span>
         <span class="n">extra_ensemble_axes_metadata</span><span class="p">,</span>
@@ -2724,13 +2942,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="c1"># --- Chunk the reduction over scan positions ---</span>
     <span class="c1">#</span>
-    <span class="c1"># minimum_crop's bounding box spans every position handed to it, so</span>
-    <span class="c1"># cropping around the *whole* scan (as a single reduce_and_record call</span>
-    <span class="c1"># used to) makes the box -- and the tensordot below -- scale with the</span>
-    <span class="c1"># scan's spatial extent rather than with output_window_gpts. Peak memory</span>
-    <span class="c1"># is n_positions * (scan_span + window)^2, growing with both factors as</span>
-    <span class="c1"># the field of view grows; a production-sized PRISM-EELS scan can demand</span>
-    <span class="c1"># a single allocation in the hundreds of GB.</span>
+    <span class="c1"># A window smaller than the cell is cropped around the positions of a batch</span>
+    <span class="c1"># (window_crop), and the bounding box of that crop spans every position</span>
+    <span class="c1"># handed to it. Cropping around the *whole* scan would make the box -- and</span>
+    <span class="c1"># the tensordot below -- scale with the scan's spatial extent rather than</span>
+    <span class="c1"># with output_window_gpts: peak memory n_positions * (scan_span + window)^2,</span>
+    <span class="c1"># growing with both factors as the field of view grows, which for a</span>
+    <span class="c1"># production-sized PRISM-EELS scan is a single allocation of hundreds of GB.</span>
     <span class="c1">#</span>
     <span class="c1"># Chunking over spatially contiguous blocks of scan rows shrinks the</span>
     <span class="c1"># bounding box along with the block -- a strided block scheme would keep</span>
@@ -2739,8 +2957,9 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="c1"># flattened in scan-raster order (positions_np above), so a contiguous</span>
     <span class="c1"># range of the flat axis is a contiguous range of whole rows of</span>
     <span class="c1"># scan_shape's leading axis for any scan dimensionality, including the</span>
-    <span class="c1"># 0-d single-point case (n_rows = row_cols = 1 below, one batch, no</span>
-    <span class="c1"># behaviour change).</span>
+    <span class="c1"># 0-d single-point case (n_rows = row_cols = 1 below, one batch). A window</span>
+    <span class="c1"># as large as the cell is reduced on the cell itself, so its box is the</span>
+    <span class="c1"># cell for every batch.</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="n">scan_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">scan_shape</span> <span class="k">else</span> <span class="mi">1</span>
     <span class="n">row_cols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">scan_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scan_shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">1</span>
     <span class="n">n_T_estimate</span> <span class="o">=</span> <span class="n">transition_potential</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -2758,15 +2977,11 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="p">)</span>
     <span class="n">rows_per_batch</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">rows_per_batch</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">)</span>
 
-    <span class="c1"># The guess above assumes the ideal case (no bounding-box growth), which</span>
-    <span class="c1"># is exactly wrong when the batch covers a large fraction of the scan --</span>
-    <span class="c1"># that is where the box is at its largest. This must run even when the</span>
-    <span class="c1"># guess already covers the whole scan (rows_per_batch == n_rows): gating</span>
-    <span class="c1"># it on rows_per_batch &lt; n_rows skipped verification in precisely that</span>
-    <span class="c1"># case, silently reproducing the original whole-scan-as-one-block defect</span>
-    <span class="c1"># whenever the naive per-position estimate happened to clear the row</span>
-    <span class="c1"># count (a large output_window_gpts -- e.g. interpolation=1, no PRISM</span>
-    <span class="c1"># downsampling -- makes this the common case, not a corner one).</span>
+    <span class="c1"># The guess ignores the scattered window held over the whole box and, for</span>
+    <span class="c1"># a window smaller than the cell, the growth of the box with the batch --</span>
+    <span class="c1"># largest when the batch covers a large fraction of the scan. It is</span>
+    <span class="c1"># therefore verified even when it already covers the whole scan</span>
+    <span class="c1"># (rows_per_batch == n_rows).</span>
     <span class="k">if</span> <span class="n">rows_per_batch</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="c1"># Verify the guess against the actual box a batch of this size</span>
         <span class="c1"># produces -- translation-invariant for a regular raster scan, so</span>
@@ -2778,11 +2993,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="k">def</span><span class="w"> </span><span class="nf">_batch_bytes</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
             <span class="n">end</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span> <span class="o">*</span> <span class="n">row_cols</span>
-            <span class="n">_</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">minimum_crop</span><span class="p">(</span><span class="n">pixel_positions</span><span class="p">[:</span><span class="n">end</span><span class="p">],</span> <span class="n">output_window_gpts</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">window_crop</span><span class="p">(</span><span class="n">pixel_positions</span><span class="p">[:</span><span class="n">end</span><span class="p">],</span> <span class="n">output_window_gpts</span><span class="p">,</span> <span class="n">ds_gpts</span><span class="p">)</span>
             <span class="n">size_px</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
-            <span class="c1"># bbox_scattered (n_T, n_k, *size) plus the dominant ``reduced``</span>
-            <span class="c1"># tensor (end, n_T, *size) -- see _reduce_and_record below.</span>
-            <span class="k">return</span> <span class="p">(</span><span class="n">n_T_estimate</span> <span class="o">*</span> <span class="n">n_k</span> <span class="o">+</span> <span class="n">end</span> <span class="o">*</span> <span class="n">n_T_estimate</span><span class="p">)</span> <span class="o">*</span> <span class="n">size_px</span> <span class="o">*</span> <span class="n">itemsize</span>
+            <span class="c1"># A box as large as the window is not cropped (batch_crop_2d).</span>
+            <span class="n">uncropped</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">output_window_gpts</span><span class="p">)</span>
+            <span class="n">window_px</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">uncropped</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">output_window_gpts</span><span class="p">))</span>
+            <span class="c1"># bbox_scattered (n_T, n_k, *size), the dominant ``reduced`` tensor</span>
+            <span class="c1"># (end, n_T, *size) and its cropped windows (end, n_T, *window) --</span>
+            <span class="c1"># see _reduce_and_record below.</span>
+            <span class="n">planes</span> <span class="o">=</span> <span class="n">n_T_estimate</span> <span class="o">*</span> <span class="n">n_k</span> <span class="o">*</span> <span class="n">size_px</span>
+            <span class="n">planes</span> <span class="o">+=</span> <span class="n">end</span> <span class="o">*</span> <span class="n">n_T_estimate</span> <span class="o">*</span> <span class="p">(</span><span class="n">size_px</span> <span class="o">+</span> <span class="n">window_px</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">planes</span> <span class="o">*</span> <span class="n">itemsize</span>
 
         <span class="k">while</span> <span class="n">rows_per_batch</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">_batch_bytes</span><span class="p">(</span><span class="n">rows_per_batch</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">budget_bytes</span><span class="p">:</span>
             <span class="n">rows_per_batch</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">rows_per_batch</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
@@ -2792,16 +3013,15 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">,</span> <span class="n">rows_per_batch</span><span class="p">)</span>
     <span class="p">]</span>
 
-    <span class="c1"># minimum_crop's result for a given batch depends only on that batch's</span>
-    <span class="c1"># own positions, never on the site or exit plane -- but _reduce_and_record</span>
-    <span class="c1"># runs once per (site, exit plane), so computing it there recomputed the</span>
-    <span class="c1"># identical box for every batch on every one of those calls. Hoisting it</span>
-    <span class="c1"># here, once per batch, turns that into O(n_batches) instead of</span>
-    <span class="c1"># O(n_batches * n_sites * n_exit_planes).</span>
+    <span class="c1"># window_crop's result for a given batch depends only on that batch's own</span>
+    <span class="c1"># positions, never on the site or exit plane -- but _reduce_and_record</span>
+    <span class="c1"># runs once per (site, exit plane), so it is computed once per batch here</span>
+    <span class="c1"># rather than in every one of those calls.</span>
     <span class="n">row_batch_boxes</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">minimum_crop</span><span class="p">(</span>
+        <span class="n">window_crop</span><span class="p">(</span>
             <span class="n">pixel_positions</span><span class="p">[</span><span class="n">row_start</span> <span class="o">*</span> <span class="n">row_cols</span> <span class="p">:</span> <span class="n">row_end</span> <span class="o">*</span> <span class="n">row_cols</span><span class="p">],</span>
             <span class="n">output_window_gpts</span><span class="p">,</span>
+            <span class="n">ds_gpts</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">for</span> <span class="n">row_start</span><span class="p">,</span> <span class="n">row_end</span> <span class="ow">in</span> <span class="n">row_batches</span>
     <span class="p">]</span>
@@ -3048,27 +3268,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span class="n">sw_out</span><span class="p">,</span> <span class="n">site_xys</span><span class="p">[</span><span class="n">s_idx</span><span class="p">],</span> <span class="n">ep_idx</span>
                     <span class="p">)</span>
 
-    <span class="c1"># Reduce the ensemble mean, but do NOT squeeze here.</span>
-    <span class="c1">#</span>
-    <span class="c1"># This function is the per-configuration driver: SMatrix calls it once per</span>
-    <span class="c1"># dask block and once per potential-ensemble member. The multislice path</span>
-    <span class="c1"># this used to imitate squeezes at the *outer* level instead --</span>
-    <span class="c1"># Waves.transition_potential_multislice ends in the module-level</span>
-    <span class="c1"># reduce_ensemble on the assembled result -- so blocks and declared chunks</span>
-    <span class="c1"># keep the axis and only the finished object loses it.</span>
-    <span class="c1">#</span>
-    <span class="c1"># Squeezing per block dropped the scan axis underneath two consumers that</span>
-    <span class="c1"># still expected it: the lazy branch declares ``chunks += scan.shape``, and</span>
-    <span class="c1"># the eager branch pre-allocates from ``dummy_probes(scan)``. A</span>
-    <span class="c1"># single-position non-BaseScan scan -- ``(x, y)``, ``[(x, y)]``,</span>
-    <span class="c1"># ``np.array([[x, y]])`` -- therefore came back one axis too wide, and</span>
-    <span class="c1"># whether it did depended on whether the potential was an ensemble.</span>
-    <span class="c1">#</span>
-    <span class="c1"># The module-level reduce_ensemble is squeeze-then-ensemble-mean; the</span>
-    <span class="c1"># method called below is only the second half, which is the half that</span>
-    <span class="c1"># belongs per block. SMatrix.transition_potential_scan applies the first</span>
-    <span class="c1"># half once, at the level the oracle uses.</span>
-    <span class="n">measurements</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">reduce_ensemble</span><span class="p">()</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">measurements</span><span class="p">]</span>
+    <span class="c1"># Average the ensemble axes, but do not squeeze: SMatrix calls this driver</span>
+    <span class="c1"># once per dask block and per potential-ensemble member, and both keep the</span>
+    <span class="c1"># scan axis (the lazy branch declares ``chunks += scan.shape``, the eager</span>
+    <span class="c1"># branch allocates from the detected waves of the scan). A single-position</span>
+    <span class="c1"># scan therefore keeps its position axis here, and</span>
+    <span class="c1"># SMatrix.transition_potential_scan squeezes it once on the assembled</span>
+    <span class="c1"># result with the module-level reduce_ensemble, as</span>
+    <span class="c1"># Waves.transition_potential_multislice does.</span>
+    <span class="n">measurements</span> <span class="o">=</span> <span class="p">[</span><span class="n">_average_ensemble_axes</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">measurements</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">measurements</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">measurements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>

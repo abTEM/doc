@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -566,12 +564,12 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase.cell</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cell</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">map_coordinates</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.atoms</span><span class="w"> </span><span class="kn">import</span> <span class="n">plane_to_axes</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.atoms</span><span class="w"> </span><span class="kn">import</span> <span class="n">_box_strain_warning_silenced</span><span class="p">,</span> <span class="n">_grid_to_plane</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy_to_device</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">eps0</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">_wrap_with_array</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">fft_crop</span><span class="p">,</span> <span class="n">fft_interpolate</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span><span class="p">,</span> <span class="n">itemset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">fft_crop</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span><span class="p">,</span> <span class="n">itemset</span><span class="p">,</span> <span class="n">safe_ceiling_int</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.inelastic.phonons</span><span class="w"> </span><span class="kn">import</span> <span class="n">AtomsEnsemble</span><span class="p">,</span> <span class="n">DummyFrozenPhonons</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.parametrizations</span><span class="w"> </span><span class="kn">import</span> <span class="n">EwaldParametrization</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.iam</span><span class="w"> </span><span class="kn">import</span> <span class="n">Potential</span><span class="p">,</span> <span class="n">PotentialArray</span><span class="p">,</span> <span class="n">_PotentialBuilder</span>
@@ -793,16 +791,13 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">z</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span><span class="o">.</span><span class="n">T</span>
     <span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">new_cell</span><span class="p">)</span> <span class="o">+</span> <span class="n">offset</span>
 
-    <span class="n">padding</span> <span class="o">=</span> <span class="mi">3</span>
-    <span class="n">padded_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="p">((</span><span class="n">padding</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"wrap"</span><span class="p">)</span>
-
     <span class="n">inverse_old_cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">old_cell</span><span class="p">))</span>
     <span class="n">mapped_coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">inverse_old_cell</span><span class="p">)</span> <span class="o">%</span> <span class="mf">1.0</span>
     <span class="n">mapped_coordinates</span> <span class="o">*=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span>
-    <span class="n">mapped_coordinates</span> <span class="o">+=</span> <span class="n">padding</span>
 
+    <span class="c1"># "grid-wrap" makes the spline periodic with the array's own length.</span>
     <span class="n">interpolated</span> <span class="o">=</span> <span class="n">map_coordinates</span><span class="p">(</span>
-        <span class="n">padded_array</span><span class="p">,</span> <span class="n">mapped_coordinates</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"wrap"</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span>
+        <span class="n">array</span><span class="p">,</span> <span class="n">mapped_coordinates</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"grid-wrap"</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span>
     <span class="p">)</span>
     <span class="n">interpolated</span> <span class="o">=</span> <span class="n">interpolated</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">interpolated</span>
@@ -810,16 +805,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_interpolate_slice</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
     <span class="n">dz_charge</span> <span class="o">=</span> <span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">nz</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="n">dz_charge</span><span class="p">)),</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">nz</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">safe_ceiling_int</span><span class="p">((</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="n">dz_charge</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
     <span class="n">slice_shape</span> <span class="o">=</span> <span class="n">gpts</span> <span class="o">+</span> <span class="p">(</span><span class="n">nz</span><span class="p">,)</span>
 
     <span class="n">slice_box</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">((</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">,))</span>
 
-    <span class="n">slice_array</span> <span class="o">=</span> <span class="n">_interpolate_between_cells</span><span class="p">(</span>
-        <span class="n">array</span><span class="p">,</span> <span class="n">slice_shape</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">slice_box</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
-    <span class="p">)</span>
-
     <span class="n">dz</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="n">slice_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Midpoint rule: sample at a + (i + 1/2) dz. The samples used to start at</span>
+    <span class="c1"># z = a (a left Riemann sum), which centres the slice integral dz/2 below</span>
+    <span class="c1"># the slice centre -- a quarter of the slice thickness at the minimum of</span>
+    <span class="c1"># two samples. Summed over a full period the bias cancels, but per slice it</span>
+    <span class="c1"># shifts the long-range part of ChargeDensityPotential against the</span>
+    <span class="c1"># short-range quadrature part, which is placed correctly: for a neutral</span>
+    <span class="c1"># carbon atom on a slice boundary the slices above and below differed by</span>
+    <span class="c1"># 2x and the potential 3 A from the atom was ~1 eV A instead of ~0.</span>
+    <span class="n">slice_array</span> <span class="o">=</span> <span class="n">_interpolate_between_cells</span><span class="p">(</span>
+        <span class="n">array</span><span class="p">,</span> <span class="n">slice_shape</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">slice_box</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">a</span> <span class="o">+</span> <span class="n">dz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">slice_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dz</span>
 
@@ -831,13 +834,14 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ewald_potential</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">ewald_potential</span><span class="o">.</span><span class="n">plane</span> <span class="o">!=</span> <span class="s2">"xy"</span><span class="p">:</span>
-        <span class="n">axes</span> <span class="o">=</span> <span class="n">plane_to_axes</span><span class="p">(</span><span class="n">ewald_potential</span><span class="o">.</span><span class="n">plane</span><span class="p">)</span>
-        <span class="n">charge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">charge</span><span class="p">,</span> <span class="n">axes</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-        <span class="n">atoms</span> <span class="o">=</span> <span class="n">ewald_potential</span><span class="o">.</span><span class="n">get_transformed_atoms</span><span class="p">()</span>
+        <span class="c1"># The charge density is rotated with the atoms, including the reversal of</span>
+        <span class="c1"># the axis that `_plane_rotation` reverses for the planes that need it.</span>
+        <span class="n">charge</span> <span class="o">=</span> <span class="n">_grid_to_plane</span><span class="p">(</span><span class="n">charge</span><span class="p">,</span> <span class="n">ewald_potential</span><span class="o">.</span><span class="n">plane</span><span class="p">)</span>
+        <span class="n">atoms</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">ewald_potential</span><span class="o">.</span><span class="n">_transform_atoms</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">atoms</span> <span class="o">=</span> <span class="n">ewald_potential</span><span class="o">.</span><span class="n">frozen_phonons</span><span class="o">.</span><span class="n">atoms</span>
+        <span class="n">atoms</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">ewald_potential</span><span class="o">.</span><span class="n">frozen_phonons</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 
-    <span class="n">atoms</span> <span class="o">=</span> <span class="n">ewald_potential</span><span class="o">.</span><span class="n">frozen_phonons</span><span class="o">.</span><span class="n">randomize</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+    <span class="n">atoms</span> <span class="o">=</span> <span class="n">ewald_potential</span><span class="o">.</span><span class="n">frozen_phonons</span><span class="o">.</span><span class="n">_randomize_transformed</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">frame</span><span class="p">)</span>
 
     <span class="n">charge</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftn</span><span class="p">(</span><span class="n">charge</span><span class="p">)</span>
 
@@ -886,7 +890,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Atomic configuration(s) used in the independent atom model for calculating the</span>
 <span class="sd">        electrostatic potential(s).</span>
 <span class="sd">    charge_density : numpy.ndarray</span>
-<span class="sd">        Charge density as a 3D NumPy array [electrons / Å^3].</span>
+<span class="sd">        Charge density as a 3D NumPy array [electrons / Å^3], shared by every</span>
+<span class="sd">        configuration. A 4D array stacks charge densities along its first axis: one</span>
+<span class="sd">        for each configuration, or a single one (a first axis of length one) shared by</span>
+<span class="sd">        all of them. Any other number of charge densities raises a `ValueError`.</span>
 <span class="sd">    gpts : one or two int, optional</span>
 <span class="sd">        Number of grid points in `x` and `y` describing each slice of the potential</span>
 <span class="sd">        calculated by specifying either `sampling` or `gpts`.</span>
@@ -903,27 +910,35 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        The `exit_planes` argument can be used to calculate thickness series.</span>
 <span class="sd">        Providing `exit_planes` as a tuple of int indicates that the tuple contains the</span>
 <span class="sd">        slice indices after which an exit plane is desired, and hence during a</span>
-<span class="sd">        multislice simulation a measurement is created. If `exit_planes` is an integer,</span>
-<span class="sd">        a measurement will be collected every `exit_planes` number of slices.</span>
+<span class="sd">        multislice simulation a measurement is created. If `exit_planes` is an integer</span>
+<span class="sd">        `n`, a measurement is collected every `n` slices and after the last slice. The</span>
+<span class="sd">        first measurement is then taken at the entrance surface (zero thickness),</span>
+<span class="sd">        before any scattering, so the thickness series has ``1 + ceil(num_slices / n)``</span>
+<span class="sd">        planes; index it with ``[-1]`` for the exit surface. If `n` exceeds the number</span>
+<span class="sd">        of slices, only the exit surface is returned and no thickness axis is added.</span>
 <span class="sd">    plane : str or two tuples of three float, optional</span>
 <span class="sd">        The plane relative to the provided atoms mapped to the `xy` plane of the</span>
 <span class="sd">        potential, i.e. the propagation direction will be perpendicular to the provided</span>
 <span class="sd">        plane. If str, must be a concatenation of two of 'x', 'y' and 'z'; the default</span>
 <span class="sd">        value 'xy' indicates that potential slices are cuts parallel to the 'xy'-plane.</span>
-<span class="sd">        The plane may also be specified with two arbitrary 3D vectors, which are mapped</span>
-<span class="sd">        to the `x` and `y` directions of the potential, respectively. The length of the</span>
-<span class="sd">        vectors has no influence. If the vectors are not perpendicular, the second</span>
-<span class="sd">        vector is rotated in the plane to become perpendicular to the first. A value of</span>
-<span class="sd">        ((1., 0., 0.), (0., 1., 0.)) is equivalent to 'xy'.</span>
+<span class="sd">        The atoms are rotated to the plane, never mirrored, so for 'xz', 'yx' and</span>
+<span class="sd">        'zy' the second axis is reversed (see</span>
+<span class="sd">        `abtem.atoms.rotate_atoms_to_plane`). The plane may also be specified with two</span>
+<span class="sd">        arbitrary 3D vectors, which are mapped to the `x` and `y` directions of the</span>
+<span class="sd">        potential, respectively. The length of the vectors has no influence. If the</span>
+<span class="sd">        vectors are not perpendicular, the second vector is rotated in the plane to</span>
+<span class="sd">        become perpendicular to the first. A value of ((1., 0., 0.), (0., 1., 0.)) is</span>
+<span class="sd">        equivalent to 'xy'.</span>
 <span class="sd">    origin : three float, optional</span>
 <span class="sd">        The origin relative to the provided atoms mapped to the origin of the potential.</span>
-<span class="sd">        This is equivalent to translating the atoms.</span>
-<span class="sd">        The default is (0., 0., 0.).</span>
+<span class="sd">        Only the default (0., 0., 0.) is supported; any other origin raises a</span>
+<span class="sd">        `NotImplementedError`, because the valence part is interpolated from the</span>
+<span class="sd">        charge density of the atoms' own cell.</span>
 <span class="sd">    box : three float, optional</span>
-<span class="sd">        The extent of the potential in `x`, `y` and `z`. If not given this is determined</span>
-<span class="sd">        from the atoms. If the box size does not match an integer number of the atoms'</span>
-<span class="sd">        cell, an affine transformation may be necessary to preserve periodicity,</span>
-<span class="sd">        determined by the `periodic` keyword.</span>
+<span class="sd">        The extent of the potential in `x`, `y` and `z`. Only the default is</span>
+<span class="sd">        supported, the atoms' cell repeated by `repetitions` (rotated to `plane`, and</span>
+<span class="sd">        for a non-orthogonal cell its best orthogonal cell); any other box raises a</span>
+<span class="sd">        `NotImplementedError`.</span>
 <span class="sd">    periodic : bool, True</span>
 <span class="sd">        If a transformation of the atomic structure is required, `periodic` determines</span>
 <span class="sd">        how the atomic structure is transformed. If True, the periodicity of the atoms</span>
@@ -937,6 +952,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        The device used for calculating the potential. The default is determined by the</span>
 <span class="sd">        user configuration file.</span>
 <span class="sd">    """</span>
+
+    <span class="n">_supports_box_and_origin</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -963,7 +980,28 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="o">.</span><span class="n">_charge_density</span> <span class="o">=</span> <span class="n">charge_density</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_repetitions</span> <span class="o">=</span> <span class="n">repetitions</span>
 
-        <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frozen_phonons</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span> <span class="o">*</span> <span class="n">repetitions</span>
+        <span class="c1"># A 3D charge density, or a stack of them along a first axis: one for</span>
+        <span class="c1"># every configuration, or one shared by all of them.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_charge_density</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">num_configurations</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_frozen_phonons</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_frozen_phonons</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span>
+                <span class="k">else</span> <span class="mi">1</span>
+            <span class="p">)</span>
+            <span class="n">num_densities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_charge_density</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">num_densities</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_configurations</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">num_densities</span><span class="si">}</span><span class="s2"> charge densities were given for "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">num_configurations</span><span class="si">}</span><span class="s2"> atomic configurations; give one, or one "</span>
+                    <span class="s2">"for each configuration."</span>
+                <span class="p">)</span>
+
+        <span class="c1"># ``Cell * repetitions`` broadcasts over columns, which only scales lattice</span>
+        <span class="c1"># vectors correctly for an orthogonal cell. For a skewed cell with</span>
+        <span class="c1"># anisotropic repetitions, each row (lattice vector) must be scaled by its</span>
+        <span class="c1"># own repetition factor instead.</span>
+        <span class="n">cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_frozen_phonons</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">cell</span> <span class="o">=</span> <span class="n">cell</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">repetitions</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">array_object</span><span class="o">=</span><span class="n">PotentialArray</span><span class="p">,</span>
@@ -1055,11 +1093,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">charge_densities</span> <span class="o">=</span> <span class="n">charge_densities</span><span class="o">.</span><span class="n">to_delayed</span><span class="p">()</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
             <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">charge_densities</span><span class="p">,</span> <span class="s2">"compute"</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span>
+            <span class="k">elif</span> <span class="n">charge_densities</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">n_ensemble</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># One charge density shared by every configuration.</span>
+                <span class="n">charge_densities</span> <span class="o">=</span> <span class="p">[</span><span class="n">charge_densities</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">n_ensemble</span>
 
             <span class="n">frozen_phonon_blocks</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_get_ewald_potential</span><span class="p">()</span>
                 <span class="o">.</span><span class="n">frozen_phonons</span><span class="o">.</span><span class="n">_partition_args</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="n">lazy</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="p">)</span>
+            <span class="k">if</span> <span class="n">lazy</span><span class="p">:</span>
+                <span class="c1"># Iterating a dask array yields dask array slices, whose shapes</span>
+                <span class="c1"># dask cannot infer once wrapped by dask.delayed below; the</span>
+                <span class="c1"># delayed blocks of to_delayed() compose correctly.</span>
+                <span class="n">frozen_phonon_blocks</span> <span class="o">=</span> <span class="n">frozen_phonon_blocks</span><span class="o">.</span><span class="n">to_delayed</span><span class="p">()</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 
             <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="mi">0</span><span class="p">]),),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">cd</span><span class="p">,</span> <span class="n">fp</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
@@ -1078,16 +1124,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="k">return</span> <span class="p">(</span><span class="n">array</span><span class="p">,)</span>
 
+    <span class="c1"># The box was reported when the user left it to abTEM.</span>
     <span class="nd">@staticmethod</span>
+    <span class="nd">@_box_strain_warning_silenced</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_charge_density_potential</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">frozen_phonons_partial</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">args</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">"item"</span><span class="p">):</span>
             <span class="n">args</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
+        <span class="n">default_atoms</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"_default_atoms"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s2">"atoms"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">atoms</span> <span class="o">=</span> <span class="n">frozen_phonons_partial</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">"atoms"</span><span class="p">])</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="n">frozen_phonons_partial</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">"atoms"</span><span class="p">])</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">atoms</span> <span class="o">=</span> <span class="n">DummyFrozenPhonons</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"_default_atoms"</span><span class="p">))</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="n">DummyFrozenPhonons</span><span class="p">(</span><span class="n">default_atoms</span><span class="p">)</span>
 
         <span class="n">charge_density</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">"charge_density"</span><span class="p">]</span>
         <span class="n">potential</span> <span class="o">=</span> <span class="n">ChargeDensityPotential</span><span class="p">(</span>
@@ -1109,27 +1158,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_interpolate_slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-        <span class="n">slice_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span> <span class="o">+</span> <span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">)),)</span>
-
-        <span class="n">slice_box</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">,))</span>
-
-        <span class="n">slice_array</span> <span class="o">=</span> <span class="n">_interpolate_between_cells</span><span class="p">(</span>
-            <span class="n">array</span><span class="p">,</span> <span class="n">slice_shape</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">slice_box</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
-        <span class="p">)</span>
-
-        <span class="n">pixel_thickness</span> <span class="o">=</span> <span class="n">slice_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
-
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">slice_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="n">pixel_thickness</span><span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_integrate_slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-        <span class="n">dz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-        <span class="n">na</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">a</span> <span class="o">/</span> <span class="n">dz</span><span class="p">))</span>
-        <span class="n">nb</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">b</span> <span class="o">/</span> <span class="n">dz</span><span class="p">))</span>
-        <span class="n">dx</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nb</span> <span class="o">-</span> <span class="n">na</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">slice_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">na</span><span class="p">:</span><span class="n">nb</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">fft_interpolate</span><span class="p">(</span><span class="n">slice_array</span><span class="p">,</span> <span class="n">new_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="n">normalization</span><span class="o">=</span><span class="s2">"values"</span><span class="p">)</span>
-
+    <span class="c1"># The box it is given is this potential's own, not one the user gave.</span>
+    <span class="nd">@_box_strain_warning_silenced</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_ewald_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">ewald_parametrization</span> <span class="o">=</span> <span class="n">EwaldParametrization</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 

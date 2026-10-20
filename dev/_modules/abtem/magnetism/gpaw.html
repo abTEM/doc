@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -560,9 +558,17 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atoms</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rotation</span> <span class="k">as</span> <span class="n">R</span>  <span class="c1"># type: ignore</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.atoms</span><span class="w"> </span><span class="kn">import</span> <span class="n">plane_to_axes</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.atoms</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_box_repetitions</span><span class="p">,</span>
+    <span class="n">_box_strain_warning_silenced</span><span class="p">,</span>
+    <span class="n">_cell_in_plane_frame</span><span class="p">,</span>
+    <span class="n">_vector_field_to_plane</span><span class="p">,</span>
+    <span class="n">plane_to_axes</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.bloch.dynamical</span><span class="w"> </span><span class="kn">import</span> <span class="n">equal_slice_thicknesses</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">asnumpy</span><span class="p">,</span> <span class="n">get_array_module</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">fft_interpolate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.inelastic.phonons</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseFrozenPhonons</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.magnetism.iam</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">BaseMagneticField</span><span class="p">,</span>
@@ -572,8 +578,9 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.magnetism.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">bohr_magneton</span><span class="p">,</span> <span class="n">vacuum_permeability</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.charge_density</span><span class="w"> </span><span class="kn">import</span> <span class="n">curl_fourier</span><span class="p">,</span> <span class="n">integrate_gradient_fourier</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.gpaw</span><span class="w"> </span><span class="kn">import</span> <span class="n">GPAWPotential</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.iam</span><span class="w"> </span><span class="kn">import</span> <span class="n">PotentialArray</span><span class="p">,</span> <span class="n">_FieldBuilder</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.gpaw</span><span class="w"> </span><span class="kn">import</span> <span class="n">_GPAW_LOCK</span><span class="p">,</span> <span class="n">GPAWPotential</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.iam</span><span class="w"> </span><span class="kn">import</span> <span class="n">PotentialArray</span><span class="p">,</span> <span class="n">_default_box</span><span class="p">,</span> <span class="n">_FieldBuilder</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.slicing</span><span class="w"> </span><span class="kn">import</span> <span class="n">_integrate_planes</span><span class="p">,</span> <span class="n">is_number</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_non_periodic_magnetic_vector_potential</span><span class="p">():</span>
@@ -643,7 +650,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="k">def</span><span class="w"> </span><span class="nf">get_vector_potential_from_gpaw</span><span class="p">(</span><span class="n">calc</span><span class="p">,</span> <span class="n">gridrefinement</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">assume_colinear</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">assume_colinear</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Non-collinear calculations not supported."</span><span class="p">)</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="n">calc</span><span class="o">.</span><span class="n">get_all_electron_density</span><span class="p">(</span><span class="n">spin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gridrefinement</span><span class="o">=</span><span class="n">gridrefinement</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">_GPAW_LOCK</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">calc</span><span class="o">.</span><span class="n">get_all_electron_density</span><span class="p">(</span><span class="n">spin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gridrefinement</span><span class="o">=</span><span class="n">gridrefinement</span><span class="p">)</span>
     <span class="n">rho</span> <span class="o">=</span> <span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">A</span> <span class="o">=</span> <span class="n">calculate_magnetic_vector_potential</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">calc</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">A</span></div>
@@ -675,6 +683,13 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="n">_ROTATION_Y_INTO_Z</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s2">"xyz"</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
 
 
+<span class="c1">#: Relative difference of the aggregate x and y magnitudes below which</span>
+<span class="c1">#: `_auto_rotation_matrix_for_vector_field` treats them as equal. Round-off in</span>
+<span class="c1">#: a symmetric crystal's field is about 1e-5 (hcp Co: +2.3e-6 and -9.1e-6 for</span>
+<span class="c1">#: its hexagonal and orthogonal cells).</span>
+<span class="n">_AUTO_ROTATION_TIE_TOLERANCE</span> <span class="o">=</span> <span class="mf">1e-4</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_auto_rotation_matrix_for_vector_field</span><span class="p">(</span><span class="n">vector_field</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Rotation matrix that swaps whichever of the in-plane (x, y) components</span>
@@ -693,6 +708,12 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    simulation cell), so a continuous "optimal" blend of Ax and Ay has no</span>
 <span class="sd">    real-space interpretation as a magnetization direction -- it would just</span>
 <span class="sd">    fit whatever numerical asymmetry happens to be in the grid.</span>
+
+<span class="sd">    Aggregate magnitudes equal to within `_AUTO_ROTATION_TIE_TOLERANCE`</span>
+<span class="sd">    (relative) are a tie, which picks x. A crystal whose symmetry makes them</span>
+<span class="sd">    equal, such as a hexagonal magnet, would otherwise have the component</span>
+<span class="sd">    chosen by round-off, so that two cells of the same crystal (e.g. the</span>
+<span class="sd">    hexagonal and the orthogonal cell of hcp Co) rotated different ones.</span>
 <span class="sd">    """</span>
     <span class="n">Ax</span> <span class="o">=</span> <span class="n">vector_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">Ay</span> <span class="o">=</span> <span class="n">vector_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -700,7 +721,9 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">Sxx</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Ax</span> <span class="o">*</span> <span class="n">Ax</span><span class="p">))</span>
     <span class="n">Syy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Ay</span> <span class="o">*</span> <span class="n">Ay</span><span class="p">))</span>
 
-    <span class="k">return</span> <span class="n">_ROTATION_X_INTO_Z</span> <span class="k">if</span> <span class="n">Sxx</span> <span class="o">&gt;=</span> <span class="n">Syy</span> <span class="k">else</span> <span class="n">_ROTATION_Y_INTO_Z</span>
+    <span class="k">if</span> <span class="n">Syy</span> <span class="o">-</span> <span class="n">Sxx</span> <span class="o">&lt;=</span> <span class="n">_AUTO_ROTATION_TIE_TOLERANCE</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">Sxx</span><span class="p">,</span> <span class="n">Syy</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_ROTATION_X_INTO_Z</span>
+    <span class="k">return</span> <span class="n">_ROTATION_Y_INTO_Z</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_check_unsupported_ensemble_params</span><span class="p">(</span><span class="n">frozen_phonons</span><span class="p">,</span> <span class="n">repetitions</span><span class="p">):</span>
@@ -718,23 +741,231 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_real_space_slicing</span><span class="p">(</span>
+    <span class="n">slice_thickness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">num_planes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">depth</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The slice thicknesses of a real-space projection and the number of z plane</span>
+<span class="sd">    spacings of the density in each slice, which add up to `num_planes`.</span>
+
+<span class="sd">    A single thickness is divided into slices of whole planes as evenly as the</span>
+<span class="sd">    planes allow. A sequence of thicknesses must put every slice boundary on a</span>
+<span class="sd">    plane, as the thicknesses returned here do, so that a builder made with the</span>
+<span class="sd">    `slice_thickness` of another slices the same way.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">is_number</span><span class="p">(</span><span class="n">slice_thickness</span><span class="p">):</span>
+        <span class="n">thicknesses</span><span class="p">,</span> <span class="n">planes</span> <span class="o">=</span> <span class="n">equal_slice_thicknesses</span><span class="p">(</span>
+            <span class="n">num_planes</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">slice_thickness</span><span class="p">),</span> <span class="n">depth</span><span class="o">=</span><span class="n">depth</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">thicknesses</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">planes</span><span class="p">)</span>
+
+    <span class="n">dz</span> <span class="o">=</span> <span class="n">depth</span> <span class="o">/</span> <span class="n">num_planes</span>
+    <span class="n">thicknesses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">slice_thickness</span><span class="p">])</span>
+    <span class="n">planes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">thicknesses</span> <span class="o">/</span> <span class="n">dz</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">planes</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">1</span>
+        <span class="ow">or</span> <span class="n">planes</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">!=</span> <span class="n">num_planes</span>
+        <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">planes</span> <span class="o">*</span> <span class="n">dz</span><span class="p">,</span> <span class="n">thicknesses</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">"The slice thicknesses of the real-space projection must be whole "</span>
+            <span class="sa">f</span><span class="s2">"numbers of the z grid spacing, </span><span class="si">{</span><span class="n">dz</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2"> Å, that add up to the depth, "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">depth</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2"> Å; the nearest are </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dz</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">planes</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">dz</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">planes</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">planes</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_fourier_slice_integrals</span><span class="p">(</span>
+    <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">slice_limits</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">depth</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The integrals of `array` along its last axis between each pair of</span>
+<span class="sd">    `slice_limits` [Å], stacked along a new first axis.</span>
+
+<span class="sd">    The last axis holds evenly spaced samples of a field that is periodic over</span>
+<span class="sd">    `depth`, the first at height 0. The field between the samples is their</span>
+<span class="sd">    band-limited (trigonometric) interpolant, whose integral over a slice is exact</span>
+<span class="sd">    in Fourier space for any slice limits. The Nyquist term of an even number of</span>
+<span class="sd">    samples is taken as a cosine, as for a real field.</span>
+<span class="sd">    """</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">depth</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">limits</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">limits</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">slice_limits</span><span class="p">))</span>
+
+    <span class="c1"># The field is real, so the half spectrum of `rfft` holds it: the term of each</span>
+    <span class="c1"># positive frequency stands for itself and its conjugate at the negative one,</span>
+    <span class="c1"># twice its real part. The zero frequency and the Nyquist term of an even</span>
+    <span class="c1"># number of samples stand for themselves.</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="n">weights</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span> <span class="o">-</span> <span class="n">a</span>
+    <span class="n">weights</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">*</span> <span class="n">a</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="n">weights</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">*=</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">q_nyquist</span> <span class="o">=</span> <span class="n">q</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">weights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">q_nyquist</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">q_nyquist</span> <span class="o">*</span> <span class="n">a</span><span class="p">))</span> <span class="o">/</span> <span class="n">q_nyquist</span>
+    <span class="n">weights</span> <span class="o">/=</span> <span class="n">n</span>
+
+    <span class="c1"># One component at a time, so that only one of their spectra is held at once.</span>
+    <span class="n">integrals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">),))</span>
+    <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndindex</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]):</span>
+        <span class="n">integrals</span><span class="p">[</span><span class="n">component</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfft</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="n">component</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">@</span> <span class="n">weights</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">integrals</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_skewed</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether `cell` is not orthogonal as `orthogonalize_cell` sees it, which</span>
+<span class="sd">    zeroes components below 1e-6 Å (`_cell_in_plane_frame`). `_supercell_of_box`</span>
+<span class="sd">    maps the field from that same frame, so the two agree on every cell."""</span>
+    <span class="n">cell</span> <span class="o">=</span> <span class="n">_cell_in_plane_frame</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="s2">"xy"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)]</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_supercell_of_box</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The lattice vectors of the supercell of `cell` that fills `box` (an integer</span>
+<span class="sd">    matrix, rows along x, y and z, in units of the lattice vectors of `cell`), and</span>
+<span class="sd">    the rotation that `orthogonalize_cell` gives the vectors when it fits that</span>
+<span class="sd">    supercell into the box (acting on row vectors).</span>
+
+<span class="sd">    `orthogonalize_cell` keeps the fractional coordinates of the supercell: a point</span>
+<span class="sd">    at r goes to r @ A with A the map from the supercell onto the box, which is a</span>
+<span class="sd">    rotation times a strain. A vector field placed the same way turns its vectors</span>
+<span class="sd">    by the rotation; a strain has no single rule for the vectors and leaves them.</span>
+<span class="sd">    """</span>
+    <span class="n">cell</span> <span class="o">=</span> <span class="n">_cell_in_plane_frame</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="s2">"xy"</span><span class="p">)</span>
+    <span class="n">vectors</span> <span class="o">=</span> <span class="n">_box_repetitions</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span>
+    <span class="n">transform</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">vectors</span> <span class="o">@</span> <span class="n">cell</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">box</span><span class="p">))</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">vt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">transform</span><span class="p">)</span>
+    <span class="n">rotation</span> <span class="o">=</span> <span class="n">u</span> <span class="o">@</span> <span class="n">vt</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">"The cell of the calculator is left-handed, so its box mirrors the "</span>
+            <span class="s2">"field, which a magnetic field does not follow as a vector field does."</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">vectors</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">rotation</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_box_grid</span><span class="p">(</span><span class="n">vectors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The grid of the box filled by the supercell with lattice vectors `vectors` that</span>
+<span class="sd">    holds every Fourier component of a field sampled on a grid of `shape` over the</span>
+<span class="sd">    cell, and where each component goes on it.</span>
+
+<span class="sd">    The component of the cell's frequency m (in units of its reciprocal lattice</span>
+<span class="sd">    vectors) is the component of frequency `vectors @ m` of the box. A box axis</span>
+<span class="sd">    made of one lattice vector that no other box axis uses takes the frequencies</span>
+<span class="sd">    of that axis alone, so it keeps their number of samples per period. The other</span>
+<span class="sd">    axes mix frequencies of several axes of the cell; the Nyquist component of an</span>
+<span class="sd">    even number of samples along these is split into halves at +N/2 and -N/2,</span>
+<span class="sd">    which is the same real field, and the box axis holds every frequency the mix</span>
+<span class="sd">    gives, so that no two components share a frequency of the box.</span>
+
+<span class="sd">    A smaller grid can keep the components apart too (for a bcc or fcc primitive</span>
+<span class="sd">    cell in its cubic box, one more sample per axis than the cell has), but only</span>
+<span class="sd">    by folding frequencies past its Nyquist frequency: its samples are those of the</span>
+<span class="sd">    field, yet the band-limited interpolant between them, which the slice</span>
+<span class="sd">    integrals of the `fft` projection and the interpolation to `gpts` both use, is</span>
+<span class="sd">    not. Holding every frequency of the mix keeps that interpolant the field.</span>
+
+<span class="sd">    Returns the shape of the box grid and, for each axis of the cell, the indices</span>
+<span class="sd">    of the FFT output taken, their frequencies and their weights.</span>
+<span class="sd">    """</span>
+    <span class="n">vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vectors</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">alone</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span>
+    <span class="n">box_shape</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">used</span><span class="p">,)</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">vectors</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">used</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">vectors</span><span class="p">[:,</span> <span class="n">used</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">alone</span><span class="p">[</span><span class="n">used</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">box_shape</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">vectors</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">used</span><span class="p">[</span><span class="mi">0</span><span class="p">]]))</span> <span class="o">*</span> <span class="n">shape</span><span class="p">[</span><span class="n">used</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+    <span class="n">indices</span><span class="p">,</span> <span class="n">frequencies</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">shape</span><span class="p">):</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">frequency</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">alone</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="ow">and</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">frequency</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frequency</span><span class="p">,</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+            <span class="n">weight</span><span class="p">[</span><span class="n">n</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span>
+        <span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">frequencies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frequency</span><span class="p">)</span>
+        <span class="n">weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">box_shape</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">box_shape</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span>
+                <span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">vectors</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">j</span><span class="p">]))</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ptp</span><span class="p">(</span><span class="n">frequencies</span><span class="p">[</span><span class="n">j</span><span class="p">]))</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">box_shape</span><span class="p">),</span> <span class="n">indices</span><span class="p">,</span> <span class="n">frequencies</span><span class="p">,</span> <span class="n">weights</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_map_to_box_grid</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">vectors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The field `array` (components first, then the three axes of a grid over the</span>
+<span class="sd">    cell along its lattice vectors) on the grid of the box filled by the supercell</span>
+<span class="sd">    with lattice vectors `vectors`, as `_box_grid` lays it out.</span>
+
+<span class="sd">    The field is placed in the fractional coordinates of the supercell, as</span>
+<span class="sd">    `orthogonalize_cell` places atoms. Each Fourier component moves to its</span>
+<span class="sd">    frequency on the box without interpolation, so the band-limited field is the</span>
+<span class="sd">    same at every point.</span>
+<span class="sd">    """</span>
+    <span class="n">grid_shape</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span>
+    <span class="n">box_shape</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">frequencies</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">_box_grid</span><span class="p">(</span><span class="n">vectors</span><span class="p">,</span> <span class="n">grid_shape</span><span class="p">)</span>
+
+    <span class="c1"># The spectrum of the cell's grid is as large as the field; the box's, built</span>
+    <span class="c1"># below, is the largest array here.</span>
+    <span class="n">spectrum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftn</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))[(</span><span class="o">...</span><span class="p">,)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="o">*</span><span class="n">indices</span><span class="p">)]</span>
+    <span class="n">spectrum</span> <span class="o">*=</span> <span class="p">(</span>
+        <span class="n">weights</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">weights</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">weights</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="n">target</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">vectors</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">frequencies</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+            <span class="o">+</span> <span class="n">vectors</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">frequencies</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">]</span>
+            <span class="o">+</span> <span class="n">vectors</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">frequencies</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="o">%</span> <span class="n">box_shape</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># One component at a time, so that only one complex spectrum of the box, the</span>
+    <span class="c1"># largest array here, is held at once.</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">box_shape</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">grid_shape</span><span class="p">)</span>
+    <span class="n">mapped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">box_shape</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndindex</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]):</span>
+        <span class="n">box_spectrum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">box_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+        <span class="n">box_spectrum</span><span class="p">[</span><span class="n">target</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectrum</span><span class="p">[</span><span class="n">component</span><span class="p">]</span>
+        <span class="n">box_spectrum</span> <span class="o">*=</span> <span class="n">scale</span>
+        <span class="n">mapped</span><span class="p">[</span><span class="n">component</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftn</span><span class="p">(</span><span class="n">box_spectrum</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
+    <span class="k">return</span> <span class="n">mapped</span>
+
+
 <div class="viewcode-block" id="GPAW">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.magnetism.gpaw.html#abtem.magnetism.gpaw.GPAW">[docs]</a>
 <span class="nd">@runtime_checkable</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">GPAW</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span>
-        <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span> <span class="o">...</span>
 
 <div class="viewcode-block" id="GPAW.get_number_of_grid_points">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.magnetism.gpaw.html#abtem.magnetism.gpaw.GPAW.get_number_of_grid_points">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_number_of_grid_points</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="o">...</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_number_of_grid_points</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> <span class="o">...</span></div>
 </div>
 
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_GPAWMagnetics</span><span class="p">(</span><span class="n">_FieldBuilder</span><span class="p">):</span>
+    <span class="n">_supports_box_and_origin</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1"># The slices computed from the calculator on first use, kept for the later</span>
+    <span class="c1"># calls of `generate_slices`; incidental state, never identity.</span>
+    <span class="n">_eq_exclude</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_slices"</span><span class="p">,)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">calculators</span><span class="p">:</span> <span class="n">GPAW</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">GPAW</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
@@ -772,23 +1003,53 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_rotate_field</span> <span class="o">=</span> <span class="n">rotate_field</span>
 
-        <span class="k">if</span> <span class="n">projection</span> <span class="o">==</span> <span class="s2">"real_space"</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">slice_thickness</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
-            <span class="n">n_z</span> <span class="o">=</span> <span class="n">calculators</span><span class="o">.</span><span class="n">get_number_of_grid_points</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">gridrefinement</span>
-
-            <span class="n">slice_thickness</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">slice_thickness</span><span class="p">)</span>
-
-            <span class="n">axes</span> <span class="o">=</span> <span class="n">plane_to_axes</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span>
-            <span class="n">depth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">cell</span><span class="p">)[</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
-
-            <span class="n">slice_thickness</span><span class="p">,</span> <span class="n">n_per_slice</span> <span class="o">=</span> <span class="n">equal_slice_thicknesses</span><span class="p">(</span>
-                <span class="n">n_z</span><span class="p">,</span> <span class="n">slice_thickness</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="n">depth</span>
+        <span class="k">if</span> <span class="n">projection</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"fft"</span><span class="p">,</span> <span class="s2">"real_space"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"projection must be 'fft' or 'real_space', got </span><span class="si">{</span><span class="n">projection</span><span class="si">!r}</span><span class="s2">"</span>
             <span class="p">)</span>
-        <span class="k">elif</span> <span class="n">projection</span> <span class="o">==</span> <span class="s2">"real_space"</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-                <span class="s2">"Non-uniform slice thicknesses not supported for real-space projection."</span>
+
+        <span class="n">grid_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">gridrefinement</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">calculators</span><span class="o">.</span><span class="n">get_number_of_grid_points</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="c1"># The grid of the calculator runs along the lattice vectors. For a skewed</span>
+        <span class="c1"># cell `generate_slices` moves the field onto a grid of the default box,</span>
+        <span class="c1"># whose lattice vectors in units of the cell's are `_box_vectors`.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_box_vectors</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_box_rotation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">_is_skewed</span><span class="p">(</span><span class="n">cell</span><span class="p">):</span>
+            <span class="c1"># Raises the RuntimeError of a cell that cannot be rotated to `plane`.</span>
+            <span class="n">default_box</span> <span class="o">=</span> <span class="n">_default_box</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">plane</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">plane</span> <span class="o">!=</span> <span class="s2">"xy"</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"plane=</span><span class="si">{</span><span class="n">plane</span><span class="si">!r}</span><span class="s2"> is not supported for the magnetic field of a "</span>
+                    <span class="s2">"non-orthogonal cell, whose vectors would have to be rotated "</span>
+                    <span class="s2">"with it; use plane='xy', or a calculation of an orthogonal cell."</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_box_vectors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_box_rotation</span> <span class="o">=</span> <span class="n">_supercell_of_box</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">default_box</span><span class="p">)</span>
+            <span class="n">grid_shape</span> <span class="o">=</span> <span class="n">_box_grid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_box_vectors</span><span class="p">,</span> <span class="n">grid_shape</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">depth</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">default_box</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">depth</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">cell</span><span class="p">)[</span><span class="n">plane_to_axes</span><span class="p">(</span><span class="n">plane</span><span class="p">)[</span><span class="mi">2</span><span class="p">]])</span>
+
+        <span class="c1"># The number of z plane spacings of the density in each real-space slice.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_planes_per_slice</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">projection</span> <span class="o">==</span> <span class="s2">"real_space"</span><span class="p">:</span>
+            <span class="c1"># The slices are stacked along the third axis of `plane`, which is the</span>
+            <span class="c1"># last axis of the field once `generate_slices` has moved its axes.</span>
+            <span class="n">slice_thickness</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_planes_per_slice</span> <span class="o">=</span> <span class="n">_real_space_slicing</span><span class="p">(</span>
+                <span class="n">slice_thickness</span><span class="p">,</span>
+                <span class="n">num_planes</span><span class="o">=</span><span class="n">grid_shape</span><span class="p">[</span><span class="n">plane_to_axes</span><span class="p">(</span><span class="n">plane</span><span class="p">)[</span><span class="mi">2</span><span class="p">]],</span>
+                <span class="n">depth</span><span class="o">=</span><span class="n">depth</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_projection</span> <span class="o">=</span> <span class="n">projection</span>
+
+        <span class="c1"># The slices of the whole field, (slice, component, x, y) on the host in</span>
+        <span class="c1"># the configured precision, computed from the calculator on the first call</span>
+        <span class="c1"># of `generate_slices`.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_slices</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_quantity</span> <span class="o">=</span> <span class="n">quantity</span>
 
@@ -819,10 +1080,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_plane</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plane</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">generate_slices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first_slice</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">last_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_slices</span>
-
+    <span class="k">def</span><span class="w"> </span><span class="nf">_field</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The field on the host, its components and axes in the frame of `plane`</span>
+<span class="sd">        and on a grid over the box, the slicing axis last."""</span>
         <span class="n">vector_potential</span> <span class="o">=</span> <span class="n">get_vector_potential_from_gpaw</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_calculators</span><span class="p">,</span> <span class="n">gridrefinement</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gridrefinement</span>
         <span class="p">)</span>
@@ -834,13 +1094,21 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown quantity: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_quantity</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_box_rotation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_box_rotation</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-12</span>
+        <span class="p">):</span>
+            <span class="c1"># `_apply_rotation_matrix` acts on column vectors.</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">_apply_rotation_matrix</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_box_rotation</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">vector_potential</span> <span class="o">=</span> <span class="n">_apply_rotation_matrix</span><span class="p">(</span>
+                <span class="n">vector_potential</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_box_rotation</span><span class="o">.</span><span class="n">T</span>
+            <span class="p">)</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plane</span> <span class="o">!=</span> <span class="s2">"xy"</span><span class="p">:</span>
-            <span class="n">axes</span> <span class="o">=</span> <span class="n">plane_to_axes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plane</span><span class="p">)</span>
-            <span class="n">moved_axes</span> <span class="o">=</span> <span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">moved_axes</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))[</span><span class="n">axes</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
-            <span class="n">vector_potential</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">vector_potential</span><span class="p">,</span> <span class="n">moved_axes</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))[</span>
-                <span class="n">axes</span><span class="p">,</span> <span class="o">...</span>
-            <span class="p">]</span>
+            <span class="c1"># The fields are rotated with the atoms: their grids are moved and</span>
+            <span class="c1"># their components rotated by the same proper rotation, which reverses</span>
+            <span class="c1"># one axis and its component for the planes that need it.</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">_vector_field_to_plane</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plane</span><span class="p">)</span>
+            <span class="n">vector_potential</span> <span class="o">=</span> <span class="n">_vector_field_to_plane</span><span class="p">(</span><span class="n">vector_potential</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plane</span><span class="p">)</span>
 
         <span class="n">rotate_field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotate_field</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rotate_field</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">rotate_field</span> <span class="o">==</span> <span class="n">_AUTO_ROTATE_FIELD</span><span class="p">:</span>
@@ -849,46 +1117,77 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">elif</span> <span class="n">rotate_field</span><span class="p">:</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">rotate_vector_field</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">rotate_field</span><span class="p">)</span>
 
-        <span class="n">slice_thicknesses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span>
-        <span class="n">slice_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid_gpts</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_box_vectors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">_map_to_box_grid</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_box_vectors</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">array</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_project</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        The field integrated through each slice, (slice, component, x, y) on the</span>
+<span class="sd">        host, in field units times Å.</span>
+
+<span class="sd">        The real-space projection takes plane k, the sample at z = k dz, as the</span>
+<span class="sd">        field from k dz - dz / 2 to k dz + dz / 2, and integrates each slice over</span>
+<span class="sd">        the planes it covers. A slice boundary lies on a plane, which is split</span>
+<span class="sd">        between the slices on either side (the trapezoidal rule), so the integral</span>
+<span class="sd">        of a slice is centred on the slice; the last slice takes half of plane 0,</span>
+<span class="sd">        as the field is periodic along z. The fft projection integrates the</span>
+<span class="sd">        band-limited field between the limits of each slice in Fourier space, for</span>
+<span class="sd">        any slice thicknesses.</span>
+<span class="sd">        """</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_field</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projection</span> <span class="o">==</span> <span class="s2">"real_space"</span><span class="p">:</span>
-            <span class="n">depth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculators</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
-            <span class="n">pixels_per_slice</span> <span class="o">=</span> <span class="p">(</span><span class="n">slice_thicknesses</span> <span class="o">/</span> <span class="n">depth</span> <span class="o">*</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-
-            <span class="n">dz</span> <span class="o">=</span> <span class="n">slice_thicknesses</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-
-            <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">slice_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">)):</span>
-                <span class="n">slice_array</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">start</span> <span class="p">:</span> <span class="n">start</span> <span class="o">+</span> <span class="n">pixels_per_slice</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dz</span>
+            <span class="n">planes_per_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_planes_per_slice</span>
+            <span class="k">assert</span> <span class="n">planes_per_slice</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">planes_per_slice</span><span class="p">)</span> <span class="o">!=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"The slices span </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">planes_per_slice</span><span class="p">)</span><span class="si">}</span><span class="s2"> z planes, but the "</span>
+                    <span class="sa">f</span><span class="s2">"calculator's density has </span><span class="si">{</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">."</span>
                 <span class="p">)</span>
-                <span class="n">start</span> <span class="o">+=</span> <span class="n">pixels_per_slice</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">((</span><span class="mi">0</span><span class="p">,)</span> <span class="o">+</span> <span class="n">planes_per_slice</span><span class="p">)</span>
+            <span class="n">dz</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span> <span class="o">/</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">_integrate_planes</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span> <span class="o">*</span> <span class="n">dz</span>
+                    <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bounds</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
 
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid_gpts</span> <span class="o">!=</span> <span class="n">slice_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-                    <span class="n">slice_array</span> <span class="o">=</span> <span class="n">fft_interpolate</span><span class="p">(</span><span class="n">slice_array</span><span class="p">,</span> <span class="n">slice_shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_fourier_slice_integrals</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice_limits</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 
-                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_object</span><span class="p">(</span>
-                    <span class="n">slice_array</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span>
-                    <span class="n">extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span>
-                    <span class="n">slice_thickness</span><span class="o">=</span><span class="n">slice_thicknesses</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_slices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first_slice</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">last_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_slices</span>
 
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">shape</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_slices</span><span class="p">,)</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">fft_interpolate</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+        <span class="c1"># The field is computed from the calculator once and its slices kept, so</span>
+        <span class="c1"># that building or chunking the slices range by range does not repeat it.</span>
+        <span class="c1"># Kept in the configured precision, the precision of the slices handed out,</span>
+        <span class="c1"># rather than the float64 of the calculator's grid; computed again if the</span>
+        <span class="c1"># configured precision has changed since.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slices</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slices</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">get_dtype</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_slices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_project</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">(),</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">slice_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">)):</span>
-                <span class="n">slice_array</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">slice_idx</span><span class="p">]</span>
+        <span class="n">slice_thicknesses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span>
+        <span class="n">slice_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid_gpts</span>
+        <span class="c1"># The slices are computed on the host; each is moved to `device`.</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid_gpts</span> <span class="o">!=</span> <span class="n">slice_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-                    <span class="n">slice_array</span> <span class="o">=</span> <span class="n">fft_interpolate</span><span class="p">(</span><span class="n">slice_array</span><span class="p">,</span> <span class="n">slice_shape</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">slice_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">):</span>
+            <span class="n">slice_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slices</span><span class="p">[</span><span class="n">slice_idx</span><span class="p">]</span>
 
-                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_object</span><span class="p">(</span>
-                    <span class="n">slice_array</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span>
-                    <span class="n">extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span>
-                    <span class="n">slice_thickness</span><span class="o">=</span><span class="n">slice_thicknesses</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid_gpts</span> <span class="o">!=</span> <span class="n">slice_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="n">slice_array</span> <span class="o">=</span> <span class="n">fft_interpolate</span><span class="p">(</span><span class="n">slice_array</span><span class="p">,</span> <span class="n">slice_shape</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Not a view of the kept slices, which a caller could write into.</span>
+                <span class="n">slice_array</span> <span class="o">=</span> <span class="n">slice_array</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_object</span><span class="p">(</span>
+                <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">slice_array</span><span class="p">[</span><span class="kc">None</span><span class="p">]),</span>
+                <span class="n">extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span>
+                <span class="n">slice_thickness</span><span class="o">=</span><span class="n">slice_thicknesses</span><span class="p">[</span><span class="n">slice_idx</span><span class="p">],</span>
+            <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1100,13 +1399,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">panels</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">project</span><span class="p">(),</span> <span class="s2">"$V$"</span><span class="p">,</span> <span class="s2">"$Å^{-3}$"</span><span class="p">),</span>
-            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vector_potential</span><span class="o">.</span><span class="n">project</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"$A_x$"</span><span class="p">,</span> <span class="s2">"ÅT"</span><span class="p">),</span>
-            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vector_potential</span><span class="o">.</span><span class="n">project</span><span class="p">()[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">"$A_z$"</span><span class="p">,</span> <span class="s2">"ÅT"</span><span class="p">),</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vector_potential</span><span class="o">.</span><span class="n">project</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"$A_x$"</span><span class="p">,</span> <span class="s2">"Å²T"</span><span class="p">),</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vector_potential</span><span class="o">.</span><span class="n">project</span><span class="p">()[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">"$A_z$"</span><span class="p">,</span> <span class="s2">"Å²T"</span><span class="p">),</span>
         <span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">magnetic_field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">panels</span> <span class="o">+=</span> <span class="p">[</span>
-                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">magnetic_field</span><span class="o">.</span><span class="n">project</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"$B_x$"</span><span class="p">,</span> <span class="s2">"T"</span><span class="p">),</span>
-                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">magnetic_field</span><span class="o">.</span><span class="n">project</span><span class="p">()[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">"$B_z$"</span><span class="p">,</span> <span class="s2">"T"</span><span class="p">),</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">magnetic_field</span><span class="o">.</span><span class="n">project</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"$B_x$"</span><span class="p">,</span> <span class="s2">"ÅT"</span><span class="p">),</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">magnetic_field</span><span class="o">.</span><span class="n">project</span><span class="p">()[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">"$B_z$"</span><span class="p">,</span> <span class="s2">"ÅT"</span><span class="p">),</span>
             <span class="p">]</span>
 
         <span class="c1"># Create the figure with pyplot's interactive auto-display off, then</span>
@@ -1127,7 +1426,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="p">)</span>
 
             <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">panels</span><span class="p">):</span>
-                <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">tile</span><span class="p">)</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+                <span class="n">array</span> <span class="o">=</span> <span class="n">asnumpy</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">tile</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">1e-5</span><span class="p">:</span>
                     <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mf">1e-5</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -1209,6 +1508,9 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Forwarded to `GPAWVectorPotential`/`GPAWMagneticField`. Defaults to</span>
 <span class="sd">        `"auto"`: automatically swap the larger-magnitude in-plane</span>
 <span class="sd">        component into z (see `_auto_rotation_matrix_for_vector_field`).</span>
+<span class="sd">        In-plane magnitudes that agree to within a relative 1e-4 are a tie,</span>
+<span class="sd">        which picks x, so that the choice for a crystal whose symmetry makes</span>
+<span class="sd">        them equal (such as a hexagonal magnet) is not decided by round-off.</span>
 <span class="sd">    include_magnetic_field : bool</span>
 <span class="sd">        If True, also build the magnetic field `B` (not used by</span>
 <span class="sd">        `combined_potential`, only for inspection/visualization). Roughly</span>
@@ -1268,21 +1570,10 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">if</span> <span class="ow">not</span> <span class="n">lazy</span><span class="p">:</span>
         <span class="n">potential</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 
-    <span class="n">vector_potential</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">GPAWVectorPotential</span><span class="p">(</span>
-            <span class="n">magnetic_calculator</span><span class="p">,</span>
-            <span class="n">rotate_field</span><span class="o">=</span><span class="n">rotate_field</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">shared</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">field_kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="o">.</span><span class="n">build</span><span class="p">()</span>
-        <span class="o">.</span><span class="n">compute</span><span class="p">()</span>
-    <span class="p">)</span>
-
-    <span class="n">magnetic_field</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="n">include_magnetic_field</span><span class="p">:</span>
-        <span class="n">magnetic_field</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">GPAWMagneticField</span><span class="p">(</span>
+    <span class="c1"># A default box that strains the atoms was reported by the potential above.</span>
+    <span class="k">with</span> <span class="n">_box_strain_warning_silenced</span><span class="p">():</span>
+        <span class="n">vector_potential</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">GPAWVectorPotential</span><span class="p">(</span>
                 <span class="n">magnetic_calculator</span><span class="p">,</span>
                 <span class="n">rotate_field</span><span class="o">=</span><span class="n">rotate_field</span><span class="p">,</span>
                 <span class="o">**</span><span class="n">shared</span><span class="p">,</span>
@@ -1291,6 +1582,19 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="o">.</span><span class="n">build</span><span class="p">()</span>
             <span class="o">.</span><span class="n">compute</span><span class="p">()</span>
         <span class="p">)</span>
+
+        <span class="n">magnetic_field</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">include_magnetic_field</span><span class="p">:</span>
+            <span class="n">magnetic_field</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">GPAWMagneticField</span><span class="p">(</span>
+                    <span class="n">magnetic_calculator</span><span class="p">,</span>
+                    <span class="n">rotate_field</span><span class="o">=</span><span class="n">rotate_field</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">shared</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">field_kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+            <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">GPAWMagneticFields</span><span class="p">(</span>
         <span class="n">potential</span><span class="o">=</span><span class="n">potential</span><span class="p">,</span>

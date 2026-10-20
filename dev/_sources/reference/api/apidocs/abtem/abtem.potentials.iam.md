@@ -338,6 +338,15 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 
 ````
 
+````{py:method} match_grid(...)
+:canonical: abtem.potentials.iam.CrystalPotential.match_grid
+
+```{autodoc2-docstring} abtem.potentials.iam.CrystalPotential.match_grid
+:parser: rst
+```
+
+````
+
 ````{py:property} num_configurations
 :canonical: abtem.potentials.iam.CrystalPotential.num_configurations
 

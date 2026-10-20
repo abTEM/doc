@@ -36,6 +36,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`RadialSensitivity <abtem.detectors.RadialSensitivity>`
+  - ```{autodoc2-docstring} abtem.detectors.RadialSensitivity
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`SegmentedDetector <abtem.detectors.SegmentedDetector>`
   - ```{autodoc2-docstring} abtem.detectors.SegmentedDetector
     :parser: rst
@@ -69,6 +74,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`validate_radial_sensitivity <abtem.detectors.validate_radial_sensitivity>`
+  - ```{autodoc2-docstring} abtem.detectors.validate_radial_sensitivity
+    :parser: rst
+    :summary:
+    ```
 ````
 
 ### API
@@ -89,15 +99,6 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 :parser: rst
 ```
 
-````{py:method} angular_limits(...) -> tuple[float, float]
-:canonical: abtem.detectors.AnnularDetector.angular_limits
-
-```{autodoc2-docstring} abtem.detectors.AnnularDetector.angular_limits
-:parser: rst
-```
-
-````
-
 ````{py:property} azimuthal_sampling
 :canonical: abtem.detectors.AnnularDetector.azimuthal_sampling
 :type: float
@@ -113,7 +114,7 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 
 ````
 
-````{py:method} get_detector_region(...)
+````{py:method} get_detector_region(...) -> abtem.measurements.DiffractionPatterns
 :canonical: abtem.detectors.AnnularDetector.get_detector_region
 
 ```{autodoc2-docstring} abtem.detectors.AnnularDetector.get_detector_region
@@ -139,16 +140,6 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 
 ````{py:property} nbins_radial
 :canonical: abtem.detectors.AnnularDetector.nbins_radial
-
-````
-
-````{py:property} offset
-:canonical: abtem.detectors.AnnularDetector.offset
-:type: tuple[float, float]
-
-```{autodoc2-docstring} abtem.detectors.AnnularDetector.offset
-:parser: rst
-```
 
 ````
 
@@ -248,11 +239,6 @@ Bases: {py:obj}`abtem.detectors._AbstractRadialDetector`
 
 ````
 
-````{py:method} detect(...) -> abtem.measurements.PolarMeasurements
-:canonical: abtem.detectors.FlexibleAnnularDetector.detect
-
-````
-
 ````{py:property} nbins_azimuthal
 :canonical: abtem.detectors.FlexibleAnnularDetector.nbins_azimuthal
 
@@ -306,6 +292,16 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 
 ````
 
+````{py:property} components
+:canonical: abtem.detectors.PixelatedDetector.components
+:type: typing.Optional[str | typing.Sequence[str]]
+
+```{autodoc2-docstring} abtem.detectors.PixelatedDetector.components
+:parser: rst
+```
+
+````
+
 ````{py:method} detect(...) -> abtem.measurements.DiffractionPatterns | abtem.measurements.Images
 :canonical: abtem.detectors.PixelatedDetector.detect
 
@@ -335,11 +331,77 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 
 ````
 
+````{py:property} reduction_dtype
+:canonical: abtem.detectors.PixelatedDetector.reduction_dtype
+:type: typing.Optional[numpy.dtype]
+
+```{autodoc2-docstring} abtem.detectors.PixelatedDetector.reduction_dtype
+:parser: rst
+```
+
+````
+
 ````{py:property} resample
 :canonical: abtem.detectors.PixelatedDetector.resample
 :type: str | bool | tuple[float, float]
 
 ```{autodoc2-docstring} abtem.detectors.PixelatedDetector.resample
+:parser: rst
+```
+
+````
+
+````{py:property} unbiased
+:canonical: abtem.detectors.PixelatedDetector.unbiased
+:type: bool
+
+```{autodoc2-docstring} abtem.detectors.PixelatedDetector.unbiased
+:parser: rst
+```
+
+````
+
+`````
+
+`````{py:class} RadialSensitivity(...)
+:canonical: abtem.detectors.RadialSensitivity
+
+```{autodoc2-docstring} abtem.detectors.RadialSensitivity
+:parser: rst
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.detectors.RadialSensitivity.__init__
+:parser: rst
+```
+
+````{py:property} angles
+:canonical: abtem.detectors.RadialSensitivity.angles
+:type: typing.Optional[numpy.ndarray]
+
+```{autodoc2-docstring} abtem.detectors.RadialSensitivity.angles
+:parser: rst
+```
+
+````
+
+````{py:property} func
+:canonical: abtem.detectors.RadialSensitivity.func
+:type: typing.Optional[typing.Callable]
+
+```{autodoc2-docstring} abtem.detectors.RadialSensitivity.func
+:parser: rst
+```
+
+````
+
+````{py:property} values
+:canonical: abtem.detectors.RadialSensitivity.values
+:type: typing.Optional[numpy.ndarray]
+
+```{autodoc2-docstring} abtem.detectors.RadialSensitivity.values
 :parser: rst
 ```
 
@@ -626,10 +688,40 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 
 ````
 
+````{py:property} average_frozen_phonons
+:canonical: abtem.detectors.WavesDetector.average_frozen_phonons
+:type: bool
+
+```{autodoc2-docstring} abtem.detectors.WavesDetector.average_frozen_phonons
+:parser: rst
+```
+
+````
+
 ````{py:method} detect(...) -> abtem.waves.Waves
 :canonical: abtem.detectors.WavesDetector.detect
 
 ```{autodoc2-docstring} abtem.detectors.WavesDetector.detect
+:parser: rst
+```
+
+````
+
+````{py:property} gpts
+:canonical: abtem.detectors.WavesDetector.gpts
+:type: typing.Optional[tuple[int, int]]
+
+```{autodoc2-docstring} abtem.detectors.WavesDetector.gpts
+:parser: rst
+```
+
+````
+
+````{py:property} reduction_dtype
+:canonical: abtem.detectors.WavesDetector.reduction_dtype
+:type: typing.Optional[numpy.dtype]
+
+```{autodoc2-docstring} abtem.detectors.WavesDetector.reduction_dtype
 :parser: rst
 ```
 
@@ -641,6 +733,14 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 :canonical: abtem.detectors.validate_detectors
 
 ```{autodoc2-docstring} abtem.detectors.validate_detectors
+:parser: rst
+```
+````
+
+````{py:function} validate_radial_sensitivity(...) -> typing.Optional[abtem.detectors.RadialSensitivity]
+:canonical: abtem.detectors.validate_radial_sensitivity
+
+```{autodoc2-docstring} abtem.detectors.validate_radial_sensitivity
 :parser: rst
 ```
 ````

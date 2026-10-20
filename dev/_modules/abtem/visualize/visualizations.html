@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -571,6 +569,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.atoms</span><span class="w"> </span><span class="kn">import</span> <span class="n">pad_atoms</span><span class="p">,</span> <span class="n">plane_to_axes</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">AxisMetadata</span><span class="p">,</span> <span class="n">ThicknessAxis</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">itemset</span><span class="p">,</span> <span class="n">label_to_index</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.visualize.artists</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">DomainColoringArtist</span><span class="p">,</span>
@@ -581,10 +580,24 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">validate_cmap</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.visualize.axes_grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">AxesCollection</span><span class="p">,</span> <span class="n">AxesGrid</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.visualize.widgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">slider_from_axes_metadata</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.measurements</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMeasurements</span>
+
+
+<div class="viewcode-block" id="default_ensemble_index">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.visualize.visualizations.html#abtem.visualize.visualizations.default_ensemble_index">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">default_ensemble_index</span><span class="p">(</span><span class="n">axis_metadata</span><span class="p">:</span> <span class="n">AxisMetadata</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Index shown for an ensemble axis that is not explicitly indexed.</span>
+
+<span class="sd">    Thickness series default to their last plane (the exit surface): with an integer</span>
+<span class="sd">    ``exit_planes``, the first plane is the entrance surface at zero thickness, i.e.</span>
+<span class="sd">    the unscattered incident wave.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axis_metadata</span><span class="p">,</span> <span class="n">ThicknessAxis</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">length</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="mi">0</span></div>
+
 
 
 <div class="viewcode-block" id="discrete_cmap">
@@ -647,6 +660,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="k">return</span> <span class="n">measurement</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sum_ensemble_range</span><span class="p">(</span><span class="n">measurement</span><span class="p">,</span> <span class="n">axes</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""Sum a selected range of ensemble members.</span>
+
+<span class="sd">    Axes carrying probability weights are summed with their weights scaled to</span>
+<span class="sd">    average one over the range, ``N Σ p_i I_i / Σ p_i``, so that equal weights give</span>
+<span class="sd">    the plain sum and the plotted scale does not depend on whether the axis is</span>
+<span class="sd">    weighted.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">measurement</span><span class="o">.</span><span class="n">_weighted_axes</span><span class="p">(</span><span class="n">axes</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">measurement</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">axes</span><span class="p">)</span>
+
+    <span class="n">num_members</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">([</span><span class="n">measurement</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">measurement</span><span class="o">.</span><span class="n">_weighted_ensemble_mean</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span> <span class="o">*</span> <span class="n">num_members</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_validate_artist_type</span><span class="p">(</span><span class="n">measurement</span><span class="p">,</span> <span class="n">complex_conversion</span><span class="p">,</span> <span class="n">artist_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -849,6 +877,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="s2">"interactive visualizations requires the 'ipympl' matplotlib backend"</span>
             <span class="p">)</span>
 
+        <span class="c1"># ipywidgets (and IPython) take ~0.5 s to import, so only on this path.</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.visualize.widgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">slider_from_axes_metadata</span>
+
         <span class="n">sliders</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">slider_from_axes_metadata</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">measurement</span><span class="o">.</span><span class="n">axes_metadata</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurement</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -895,7 +926,12 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_measurement</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)):</span>
             <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">indexing_axes</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">):</span>
-                    <span class="n">validated_indices</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,)</span>
+                    <span class="n">validated_indices</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="n">default_ensemble_index</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_measurement</span><span class="o">.</span><span class="n">axes_metadata</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_measurement</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                        <span class="p">),</span>
+                    <span class="p">)</span>
                 <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">indices</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
                     <span class="n">validated_indices</span> <span class="o">+=</span> <span class="p">(</span><span class="n">indices</span><span class="p">[</span><span class="n">j</span><span class="p">],)</span>
                     <span class="n">removed_axes</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -912,7 +948,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">measurement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_measurement</span><span class="p">[</span><span class="n">validated_indices</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">summed_axes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">measurement</span> <span class="o">=</span> <span class="n">measurement</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">summed_axes</span><span class="p">)</span>
+            <span class="n">measurement</span> <span class="o">=</span> <span class="n">_sum_ensemble_range</span><span class="p">(</span><span class="n">measurement</span><span class="p">,</span> <span class="n">summed_axes</span><span class="p">)</span>
 
         <span class="n">measurement</span> <span class="o">=</span> <span class="n">convert_complex</span><span class="p">(</span><span class="n">measurement</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complex_conversion</span><span class="p">)</span>
 

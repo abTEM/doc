@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -572,7 +570,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">_wrap_with_array</span><span class="p">,</span> <span class="n">unpack_blockwise_args</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">fft_shift_kernel</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">Grid</span><span class="p">,</span> <span class="n">HasGrid2DMixin</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span><span class="p">,</span> <span class="n">itemset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span><span class="p">,</span> <span class="n">itemset</span><span class="p">,</span> <span class="n">safe_ceiling_int</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.iam</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasePotential</span><span class="p">,</span> <span class="n">validate_potential</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.transfer</span><span class="w"> </span><span class="kn">import</span> <span class="n">_raise_if_parallel_beam</span><span class="p">,</span> <span class="n">nyquist_sampling</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReciprocalSpaceMultiplication</span>
@@ -1031,6 +1029,9 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Number of scan positions. Default is None. Provide one of gpts or sampling.</span>
 <span class="sd">    sampling : float, optional</span>
 <span class="sd">        Sampling rate of scan positions [Å]. Provide one of gpts or sampling.</span>
+<span class="sd">        The number of positions is rounded up to fit the line, so the actual</span>
+<span class="sd">        sampling is at most the requested one. With `endpoint=True` the number</span>
+<span class="sd">        includes the end point.</span>
 <span class="sd">        If not provided the sampling will match the Nyquist sampling of the Probe</span>
 <span class="sd">        in a multislice simulation, which requires a positive semiangle cutoff.</span>
 <span class="sd">    endpoint : bool, optional</span>
@@ -1068,15 +1069,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">direction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Normal vector pointing from `start` to `end`."""</span>
-        <span class="n">direction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">direction</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""Normal vector pointing from `start` to `end`. A line of zero length has</span>
+<span class="sd">        no direction of its own and points along `x`, the default angle of</span>
+<span class="sd">        `at_position`, so that `angle` is 0 and `add_margin` extends it along</span>
+<span class="sd">        `x`."""</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">length</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">direction</span> <span class="o">/</span> <span class="n">length</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">angle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Angle of the line from `start` to `end` and the `x`-axis [deg.]."""</span>
         <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">direction</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">direction</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">direction</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">direction</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 
 <div class="viewcode-block" id="LineScan.add_margin">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.scan.html#abtem.scan.LineScan.add_margin">[docs]</a>
@@ -1131,7 +1138,9 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        gpts : int</span>
 <span class="sd">            Number of grid points along the line.</span>
 <span class="sd">        sampling : float</span>
-<span class="sd">            Sampling of grid points along the line [Å].</span>
+<span class="sd">            Sampling of grid points along the line [Å]. The number of positions is</span>
+<span class="sd">            rounded up to fit the line, so the actual sampling is at most the</span>
+<span class="sd">            requested one. With `endpoint=True` the number includes the end point.</span>
 <span class="sd">        endpoint : bool</span>
 <span class="sd">            Sets whether the ending position is included or not.</span>
 
@@ -1195,12 +1204,30 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_gpts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="c1"># A zero-length line given only `gpts` has the sampling 0, which</span>
+            <span class="c1"># cannot give a number of positions once the line is lengthened: keep</span>
+            <span class="c1"># `gpts` and derive the sampling from the new extent instead.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_adjust_sampling</span><span class="p">()</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gpts</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+            <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span><span class="p">)</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoint</span><span class="p">),</span> <span class="mi">1</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_adjust_sampling</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_adjust_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="c1"># The positions of a zero-length line coincide, so they have no</span>
+            <span class="c1"># spacing of their own: a requested sampling is kept, which also lets</span>
+            <span class="c1"># `add_margin` or a new `start` or `end` lengthen the line at that</span>
+            <span class="c1"># sampling. With only `gpts` given it is 0.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sampling</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_sampling</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="k">return</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">endpoint</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -1333,7 +1360,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">chunks</span> <span class="o">=</span> <span class="n">validate_chunks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">,</span> <span class="n">chunks</span><span class="p">)</span>
 
         <span class="n">direction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
-        <span class="n">direction</span> <span class="o">=</span> <span class="n">direction</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">direction</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="n">direction</span> <span class="o">/</span> <span class="n">length</span>
 
         <span class="n">cumchunks</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 
@@ -1414,7 +1443,13 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">width</span><span class="p">:</span>
-            <span class="n">rect</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="c1"># Rectangle's xy is a corner, so shift it back by half the width</span>
+            <span class="c1"># along the perpendicular: the band is then centred on the line,</span>
+            <span class="c1"># matching the region interpolate_line averages over.</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span>
+            <span class="n">perpendicular</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">direction</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">direction</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+            <span class="n">anchor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span> <span class="o">-</span> <span class="n">perpendicular</span> <span class="o">*</span> <span class="n">width</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="n">rect</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">rect</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">rect</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1448,6 +1483,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        End corner of the scan [Å]. May be given as fractional coordinate</span>
 <span class="sd">        if `fractional=True`.</span>
 <span class="sd">        Default is None, the scan end point will match the extent of the potential.</span>
+<span class="sd">        An `end` equal to `start` is a scan of one position, a single point. Its</span>
+<span class="sd">        `gpts` stay undefined, as for any scan without `gpts` or `sampling`, until</span>
+<span class="sd">        a probe is matched (as when scanning), which gives (1, 1); more than one</span>
+<span class="sd">        position along an axis is refused.</span>
 <span class="sd">    gpts : two int, optional</span>
 <span class="sd">        Number of scan positions in the `x`- and `y`-direction of the scan. Provide one</span>
 <span class="sd">        of gpts or sampling.</span>
@@ -1496,7 +1535,10 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="c1"># is zero, but the position is still well defined. This occurs both for a</span>
             <span class="c1"># user-defined one-point scan and when such a scan is partitioned into</span>
             <span class="c1"># blocks for lazy evaluation.</span>
-            <span class="n">single_point</span> <span class="o">=</span> <span class="n">gpts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gpts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="c1"># Without gpts a zero extent gives one position along every axis, as</span>
+            <span class="c1"># for `LineScan` and `Grid`; `gpts` itself stays undefined until the</span>
+            <span class="c1"># sampling is, as for any other scan without gpts or sampling.</span>
+            <span class="n">single_point</span> <span class="o">=</span> <span class="n">gpts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gpts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span>
             <span class="n">degenerate</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">extent</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">d</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">extent</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">degenerate</span> <span class="ow">and</span> <span class="n">single_point</span><span class="p">):</span>

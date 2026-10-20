@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -560,6 +558,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase.cell</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cell</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.bloch.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">excitation_errors</span><span class="p">,</span> <span class="n">reciprocal_cell</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_array_module</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">polar_spatial_frequencies</span>
 
 
@@ -606,7 +605,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.bloch.indexing.html#abtem.bloch.indexing.estimate_necessary_excitation_error">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">estimate_necessary_excitation_error</span><span class="p">(</span><span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">k_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="n">hkl_corner</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">k_max</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">k_max</span><span class="p">),</span> <span class="mi">0</span><span class="p">]])</span>
-    <span class="n">sg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">excitation_errors</span><span class="p">(</span><span class="n">hkl_corner</span><span class="p">,</span> <span class="n">energy</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="n">sg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">excitation_errors</span><span class="p">(</span><span class="n">hkl_corner</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">use_wave_eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">sg</span></div>
 
 
@@ -761,7 +760,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    numpy.ndarray</span>
 <span class="sd">        The integrated intensities around the pixels.</span>
 <span class="sd">    """</span>
-    <span class="n">weights</span> <span class="o">=</span> <span class="n">antialiased_disk</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
+    <span class="c1"># on the array's device: the weights multiply slices of it</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">antialiased_disk</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">sampling</span><span class="p">))</span>
     <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">weights</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span>
     <span class="n">intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">nm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],))</span>
 
@@ -854,7 +854,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="n">nm</span> <span class="o">=</span> <span class="n">_find_projected_pixel_index</span><span class="p">(</span><span class="n">g_vec</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">sampling</span><span class="p">)</span>
 
-    <span class="n">sg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">excitation_errors</span><span class="p">(</span><span class="n">g_vec</span><span class="p">,</span> <span class="n">energy</span><span class="p">))</span>
+    <span class="n">sg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">excitation_errors</span><span class="p">(</span><span class="n">g_vec</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">use_wave_eq</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="n">radius</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># a, b = tuple(int(np.round(radius / d)) for d in sampling)</span>
@@ -862,11 +862,11 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">else</span><span class="p">:</span>
         <span class="n">intensities</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nm</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">nm</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
 
-    <span class="n">sg</span> <span class="o">=</span> <span class="n">excitation_errors</span><span class="p">(</span><span class="n">g_vec</span><span class="p">,</span> <span class="n">energy</span><span class="p">)</span>
+    <span class="n">sg</span> <span class="o">=</span> <span class="n">excitation_errors</span><span class="p">(</span><span class="n">g_vec</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">use_wave_eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="n">mask</span> <span class="o">=</span> <span class="n">overlapping_spots_mask</span><span class="p">(</span><span class="n">nm</span><span class="p">,</span> <span class="n">sg</span><span class="p">)</span>
 
-    <span class="n">intensities</span> <span class="o">=</span> <span class="n">intensities</span> <span class="o">*</span> <span class="n">mask</span>
+    <span class="n">intensities</span> <span class="o">=</span> <span class="n">intensities</span> <span class="o">*</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">intensities</span></div>
 
@@ -876,26 +876,26 @@ document.addEventListener("DOMContentLoaded", () => {
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.bloch.indexing.html#abtem.bloch.indexing.miller_to_miller_bravais">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">miller_to_miller_bravais</span><span class="p">(</span><span class="n">hkl</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Convert Miller indices to Miller-Bravais indices.</span>
+<span class="sd">    Convert the Miller indices of a plane to Miller-Bravais indices.</span>
+
+<span class="sd">    For a plane (h k l) of a hexagonal lattice the four-index form is</span>
+<span class="sd">    (h k i l) with the redundant index i = -(h + k), since the third basal</span>
+<span class="sd">    axis is a3 = -(a1 + a2). (Directions [UVW] convert differently, to</span>
+<span class="sd">    [(2U - V)/3, (2V - U)/3, -(U + V)/3, W]; this function is for planes.)</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    hkl : tuple</span>
-<span class="sd">        The Miller indices (h, k, l).</span>
+<span class="sd">        The Miller indices (h, k, l) of a plane.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    tuple</span>
-<span class="sd">        The Miller-Bravais indices (H, K, I, L).</span>
+<span class="sd">        The Miller-Bravais indices (h, k, i, l) of the same plane.</span>
 <span class="sd">    """</span>
     <span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span> <span class="o">=</span> <span class="n">hkl</span>  <span class="c1"># noqa: E741</span>
 
-    <span class="n">H</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">h</span> <span class="o">-</span> <span class="n">k</span>
-    <span class="n">K</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">-</span> <span class="n">h</span>
-    <span class="n">I</span> <span class="o">=</span> <span class="o">-</span><span class="n">H</span> <span class="o">-</span> <span class="n">K</span>  <span class="c1"># noqa: E741</span>
-    <span class="n">L</span> <span class="o">=</span> <span class="n">l</span>
-
-    <span class="k">return</span> <span class="n">H</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">L</span></div>
+    <span class="k">return</span> <span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="o">-</span><span class="p">(</span><span class="n">h</span> <span class="o">+</span> <span class="n">k</span><span class="p">),</span> <span class="n">l</span></div>
 
 </pre></div>
 

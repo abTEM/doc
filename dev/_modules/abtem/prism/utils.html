@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -558,12 +556,19 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_array_module</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.complex</span><span class="w"> </span><span class="kn">import</span> <span class="n">complex_exponential</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">energy2wavelength</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">expand_dims_to_broadcast</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">expand_dims_to_broadcast</span><span class="p">,</span> <span class="n">get_dtype</span>
 
 
 <div class="viewcode-block" id="batch_crop_2d">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.prism.utils.html#abtem.prism.utils.batch_crop_2d">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">batch_crop_2d</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">corners</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""Crop ``new_shape`` windows from the last two axes of ``array`` at ``corners``.</span>
+<span class="sd">    A window as large as the array can only sit at the origin, so ``array`` itself</span>
+<span class="sd">    is returned, not a copy."""</span>
+
+    <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]):</span>
+        <span class="k">return</span> <span class="n">array</span>
+
     <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
@@ -618,76 +623,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-<div class="viewcode-block" id="wrapped_slices">
-<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.prism.utils.html#abtem.prism.utils.wrapped_slices">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">wrapped_slices</span><span class="p">(</span><span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">,</span> <span class="nb">slice</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Two slices covering ``[start, stop)`` on a periodic axis of length ``n``.</span>
+<div class="viewcode-block" id="window_crop">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.prism.utils.html#abtem.prism.utils.window_crop">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">window_crop</span><span class="p">(</span><span class="n">positions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">window_gpts</span><span class="p">,</span> <span class="n">gpts</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The crop box of windows of ``window_gpts`` points centred on ``positions``</span>
+<span class="sd">    (in pixels of a grid of ``gpts`` points), as ``minimum_crop`` returns it, except</span>
+<span class="sd">    that a window as large as the grid is the whole grid for every position, with</span>
+<span class="sd">    each window's corner at the origin (the cell frame)."""</span>
+    <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">window_gpts</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">gpts</span><span class="p">):</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">gpts</span><span class="p">),</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
-<span class="sd">    ``start`` may be any integer. Normalising it into ``[0, n)`` first leaves</span>
-<span class="sd">    only two cases -- the window fits, or it wraps once -- which is what two</span>
-<span class="sd">    slices can express.</span>
+    <span class="k">return</span> <span class="n">minimum_crop</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">window_gpts</span><span class="p">)</span></div>
 
-<span class="sd">    The previous implementation assumed ``-n &lt;= start &lt; n`` and ``0 &lt; stop &lt;= 2n``</span>
-<span class="sd">    and split on the raw values. For a window lying entirely in negative indices</span>
-<span class="sd">    (``stop &lt;= 0``) it produced ``slice(0, stop)``, which is Python's *negative</span>
-<span class="sd">    indexing* and selects ``n + stop`` elements rather than none, so the two</span>
-<span class="sd">    pieces concatenated to ``n + size`` elements instead of ``size``. The</span>
-<span class="sd">    mis-shaped array then surfaced as a broadcast error frames away from here.</span>
 
-<span class="sd">    Raises</span>
-<span class="sd">    ------</span>
-<span class="sd">    RuntimeError</span>
-<span class="sd">        If ``stop - start &gt; n``. Two slices cannot cover more than one period;</span>
-<span class="sd">        ``wrapped_crop_2d`` catches this and takes its general path.</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_periodic_runs</span><span class="p">(</span><span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">,</span> <span class="nb">slice</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""The window ``[start, start + size)`` of a periodic axis of length ``n``, as</span>
+<span class="sd">    contiguous runs of the axis.</span>
+
+<span class="sd">    Each run is a pair ``(source, target)``: the slice of the axis it reads and</span>
+<span class="sd">    the slice of the window it fills. ``start`` may be any integer and ``size``</span>
+<span class="sd">    any length, also wider than one period: the first run starts at</span>
+<span class="sd">    ``start % n``, and every later one at 0.</span>
 <span class="sd">    """</span>
-    <span class="n">size</span> <span class="o">=</span> <span class="n">stop</span> <span class="o">-</span> <span class="n">start</span>
-
-    <span class="k">if</span> <span class="n">size</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"a window of </span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2"> elements exceeds the period </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> and cannot be "</span>
-            <span class="sa">f</span><span class="s2">"expressed as two slices (start = </span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2">, stop = </span><span class="si">{</span><span class="n">stop</span><span class="si">}</span><span class="s2">)"</span>
-        <span class="p">)</span>
-
-    <span class="n">start</span> <span class="o">%=</span> <span class="n">n</span>
-    <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">size</span>
-
-    <span class="k">if</span> <span class="n">stop</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">slice</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="nb">slice</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">stop</span> <span class="o">-</span> <span class="n">n</span><span class="p">)</span></div>
-
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_wrapped_gather_2d</span><span class="p">(</span>
-    <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">corner</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""``wrapped_crop_2d`` for windows wider than one period.</span>
-
-<span class="sd">    Gathers by modulo index, which is total for any corner and any size. It</span>
-<span class="sd">    copies through fancy indexing, so it is kept off the common path -- but it</span>
-<span class="sd">    is correct where the slice pair cannot be, and unlike the ``xp.pad(...,</span>
-<span class="sd">    mode="wrap")`` fallback it replaced, it does not fail for windows spanning</span>
-<span class="sd">    several periods.</span>
-<span class="sd">    """</span>
-    <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
-    <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="n">corner</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">xp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">%</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">j</span> <span class="o">=</span> <span class="p">(</span><span class="n">corner</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">xp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">%</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">j</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]]</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_check_crop_shape</span><span class="p">(</span><span class="n">cropped</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Fail here rather than at a broadcast three frames downstream.</span>
-
-<span class="sd">    A wrongly sized crop used to reach the caller intact and only show up as an</span>
-<span class="sd">    operand-shape mismatch elsewhere. The check is a shape comparison, so it</span>
-<span class="sd">    costs nothing on the hot path, and it is a complete detector for this class</span>
-<span class="sd">    of defect: when the slice pair is wrong it is the shape that is wrong.</span>
-<span class="sd">    """</span>
-    <span class="k">if</span> <span class="n">cropped</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">!=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"wrapped_crop_2d produced </span><span class="si">{</span><span class="n">cropped</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span><span class="si">}</span><span class="s2">, expected </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">size</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
-        <span class="p">)</span>
-    <span class="k">return</span> <span class="n">cropped</span>
+    <span class="n">runs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="n">start</span> <span class="o">%</span> <span class="n">n</span>
+    <span class="n">done</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">done</span> <span class="o">&lt;</span> <span class="n">size</span><span class="p">:</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="n">source</span><span class="p">,</span> <span class="n">size</span> <span class="o">-</span> <span class="n">done</span><span class="p">)</span>
+        <span class="n">runs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">slice</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">source</span> <span class="o">+</span> <span class="n">length</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="n">done</span><span class="p">,</span> <span class="n">done</span> <span class="o">+</span> <span class="n">length</span><span class="p">)))</span>
+        <span class="n">done</span> <span class="o">+=</span> <span class="n">length</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">runs</span>
 
 
 <div class="viewcode-block" id="wrapped_crop_2d">
@@ -695,44 +663,33 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="k">def</span><span class="w"> </span><span class="nf">wrapped_crop_2d</span><span class="p">(</span>
     <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">corner</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-    <span class="n">upper_corner</span> <span class="o">=</span> <span class="p">(</span><span class="n">corner</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">corner</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="w">    </span><span class="sd">"""The ``size`` window of the last two axes of ``array`` starting at ``corner``,</span>
+<span class="sd">    with both axes periodic.</span>
+
+<span class="sd">    ``corner`` may be any integers, also several periods outside the array, and</span>
+<span class="sd">    ``size`` any lengths, also wider than one period.</span>
+
+<span class="sd">    A window that does not wrap is returned as a view of ``array``: no copy, and</span>
+<span class="sd">    a window as large as the array at the origin costs no memory. A window that</span>
+<span class="sd">    wraps is copied run by run into a new array: one pass over the window, in</span>
+<span class="sd">    slice copies (four at most for a window no wider than one period) and with</span>
+<span class="sd">    no index arrays, which on the GPU means a few copy kernels and no gather.</span>
+<span class="sd">    Callers must not write into the result.</span>
+<span class="sd">    """</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">_periodic_runs</span><span class="p">(</span><span class="n">corner</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="n">_periodic_runs</span><span class="p">(</span><span class="n">corner</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
 
     <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
-
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">a</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">wrapped_slices</span><span class="p">(</span><span class="n">corner</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">upper_corner</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
-        <span class="n">b</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">wrapped_slices</span><span class="p">(</span><span class="n">corner</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">upper_corner</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-    <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_wrapped_gather_2d</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">corner</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
-
-    <span class="n">A</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">]</span>
-    <span class="n">B</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">b</span><span class="p">]</span>
-    <span class="n">D</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">]</span>
-    <span class="n">C</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">d</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">AB</span> <span class="o">=</span> <span class="n">B</span>
-    <span class="k">elif</span> <span class="n">B</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">AB</span> <span class="o">=</span> <span class="n">A</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">AB</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">2</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">C</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">CD</span> <span class="o">=</span> <span class="n">D</span>
-    <span class="k">elif</span> <span class="n">D</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">CD</span> <span class="o">=</span> <span class="n">C</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">CD</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">2</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">CD</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_check_crop_shape</span><span class="p">(</span><span class="n">AB</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">AB</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">cropped</span> <span class="o">=</span> <span class="n">CD</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">cropped</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">AB</span><span class="p">,</span> <span class="n">CD</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">_check_crop_shape</span><span class="p">(</span><span class="n">cropped</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span></div>
+    <span class="n">cropped</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">source_rows</span><span class="p">,</span> <span class="n">target_rows</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">source_columns</span><span class="p">,</span> <span class="n">target_columns</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+            <span class="n">cropped</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">target_rows</span><span class="p">,</span> <span class="n">target_columns</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span>
+                <span class="o">...</span><span class="p">,</span> <span class="n">source_rows</span><span class="p">,</span> <span class="n">source_columns</span>
+            <span class="p">]</span>
+    <span class="k">return</span> <span class="n">cropped</span></div>
 
 
 
@@ -750,13 +707,14 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">n_max</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">cutoff</span> <span class="o">/</span> <span class="mf">1.0e3</span> <span class="o">/</span> <span class="p">(</span><span class="n">wavelength</span> <span class="o">/</span> <span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">interpolation</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
     <span class="n">m_max</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">cutoff</span> <span class="o">/</span> <span class="mf">1.0e3</span> <span class="o">/</span> <span class="p">(</span><span class="n">wavelength</span> <span class="o">/</span> <span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">interpolation</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
 
-    <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">n_max</span><span class="p">,</span> <span class="n">n_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">m_max</span><span class="p">,</span> <span class="n">m_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">n_max</span><span class="p">,</span> <span class="n">n_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">m_max</span><span class="p">,</span> <span class="n">m_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
 
-    <span class="n">kx</span> <span class="o">=</span> <span class="n">n</span> <span class="o">/</span> <span class="n">w</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">interpolation</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">ky</span> <span class="o">=</span> <span class="n">m</span> <span class="o">/</span> <span class="n">h</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">interpolation</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">kx</span> <span class="o">=</span> <span class="n">n</span> <span class="o">/</span> <span class="n">w</span> <span class="o">*</span> <span class="n">dtype</span><span class="p">(</span><span class="n">interpolation</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">ky</span> <span class="o">=</span> <span class="n">m</span> <span class="o">/</span> <span class="n">h</span> <span class="o">*</span> <span class="n">dtype</span><span class="p">(</span><span class="n">interpolation</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
     <span class="n">mask</span> <span class="o">=</span> <span class="n">kx</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">ky</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">cutoff</span> <span class="o">/</span> <span class="mf">1.0e3</span> <span class="o">/</span> <span class="n">wavelength</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
 
@@ -776,8 +734,9 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">reverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">wave_vectors</span><span class="p">)</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
 
     <span class="n">sign</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="k">if</span> <span class="n">reverse</span> <span class="k">else</span> <span class="mf">1.0</span>
 

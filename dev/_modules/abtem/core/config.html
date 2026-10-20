@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -611,6 +609,30 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="n">defaults</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
 
+<span class="n">_METAL_DEVICES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"mps"</span><span class="p">,</span> <span class="s2">"metal"</span><span class="p">,</span> <span class="s2">"torch"</span><span class="p">})</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_consistent</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Reject configurations the hardware cannot honour.</span>
+
+<span class="sd">    Metal is a single-precision backend -- PyTorch refuses a float64 tensor on</span>
+<span class="sd">    the MPS device outright -- so pairing it with double precision cannot work.</span>
+<span class="sd">    Saying so when the configuration is set beats failing later, somewhere</span>
+<span class="sd">    inside a computation, where the cause is much harder to see.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"device"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_METAL_DEVICES</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">precision</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"precision"</span><span class="p">,</span> <span class="s2">"float32"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">precision</span> <span class="o">!=</span> <span class="s2">"float32"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"device 'mps' cannot be combined with precision </span><span class="si">{</span><span class="n">precision</span><span class="si">!r}</span><span class="s2">: Metal "</span>
+            <span class="s2">"is a single-precision backend. Use precision 'float32', or the 'cpu' "</span>
+            <span class="s2">"or 'gpu' device for double precision."</span>
+        <span class="p">)</span>
+
+
 <div class="viewcode-block" id="set">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.core.config.html#abtem.core.config.set">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">set</span><span class="p">:</span>
@@ -652,10 +674,22 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="n">key</span> <span class="o">=</span> <span class="n">check_deprecations</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_assign</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">),</span> <span class="n">value</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
 
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">_check_consistent</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="c1"># A rejected combination must not leave half of itself applied;</span>
+                <span class="c1"># put the configuration back as it was before re-raising.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_unwind</span><span class="p">()</span>
+                <span class="k">raise</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unwind</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_unwind</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Undo this object's assignments, most recent first."""</span>
         <span class="k">for</span> <span class="n">op</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_record</span><span class="p">):</span>
             <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span>
             <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"replace"</span><span class="p">:</span>
@@ -670,6 +704,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span class="k">break</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">d</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_record</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_assign</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>

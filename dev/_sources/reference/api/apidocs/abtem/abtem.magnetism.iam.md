@@ -327,7 +327,7 @@ Bases: {py:obj}`abtem.magnetism.iam.QuasiDipoleProjections`
 ````{py:class} VectorPotential(...)
 :canonical: abtem.magnetism.iam.VectorPotential
 
-Bases: {py:obj}`abtem.potentials.iam._FieldBuilderFromAtoms`, {py:obj}`abtem.magnetism.iam.BaseMagneticField`
+Bases: {py:obj}`abtem.potentials.iam._FieldBuilderFromAtoms`, {py:obj}`abtem.magnetism.iam.BaseVectorPotential`
 
 ```{autodoc2-docstring} abtem.magnetism.iam.VectorPotential
 :parser: rst

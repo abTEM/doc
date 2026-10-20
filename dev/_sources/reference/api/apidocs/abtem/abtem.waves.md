@@ -540,6 +540,26 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
+````{py:attribute} dtype
+:canonical: abtem.waves.Waves.dtype
+:value: >
+   None
+
+```{autodoc2-docstring} abtem.waves.Waves.dtype
+:parser: rst
+```
+
+````
+
+````{py:method} elastic_diffuse_diffraction_patterns(...)
+:canonical: abtem.waves.Waves.elastic_diffuse_diffraction_patterns
+
+```{autodoc2-docstring} abtem.waves.Waves.elastic_diffuse_diffraction_patterns
+:parser: rst
+```
+
+````
+
 ````{py:method} ensure_real_space(...) -> abtem.waves.Waves
 :canonical: abtem.waves.Waves.ensure_real_space
 
@@ -692,10 +712,37 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
+````{py:method} to_data_array()
+:canonical: abtem.waves.Waves.to_data_array
+
+```{autodoc2-docstring} abtem.waves.Waves.to_data_array
+:parser: rst
+```
+
+````
+
+````{py:method} to_hyperspy(...)
+:canonical: abtem.waves.Waves.to_hyperspy
+
+```{autodoc2-docstring} abtem.waves.Waves.to_hyperspy
+:parser: rst
+```
+
+````
+
 ````{py:method} to_images(...) -> abtem.measurements.Images
 :canonical: abtem.waves.Waves.to_images
 
 ```{autodoc2-docstring} abtem.waves.Waves.to_images
+:parser: rst
+```
+
+````
+
+````{py:method} to_quantem()
+:canonical: abtem.waves.Waves.to_quantem
+
+```{autodoc2-docstring} abtem.waves.Waves.to_quantem
 :parser: rst
 ```
 

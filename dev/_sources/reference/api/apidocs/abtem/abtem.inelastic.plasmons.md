@@ -22,10 +22,7 @@
     :summary:
     ```
 * - {py:obj}`PlasmonAxis <abtem.inelastic.plasmons.PlasmonAxis>`
-  - ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonAxis
-    :parser: rst
-    :summary:
-    ```
+  -
 * - {py:obj}`PlasmonScatteringEvents <abtem.inelastic.plasmons.PlasmonScatteringEvents>`
   - ```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonScatteringEvents
     :parser: rst
@@ -164,10 +161,6 @@
 :canonical: abtem.inelastic.plasmons.PlasmonAxis
 
 Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
-
-```{autodoc2-docstring} abtem.inelastic.plasmons.PlasmonAxis
-:parser: rst
-```
 
 ````{py:property} azimuthal_angles
 :canonical: abtem.inelastic.plasmons.PlasmonAxis.azimuthal_angles

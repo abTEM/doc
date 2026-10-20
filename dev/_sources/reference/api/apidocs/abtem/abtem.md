@@ -37,9 +37,7 @@ abtem.detectors
 abtem.distributions
 abtem.finite_difference
 abtem.integrals
-abtem.mcf
 abtem.measurements
-abtem.mtf
 abtem.multislice
 abtem.noise
 abtem.scan

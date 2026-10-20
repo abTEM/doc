@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -557,7 +555,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TypeVar</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="p">,</span>
+    <span class="n">Mapping</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Self</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
@@ -570,7 +577,12 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">_wrap_with_array</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">ifft2</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">CopyMixin</span><span class="p">,</span> <span class="n">EqualityMixin</span><span class="p">,</span> <span class="n">expand_dims_to_broadcast</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CopyMixin</span><span class="p">,</span>
+    <span class="n">EqualityMixin</span><span class="p">,</span>
+    <span class="n">expand_dims_to_broadcast</span><span class="p">,</span>
+    <span class="n">get_dtype</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.distributions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">BaseDistribution</span><span class="p">,</span>
     <span class="n">EnsembleFromDistributions</span><span class="p">,</span>
@@ -604,10 +616,21 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="n">_allow_base_chunks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1"># Whether the output depends on the wavelength, so that a multi-energy</span>
+    <span class="c1"># ensemble must be transformed one energy at a time (see</span>
+    <span class="c1"># abtem.array._calculate_new_array_per_energy).</span>
+    <span class="n">_splits_energy_ensembles</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_num_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_match_ensemble</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array_object</span><span class="p">:</span> <span class="n">ArrayObjectType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""This transform, with anything that depends on the whole ensemble of</span>
+<span class="sd">        `array_object` fixed, before the ensemble is split into its energies or</span>
+<span class="sd">        into lazy blocks. The default has nothing to fix and returns the</span>
+<span class="sd">        transform itself."""</span>
+        <span class="k">return</span> <span class="bp">self</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
@@ -718,13 +741,17 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="p">,</span> <span class="n">array_object</span><span class="p">:</span> <span class="n">ArrayObjectType</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="o">...</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        For each output, maps `array_object`'s own ensemble axes, as they</span>
-<span class="sd">        appear in this transform's output ensemble shape/metadata, back to</span>
-<span class="sd">        their position in `array_object.ensemble_shape`. Identity unless a</span>
-<span class="sd">        transform reorders `array_object`'s ensemble axes (see</span>
-<span class="sd">        `AnnularDetector`/`SpectralSlitDetector`, which move the scan axes</span>
-<span class="sd">        to the end); used to keep dask chunk bookkeeping in the same axis</span>
-<span class="sd">        order as the declared output shape.</span>
+<span class="sd">        For each output, the permutation from the natural order of its</span>
+<span class="sd">        leading ensemble axes, the one `_calculate_new_array` returns (this</span>
+<span class="sd">        transform's own ensemble axes, then `array_object`'s), to the order</span>
+<span class="sd">        its declared shape and metadata use. Entry `k` is the natural</span>
+<span class="sd">        position of the axis declared at position `k`; axes past the end of</span>
+<span class="sd">        the tuple keep their place, so the identity may be shorter than the</span>
+<span class="sd">        output's ensemble axes. `AnnularDetector` and `SpectralSlitDetector`</span>
+<span class="sd">        move the scan axes to the end, and `MultisliceTransform` shifts its</span>
+<span class="sd">        detectors' permutations past the potential's ensemble axes, which it</span>
+<span class="sd">        prepends. `ArrayObject.apply_transform` applies the permutation once</span>
+<span class="sd">        to every output, eager or lazy.</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">array_object</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">))),)</span>
 
@@ -838,11 +865,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">distribution</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">distribution</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
                 <span class="n">ensemble_axes_metadata</span> <span class="o">+=</span> <span class="p">[</span>
-                    <span class="n">ParameterAxis</span><span class="p">(</span>
-                        <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">distribution</span><span class="p">),</span>
-                        <span class="n">_ensemble_mean</span><span class="o">=</span><span class="n">distribution</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
-                        <span class="o">**</span><span class="n">value</span><span class="p">,</span>
-                    <span class="p">)</span>
+                    <span class="n">ParameterAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span><span class="n">distribution</span><span class="p">,</span> <span class="o">**</span><span class="n">value</span><span class="p">)</span>
                 <span class="p">]</span>
 
         <span class="k">return</span> <span class="n">ensemble_axes_metadata</span></div>
@@ -1035,7 +1058,14 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="n">real_space_in</span><span class="p">:</span>
             <span class="n">new_array</span> <span class="o">=</span> <span class="n">ifft2</span><span class="p">(</span><span class="n">new_array</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">in_place</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">new_array</span></div>
+        <span class="k">return</span> <span class="n">new_array</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_out_dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="c1"># The waves' dtype promoted with the configured complex precision, which is</span>
+        <span class="c1"># the kernel's. A kernel evaluated in float64 under float32 (SpatialEnvelope,</span>
+        <span class="c1"># and so CTF with an angular spread, Bullseye, RadialPhasePlate) makes the</span>
+        <span class="c1"># blocks of complex64 waves complex128, which this does not declare.</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">result_type</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)),)</span></div>
 
 </pre></div>
 

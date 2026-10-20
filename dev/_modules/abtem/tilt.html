@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -756,11 +754,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="w">        </span><span class="sd">"""Metadata describing (an ensemble of) tilted wave function(s)."""</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">[</span>
-                <span class="n">TiltAxis</span><span class="p">(</span>
-                    <span class="n">label</span><span class="o">=</span><span class="s2">"tilt"</span><span class="p">,</span>
+                <span class="n">TiltAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="p">,</span>
                     <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+                    <span class="n">label</span><span class="o">=</span><span class="s2">"tilt"</span><span class="p">,</span>
                     <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span>
-                    <span class="n">_ensemble_mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -813,12 +811,11 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">ensemble_axes_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">[</span>
-                <span class="n">AxisAlignedTiltAxis</span><span class="p">(</span>
+                <span class="n">AxisAlignedTiltAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="p">,</span>
                     <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"tilt_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_direction</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-                    <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
                     <span class="n">direction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_direction</span><span class="p">,</span>
                     <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span>
-                    <span class="n">_ensemble_mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -895,23 +892,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_x</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
             <span class="n">ensemble_axes_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">AxisAlignedTiltAxis</span><span class="p">(</span>
-                    <span class="n">label</span><span class="o">=</span><span class="s2">"tilt_x"</span><span class="p">,</span>
-                    <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_x</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-                    <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span>
-                    <span class="n">direction</span><span class="o">=</span><span class="s2">"x"</span><span class="p">,</span>
-                    <span class="n">_ensemble_mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_x</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
+                <span class="n">AxisAlignedTiltAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tilt_x</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"tilt_x"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"x"</span>
                 <span class="p">)</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_y</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
             <span class="n">ensemble_axes_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">AxisAlignedTiltAxis</span><span class="p">(</span>
-                    <span class="n">label</span><span class="o">=</span><span class="s2">"tilt_y"</span><span class="p">,</span>
-                    <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_y</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-                    <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span>
-                    <span class="n">direction</span><span class="o">=</span><span class="s2">"y"</span><span class="p">,</span>
-                    <span class="n">_ensemble_mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_y</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
+                <span class="n">AxisAlignedTiltAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tilt_y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"tilt_y"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"y"</span>
                 <span class="p">)</span>
             <span class="p">)</span>
 

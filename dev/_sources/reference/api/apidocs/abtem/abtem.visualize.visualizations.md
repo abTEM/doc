@@ -34,6 +34,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`default_ensemble_index <abtem.visualize.visualizations.default_ensemble_index>`
+  - ```{autodoc2-docstring} abtem.visualize.visualizations.default_ensemble_index
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`discrete_cmap <abtem.visualize.visualizations.discrete_cmap>`
   - ```{autodoc2-docstring} abtem.visualize.visualizations.discrete_cmap
     :parser: rst
@@ -322,6 +327,14 @@
 :canonical: abtem.visualize.visualizations.convert_complex
 
 ```{autodoc2-docstring} abtem.visualize.visualizations.convert_complex
+:parser: rst
+```
+````
+
+````{py:function} default_ensemble_index(...) -> int
+:canonical: abtem.visualize.visualizations.default_ensemble_index
+
+```{autodoc2-docstring} abtem.visualize.visualizations.default_ensemble_index
 :parser: rst
 ```
 ````

@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -566,8 +564,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">brentq</span>  <span class="c1"># type: ignore</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">AxisMetadata</span><span class="p">,</span> <span class="n">OrdinalAxis</span><span class="p">,</span> <span class="n">RealSpaceAxis</span><span class="p">,</span> <span class="n">ThicknessAxis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy_to_device</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">energy2sigma</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">coordinate_grid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.inelastic.phonons</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseFrozenPhonons</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.integrals</span><span class="w"> </span><span class="kn">import</span> <span class="n">FieldIntegrator</span><span class="p">,</span> <span class="n">cutoff_taper</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.magnetism.parametrizations</span><span class="w"> </span><span class="kn">import</span> <span class="n">LyonParametrization</span>
@@ -826,20 +826,20 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">bottom</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling_out</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">-</span> <span class="n">region_y</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">top</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling_out</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">+</span> <span class="n">region_y</span><span class="p">,</span> <span class="n">array_out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 
-    <span class="n">shift_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling_in</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">nx</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="n">shift_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling_in</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ny</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">shift_x</span> <span class="o">=</span> <span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling_in</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">nx</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">shift_y</span> <span class="o">=</span> <span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">sampling_in</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ny</span> <span class="o">//</span> <span class="mi">2</span>
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">scale_x</span><span class="p">)</span> <span class="o">-</span> <span class="n">shift_x</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">scale_x</span> <span class="o">-</span> <span class="n">shift_x</span>
         <span class="n">xf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">wx1</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="n">xf</span>
-        <span class="n">wx0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">wx1</span>
+        <span class="n">wx0</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">wx1</span>
 
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bottom</span><span class="p">,</span> <span class="n">top</span><span class="p">):</span>
-            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">j</span> <span class="o">*</span> <span class="n">scale_y</span><span class="p">)</span> <span class="o">-</span> <span class="n">shift_y</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">j</span> <span class="o">*</span> <span class="n">scale_y</span> <span class="o">-</span> <span class="n">shift_y</span>
             <span class="n">yf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
             <span class="n">wy1</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="n">yf</span>
-            <span class="n">wy0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">wy1</span>
+            <span class="n">wy0</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">wy1</span>
 
             <span class="n">array_out</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">+=</span> <span class="n">bilinear_weighted_sum</span><span class="p">(</span>
                 <span class="n">array_in</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">xf</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">yf</span><span class="p">),</span> <span class="n">wx0</span><span class="p">,</span> <span class="n">wx1</span><span class="p">,</span> <span class="n">wy0</span><span class="p">,</span> <span class="n">wy1</span>
@@ -951,7 +951,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.magnetism.iam.html#abtem.magnetism.iam.QuasiDipoleProjections">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">QuasiDipoleProjections</span><span class="p">(</span><span class="n">FieldIntegrator</span><span class="p">):</span>
     <span class="c1"># _tables is a cache populated lazily by get_integral_table, one entry</span>
-    <span class="c1"># per element on first use -- incidental state, never identity, same</span>
+    <span class="c1"># per (element, precision) on first use -- incidental state, never identity, same</span>
     <span class="c1"># reasoning as _DeviceArrayCache.__eq__ (integrals.py) and Potential's</span>
     <span class="c1"># _sliced_atoms exclusion. Without this, a used integrator stops</span>
     <span class="c1"># comparing equal to an identical fresh one once anything is cached, and</span>
@@ -977,7 +977,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="o">.</span><span class="n">_slice_thickness</span> <span class="o">=</span> <span class="n">slice_thickness</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sampling</span> <span class="o">=</span> <span class="n">sampling</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_interpolation_func</span> <span class="o">=</span> <span class="n">interpolation_func</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">slice_thickness</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1017,11 +1017,14 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="viewcode-block" id="QuasiDipoleProjections.get_integral_table">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.magnetism.iam.html#abtem.magnetism.iam.QuasiDipoleProjections.get_integral_table">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_integral_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="c1"># Keyed on precision too, so changing abtem.config["precision"] after a</span>
+        <span class="c1"># build cannot hand back a table of the old dtype.</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">())</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_integral_table</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span>
 
         <span class="k">return</span> <span class="n">table</span></div>
 
@@ -1037,15 +1040,17 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">sampling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
         <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="c1"># The numba kernels run on the host; the finished slice is copied to</span>
+        <span class="c1"># `device` so it can be added into the device-side slice stack.</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,)</span> <span class="o">+</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,)</span> <span class="o">+</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">()),</span> <span class="n">device</span><span class="p">)</span>
 
         <span class="n">positions</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span>
         <span class="n">magnetic_moments</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="s2">"magnetic_moments"</span><span class="p">)</span>
         <span class="n">slice_limits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">])</span>
         <span class="n">integral_sampling</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sampling</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">2</span>
 
-        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,)</span> <span class="o">+</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,)</span> <span class="o">+</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
         <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">numbers</span><span class="p">):</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">numbers</span> <span class="o">==</span> <span class="n">number</span>
 
@@ -1074,7 +1079,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">scratch</span><span class="p">,</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">array</span></div>
+        <span class="k">return</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span></div>
 </div>
 
 
@@ -1111,7 +1116,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">slice_limits</span><span class="p">),</span> <span class="o">*</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
 
-        <span class="n">tables</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">tables</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">slice_limits</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">slice_limits</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
             <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">((</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step_size</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
@@ -1170,7 +1175,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">slice_limits</span><span class="p">),</span> <span class="o">*</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
 
-        <span class="n">tables</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">tables</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">())</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">slice_limits</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">slice_limits</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
             <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">((</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step_size</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
@@ -1267,7 +1272,8 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="p">):</span>
         <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"label"</span><span class="p">:</span> <span class="s2">"magnetic field"</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">:</span> <span class="s2">"T"</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata</span><span class="p">}</span>
+        <span class="c1"># Each slice is the field integrated through the slice, in tesla times Å.</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"label"</span><span class="p">:</span> <span class="s2">"magnetic field"</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">:</span> <span class="s2">"ÅT"</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata</span><span class="p">}</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">array</span><span class="o">=</span><span class="n">array</span><span class="p">,</span>
             <span class="n">slice_thickness</span><span class="o">=</span><span class="n">slice_thickness</span><span class="p">,</span>
@@ -1309,7 +1315,9 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="p">):</span>
         <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"label"</span><span class="p">:</span> <span class="s2">"vector potential"</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">:</span> <span class="s2">"ÅT"</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata</span><span class="p">}</span>
+        <span class="c1"># Each slice is the vector potential (in Å T) integrated through the</span>
+        <span class="c1"># slice, in Å² T.</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"label"</span><span class="p">:</span> <span class="s2">"vector potential"</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">:</span> <span class="s2">"Å²T"</span><span class="p">,</span> <span class="o">**</span><span class="n">metadata</span><span class="p">}</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">array</span><span class="o">=</span><span class="n">array</span><span class="p">,</span>
             <span class="n">slice_thickness</span><span class="o">=</span><span class="n">slice_thickness</span><span class="p">,</span>
@@ -1395,7 +1403,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <div class="viewcode-block" id="VectorPotential">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.magnetism.iam.html#abtem.magnetism.iam.VectorPotential">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">VectorPotential</span><span class="p">(</span><span class="n">_FieldBuilderFromAtoms</span><span class="p">,</span> <span class="n">BaseMagneticField</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">VectorPotential</span><span class="p">(</span><span class="n">_FieldBuilderFromAtoms</span><span class="p">,</span> <span class="n">BaseVectorPotential</span><span class="p">):</span>
     <span class="n">_exclude_from_copy</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"parametrization"</span><span class="p">,)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>

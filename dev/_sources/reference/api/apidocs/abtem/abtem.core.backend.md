@@ -26,6 +26,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`check_mps_is_available <abtem.core.backend.check_mps_is_available>`
+  - ```{autodoc2-docstring} abtem.core.backend.check_mps_is_available
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`copy_to_device <abtem.core.backend.copy_to_device>`
   - ```{autodoc2-docstring} abtem.core.backend.copy_to_device
     :parser: rst
@@ -89,8 +94,18 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`TorchNDArray <abtem.core.backend.TorchNDArray>`
+  - ```{autodoc2-docstring} abtem.core.backend.TorchNDArray
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`logger <abtem.core.backend.logger>`
   - ```{autodoc2-docstring} abtem.core.backend.logger
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`tp <abtem.core.backend.tp>`
+  - ```{autodoc2-docstring} abtem.core.backend.tp
     :parser: rst
     :summary:
     ```
@@ -109,6 +124,18 @@
 
 ````
 
+````{py:data} TorchNDArray
+:canonical: abtem.core.backend.TorchNDArray
+:type: typing.Any
+:value: >
+   None
+
+```{autodoc2-docstring} abtem.core.backend.TorchNDArray
+:parser: rst
+```
+
+````
+
 ````{py:function} asnumpy(...)
 :canonical: abtem.core.backend.asnumpy
 
@@ -121,6 +148,14 @@
 :canonical: abtem.core.backend.check_cupy_is_installed
 
 ```{autodoc2-docstring} abtem.core.backend.check_cupy_is_installed
+:parser: rst
+```
+````
+
+````{py:function} check_mps_is_available()
+:canonical: abtem.core.backend.check_mps_is_available
+
+```{autodoc2-docstring} abtem.core.backend.check_mps_is_available
 :parser: rst
 ```
 ````
@@ -206,6 +241,18 @@
 ```{autodoc2-docstring} abtem.core.backend.push_config_to_workers
 :parser: rst
 ```
+````
+
+````{py:data} tp
+:canonical: abtem.core.backend.tp
+:type: typing.Any
+:value: >
+   None
+
+```{autodoc2-docstring} abtem.core.backend.tp
+:parser: rst
+```
+
 ````
 
 ````{py:function} validate_device(...) -> str

@@ -165,6 +165,11 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 
 ````{py:property} num_configurations
 :canonical: abtem.potentials.gpaw.GPAWPotential.num_configurations
+:type: int
+
+```{autodoc2-docstring} abtem.potentials.gpaw.GPAWPotential.num_configurations
+:parser: rst
+```
 
 ````
 

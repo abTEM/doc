@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -562,8 +560,24 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atoms</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.atoms</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_cell_orthogonal</span><span class="p">,</span> <span class="n">wrap_and_snap_atoms</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">EqualityMixin</span><span class="p">,</span> <span class="n">label_to_index</span><span class="p">,</span> <span class="n">safe_equality</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.atoms</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">is_cell_orthogonal</span><span class="p">,</span>
+    <span class="n">wrap_and_snap_atoms</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EqualityMixin</span><span class="p">,</span>
+    <span class="n">label_to_index</span><span class="p">,</span>
+    <span class="n">safe_ceiling_int</span><span class="p">,</span>
+    <span class="n">safe_equality</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># How far outside the cell along z [Å] an atom given to a non-periodic potential</span>
+<span class="c1"># with the infinite projection is kept in its face slice; further out it is</span>
+<span class="c1"># folded onto its image in the cell, with a warning when the potential is made.</span>
+<span class="c1"># A thermal displacement is a few times its standard deviation, which rarely</span>
+<span class="c1"># exceeds 0.25 Å, so this is about 8 sigma: no frozen phonon reaches it, but a</span>
+<span class="c1"># misplaced atom or a wrong cell height does.</span>
+<span class="n">FACE_SLICE_WARNING_DISTANCE</span> <span class="o">=</span> <span class="mf">2.0</span>
 
 
 <div class="viewcode-block" id="crystal_slice_thicknesses">
@@ -884,7 +898,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">gpts</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
         <span class="n">L</span> <span class="o">=</span> <span class="n">extent</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="n">n_target</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">L</span> <span class="o">/</span> <span class="n">target_sampling</span><span class="p">))</span>
+        <span class="n">n_target</span> <span class="o">=</span> <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">L</span> <span class="o">/</span> <span class="n">target_sampling</span><span class="p">)</span>
 
         <span class="n">x</span> <span class="o">=</span> <span class="n">positions</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">%</span> <span class="n">L</span>
         <span class="c1"># Snap values at x ≈ L back to 0: floating-point modulo can leave atoms</span>
@@ -988,8 +1002,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">thickness</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">thickness</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">thickness</span><span class="p">)</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">thickness</span> <span class="o">/</span> <span class="n">slice_thickness</span><span class="p">))</span>
-            <span class="n">validated_slice_thickness</span> <span class="o">=</span> <span class="p">(</span><span class="n">thickness</span> <span class="o">/</span> <span class="n">n</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">thickness</span> <span class="o">/</span> <span class="n">slice_thickness</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">validated_slice_thickness</span> <span class="o">=</span> <span class="p">(</span><span class="n">thickness</span> <span class="o">/</span> <span class="n">n</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n</span>
         <span class="k">elif</span> <span class="n">num_slices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">slice_thickness</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
                 <span class="n">slice_thickness</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">slice_thickness</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
@@ -1216,6 +1230,12 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="c1">#     return closest_indices</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_far_outside_faces</span><span class="p">(</span><span class="n">z</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether each height lies more than `FACE_SLICE_WARNING_DISTANCE` outside</span>
+<span class="sd">    [0, height]."""</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="o">-</span><span class="n">z</span><span class="p">,</span> <span class="n">z</span> <span class="o">-</span> <span class="n">height</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">FACE_SLICE_WARNING_DISTANCE</span>
+
+
 <div class="viewcode-block" id="SliceIndexedAtoms">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.slicing.html#abtem.slicing.SliceIndexedAtoms">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SliceIndexedAtoms</span><span class="p">(</span><span class="n">BaseSlicedAtoms</span><span class="p">):</span>
@@ -1284,13 +1304,23 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">bin_edges</span><span class="p">)</span>
 
         <span class="c1"># label_to_index silently discards labels outside [0, num_slices - 1],</span>
-        <span class="c1"># which is how an out-of-cell atom used to disappear. After the wrap</span>
-        <span class="c1"># above there is no such atom, so say so rather than dropping one.</span>
-        <span class="c1"># Only meaningful after a wrap: with wrap=False (a non-periodic</span>
-        <span class="c1"># potential) an atom outside the cell is expected, and label_to_index</span>
-        <span class="c1"># dropping it is the pre-existing behaviour this must not change.</span>
-        <span class="c1"># np.digitize against increasing bins returns [0, len(bins)], never</span>
-        <span class="c1"># negative, so only the upper end can escape.</span>
+        <span class="c1"># which is how an out-of-cell atom used to disappear. np.digitize</span>
+        <span class="c1"># against increasing bins returns [0, len(bins)], never negative, so</span>
+        <span class="c1"># only the upper end can escape: an atom below the entrance face</span>
+        <span class="c1"># already lands in slice 0.</span>
+        <span class="c1">#</span>
+        <span class="c1"># With wrap=False (a non-periodic potential) an atom displaced just</span>
+        <span class="c1"># outside the cell is expected, e.g. by frozen phonons randomised</span>
+        <span class="c1"># after padding. It belongs to the face it left, so clamp it into the</span>
+        <span class="c1"># last slice, mirroring what digitize already does at the entrance</span>
+        <span class="c1"># face. Its true position is kept: the infinite projection does not</span>
+        <span class="c1"># depend on z within a slice, so the projected potential is conserved</span>
+        <span class="c1"># exactly, where dropping the atom lost its whole contribution.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">wrap</span><span class="p">:</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># After a wrap there is no atom outside the cell, so say so rather</span>
+        <span class="c1"># than dropping one.</span>
         <span class="k">if</span> <span class="n">wrap</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="ow">and</span> <span class="n">labels</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">int</span><span class="p">((</span><span class="n">labels</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span><span class="si">}</span><span class="s2"> atom(s) fall outside "</span>
@@ -1418,6 +1448,57 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">return</span> <span class="n">atoms</span></div>
 </div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sum_planes</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The sum of the planes `start` up to, not including, `stop` of the grid that</span>
+<span class="sd">    repeats `array` along its last axis, taken from the one period.</span>
+<span class="sd">    """</span>
+    <span class="c1"># The planes start:stop of the repeated grid are the end of one period, whole</span>
+    <span class="c1"># periods and the start of one period. The partial periods are summed as views</span>
+    <span class="c1"># and the whole periods as `periods` times the sum of the grid, so no plane is</span>
+    <span class="c1"># copied.</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">head_end</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="p">(</span><span class="n">start</span> <span class="o">//</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">summed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">start</span> <span class="o">%</span> <span class="n">n</span> <span class="p">:</span> <span class="n">start</span> <span class="o">%</span> <span class="n">n</span> <span class="o">+</span> <span class="n">head_end</span> <span class="o">-</span> <span class="n">start</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">periods</span><span class="p">,</span> <span class="n">tail</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">stop</span> <span class="o">-</span> <span class="n">head_end</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">periods</span><span class="p">:</span>
+        <span class="n">summed</span> <span class="o">=</span> <span class="n">summed</span> <span class="o">+</span> <span class="n">periods</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tail</span><span class="p">:</span>
+        <span class="n">summed</span> <span class="o">=</span> <span class="n">summed</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="n">tail</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">summed</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_integrate_planes</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The integral of the planes of `array`, repeated periodically along its last</span>
+<span class="sd">    axis, from `start` to `stop` (`start` &lt; `stop`), in units of the plane spacing:</span>
+<span class="sd">    multiply by the spacing for an integral over heights.</span>
+
+<span class="sd">    Plane k is the sample at the height k and stands for the heights from k - 1/2</span>
+<span class="sd">    to k + 1/2, so each plane is weighted by the length of its heights that lie</span>
+<span class="sd">    between the limits. Consecutive slices share their limit, so the weights of</span>
+<span class="sd">    every plane add up to one. A limit on a plane splits it between the slices on</span>
+<span class="sd">    either side (the trapezoidal rule), so the integral of a slice is centred on</span>
+<span class="sd">    the slice; summing the planes from the lower limit up to the upper one whole (a</span>
+<span class="sd">    left Riemann sum) would put it half a plane below the slice.</span>
+<span class="sd">    """</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># The limits half a plane up, so that plane k stands for the interval from k</span>
+    <span class="c1"># to k + 1. Python floats, so that the weights keep the dtype of `array`: a</span>
+    <span class="c1"># NumPy float64 scalar would promote float32 planes to float64.</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span>
+    <span class="n">first</span><span class="p">,</span> <span class="n">last</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">u</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">first</span> <span class="o">==</span> <span class="n">last</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">v</span> <span class="o">-</span> <span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">first</span> <span class="o">%</span> <span class="n">n</span><span class="p">]</span>
+
+    <span class="n">summed</span> <span class="o">=</span> <span class="p">(</span><span class="n">first</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">first</span> <span class="o">%</span> <span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">v</span> <span class="o">-</span> <span class="n">last</span><span class="p">)</span> <span class="o">*</span> <span class="n">array</span><span class="p">[</span>
+        <span class="o">...</span><span class="p">,</span> <span class="n">last</span> <span class="o">%</span> <span class="n">n</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="n">last</span> <span class="o">&gt;</span> <span class="n">first</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">summed</span> <span class="o">=</span> <span class="n">summed</span> <span class="o">+</span> <span class="n">_sum_planes</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">first</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">last</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">summed</span>
 </pre></div>
 
                 </article>

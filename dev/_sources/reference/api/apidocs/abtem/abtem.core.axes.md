@@ -19,20 +19,14 @@
 * - {py:obj}`AxesMetadataList <abtem.core.axes.AxesMetadataList>`
   -
 * - {py:obj}`AxisAlignedTiltAxis <abtem.core.axes.AxisAlignedTiltAxis>`
-  - ```{autodoc2-docstring} abtem.core.axes.AxisAlignedTiltAxis
-    :parser: rst
-    :summary:
-    ```
+  -
 * - {py:obj}`AxisMetadata <abtem.core.axes.AxisMetadata>`
   - ```{autodoc2-docstring} abtem.core.axes.AxisMetadata
     :parser: rst
     :summary:
     ```
 * - {py:obj}`EnergyAxis <abtem.core.axes.EnergyAxis>`
-  - ```{autodoc2-docstring} abtem.core.axes.EnergyAxis
-    :parser: rst
-    :summary:
-    ```
+  -
 * - {py:obj}`EnergyLossAxis <abtem.core.axes.EnergyLossAxis>`
   - ```{autodoc2-docstring} abtem.core.axes.EnergyLossAxis
     :parser: rst
@@ -49,25 +43,16 @@
     :summary:
     ```
 * - {py:obj}`NonLinearAxis <abtem.core.axes.NonLinearAxis>`
-  - ```{autodoc2-docstring} abtem.core.axes.NonLinearAxis
-    :parser: rst
-    :summary:
-    ```
+  -
 * - {py:obj}`OrdinalAxis <abtem.core.axes.OrdinalAxis>`
   - ```{autodoc2-docstring} abtem.core.axes.OrdinalAxis
     :parser: rst
     :summary:
     ```
 * - {py:obj}`ParameterAxis <abtem.core.axes.ParameterAxis>`
-  - ```{autodoc2-docstring} abtem.core.axes.ParameterAxis
-    :parser: rst
-    :summary:
-    ```
+  -
 * - {py:obj}`PositionsAxis <abtem.core.axes.PositionsAxis>`
-  - ```{autodoc2-docstring} abtem.core.axes.PositionsAxis
-    :parser: rst
-    :summary:
-    ```
+  -
 * - {py:obj}`PrismPlaneWavesAxis <abtem.core.axes.PrismPlaneWavesAxis>`
   - ```{autodoc2-docstring} abtem.core.axes.PrismPlaneWavesAxis
     :parser: rst
@@ -104,25 +89,16 @@
     :summary:
     ```
 * - {py:obj}`ThicknessAxis <abtem.core.axes.ThicknessAxis>`
-  - ```{autodoc2-docstring} abtem.core.axes.ThicknessAxis
-    :parser: rst
-    :summary:
-    ```
+  -
 * - {py:obj}`TiltAxis <abtem.core.axes.TiltAxis>`
-  - ```{autodoc2-docstring} abtem.core.axes.TiltAxis
-    :parser: rst
-    :summary:
-    ```
+  -
 * - {py:obj}`UnknownAxis <abtem.core.axes.UnknownAxis>`
   - ```{autodoc2-docstring} abtem.core.axes.UnknownAxis
     :parser: rst
     :summary:
     ```
 * - {py:obj}`WaveVectorAxis <abtem.core.axes.WaveVectorAxis>`
-  - ```{autodoc2-docstring} abtem.core.axes.WaveVectorAxis
-    :parser: rst
-    :summary:
-    ```
+  -
 ````
 
 ### Functions
@@ -199,10 +175,6 @@ Bases: {py:obj}`list`
 :canonical: abtem.core.axes.AxisAlignedTiltAxis
 
 Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
-
-```{autodoc2-docstring} abtem.core.axes.AxisAlignedTiltAxis
-:parser: rst
-```
 
 ````{py:attribute} direction
 :canonical: abtem.core.axes.AxisAlignedTiltAxis.direction
@@ -414,10 +386,6 @@ Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
 
 Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
 
-```{autodoc2-docstring} abtem.core.axes.EnergyAxis
-:parser: rst
-```
-
 ````{py:method} format_title(...) -> str
 :canonical: abtem.core.axes.EnergyAxis.format_title
 
@@ -617,10 +585,6 @@ Bases: {py:obj}`abtem.core.axes.AxisMetadata`
 
 Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 
-```{autodoc2-docstring} abtem.core.axes.NonLinearAxis
-:parser: rst
-```
-
 ````{py:method} format_coordinates(...)
 :canonical: abtem.core.axes.NonLinearAxis.format_coordinates
 
@@ -686,6 +650,16 @@ Bases: {py:obj}`abtem.core.axes.AxisMetadata`
 
 ````
 
+````{py:method} from_distribution(...) -> abtem.core.axes.OrdinalAxis
+:canonical: abtem.core.axes.OrdinalAxis.from_distribution
+:classmethod:
+
+```{autodoc2-docstring} abtem.core.axes.OrdinalAxis.from_distribution
+:parser: rst
+```
+
+````
+
 ````{py:method} item_metadata(...)
 :canonical: abtem.core.axes.OrdinalAxis.item_metadata
 
@@ -712,16 +686,24 @@ Bases: {py:obj}`abtem.core.axes.AxisMetadata`
 
 ````
 
+````{py:attribute} weights
+:canonical: abtem.core.axes.OrdinalAxis.weights
+:type: typing.Optional[tuple]
+:value: >
+   None
+
+```{autodoc2-docstring} abtem.core.axes.OrdinalAxis.weights
+:parser: rst
+```
+
+````
+
 `````
 
 `````{py:class} ParameterAxis
 :canonical: abtem.core.axes.ParameterAxis
 
 Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
-
-```{autodoc2-docstring} abtem.core.axes.ParameterAxis
-:parser: rst
-```
 
 ````{py:attribute} label
 :canonical: abtem.core.axes.ParameterAxis.label
@@ -740,10 +722,6 @@ Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
 :canonical: abtem.core.axes.PositionsAxis
 
 Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
-
-```{autodoc2-docstring} abtem.core.axes.PositionsAxis
-:parser: rst
-```
 
 ````{py:method} format_title(...) -> str
 :canonical: abtem.core.axes.PositionsAxis.format_title
@@ -842,6 +820,15 @@ Bases: {py:obj}`abtem.core.axes.LinearAxis`
 ```{autodoc2-docstring} abtem.core.axes.ReciprocalSpaceAxis
 :parser: rst
 ```
+
+````{py:method} coordinates(...) -> tuple[float, ...]
+:canonical: abtem.core.axes.ReciprocalSpaceAxis.coordinates
+
+```{autodoc2-docstring} abtem.core.axes.ReciprocalSpaceAxis.coordinates
+:parser: rst
+```
+
+````
 
 ````{py:attribute} fftshift
 :canonical: abtem.core.axes.ReciprocalSpaceAxis.fftshift
@@ -996,10 +983,6 @@ Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
 
 Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
 
-```{autodoc2-docstring} abtem.core.axes.ThicknessAxis
-:parser: rst
-```
-
 ````{py:attribute} label
 :canonical: abtem.core.axes.ThicknessAxis.label
 :type: str
@@ -1030,10 +1013,6 @@ Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
 :canonical: abtem.core.axes.TiltAxis
 
 Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
-
-```{autodoc2-docstring} abtem.core.axes.TiltAxis
-:parser: rst
-```
 
 ````{py:method} item_metadata(...)
 :canonical: abtem.core.axes.TiltAxis.item_metadata
@@ -1091,10 +1070,6 @@ Bases: {py:obj}`abtem.core.axes.AxisMetadata`
 :canonical: abtem.core.axes.WaveVectorAxis
 
 Bases: {py:obj}`abtem.core.axes.OrdinalAxis`
-
-```{autodoc2-docstring} abtem.core.axes.WaveVectorAxis
-:parser: rst
-```
 
 ````{py:attribute} units
 :canonical: abtem.core.axes.WaveVectorAxis.units

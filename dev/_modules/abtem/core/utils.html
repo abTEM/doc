@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -695,15 +693,24 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="k">continue</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">equal</span> <span class="o">=</span> <span class="n">value</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">EqualityMixin</span><span class="p">):</span>
+                <span class="c1"># Recurse directly instead of through `value == other`, and</span>
+                <span class="c1"># forward the nested object's own exclusions, which its __eq__</span>
+                <span class="c1"># would otherwise apply: without them an exclusion holds only</span>
+                <span class="c1"># for a top-level operand, and SMatrix(built potential) !=</span>
+                <span class="c1"># SMatrix(unbuilt potential) although the two potentials</span>
+                <span class="c1"># compare equal. Evaluating `==` as well compares the nested</span>
+                <span class="c1"># object a second time, doubling the work at every level.</span>
+                <span class="n">equal</span> <span class="o">=</span> <span class="n">safe_equality</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">_eq_exclude</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">equal</span> <span class="o">=</span> <span class="n">value</span> <span class="o">==</span> <span class="n">other</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
 
         <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmptyEnsemble</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">EmptyEnsemble</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
-            <span class="n">b</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">EmptyEnsemble</span>
-        <span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">EmptyEnsemble</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">EmptyEnsemble</span><span class="p">):</span>
             <span class="c1"># `continue`, not `return True`: two EmptyEnsembles make THIS</span>
             <span class="c1"># attribute equal, not the whole object. Returning here skipped</span>
             <span class="c1"># every remaining attribute, so two objects differing in anything</span>
@@ -715,24 +722,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="c1"># with warnings.catch_warnings():</span>
         <span class="c1"># warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">EqualityMixin</span><span class="p">):</span>
-            <span class="c1"># Forward the nested object's own exclusions. This recursion</span>
-            <span class="c1"># bypasses its __eq__, which is what would otherwise apply them, so</span>
-            <span class="c1"># without this an exclusion holds only for a top-level operand:</span>
-            <span class="c1"># SMatrix(built potential) != SMatrix(unbuilt potential) even</span>
-            <span class="c1"># though the two potentials themselves compare equal.</span>
-            <span class="n">equal</span> <span class="o">=</span> <span class="n">safe_equality</span><span class="p">(</span>
-                <span class="n">value</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"_eq_exclude"</span><span class="p">,</span> <span class="p">())</span>
-            <span class="p">)</span>
-
-        <span class="k">else</span><span class="p">:</span>  <span class="c1"># if isinstance(value, (tuple, list, np.ndarray)):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">EqualityMixin</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">equal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                <span class="n">equal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
             <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">EqualityMixin</span><span class="p">):</span>
-                    <span class="n">equal</span> <span class="o">=</span> <span class="n">safe_equality</span><span class="p">(</span>
-                        <span class="n">value</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"_eq_exclude"</span><span class="p">,</span> <span class="p">())</span>
-                    <span class="p">)</span>
+                <span class="k">pass</span>
         <span class="c1"># else:</span>
         <span class="c1">#    equal = safe_equality(value, b.__dict__[key])</span>
         <span class="c1"># `np.all`, not `equal is False`. The identity test only catches the</span>

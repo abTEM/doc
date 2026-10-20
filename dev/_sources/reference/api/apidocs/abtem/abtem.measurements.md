@@ -71,6 +71,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`elastic_diffuse_diffraction_patterns <abtem.measurements.elastic_diffuse_diffraction_patterns>`
+  - ```{autodoc2-docstring} abtem.measurements.elastic_diffuse_diffraction_patterns
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`integrate_disc <abtem.measurements.integrate_disc>`
   - ```{autodoc2-docstring} abtem.measurements.integrate_disc
     :parser: rst
@@ -104,18 +109,23 @@
 :class: autosummary longtable
 :align: left
 
+* - {py:obj}`AZIMUTHAL_STEP_SINGLE_PASS <abtem.measurements.AZIMUTHAL_STEP_SINGLE_PASS>`
+  - ```{autodoc2-docstring} abtem.measurements.AZIMUTHAL_STEP_SINGLE_PASS
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`BaseMeasurementsSubclass <abtem.measurements.BaseMeasurementsSubclass>`
   - ```{autodoc2-docstring} abtem.measurements.BaseMeasurementsSubclass
     :parser: rst
     :summary:
     ```
-* - {py:obj}`interpolate_bilinear_cuda <abtem.measurements.interpolate_bilinear_cuda>`
-  - ```{autodoc2-docstring} abtem.measurements.interpolate_bilinear_cuda
+* - {py:obj}`FROZEN_PHONON_COMPONENTS <abtem.measurements.FROZEN_PHONON_COMPONENTS>`
+  - ```{autodoc2-docstring} abtem.measurements.FROZEN_PHONON_COMPONENTS
     :parser: rst
     :summary:
     ```
-* - {py:obj}`pd <abtem.measurements.pd>`
-  - ```{autodoc2-docstring} abtem.measurements.pd
+* - {py:obj}`interpolate_bilinear_cuda <abtem.measurements.interpolate_bilinear_cuda>`
+  - ```{autodoc2-docstring} abtem.measurements.interpolate_bilinear_cuda
     :parser: rst
     :summary:
     ```
@@ -129,14 +139,20 @@
     :parser: rst
     :summary:
     ```
-* - {py:obj}`xr <abtem.measurements.xr>`
-  - ```{autodoc2-docstring} abtem.measurements.xr
-    :parser: rst
-    :summary:
-    ```
 ````
 
 ### API
+
+````{py:data} AZIMUTHAL_STEP_SINGLE_PASS
+:canonical: abtem.measurements.AZIMUTHAL_STEP_SINGLE_PASS
+:value: >
+   True
+
+```{autodoc2-docstring} abtem.measurements.AZIMUTHAL_STEP_SINGLE_PASS
+:parser: rst
+```
+
+````
 
 `````{py:class} BaseMeasurements(...)
 :canonical: abtem.measurements.BaseMeasurements
@@ -245,7 +261,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.core.utils.EqualityMixi
 
 ````
 
-````{py:method} reduce_ensemble() -> typing.Self
+````{py:method} reduce_ensemble(...) -> typing.Self
 :canonical: abtem.measurements.BaseMeasurements.reduce_ensemble
 
 ```{autodoc2-docstring} abtem.measurements.BaseMeasurements.reduce_ensemble
@@ -571,6 +587,21 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 
 ````
 
+````{py:method} to_data_array()
+:canonical: abtem.measurements.DiffractionPatterns.to_data_array
+
+````
+
+````{py:method} to_hyperspy(...)
+:canonical: abtem.measurements.DiffractionPatterns.to_hyperspy
+
+````
+
+````{py:method} to_quantem()
+:canonical: abtem.measurements.DiffractionPatterns.to_quantem
+
+````
+
 ````{py:method} voigtian_source_size(...) -> abtem.measurements.DiffractionPatterns
 :canonical: abtem.measurements.DiffractionPatterns.voigtian_source_size
 
@@ -581,6 +612,17 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement2D`
 ````
 
 `````
+
+````{py:data} FROZEN_PHONON_COMPONENTS
+:canonical: abtem.measurements.FROZEN_PHONON_COMPONENTS
+:value: >
+   ('total', 'elastic', 'diffuse')
+
+```{autodoc2-docstring} abtem.measurements.FROZEN_PHONON_COMPONENTS
+:parser: rst
+```
+
+````
 
 `````{py:class} Images(...)
 :canonical: abtem.measurements.Images
@@ -1274,10 +1316,36 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement1D`
 
 `````
 
+````{py:exception} UnshiftedExportWarning()
+:canonical: abtem.measurements.UnshiftedExportWarning
+
+Bases: {py:obj}`UserWarning`
+
+```{autodoc2-docstring} abtem.measurements.UnshiftedExportWarning
+:parser: rst
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.measurements.UnshiftedExportWarning.__init__
+:parser: rst
+```
+
+````
+
 ````{py:function} calculate_max_reciprocal_space_vector(...)
 :canonical: abtem.measurements.calculate_max_reciprocal_space_vector
 
 ```{autodoc2-docstring} abtem.measurements.calculate_max_reciprocal_space_vector
+:parser: rst
+```
+````
+
+````{py:function} elastic_diffuse_diffraction_patterns(...) -> abtem.measurements.DiffractionPatterns
+:canonical: abtem.measurements.elastic_diffuse_diffraction_patterns
+
+```{autodoc2-docstring} abtem.measurements.elastic_diffuse_diffraction_patterns
 :parser: rst
 ```
 ````
@@ -1308,18 +1376,6 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement1D`
 ```{autodoc2-docstring} abtem.measurements.momentum_resolved_spectrum
 :parser: rst
 ```
-````
-
-````{py:data} pd
-:canonical: abtem.measurements.pd
-:type: typing.Optional[types.ModuleType]
-:value: >
-   None
-
-```{autodoc2-docstring} abtem.measurements.pd
-:parser: rst
-```
-
 ````
 
 ````{py:function} periodic_crop(...) -> numpy.ndarray
@@ -1365,18 +1421,6 @@ Bases: {py:obj}`abtem.measurements._BaseMeasurement1D`
    None
 
 ```{autodoc2-docstring} abtem.measurements.sum_run_length_encoded_cuda
-:parser: rst
-```
-
-````
-
-````{py:data} xr
-:canonical: abtem.measurements.xr
-:type: typing.Optional[types.ModuleType]
-:value: >
-   None
-
-```{autodoc2-docstring} abtem.measurements.xr
 :parser: rst
 ```
 

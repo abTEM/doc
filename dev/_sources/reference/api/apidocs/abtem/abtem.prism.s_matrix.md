@@ -412,6 +412,16 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 
 ````
 
+````{py:property} energy
+:canonical: abtem.prism.s_matrix.SMatrix.energy
+:type: float | abtem.distributions.BaseDistribution
+
+```{autodoc2-docstring} abtem.prism.s_matrix.SMatrix.energy
+:parser: rst
+```
+
+````
+
 ````{py:property} ensemble_axes_metadata
 :canonical: abtem.prism.s_matrix.SMatrix.ensemble_axes_metadata
 

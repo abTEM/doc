@@ -385,9 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -688,8 +686,9 @@ interpolation.</p></td>
 specified in the configuration.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#abtem.core.fft.get_fftw_object" title="abtem.core.fft.get_fftw_object"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_fftw_object</span></code></a></p></td>
-<td><p>Get a pyfftw object for a given array and a given FFT function.
-The object is cached and reused if the array shape is the same.</p></td>
+<td><p>Get an in-place pyfftw object for a given array and a given FFT function.
+The plan is made from FFTW wisdom, which is created and kept the first time a
+layout is seen.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#abtem.core.fft.get_shared_diffraction_pattern_fft" title="abtem.core.fft.get_shared_diffraction_pattern_fft"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_shared_diffraction_pattern_fft</span></code></a></p></td>
 <td><p>Return <code class="docutils literal notranslate"><span class="pre">compute()</span></code>, reusing the value attached to <code class="docutils literal notranslate"><span class="pre">waves</span></code> by an
@@ -751,15 +750,11 @@ so those make up the cache key, together with the configuration the plan was
 built under. It is equally tied to one specific <em>buffer</em>, which on a cache
 hit is the previous call’s array, so the cached plans are re-pointed at the
 current array on every call and not only when they are built.</p>
-<p>The plans are deliberately built with the same flags every time, never flags
-derived from the buffer being transformed. An <code class="docutils literal notranslate"><span class="pre">FFTW_UNALIGNED</span></code> plan
-selects different codelets and so returns slightly different numbers (~1e-7
-relative, the order of float32 epsilon) than an aligned one. Since malloc
-only guarantees 16-byte alignment while FFTW’s <code class="docutils literal notranslate"><span class="pre">simd_alignment</span></code> is 32 on
-x86, choosing the flag from the incoming array would make the result depend
-on where the buffer happened to land – two runs differing only in chunking
-would then disagree. A buffer the plan will not accept is aligned by copying
-instead, which changes no arithmetic.</p>
+<p>The plans are always built for an aligned, C-contiguous buffer, and the
+input is brought to that layout by <code class="docutils literal notranslate"><span class="pre">_fftw_aligned</span></code> rather than planned for
+as it is: an <code class="docutils literal notranslate"><span class="pre">FFTW_UNALIGNED</span></code> plan rounds differently, so the result would
+otherwise depend on where the buffer happened to land – two runs differing
+only in chunking would then disagree.</p>
 <p>The cache is thread-local. Dask’s threaded scheduler can drive a single
 shared propagator from several worker threads at once, and because a plan
 points at exactly one buffer, sharing one pair between threads would make
@@ -789,7 +784,7 @@ Using the FFT library specified in the configuration.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a><em> or </em><em>da.core.Array</em>) – Array to convolve.</p></li>
 <li><p><strong>kernel</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Convolution kernel.</p></li>
-<li><p><strong>overwrite_x</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Overwrite the input array.</p></li>
+<li><p><strong>overwrite_x</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Overwrite the input array.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -810,9 +805,9 @@ used for real-space interpolation.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>array</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Array to crop.</p></li>
-<li><p><strong>new_shape</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – New shape of the array. If the new shape is smaller than the input array,
+<li><p><strong>new_shape</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – New shape of the array. If the new shape is smaller than the input array,
 each preceding dimension is treated as a batch dimension.</p></li>
-<li><p><strong>normalize</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, renormalize the array to conserve the total amplitude.</p></li>
+<li><p><strong>normalize</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, renormalize the array to conserve the total amplitude.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -832,9 +827,9 @@ each preceding dimension is treated as a batch dimension.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>array</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Array to interpolate.</p></li>
-<li><p><strong>new_shape</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – New shape of the array.</p></li>
-<li><p><strong>normalization</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Normalization to apply to the array. Can be ‘values’ or ‘amplitude’.</p></li>
-<li><p><strong>overwrite_x</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Overwrite the input array.</p></li>
+<li><p><strong>new_shape</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – New shape of the array.</p></li>
+<li><p><strong>normalization</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Normalization to apply to the array. Can be ‘values’ or ‘amplitude’.</p></li>
+<li><p><strong>overwrite_x</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Overwrite the input array.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -848,21 +843,21 @@ each preceding dimension is treated as a batch dimension.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.core.fft.fft_interpolation_masks">
-<span class="sig-prename descclassname"><span class="pre">abtem.core.fft.</span></span><span class="sig-name descname"><span class="pre">fft_interpolation_masks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/core/fft.html#fft_interpolation_masks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.fft.fft_interpolation_masks" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.core.fft.</span></span><span class="sig-name descname"><span class="pre">fft_interpolation_masks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/abtem/core/fft.html#fft_interpolation_masks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.fft.fft_interpolation_masks" title="Link to this definition">#</a></dt>
 <dd><p>Create boolean masks for interpolating between two arrays using Fourier space
 interpolation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>shape_in</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Shape of the input array to interpolate from.</p></li>
-<li><p><strong>shape_out</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Shape of the output array to interpolate to.</p></li>
+<li><p><strong>shape_in</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Shape of the input array to interpolate from.</p></li>
+<li><p><strong>shape_out</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Shape of the output array to interpolate to.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Masks for the input and output arrays.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a> of <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a> of <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -897,7 +892,7 @@ the number of dimensions to shift.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>positions</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Array of positions to shift the array to. The last dimension should be the
 number of dimensions to shift.</p></li>
-<li><p><strong>shape</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – Shape of the array to shift.</p></li>
+<li><p><strong>shape</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a>) – Shape of the array to shift.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -919,15 +914,20 @@ specified in the configuration.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.core.fft.get_fftw_object">
 <span class="sig-prename descclassname"><span class="pre">abtem.core.fft.</span></span><span class="sig-name descname"><span class="pre">get_fftw_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/abtem/core/fft.html#get_fftw_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.fft.get_fftw_object" title="Link to this definition">#</a></dt>
-<dd><p>Get a pyfftw object for a given array and a given FFT function.
-The object is cached and reused if the array shape is the same.</p>
+<dd><p>Get an in-place pyfftw object for a given array and a given FFT function.
+The plan is made from FFTW wisdom, which is created and kept the first time a
+layout is seen.</p>
+<p>The object transforms <code class="docutils literal notranslate"><span class="pre">array</span></code> itself if it is aligned and C-contiguous, and
+otherwise an aligned copy of it (see <code class="docutils literal notranslate"><span class="pre">_fftw_aligned</span></code>), so the result must be
+taken from calling the object, not read back from <code class="docutils literal notranslate"><span class="pre">array</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>array</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>ndarray</em></a>) – Array to create the FFT object for.</p></li>
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Name of the FFT function.</p></li>
-<li><p><strong>allow_new_wisdom</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Allow new wisdom to be created.</p></li>
-<li><p><strong>overwrite_x</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Allow the input array to be overwritten.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Name of the FFT function.</p></li>
+<li><p><strong>allow_new_wisdom</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Allow new wisdom to be created.</p></li>
+<li><p><strong>overwrite_x</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Allow the input array to be overwritten.</p></li>
+<li><p><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Axes over which to compute the FFT.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -964,7 +964,7 @@ Using the FFT library specified in the configuration.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.core.fft.is_fast_fft_size">
-<span class="sig-prename descclassname"><span class="pre">abtem.core.fft.</span></span><span class="sig-name descname"><span class="pre">is_fast_fft_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/core/fft.html#is_fast_fft_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.fft.is_fast_fft_size" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.core.fft.</span></span><span class="sig-name descname"><span class="pre">is_fast_fft_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/core/fft.html#is_fast_fft_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.fft.is_fast_fft_size" title="Link to this definition">#</a></dt>
 <dd><p>Whether an FFT of length <code class="docutils literal notranslate"><span class="pre">n</span></code> runs on fast radix kernels.</p>
 <p>FFT libraries only ship optimized kernels for lengths whose prime factors
 are small (2, 3, 5 and 7 are supported everywhere). A length with a larger
@@ -974,20 +974,20 @@ the arithmetic and, on GPU, a workspace of several times the transform
 size.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The transform length.</p>
+<dd class="field-odd"><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The transform length.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>True if <code class="docutils literal notranslate"><span class="pre">n</span></code> factorizes completely into 2, 3, 5 and 7.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.core.fft.next_fast_fft_size">
-<span class="sig-prename descclassname"><span class="pre">abtem.core.fft.</span></span><span class="sig-name descname"><span class="pre">next_fast_fft_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/core/fft.html#next_fast_fft_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.fft.next_fast_fft_size" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.core.fft.</span></span><span class="sig-name descname"><span class="pre">next_fast_fft_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../../../../_modules/abtem/core/fft.html#next_fast_fft_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.core.fft.next_fast_fft_size" title="Link to this definition">#</a></dt>
 <dd><p>The smallest length &gt;= <code class="docutils literal notranslate"><span class="pre">n</span></code> whose prime factors are all in {2, 3, 5, 7}.</p>
 <p>Useful for choosing grid sizes (<code class="docutils literal notranslate"><span class="pre">gpts</span></code>) that avoid the slow
 large-workspace Bluestein fallback on GPU. Stricter than
@@ -995,13 +995,13 @@ large-workspace Bluestein fallback on GPU. Stricter than
 pocketfft on CPU, but off cuFFT’s documented fast path).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The minimum transform length.</p>
+<dd class="field-odd"><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – The minimum transform length.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The next fast transform length.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a></p>
 </dd>
 </dl>
 </dd></dl>

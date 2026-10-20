@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -555,6 +553,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -599,6 +598,40 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="kn">from</span><span class="w"> </span><span class="nn">gpaw.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">Reader</span>  <span class="c1"># noqa</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">Reader</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="c1"># Per-atom array naming, for each atom of a transformed or repeated structure, the</span>
+<span class="c1"># index of the atom of the original structure it is a copy of. A potential sets it</span>
+<span class="c1"># before transforming the atoms, so that per-atom displacement standard deviations</span>
+<span class="c1"># can follow their atoms into a structure with a different number of atoms.</span>
+<span class="n">SOURCE_INDEX</span> <span class="o">=</span> <span class="s2">"abtem_source_index"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_identity</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether a frame is the identity, to within rounding of a rotation or an</span>
+<span class="sd">    orthogonalization; None is the identity."""</span>
+    <span class="k">if</span> <span class="n">frame</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">_as_frame</span><span class="p">(</span><span class="n">frame</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_as_frame</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="k">if</span> <span class="n">frame</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"A frame must be a 3x3 matrix, not of shape </span><span class="si">{</span><span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">frame</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_accepts_keyword</span><span class="p">(</span><span class="n">method</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether a method accepts a keyword argument of the given name."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">method</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="nb">any</span><span class="p">(</span>
+        <span class="n">parameter</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">parameter</span><span class="o">.</span><span class="n">kind</span> <span class="ow">is</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span>
+        <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">parameters</span>
+    <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_safe_read_atoms</span><span class="p">(</span><span class="n">calculator</span><span class="p">,</span> <span class="n">clean</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span>
@@ -694,6 +727,23 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        """</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_randomize_transformed</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span>
+        <span class="n">frame</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">directions_frame</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Randomize atoms that a potential transformed from :attr:`atoms`.</span>
+
+<span class="sd">        `frame` is the linear map from the Cartesian axes of :attr:`atoms` to</span>
+<span class="sd">        those of `atoms`, and `directions_frame` the one from the axes of `atoms`</span>
+<span class="sd">        to the axes the displacement directions refer to, both acting on row</span>
+<span class="sd">        vectors; None is the identity. Ensembles whose displacements have no</span>
+<span class="sd">        direction ignore both, so a subclass that implements only</span>
+<span class="sd">        `randomize(atoms)` keeps working.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">randomize</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">pass</span>
@@ -704,6 +754,14 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="w">        </span><span class="sd">"""Number of atomic configurations."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Iterate over the configurations of :attr:`atoms`.</span>
+
+<span class="sd">        Each configuration is :attr:`atoms` as given, displaced by</span>
+<span class="sd">        :meth:`randomize`. A potential that rotates, orthogonalizes or cuts the</span>
+<span class="sd">        cell simulates configurations of the transformed atoms instead, which</span>
+<span class="sd">        :meth:`~abtem.potentials.iam.Potential.to_atoms_ensemble` returns.</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">fp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_blocks</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
             <span class="n">fp</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
             <span class="k">yield</span> <span class="n">fp</span><span class="o">.</span><span class="n">randomize</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span></div>
@@ -836,7 +894,6 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.atoms</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AtomProperties</span><span class="p">,</span>
     <span class="n">B_to_sigma</span><span class="p">,</span>
-    <span class="n">atom_property_dict_to_atom_property_array</span><span class="p">,</span>
     <span class="n">sigma_to_B</span><span class="p">,</span>
     <span class="n">validate_per_atom_property</span><span class="p">,</span>
     <span class="n">validate_sigmas</span><span class="p">,</span>
@@ -876,11 +933,26 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        specify displacements for each species. A list or array with three numbers for</span>
 <span class="sd">        each atom.</span>
 
+<span class="sd">        The directions of anisotropic standard deviations are the Cartesian axes of</span>
+<span class="sd">        `atoms` as given. A potential that rotates the atoms to another `plane`, or</span>
+<span class="sd">        orthogonalizes their cell, applies the same linear map to the displacements,</span>
+<span class="sd">        including the small strain an orthogonalization may need. An atom whose</span>
+<span class="sd">        standard deviations are equal in all three directions (a float, for example)</span>
+<span class="sd">        is displaced along the potential's axes without that map: an isotropic</span>
+<span class="sd">        Gaussian is the same along any rotated axes, and its seeded displacement</span>
+<span class="sd">        stays that of `sigma * r`. Per-atom standard deviations follow their atoms</span>
+<span class="sd">        when the potential repeats the cell.</span>
+
 <span class="sd">    directions : str, optional</span>
-<span class="sd">        The Cartesian directions in which the atoms are displaced, as a string of one or</span>
-<span class="sd">        more of 'x', 'y' and 'z'. The default, 'xyz', displaces the atoms in all three</span>
-<span class="sd">        directions, including along the propagation direction; 'xy' restricts the</span>
-<span class="sd">        displacements to the plane perpendicular to the propagation direction.</span>
+<span class="sd">        The directions in which the atoms are displaced, as a string of one or more of</span>
+<span class="sd">        'x', 'y' and 'z'. In a potential, these are the axes of the potential: 'x' and</span>
+<span class="sd">        'y' perpendicular to the propagation direction and 'z' along it, whatever</span>
+<span class="sd">        `plane` the atoms are rotated to. The default, 'xyz', displaces the atoms in all</span>
+<span class="sd">        three directions; 'xy' keeps them in place along the propagation direction.</span>
+<span class="sd">        Iterating the frozen phonons, or calling :meth:`to_atoms_ensemble`, displaces</span>
+<span class="sd">        `atoms` without a potential, and the directions are then the axes of `atoms`.</span>
+<span class="sd">        :meth:`~abtem.potentials.iam.Potential.to_atoms_ensemble` returns the</span>
+<span class="sd">        configurations as a potential simulates them.</span>
 <span class="sd">    ensemble_mean : bool, optional</span>
 <span class="sd">        If True (default), the mean of the ensemble of results from a multislice</span>
 <span class="sd">        simulation is calculated, otherwise, the result of every frozen phonon</span>
@@ -960,9 +1032,6 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_configs</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_sigmas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">validate_sigmas</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigmas</span><span class="p">)</span>
-
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
         <span class="n">axes</span> <span class="o">=</span> <span class="p">[]</span>
@@ -979,34 +1048,123 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="p">)</span>
         <span class="k">return</span> <span class="n">axes</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sigmas_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The standard deviations of the given atoms, one row per atom.</span>
+
+<span class="sd">        Per-species standard deviations apply to any structure. Per-atom ones</span>
+<span class="sd">        belong to :attr:`atoms`; a structure with a different number of atoms</span>
+<span class="sd">        needs the :data:`SOURCE_INDEX` array, which a potential sets before</span>
+<span class="sd">        transforming the atoms.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sigmas</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">sigmas</span> <span class="o">=</span> <span class="n">validate_per_atom_property</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigmas</span><span class="p">,</span> <span class="n">return_array</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sigmas</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">sigmas</span>
+
+        <span class="n">sigmas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sigmas</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">SOURCE_INDEX</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sigmas</span><span class="p">[</span><span class="n">atoms</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="n">SOURCE_INDEX</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sigmas</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Per-atom displacement standard deviations are given for "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sigmas</span><span class="p">)</span><span class="si">}</span><span class="s2"> atoms, but </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span><span class="si">}</span><span class="s2"> atoms are displaced; give "</span>
+                <span class="s2">"them per species instead."</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">sigmas</span>
+
 <div class="viewcode-block" id="FrozenPhonons.randomize">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.phonons.html#abtem.inelastic.phonons.FrozenPhonons.randomize">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">randomize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span>
-        <span class="n">sigmas</span><span class="p">,</span> <span class="n">anisotropic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_sigmas</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">randomize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Randomly displace the atoms.</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sigmas</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="n">sigmas</span> <span class="o">=</span> <span class="n">atom_property_dict_to_atom_property_array</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">sigmas</span><span class="p">)</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        atoms : Atoms</span>
+<span class="sd">            The atoms to displace: :attr:`atoms`, or a copy a potential has</span>
+<span class="sd">            transformed (rotated, orthogonalized or repeated).</span>
+<span class="sd">        frame : 3x3 array, optional</span>
+<span class="sd">            The linear map from the Cartesian axes of :attr:`atoms` to those of</span>
+<span class="sd">            `atoms`, acting on row vectors: a displacement `d` along the axes of</span>
+<span class="sd">            :attr:`atoms` is `d @ frame` along those of `atoms`. Only anisotropic</span>
+<span class="sd">            standard deviations depend on it. The default is the identity.</span>
 
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sigmas</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        displaced : Atoms</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_randomize</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_randomize_transformed</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span>
+        <span class="n">frame</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">directions_frame</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">randomize</span> <span class="ow">is</span> <span class="n">FrozenPhonons</span><span class="o">.</span><span class="n">randomize</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_randomize</span><span class="p">(</span>
+                <span class="n">atoms</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">,</span> <span class="n">directions_frame</span><span class="o">=</span><span class="n">directions_frame</span>
+            <span class="p">)</span>
+        <span class="c1"># A subclass's own randomize, which may take the atoms only.</span>
+        <span class="k">if</span> <span class="n">_accepts_keyword</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">randomize</span><span class="p">,</span> <span class="s2">"frame"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">randomize</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">randomize</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_randomize</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span>
+        <span class="n">frame</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">directions_frame</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span>
+        <span class="n">sigmas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigmas_of</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
 
         <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="n">anisotropic</span><span class="p">:</span>
-            <span class="n">r</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axes</span><span class="p">:</span>
-                <span class="c1"># If sigmas is 2D (anisotropic), extract the sigma for this axis</span>
-                <span class="n">sigma_axis</span> <span class="o">=</span> <span class="n">sigmas</span><span class="p">[:,</span> <span class="n">axis</span><span class="p">]</span> <span class="k">if</span> <span class="n">sigmas</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="n">sigmas</span>
-                <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="n">axis</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sigma_axis</span> <span class="o">*</span> <span class="n">r</span><span class="p">[:,</span> <span class="n">axis</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">sigmas</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">displacements</span> <span class="o">=</span> <span class="n">sigmas</span> <span class="o">*</span> <span class="n">r</span>
+            <span class="c1"># Anisotropic standard deviations are given along the axes of</span>
+            <span class="c1"># self.atoms; the displacements are drawn along those axes and</span>
+            <span class="c1"># mapped to the axes of `atoms`. An isotropic Gaussian is the same</span>
+            <span class="c1"># distribution along any rotated axes, so an atom whose three</span>
+            <span class="c1"># standard deviations are equal is not mapped, and its seeded</span>
+            <span class="c1"># displacement is the same with any frame.</span>
+            <span class="n">anisotropic</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">sigmas</span> <span class="o">!=</span> <span class="n">sigmas</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">anisotropic</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_is_identity</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
+                <span class="n">displacements</span><span class="p">[</span><span class="n">anisotropic</span><span class="p">]</span> <span class="o">=</span> <span class="n">displacements</span><span class="p">[</span><span class="n">anisotropic</span><span class="p">]</span> <span class="o">@</span> <span class="n">_as_frame</span><span class="p">(</span>
+                    <span class="n">frame</span>
+                <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">r</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+            <span class="n">displacements</span> <span class="o">=</span> <span class="n">sigmas</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span>
 
-            <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axes</span><span class="p">:</span>
-                <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="n">axis</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sigmas</span> <span class="o">*</span> <span class="n">r</span><span class="p">[:,</span> <span class="n">axis</span><span class="p">]</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axes</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">axes</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_is_identity</span><span class="p">(</span><span class="n">directions_frame</span><span class="p">):</span>
+            <span class="c1"># `directions` refers to the axes of `directions_frame`: the</span>
+            <span class="c1"># displacement keeps its components along those of these axes it</span>
+            <span class="c1"># lists, which is a projection along the axes of `atoms`.</span>
+            <span class="n">directions_frame</span> <span class="o">=</span> <span class="n">_as_frame</span><span class="p">(</span><span class="n">directions_frame</span><span class="p">)</span>
+            <span class="n">kept</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">kept</span><span class="p">[</span><span class="n">axes</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">projection</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">directions_frame</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">kept</span><span class="p">)</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">directions_frame</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">diagonal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">projection</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">projection</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">diagonal</span><span class="p">),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">):</span>
+                <span class="c1"># The kept axes are axes of `atoms` too (a permutation, or a</span>
+                <span class="c1"># strain that leaves the dropped axes alone): keep those</span>
+                <span class="c1"># components exactly.</span>
+                <span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">axis</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="k">if</span> <span class="n">diagonal</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:]</span> <span class="o">+=</span> <span class="n">displacements</span> <span class="o">@</span> <span class="n">projection</span>
+                <span class="k">return</span> <span class="n">atoms</span>
 
-        <span class="k">return</span> <span class="n">atoms</span></div>
+        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="n">axis</span><span class="p">]</span> <span class="o">+=</span> <span class="n">displacements</span><span class="p">[:,</span> <span class="n">axis</span><span class="p">]</span>
 
+        <span class="k">return</span> <span class="n">atoms</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_from_partitioned_args_func</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1027,9 +1185,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">chunks</span> <span class="o">=</span> <span class="n">validate_chunks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">,</span> <span class="n">chunks</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">lazy</span><span class="p">:</span>
             <span class="n">arrays</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># One graph node shared by every chunk; created inside the loop,</span>
+            <span class="c1"># each chunk would get its own copy under a fresh UUID key.</span>
+            <span class="n">lazy_atoms</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chunk_ranges</span><span class="p">(</span><span class="n">chunks</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
                 <span class="n">seeds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span>
-                <span class="n">lazy_atoms</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
                 <span class="n">lazy_args</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">_wrap_with_array</span><span class="p">)((</span><span class="n">lazy_atoms</span><span class="p">,</span> <span class="n">seeds</span><span class="p">),</span> <span class="n">ndims</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
                 <span class="n">lazy_array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">from_delayed</span><span class="p">(</span><span class="n">lazy_args</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
                 <span class="n">arrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lazy_array</span><span class="p">)</span>
@@ -1048,6 +1208,11 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">to_atoms_ensemble</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert the frozen phonons to an ensemble of atoms.</span>
+
+<span class="sd">        The configurations displace `atoms` as given. A potential that rotates,</span>
+<span class="sd">        orthogonalizes or cuts the cell simulates configurations of the</span>
+<span class="sd">        transformed atoms instead, which</span>
+<span class="sd">        :meth:`~abtem.potentials.iam.Potential.to_atoms_ensemble` returns.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>

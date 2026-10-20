@@ -385,9 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -672,7 +670,8 @@ for a single calculator by using the <cite>frozen_phonons</cite> keyword.</p></t
 <td></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#abtem.potentials.gpaw.integrate_slice" title="abtem.potentials.gpaw.integrate_slice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">integrate_slice</span></code></a></p></td>
-<td></td>
+<td><p>Integrate the planes of <cite>array</cite> along its last axis between the heights <cite>a</cite>
+and <cite>b</cite>, and Fourier interpolate the result to <cite>gpts</cite>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -688,17 +687,19 @@ calculation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>nodes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Number of nodes used by the Hankel transform (<cite>hankel.SymmetricFourierTransform</cite>)
+<li><p><strong>nodes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Number of nodes used by the Hankel transform (<cite>hankel.SymmetricFourierTransform</cite>)
 that converts the all-electron radial charge density into an X-ray
 scattering factor. <cite>None</cite> (default) lets <cite>hankel</cite> choose automatically.</p></li>
-<li><p><strong>integration_step</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Step size used by the Hankel transform. The default of 0.002 is fine
-for light elements, but is too coarse for heavier ones (e.g. In, Z=49),
-where it can produce a non-monotonic, unphysical scattering factor; 0.001
-resolves this for most elements at negligible extra cost. The heaviest
-elements (e.g. Re, Z=75) may still show a several-percent-level
-mismatch against tabulated parametrizations even at this step size,
-plausibly from GPAW’s scalar-relativistic treatment diverging from
-whatever reference the tabulated parameters were fit to.</p></li>
+<li><p><strong>integration_step</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Step size used by the Hankel transform. The default is 1e-4. Coarser
+steps are inaccurate at small k, where the transform must resolve the
+whole radial extent of the density: against direct quadrature of the
+same density on GPAW’s radial grid, a step of 0.001 puts f_x for Au
+2.9 electrons low at k = 0.06 1/A and 0.63 high at k = 0.12 1/A (Si:
+0.009 low at 0.06). The electron scattering factor divides Z - f_x by
+k^2, so that became a 45 % (Au) and 26 % (Re) error in the fitted
+f_e at k = 0.12 1/A – the “several-percent mismatch” of heavy
+elements previously attributed to relativistic effects. At 1e-4 the
+error is &lt; 5e-4 electrons for k &gt;= 0.06 1/A, for ~0.1 s per call.</p></li>
 </ul>
 </dd>
 </dl>
@@ -710,8 +711,8 @@ whatever reference the tabulated parameters were fit to.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>symbol</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Chemical symbol of the atomic element.</p></li>
-<li><p><strong>charge</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Charge the atom by the given fractional number of electrons.</p></li>
+<li><p><strong>symbol</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Chemical symbol of the atomic element.</p></li>
+<li><p><strong>charge</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Charge the atom by the given fractional number of electrons.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -752,53 +753,71 @@ for a single calculator by using the <cite>frozen_phonons</cite> keyword.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>calculators</strong> (<em>(</em><em>list of</em><em>) </em><em>gpaw.calculator.GPAW</em><em> or </em><em>(</em><em>list of</em><em>) </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – GPAW calculator or path to GPAW calculator or list of calculators or paths.
+<li><p><strong>calculators</strong> (<em>(</em><em>list of</em><em>) </em><em>gpaw.calculator.GPAW</em><em> or </em><em>(</em><em>list of</em><em>) </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – GPAW calculator or path to GPAW calculator or list of calculators or paths.
 Atoms are read from the calculator.</p></li>
 <li><p><strong>gpts</strong> (<em>one</em><em> or </em><em>two int</em><em>, </em><em>optional</em>) – Number of grid points in <cite>x</cite> and <cite>y</cite> describing each slice of the potential.
 Provide either “sampling” (spacing between consecutive grid points) or “gpts”
 (total number of grid points).</p></li>
 <li><p><strong>sampling</strong> (<em>one</em><em> or </em><em>two float</em><em>, </em><em>optional</em>) – Sampling of the potential in <cite>x</cite> and <cite>y</cite> [1 / Å].
 Provide either “sampling” or “gpts”.</p></li>
-<li><p><strong>slice_thickness</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> or </em><em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Thickness of the potential slices in the propagation direction in [Å]
+<li><p><strong>slice_thickness</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Thickness of the potential slices in the propagation direction in [Å]
 (default is 0.5 Å).
 If given as a float the number of slices is calculated by dividing the slice
 thickness into the <cite>z</cite>-height of supercell. The slice thickness may be given as
 a sequence of values for each slice, in which case an error will be thrown if
 the sum of slice thicknesses is not equal to the height of the atoms.</p></li>
-<li><p><strong>exit_planes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The <cite>exit_planes</cite> argument can be used to calculate thickness series.
+<li><p><strong>exit_planes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – The <cite>exit_planes</cite> argument can be used to calculate thickness series.
 Providing <cite>exit_planes</cite> as a tuple of int indicates that the tuple contains the
 slice indices after which an exit plane is desired, and hence during a
-multislice simulation a measurement is created. If <cite>exit_planes</cite> is an integer a
-measurement will be collected every <cite>exit_planes</cite> number of slices.</p></li>
-<li><p><strong>plane</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> or </em><em>two tuples</em><em> of </em><em>three float</em><em>, </em><em>optional</em>) – The plane relative to the provided atoms mapped to <cite>xy</cite> plane of the potential,
+multislice simulation a measurement is created. If <cite>exit_planes</cite> is an integer
+<cite>n</cite>, a measurement is collected every <cite>n</cite> slices and after the last slice. The
+first measurement is then taken at the entrance surface (zero thickness),
+before any scattering, so the thickness series has <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">+</span> <span class="pre">ceil(num_slices</span> <span class="pre">/</span> <span class="pre">n)</span></code>
+planes; index it with <code class="docutils literal notranslate"><span class="pre">[-1]</span></code> for the exit surface. If <cite>n</cite> exceeds the number
+of slices, only the exit surface is returned and no thickness axis is added.</p></li>
+<li><p><strong>plane</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>two tuples</em><em> of </em><em>three float</em><em>, </em><em>optional</em>) – The plane relative to the provided atoms mapped to <cite>xy</cite> plane of the potential,
 i.e. provided plane is perpendicular to the propagation direction. If string,
 it must be a concatenation of two of ‘x’, ‘y’ and ‘z’;
 the default value ‘xy’ indicates that potential slices are cuts along the
-<cite>xy</cite>-plane of the atoms. The plane may also be specified with two arbitrary
-3D vectors, which are mapped to the <cite>x</cite> and <cite>y</cite> directions of the potential.
-The length of the vectors has no influence. If the vectors are not
-perpendicular, the second vector is rotated in the plane to become perpendicular
-to the first. Providing a value of ((1., 0., 0.), (0., 1., 0.)) is equivalent to
-providing ‘xy’.</p></li>
+<cite>xy</cite>-plane of the atoms. The atoms are rotated to the plane, never mirrored,
+so for ‘xz’, ‘yx’ and ‘zy’ the second axis is reversed (see
+<cite>abtem.atoms.rotate_atoms_to_plane</cite>). The plane may also
+be specified with two arbitrary 3D vectors, which are mapped to the <cite>x</cite> and
+<cite>y</cite> directions of the potential. The length of the vectors has no influence.
+If the vectors are not perpendicular, the second vector is rotated in the
+plane to become perpendicular to the first. Providing a value of
+((1., 0., 0.), (0., 1., 0.)) is equivalent to providing ‘xy’.</p></li>
 <li><p><strong>origin</strong> (<em>three float</em><em>, </em><em>optional</em>) – The origin relative to the provided Atoms mapped to the origin of the Potential.
-This is equivalent to translating the atoms. The default is (0., 0., 0.)</p></li>
-<li><p><strong>box</strong> (<em>three float</em><em>, </em><em>optional</em>) – The extent of the potential in <cite>x</cite>, <cite>y</cite> and <cite>z</cite>. If not given this is determined
-from the atoms’ cell. If the box size does not match an integer number of the
-atoms’ supercell, an affine transformation may be necessary to preserve
-periodicity, determined by the <cite>periodic</cite> keyword</p></li>
-<li><p><strong>periodic</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If a transformation of the atomic structure is required, <cite>periodic</cite> determines
+Only the default (0., 0., 0.) is supported; any other origin raises a
+<cite>NotImplementedError</cite>, because the potential is interpolated from the
+calculator’s grid of the atoms’ own cell.</p></li>
+<li><p><strong>box</strong> (<em>three float</em><em>, </em><em>optional</em>) – The extent of the potential in <cite>x</cite>, <cite>y</cite> and <cite>z</cite>. Only the default is
+supported, the atoms’ cell repeated by <cite>repetitions</cite> (rotated to <cite>plane</cite>, and
+for a non-orthogonal cell its best orthogonal cell); any other box raises a
+<cite>NotImplementedError</cite>.</p></li>
+<li><p><strong>periodic</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – If a transformation of the atomic structure is required, <cite>periodic</cite> determines
 how the atomic structure is transformed. If True (default), the periodicity of
 the Atoms is preserved, which may require applying a small affine
 transformation to the atoms. If False, the transformed potential is effectively
 cut out of a larger repeated potential, which may not preserve periodicity.</p></li>
 <li><p><strong>frozen_phonons</strong> (<em>abtem.AbstractFrozenPhonons</em><em>, </em><em>optional</em>) – Approximates frozen phonons for a single GPAW calculator by displacing only the
-nuclear core potentials. Supercedes the atoms from the calculator.</p></li>
-<li><p><strong>repetitions</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Repeats the atoms by integer amounts in the <cite>x</cite>, <cite>y</cite> and <cite>z</cite> directions before
+nuclear core potentials. Supercedes the atoms from the calculator. The atoms are
+displaced along their own axes before the slices transform them to <cite>plane</cite>
+(with the default box and origin; <cite>box</cite> and <cite>origin</cite> do not move the atoms),
+so every displacement gets the linear map of that transform: anisotropic ones
+as in <a class="reference internal" href="abtem.potentials.iam.html#abtem.potentials.iam.Potential" title="abtem.potentials.iam.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a>, and isotropic
+ones too, which therefore get the small strain of a non-orthogonal cell’s
+orthogonalization, while <a class="reference internal" href="abtem.potentials.iam.html#abtem.potentials.iam.Potential" title="abtem.potentials.iam.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> applies
+isotropic displacements without it. <cite>directions</cite> refers to the axes of the
+potential, as in <a class="reference internal" href="abtem.potentials.iam.html#abtem.potentials.iam.Potential" title="abtem.potentials.iam.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a>. A trajectory
+(<a class="reference internal" href="abtem.inelastic.phonons.html#abtem.inelastic.phonons.AtomsEnsemble" title="abtem.inelastic.phonons.AtomsEnsemble"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomsEnsemble</span></code></a>) is not accepted: pass one
+calculator per frame instead.</p></li>
+<li><p><strong>repetitions</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Repeats the atoms by integer amounts in the <cite>x</cite>, <cite>y</cite> and <cite>z</cite> directions before
 applying frozen phonon displacements to calculate the potential contribution of
 the nuclear cores. Necessary when using frozen phonons.</p></li>
-<li><p><strong>gridrefinement</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Necessary interpolation of the charge density into a finer grid for improved
+<li><p><strong>gridrefinement</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Necessary interpolation of the charge density into a finer grid for improved
 numerical precision. Allowed values are ‘2’ and ‘4’.</p></li>
-<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The device used for calculating the potential, ‘cpu’ or ‘gpu’. The default is
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – The device used for calculating the potential, ‘cpu’ or ‘gpu’. The default is
 determined by the user configuration file.</p></li>
 </ul>
 </dd>
@@ -811,7 +830,7 @@ determined by the user configuration file.</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="abtem.potentials.gpaw.GPAWPotential.ensemble_axes_metadata">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ensemble_axes_metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="abtem.core.axes.html#abtem.core.axes.AxisMetadata" title="abtem.core.axes.AxisMetadata"><span class="pre">AxisMetadata</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#abtem.potentials.gpaw.GPAWPotential.ensemble_axes_metadata" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ensemble_axes_metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="abtem.core.axes.html#abtem.core.axes.AxisMetadata" title="abtem.core.axes.AxisMetadata"><span class="pre">AxisMetadata</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#abtem.potentials.gpaw.GPAWPotential.ensemble_axes_metadata" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -831,8 +850,8 @@ determined by the user configuration file.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>first_slice</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Index of the first slice of the generated potential.</p></li>
-<li><p><strong>last_slice</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Index of the last slice of the generated potential.</p></li>
+<li><p><strong>first_slice</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Index of the first slice of the generated potential.</p></li>
+<li><p><strong>last_slice</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Index of the last slice of the generated potential.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -851,8 +870,9 @@ determined by the user configuration file.</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="abtem.potentials.gpaw.GPAWPotential.num_configurations">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_configurations</span></span><a class="headerlink" href="#abtem.potentials.gpaw.GPAWPotential.num_configurations" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_configurations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></em><a class="headerlink" href="#abtem.potentials.gpaw.GPAWPotential.num_configurations" title="Link to this definition">#</a></dt>
+<dd><p>Number of potential configurations; 1 when there is no ensemble axis.</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="abtem.potentials.gpaw.GPAWPotential.num_frozen_phonons">
@@ -874,7 +894,23 @@ determined by the user configuration file.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.potentials.gpaw.integrate_slice">
 <span class="sig-prename descclassname"><span class="pre">abtem.potentials.gpaw.</span></span><span class="sig-name descname"><span class="pre">integrate_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/abtem/potentials/gpaw.html#integrate_slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.potentials.gpaw.integrate_slice" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Integrate the planes of <cite>array</cite> along its last axis between the heights <cite>a</cite>
+and <cite>b</cite>, and Fourier interpolate the result to <cite>gpts</cite>.</p>
+<p>Plane k is the sample at the height k * dz, with dz the plane spacing, and
+stands for the heights from k * dz - dz / 2 to k * dz + dz / 2; the grid is
+periodic, so plane 0 also stands for the heights within dz / 2 below the
+thickness. A slice takes each plane times the length of the plane’s heights
+that lie between <cite>a</cite> and <cite>b</cite>. Consecutive slices share their limit, so the
+weights of every plane add up to dz. A limit on a plane splits it between the
+slices on either side (the trapezoidal rule), so the integral of a slice is
+centred on the slice. Taking the planes from floor(a / dz) to floor(b / dz)
+whole (a left Riemann sum) put it dz / 2 below the slice.</p>
+<p><cite>array</cite> is one period of a grid repeated <cite>repetitions</cite> times along its three
+axes, and <cite>thickness</cite> is the length of the repeated grid along the last axis.
+The planes are taken from the one period and the integral is repeated in the
+plane, which gives the same values as integrating the repeated grid, up to
+the order of the float sum.</p>
+</dd></dl>
 
 </section>
 </section>

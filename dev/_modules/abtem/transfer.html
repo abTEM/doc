@@ -380,9 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.distributions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.distributions</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.finite_difference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.finite_difference</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.integrals.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.integrals</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mcf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mcf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.mtf.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.mtf</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
@@ -564,7 +562,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">AxisMetadata</span><span class="p">,</span> <span class="n">EnergyAxis</span><span class="p">,</span> <span class="n">OrdinalAxis</span><span class="p">,</span> <span class="n">ParameterAxis</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">cp</span><span class="p">,</span> <span class="n">get_array_module</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_array_module</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.complex</span><span class="w"> </span><span class="kn">import</span> <span class="n">complex_exponential</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.energy</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Accelerator</span><span class="p">,</span>
@@ -589,12 +587,35 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseWaves</span><span class="p">,</span> <span class="n">Waves</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_split_energy</span><span class="p">(</span>
+    <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Split an energy argument into a scalar energy and an energy distribution,</span>
+<span class="sd">    exactly one of which may be set.</span>
+
+<span class="sd">    A list/array of energies becomes an energy-ensemble distribution, consistent</span>
+<span class="sd">    with PlaneWave/Probe/SMatrix accepting a list of energies. A single-valued</span>
+<span class="sd">    distribution is a plain scalar energy, as for :class:`.EnergyEnsemble`.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="n">validate_distribution</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">energy</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">energy</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">energy</span>
+    <span class="k">return</span> <span class="n">energy</span><span class="p">,</span> <span class="kc">None</span>
+
+
 <div class="viewcode-block" id="BaseTransferFunction">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.transfer.html#abtem.transfer.BaseTransferFunction">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BaseTransferFunction</span><span class="p">(</span>
     <span class="n">ReciprocalSpaceMultiplication</span><span class="p">,</span> <span class="n">HasAcceleratorMixin</span><span class="p">,</span> <span class="n">HasGrid2DMixin</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Base class for transfer functions."""</span>
+
+    <span class="c1"># A transfer function depends on the wavelength: a multi-energy ensemble is</span>
+    <span class="c1"># transformed one energy at a time, each at its own wavelength.</span>
+    <span class="n">_splits_energy_ensembles</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -607,15 +628,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="c1"># Unwrap EnergyEnsemble (passed from Probe.ctf / SMatrix with ensemble energy)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="s2">"energy"</span><span class="p">):</span>
             <span class="n">energy</span> <span class="o">=</span> <span class="n">energy</span><span class="o">.</span><span class="n">energy</span>  <span class="c1"># EnergyEnsemble → scalar or BaseDistribution</span>
-        <span class="c1"># A list/array of energies becomes an energy-ensemble distribution,</span>
-        <span class="c1"># consistent with PlaneWave/Probe/SMatrix accepting a list of energies.</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
-            <span class="n">energy</span> <span class="o">=</span> <span class="n">validate_distribution</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span> <span class="o">=</span> <span class="n">energy</span>
-            <span class="n">energy</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span> <span class="o">=</span> <span class="n">_split_energy</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_accelerator</span> <span class="o">=</span> <span class="n">Accelerator</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_grid</span> <span class="o">=</span> <span class="n">Grid</span><span class="p">(</span><span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span> <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">distributions</span><span class="o">=</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">distributions</span><span class="p">))</span>
@@ -631,26 +644,122 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"energy"</span><span class="p">):</span>
             <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">energy</span>  <span class="c1"># unwrap EnergyEnsemble</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">validate_distribution</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span> <span class="o">=</span> <span class="n">value</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_accelerator</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_accelerator</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span> <span class="o">=</span> <span class="n">_split_energy</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_accelerator</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_energy_ensemble_axes_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">EnergyAxis</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span><span class="o">.</span><span class="n">values</span><span class="p">))]</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="n">EnergyAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span><span class="p">,</span>
+                    <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
         <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_match_ensemble</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseTransferFunction</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""This transfer function, matched to the energies of `waves`.</span>
+
+<span class="sd">        A fixed scalar energy must be that of single-energy wave functions,</span>
+<span class="sd">        including an indexed member of an ensemble, whose energy is resolved from</span>
+<span class="sd">        its metadata or ensemble axes. An energy distribution must be exactly the</span>
+<span class="sd">        energies of a multi-energy ensemble (the same values in the same order).</span>
+<span class="sd">        It is matched to the ensemble's EnergyAxis rather than adding a second</span>
+<span class="sd">        one, so the returned copy has no energy of its own: each member is then</span>
+<span class="sd">        evaluated at its own energy (see</span>
+<span class="sd">        `abtem.array._calculate_new_array_per_energy`).</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If a fixed scalar energy differs from that of single-energy wave</span>
+<span class="sd">            functions.</span>
+<span class="sd">        EnergyUndefinedError</span>
+<span class="sd">            If neither the transfer function nor single-energy wave functions</span>
+<span class="sd">            define an energy.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the energies of a distribution differ from those of the ensemble,</span>
+<span class="sd">            if a distribution is applied to wave functions that are not a</span>
+<span class="sd">            multi-energy ensemble, or if a fixed scalar energy is applied to one.</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.array</span><span class="w"> </span><span class="kn">import</span> <span class="n">_multi_energy_axis</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">_resolve_other_energy</span>
+
+        <span class="n">index</span> <span class="o">=</span> <span class="n">_multi_energy_axis</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">_resolve_other_energy</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Cannot apply a </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> with a fixed energy to a multi-energy "</span>
+                    <span class="s2">"ensemble: each energy member requires its own wavelength. Pass "</span>
+                    <span class="s2">"a transfer function without an energy so the per-member "</span>
+                    <span class="s2">"energies are used."</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="n">energies</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Cannot apply a </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> whose energy is a distribution "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">energies</span><span class="si">}</span><span class="s2"> eV to wave functions that are not an energy "</span>
+                <span class="s2">"ensemble. Its energies must match the EnergyAxis of a "</span>
+                <span class="s2">"multi-energy ensemble; for single-energy wave functions use a "</span>
+                <span class="s2">"scalar energy or leave it unset."</span>
+            <span class="p">)</span>
+        <span class="n">wave_energies</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">energies</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">wave_energies</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
+            <span class="n">energies</span><span class="p">,</span> <span class="n">wave_energies</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.0</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The energies of the </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">energies</span><span class="si">}</span><span class="s2"> eV do not match the "</span>
+                <span class="sa">f</span><span class="s2">"energies of the wave function ensemble </span><span class="si">{</span><span class="n">wave_energies</span><span class="si">}</span><span class="s2"> eV. Use "</span>
+                <span class="s2">"the same energies in the same order, or leave the energy unset "</span>
+                <span class="s2">"so the per-member energies of the wave functions are used."</span>
+            <span class="p">)</span>
+
+        <span class="n">matched</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">matched</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">matched</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_energy_members</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseTransferFunction</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""A copy of this transfer function at each energy of its energy</span>
+<span class="sd">        distribution, in the order of its leading EnergyAxis."""</span>
+        <span class="n">members</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">energy</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+            <span class="n">member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">member</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
+            <span class="n">members</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">member</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">members</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_energy_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Energy metadata of measurements evaluated from the transfer function.</span>
+
+<span class="sd">        Only a scalar energy is recorded: an energy distribution is described by</span>
+<span class="sd">        the leading EnergyAxis, whose items carry each member's energy.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"energy"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">}</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_valid_wavelength</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Wavelength [Å], using first ensemble energy when energy is a distribution."""</span>
+<span class="w">        </span><span class="sd">"""Wavelength [Å]; the shortest one when energy is a distribution.</span>
+
+<span class="sd">        On a common spatial-frequency grid the highest energy (shortest</span>
+<span class="sd">        wavelength) reaches the smallest scattering angle, so a grid sized for</span>
+<span class="sd">        it covers a given angle for every member of the energy ensemble.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">energy2wavelength</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="k">return</span> <span class="n">energy2wavelength</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span><span class="o">.</span><span class="n">values</span><span class="p">)))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span>
 
     <span class="nd">@abstractmethod</span>
@@ -688,25 +797,26 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        kernel : numpy.ndarray or dask.array.Array</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
-            <span class="n">arrays</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
-                <span class="n">member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-                <span class="n">member</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-                <span class="n">arrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">member</span><span class="o">.</span><span class="n">_evaluate_kernel</span><span class="p">(</span><span class="n">waves</span><span class="p">))</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">arrays</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">arrays</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">member</span><span class="o">.</span><span class="n">_evaluate_kernel</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span> <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_members</span><span class="p">()</span>
+            <span class="p">]</span>
+            <span class="k">return</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">arrays</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">arrays</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">waves</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">device</span> <span class="o">=</span> <span class="s2">"cpu"</span>
+            <span class="n">transfer_function</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="bp">self</span><span class="p">,</span> <span class="s2">"cpu"</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+            <span class="c1"># Match a copy, so that evaluating against `waves` does not leave this</span>
+            <span class="c1"># transfer function with their energy or grid.</span>
+            <span class="n">transfer_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">transfer_function</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+            <span class="n">transfer_function</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
             <span class="n">device</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">device</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
+        <span class="n">transfer_function</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
+        <span class="n">transfer_function</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
 
-        <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_angular_grid</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_from_angular_grid</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span>
+        <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="n">transfer_function</span><span class="o">.</span><span class="n">_angular_grid</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">transfer_function</span><span class="o">.</span><span class="n">_evaluate_from_angular_grid</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span>
 
 <div class="viewcode-block" id="BaseTransferFunction.to_diffraction_patterns">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.transfer.html#abtem.transfer.BaseTransferFunction.to_diffraction_patterns">[docs]</a>
@@ -728,7 +838,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">            `RuntimeError` will be raised.</span>
 <span class="sd">        gpts : int | tuple[int, int], optional</span>
 <span class="sd">            The number of grid points in reciprocal space for performing Fourier</span>
-<span class="sd">            Transform. If not provided, a default value of 128 will be used.</span>
+<span class="sd">            Transform. If not provided, the gpts of the instance are used, or 128 if</span>
+<span class="sd">            it has none.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -757,14 +868,19 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">else</span><span class="p">:</span>
             <span class="n">sampling</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">gpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">gpts</span> <span class="o">=</span> <span class="mi">128</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span>
+        <span class="k">if</span> <span class="n">gpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">128</span>
 
+        <span class="n">gpts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,)))</span>
+        <span class="n">sampling</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,)))</span>
+
+        <span class="c1"># The sampling sets the maximum angle and gpts the number of pixels, so</span>
+        <span class="c1"># both are kept and the extent follows. Setting them one at a time on a</span>
+        <span class="c1"># grid that already has an extent would keep that extent instead and</span>
+        <span class="c1"># change the other one.</span>
         <span class="n">ctf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">ctf</span><span class="o">.</span><span class="n">gpts</span> <span class="o">=</span> <span class="n">gpts</span>
-        <span class="n">ctf</span><span class="o">.</span><span class="n">sampling</span> <span class="o">=</span> <span class="n">sampling</span>
+        <span class="n">ctf</span><span class="o">.</span><span class="n">extent</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">d</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">))</span>
 
         <span class="n">array</span> <span class="o">=</span> <span class="n">ctf</span><span class="o">.</span><span class="n">_evaluate_kernel</span><span class="p">()</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
@@ -772,8 +888,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">xp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
             <span class="n">sampling</span><span class="o">=</span><span class="n">ctf</span><span class="o">.</span><span class="n">reciprocal_space_sampling</span><span class="p">,</span>
             <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="n">ctf</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">,</span>
-            <span class="n">fftshift</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">"energy"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">},</span>
+            <span class="n">fftshift</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_metadata</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">diffraction_patterns</span></div>
 
@@ -791,15 +907,15 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="k">class</span><span class="w"> </span><span class="nc">BaseAperture</span><span class="p">(</span><span class="n">BaseTransferFunction</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Base class for apertures. Documented in the subclasses."""</span>
 
-    <span class="c1"># Why a zero semiangle cutoff is invalid for this aperture type, or None where</span>
-    <span class="c1"># it is valid: an Aperture or CTF with a zero cutoff keeps the zero-angle pixel,</span>
-    <span class="c1"># i.e. a parallel beam.</span>
-    <span class="n">_zero_semiangle_cutoff_error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># Whether a zero semiangle cutoff leaves this aperture no open area, so that</span>
+    <span class="c1"># its probe would be NaN (an all-zero aperture normalized 0/0). An Aperture or</span>
+    <span class="c1"># CTF with a zero cutoff keeps the zero-angle pixel, i.e. a parallel beam.</span>
+    <span class="n">_closed_at_zero_cutoff</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">extent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gpts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -858,8 +974,8 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_semiangle_cutoff</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Reject a negative (or NaN) semiangle cutoff, and a zero one where this</span>
-<span class="sd">        aperture type has no use for it. None (not set) passes through."""</span>
+<span class="w">        </span><span class="sd">"""Reject a negative (or NaN) semiangle cutoff, and a zero one where it</span>
+<span class="sd">        leaves no open area. None (not set) passes through."""</span>
         <span class="k">if</span> <span class="n">semiangle_cutoff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">semiangle_cutoff</span>
 
@@ -873,13 +989,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">values</span><span class="p">))</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">values</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"semiangle_cutoff must be non-negative, got </span><span class="si">{</span><span class="n">shown</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zero_semiangle_cutoff_error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">values</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
-            <span class="n">article</span> <span class="o">=</span> <span class="s2">"An"</span> <span class="k">if</span> <span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s2">"AEIOU"</span> <span class="k">else</span> <span class="s2">"A"</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closed_at_zero_cutoff</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">values</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">article</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> with semiangle_cutoff=0 "</span>
-                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_zero_semiangle_cutoff_error</span><span class="si">}</span><span class="s2">; give a positive "</span>
-                <span class="s2">"semiangle_cutoff."</span>
+                <span class="sa">f</span><span class="s2">"A </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> with semiangle_cutoff=0 has no open area; "</span>
+                <span class="s2">"give a positive semiangle_cutoff."</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">semiangle_cutoff</span>
@@ -1010,8 +1123,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        zero-angle beam, i.e. a parallel beam.</span>
 <span class="sd">    soft : bool, optional</span>
 <span class="sd">        If True, the edge of the aperture is softened (default is True).</span>
-<span class="sd">    energy : float, optional</span>
+<span class="sd">    energy : float, list of float or BaseDistribution, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">        Several energies must be those of a multi-energy ensemble of wave</span>
+<span class="sd">        functions, as for :class:`.CTF`.</span>
 <span class="sd">    extent : float or two float, optional</span>
 <span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single</span>
 <span class="sd">        float is given, both are set equal.</span>
@@ -1026,7 +1141,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span><span class="p">,</span>
         <span class="n">soft</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">extent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gpts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1048,12 +1163,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">axes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_ensemble_axes_metadata</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
             <span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span> <span class="o">+</span> <span class="p">[</span>
-                <span class="n">ParameterAxis</span><span class="p">(</span>
+                <span class="n">ParameterAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">semiangle_cutoff</span><span class="p">,</span>
                     <span class="n">label</span><span class="o">=</span><span class="s2">"semiangle_cutoff"</span><span class="p">,</span>
-                    <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">semiangle_cutoff</span><span class="p">),</span>
                     <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span>
                     <span class="n">tex_label</span><span class="o">=</span><span class="s2">"$</span><span class="se">\\</span><span class="s2">alpha_</span><span class="si">{cut}</span><span class="s2">$"</span><span class="p">,</span>
-                    <span class="n">_ensemble_mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">semiangle_cutoff</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">]</span>
         <span class="k">return</span> <span class="n">axes</span>
@@ -1125,8 +1239,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        where 1 gives a fully open disk.</span>
 <span class="sd">    semiangle_cutoff : float</span>
 <span class="sd">        The cutoff semiangle of the aperture [mrad]. Must be positive.</span>
-<span class="sd">    energy : float, optional</span>
+<span class="sd">    energy : float, list of float or BaseDistribution, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">        Several energies must be those of a multi-energy ensemble of wave</span>
+<span class="sd">        functions, as for :class:`.CTF`.</span>
 <span class="sd">    extent : float or two float, optional</span>
 <span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single</span>
 <span class="sd">        float is given, both are set equal.</span>
@@ -1141,7 +1257,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Corner radius in mrads. Default value is 0.0</span>
 <span class="sd">    """</span>
 
-    <span class="n">_zero_semiangle_cutoff_error</span> <span class="o">=</span> <span class="s2">"has no open area"</span>
+    <span class="n">_closed_at_zero_cutoff</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1150,7 +1266,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">num_rings</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">ring_width</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">extent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gpts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1267,7 +1383,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">edge_w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_edge_softness</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1e3</span><span class="p">,</span> <span class="mf">1e-30</span><span class="p">)</span>
         <span class="n">k_corner</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_corner_radius</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1e3</span>
 
-        <span class="n">aperture</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">aperture</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
 
         <span class="k">for</span> <span class="n">a0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_rings</span><span class="p">):</span>
             <span class="n">k_inner</span> <span class="o">=</span> <span class="n">a0</span> <span class="o">*</span> <span class="p">(</span><span class="n">ds</span> <span class="o">+</span> <span class="n">d0</span><span class="p">)</span>
@@ -1285,8 +1401,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span class="n">t_deg</span> <span class="o">+=</span> <span class="mf">360.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spoke_num</span> <span class="o">/</span> <span class="mf">2.0</span>
 
                         <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">t_deg</span><span class="p">)</span>
-                        <span class="n">ct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-                        <span class="n">st</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+                        <span class="n">ct</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+                        <span class="n">st</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
 
                         <span class="n">u</span> <span class="o">=</span> <span class="n">kx</span> <span class="o">*</span> <span class="n">ct</span> <span class="o">+</span> <span class="n">ky</span> <span class="o">*</span> <span class="n">st</span>
                         <span class="n">v</span> <span class="o">=</span> <span class="n">ky</span> <span class="o">*</span> <span class="n">ct</span> <span class="o">-</span> <span class="n">kx</span> <span class="o">*</span> <span class="n">st</span>
@@ -1310,8 +1426,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span class="n">t_deg</span> <span class="o">+=</span> <span class="mf">360.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spoke_num</span> <span class="o">/</span> <span class="mf">2.0</span>
 
                     <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">t_deg</span><span class="p">)</span>
-                    <span class="n">ct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-                    <span class="n">st</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+                    <span class="n">ct</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+                    <span class="n">st</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
 
                     <span class="n">u</span> <span class="o">=</span> <span class="n">kx</span> <span class="o">*</span> <span class="n">ct</span> <span class="o">+</span> <span class="n">ky</span> <span class="o">*</span> <span class="n">st</span>
                     <span class="n">v</span> <span class="o">=</span> <span class="n">ky</span> <span class="o">*</span> <span class="n">ct</span> <span class="o">-</span> <span class="n">kx</span> <span class="o">*</span> <span class="n">st</span>
@@ -1324,7 +1440,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">aper</span> <span class="o">=</span> <span class="n">_ramp01</span><span class="p">((</span><span class="o">-</span><span class="n">d_keep</span><span class="p">)</span> <span class="o">/</span> <span class="n">edge_w</span><span class="p">)</span>
             <span class="n">aperture</span> <span class="o">+=</span> <span class="n">aper</span>
         <span class="n">aperture</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">aperture</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">aperture</span></div>
+        <span class="k">return</span> <span class="n">aperture</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span></div>
 
 
 
@@ -1340,8 +1456,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Quantum number of vortex beam.</span>
 <span class="sd">    semiangle_cutoff : float</span>
 <span class="sd">        The cutoff semiangle of the aperture [mrad]. Must be positive.</span>
-<span class="sd">    energy : float, optional</span>
+<span class="sd">    energy : float, list of float or BaseDistribution, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">        Several energies must be those of a multi-energy ensemble of wave</span>
+<span class="sd">        functions, as for :class:`.CTF`.</span>
 <span class="sd">    extent : float or two float, optional</span>
 <span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single</span>
 <span class="sd">        float is given, both are set equal.</span>
@@ -1352,13 +1470,13 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        ignored.</span>
 <span class="sd">    """</span>
 
-    <span class="n">_zero_semiangle_cutoff_error</span> <span class="o">=</span> <span class="s2">"has no open area"</span>
+    <span class="n">_closed_at_zero_cutoff</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">quantum_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">extent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gpts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1415,8 +1533,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        non-negative and smaller than `semiangle_cutoff`.</span>
 <span class="sd">    semiangle_cutoff : float</span>
 <span class="sd">        The cutoff semiangle of the aperture [mrad]. Must be positive.</span>
-<span class="sd">    energy : float, optional</span>
+<span class="sd">    energy : float, list of float or BaseDistribution, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">        Several energies must be those of a multi-energy ensemble of wave</span>
+<span class="sd">        functions, as for :class:`.CTF`.</span>
 <span class="sd">    extent : float or two float, optional</span>
 <span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single</span>
 <span class="sd">        float is given, both are set equal.</span>
@@ -1427,17 +1547,20 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        ignored.</span>
 <span class="sd">    """</span>
 
-    <span class="n">_zero_semiangle_cutoff_error</span> <span class="o">=</span> <span class="s2">"has no open area"</span>
-
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">inner_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">extent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gpts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inner_cutoff</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"AnnularAperture does not support a distribution of inner_cutoff; "</span>
+                <span class="s2">"give a single value."</span>
+            <span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">inner_cutoff</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"inner_cutoff must be non-negative, got </span><span class="si">{</span><span class="n">inner_cutoff</span><span class="si">!r}</span><span class="s2">."</span>
@@ -1461,17 +1584,18 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="k">return</span> <span class="n">semiangle_cutoff</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
-            <span class="n">smallest</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="o">.</span><span class="n">values</span><span class="p">))</span>
-            <span class="n">shown</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"a distribution with smallest value </span><span class="si">{</span><span class="n">smallest</span><span class="si">!r}</span><span class="s2">"</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">smallest</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">)</span>
-            <span class="n">shown</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">)</span>
+            <span class="c1"># The evaluation takes a single cutoff, and the annulus has no</span>
+            <span class="c1"># ensemble axis for the distribution (unlike Aperture's).</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"AnnularAperture does not support a distribution of "</span>
+                <span class="s2">"semiangle_cutoff; give a single value."</span>
+            <span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner_cutoff</span> <span class="o">&gt;=</span> <span class="n">smallest</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner_cutoff</span> <span class="o">&gt;=</span> <span class="n">semiangle_cutoff</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"inner_cutoff (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_inner_cutoff</span><span class="si">!r}</span><span class="s2">) must be smaller than "</span>
-                <span class="sa">f</span><span class="s2">"semiangle_cutoff (</span><span class="si">{</span><span class="n">shown</span><span class="si">}</span><span class="s2">); otherwise the AnnularAperture has "</span>
-                <span class="s2">"no open area."</span>
+                <span class="sa">f</span><span class="s2">"semiangle_cutoff (</span><span class="si">{</span><span class="n">semiangle_cutoff</span><span class="si">!r}</span><span class="s2">); otherwise the "</span>
+                <span class="s2">"AnnularAperture has no open area."</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">semiangle_cutoff</span>
@@ -1493,7 +1617,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
         <span class="n">semiangle_cutoff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">semiangle_cutoff</span>
         <span class="n">inner_cutoff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner_cutoff</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="n">SupportsFloat</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="n">SupportsFloat</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">"AnnularAperture needs a single semiangle_cutoff, got "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">semiangle_cutoff</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
 
         <span class="n">semiangle_cutoff</span> <span class="o">=</span> <span class="n">semiangle_cutoff</span> <span class="o">/</span> <span class="mf">1e3</span>
         <span class="n">inner_cutoff</span> <span class="o">=</span> <span class="n">inner_cutoff</span> <span class="o">/</span> <span class="mf">1e3</span>
@@ -1516,8 +1644,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Phase shift of Zernike film [rad]</span>
 <span class="sd">    semiangle_cutoff : float</span>
 <span class="sd">        The cutoff semiangle of the aperture [mrad]. Must be positive.</span>
-<span class="sd">    energy : float, optional</span>
+<span class="sd">    energy : float, list of float or BaseDistribution, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">        Several energies must be those of a multi-energy ensemble of wave</span>
+<span class="sd">        functions, as for :class:`.CTF`.</span>
 <span class="sd">    extent : float or two float, optional</span>
 <span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single</span>
 <span class="sd">        float is given, both are set equal.</span>
@@ -1528,14 +1658,14 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        ignored.</span>
 <span class="sd">    """</span>
 
-    <span class="n">_zero_semiangle_cutoff_error</span> <span class="o">=</span> <span class="s2">"has no open area"</span>
+    <span class="n">_closed_at_zero_cutoff</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">center_hole_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">phase_shift</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">semiangle_cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">extent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gpts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1596,10 +1726,6 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="viewcode-block" id="RadialPhasePlate">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.transfer.html#abtem.transfer.RadialPhasePlate">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RadialPhasePlate</span><span class="p">(</span><span class="n">BaseAperture</span><span class="p">):</span>
-    <span class="n">_zero_semiangle_cutoff_error</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">"has a phase pattern of zero radius, so it does nothing"</span>
-    <span class="p">)</span>
-
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">num_flips</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -1607,7 +1733,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">phase_shift</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
         <span class="n">power_law</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
         <span class="n">shift_central_semiangle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">extent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gpts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1672,10 +1798,18 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">else</span><span class="p">:</span>
             <span class="n">alpha_normed</span> <span class="o">=</span> <span class="p">(</span><span class="n">alpha_normed</span> <span class="o">-</span> <span class="n">alpha_normed</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="n">ptp</span>
 
-        <span class="n">phase_shift</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha_normed</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_flips</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">0.0</span>
-        <span class="n">phase_shift</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase_shift</span> <span class="o">*</span> <span class="n">phase_shift</span><span class="p">)</span>
+        <span class="c1"># The sign of sin(pi * k) at the integer k reached outside the cutoff is set</span>
+        <span class="c1"># by rounding, so this is deliberately evaluated in float64 whatever the</span>
+        <span class="c1"># configured precision: in float32 it flips the phase of most of the grid.</span>
+        <span class="n">flipped</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha_normed</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_flips</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="o">&lt;</span> <span class="mf">0.0</span>
+        <span class="p">)</span>
+        <span class="c1"># The exponent is 0 or phase_shift: built in the dtype of the grid, so that</span>
+        <span class="c1"># the complex result is in the configured precision without a cast.</span>
+        <span class="n">flipped</span> <span class="o">=</span> <span class="n">flipped</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">alpha</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase_shift</span>
 
-        <span class="k">return</span> <span class="n">phase_shift</span></div>
+        <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">flipped</span><span class="p">)</span></div>
 
 
 
@@ -1693,8 +1827,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        lens current instability [Å]. Note: this uses the 1/e width convention (as in</span>
 <span class="sd">        Kirkland), not the standard deviation; to convert, use focal_spread = sqrt(2)*sigma.</span>
 <span class="sd">        Alternatively, a distribution of values may be provided.</span>
-<span class="sd">    energy : float, optional</span>
+<span class="sd">    energy : float, list of float or BaseDistribution, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">        Several energies must be those of a multi-energy ensemble of wave</span>
+<span class="sd">        functions, as for :class:`.CTF`.</span>
 <span class="sd">    extent : float or two float, optional</span>
 <span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single</span>
 <span class="sd">        float is given, both are set equal.</span>
@@ -1708,7 +1844,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">focal_spread</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">extent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gpts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1742,8 +1878,9 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
 
-        <span class="n">unpacked</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_unpack_distributions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">focal_spread</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">alpha</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">xp</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">focal_spread</span><span class="p">,)</span> <span class="o">=</span> <span class="n">unpacked</span>
+        <span class="p">(</span><span class="n">focal_spread</span><span class="p">,)</span> <span class="o">=</span> <span class="n">_unpack_distributions</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">focal_spread</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">alpha</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">xp</span>
+        <span class="p">)</span>
 
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_ensemble_axes</span><span class="p">)))</span>
@@ -1897,11 +2034,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">for</span> <span class="n">parameter_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aberration_coefficients</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
                 <span class="n">axes_metadata</span> <span class="o">+=</span> <span class="p">[</span>
-                    <span class="n">ParameterAxis</span><span class="p">(</span>
+                    <span class="n">ParameterAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span>
+                        <span class="n">value</span><span class="p">,</span>
                         <span class="n">label</span><span class="o">=</span><span class="n">parameter_name</span><span class="p">,</span>
-                        <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
                         <span class="n">units</span><span class="o">=</span><span class="s2">"Å"</span><span class="p">,</span>
-                        <span class="n">_ensemble_mean</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
                         <span class="n">tex_label</span><span class="o">=</span><span class="n">symbol_to_tex_symbol</span><span class="p">(</span><span class="n">parameter_name</span><span class="p">),</span>
                     <span class="p">)</span>
                 <span class="p">]</span>
@@ -1932,16 +2068,31 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        aberration_coefficients : dict</span>
 <span class="sd">            Mapping from aberration symbols to their corresponding values.</span>
 <span class="sd">        """</span>
-        <span class="k">for</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">aberration_coefficients</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"defocus"</span><span class="p">,</span> <span class="s2">"C10"</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"scherzer"</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                            <span class="s2">"energy undefined, Scherzer defocus cannot be evaluated"</span>
-                        <span class="p">)</span>
-                    <span class="n">C30</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aberration_coefficients</span><span class="p">[</span><span class="s2">"C30"</span><span class="p">]</span>
-                    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">C30</span><span class="p">,</span> <span class="n">SupportsFloat</span><span class="p">)</span>
-                    <span class="n">value</span> <span class="o">=</span> <span class="n">scherzer_defocus</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">C30</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid_energy</span><span class="p">)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">is_scherzer</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="n">symbol</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"defocus"</span><span class="p">,</span> <span class="s2">"C10"</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"scherzer"</span>
+            <span class="p">)</span>
+
+        <span class="c1"># The Scherzer defocus depends on C30, so resolve it only after every</span>
+        <span class="c1"># other coefficient has been set, whatever the order they were given in.</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="n">aberration_coefficients</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="n">is_scherzer</span><span class="p">(</span><span class="o">*</span><span class="n">item</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_scherzer</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                        <span class="s2">"energy undefined, Scherzer defocus cannot be evaluated"</span>
+                    <span class="p">)</span>
+                <span class="n">C30</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aberration_coefficients</span><span class="p">[</span><span class="s2">"C30"</span><span class="p">]</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">C30</span><span class="p">,</span> <span class="n">SupportsFloat</span><span class="p">)</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">scherzer_defocus</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">C30</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid_energy</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">symbol</span> <span class="o">==</span> <span class="s2">"C10"</span><span class="p">:</span>
+                    <span class="c1"># scherzer_defocus returns a defocus; C10 = -defocus.</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="n">value</span>
 
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"string values only allowed for defocus"</span><span class="p">)</span>
@@ -2001,8 +2152,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    aberration_coefficients: dict, optional</span>
 <span class="sd">        Mapping from aberration symbols to their corresponding values. All aberration</span>
 <span class="sd">        magnitudes should be given in [Å] and angles should be given in [radian].</span>
-<span class="sd">    energy : float, optional</span>
+<span class="sd">    energy : float, list of float or BaseDistribution, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">        Several energies must be those of a multi-energy ensemble of wave</span>
+<span class="sd">        functions, as for :class:`.CTF`.</span>
 <span class="sd">    extent : float or two float, optional</span>
 <span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single</span>
 <span class="sd">        float is given, both are set equal.</span>
@@ -2021,7 +2174,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">aberration_coefficients</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
             <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span><span class="p">]</span>
         <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">extent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gpts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2071,8 +2224,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aberration_coefficients</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angular_spread</span><span class="p">,)</span>
 
-        <span class="n">unpacked</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_unpack_distributions</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">alpha</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">xp</span><span class="p">)</span>
-        <span class="n">angular_spread</span> <span class="o">=</span> <span class="n">unpacked</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1e3</span>
+        <span class="n">unpacked</span> <span class="o">=</span> <span class="n">_unpack_distributions</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">alpha</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">xp</span><span class="p">)</span>
+        <span class="c1"># An array, so that its sign (a float64 NumPy scalar for a plain float)</span>
+        <span class="c1"># does not widen the single-precision envelope.</span>
+        <span class="n">angular_spread</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">unpacked</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1e3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
         <span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">polar_symbols</span><span class="p">,</span> <span class="n">unpacked</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
 
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
@@ -2191,8 +2346,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    aberration_coefficients: dict, optional</span>
 <span class="sd">        Mapping from aberration symbols to their corresponding values. All aberration</span>
 <span class="sd">        magnitudes should be given in [Å] and angles should be given in [radian].</span>
-<span class="sd">    energy : float, optional</span>
+<span class="sd">    energy : float, list of float or BaseDistribution, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">        Several energies must be those of a multi-energy ensemble of wave</span>
+<span class="sd">        functions, as for :class:`.CTF`.</span>
 <span class="sd">    extent : float or two float, optional</span>
 <span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single</span>
 <span class="sd">        float is given, both are set equal.</span>
@@ -2210,7 +2367,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">aberration_coefficients</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
             <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span><span class="p">]</span>
         <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">extent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gpts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2254,7 +2411,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span> <span class="o">+</span> <span class="n">alpha</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="p">)</span>
 
-        <span class="n">parameter_values</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">_unpack_distributions</span><span class="p">(</span>
+        <span class="n">parameter_values</span> <span class="o">=</span> <span class="n">_unpack_distributions</span><span class="p">(</span>
             <span class="o">*</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aberration_coefficients</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">shape</span><span class="o">=</span><span class="n">alpha</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">xp</span>
         <span class="p">)</span>
 
@@ -2332,12 +2489,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">array</span> <span class="o">*=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">array</span> <span class="o">=</span> <span class="n">complex_exponential</span><span class="p">(</span><span class="o">-</span><span class="n">array</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">array</span>
-
+        <span class="c1"># The distribution weights are NOT applied here: each ensemble member is</span>
+        <span class="c1"># the unweighted transfer function for its parameter values, and the</span>
+        <span class="c1"># weights (carried by the ensemble axis metadata) are applied as</span>
+        <span class="c1"># probabilities when the ensemble of measurements is reduced.</span>
         <span class="k">return</span> <span class="n">array</span></div>
 
 
@@ -2377,8 +2532,14 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    aberration_coefficients: dict, optional</span>
 <span class="sd">        Mapping from aberration symbols to their corresponding values. All aberration</span>
 <span class="sd">        magnitudes should be given in [Å] and angles should be given in [radian].</span>
-<span class="sd">    energy : float, optional</span>
+<span class="sd">    energy : float, list of float or BaseDistribution, optional</span>
 <span class="sd">        Electron energy [eV]. If not provided, inferred from the wave functions.</span>
+<span class="sd">        Several energies give an energy-ensemble CTF, with a leading EnergyAxis;</span>
+<span class="sd">        applied to a multi-energy ensemble of wave functions, its energies must</span>
+<span class="sd">        match the ensemble's, and each member is evaluated at its own energy.</span>
+<span class="sd">        Only the energy values are matched: the weights of the wave functions'</span>
+<span class="sd">        ensemble decide its ensemble mean, and those of this distribution are</span>
+<span class="sd">        not used.</span>
 <span class="sd">    extent : float or two float, optional</span>
 <span class="sd">        Lateral extent of wave functions [Å] in `x` and `y` directions. If a single</span>
 <span class="sd">        float is given, both are set equal.</span>
@@ -2413,7 +2574,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">aberration_coefficients</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
             <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span><span class="p">]</span>
         <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">energy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">BaseDistribution</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">extent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gpts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2679,6 +2840,14 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        ctf_profiles : ReciprocalSpaceLineProfiles</span>
 <span class="sd">            Ensemble of reciprocal space line profiles. The first ensemble dimension</span>
 <span class="sd">            represents the different</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        If the energy is a distribution, the profiles of all energies share one</span>
+<span class="sd">        spatial-frequency grid along a leading :class:`.EnergyAxis`, so the same</span>
+<span class="sd">        position along the profile is a different scattering angle for each</span>
+<span class="sd">        energy. The grid reaches `max_angle` at the highest energy, so every</span>
+<span class="sd">        energy covers at least `max_angle`.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">max_angle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">_raise_if_parallel_beam</span><span class="p">(</span>
@@ -2691,30 +2860,31 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">max_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_semiangle_cutoff</span> <span class="o">*</span> <span class="mf">1.6</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">gpts</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"A profile needs at least 2 points, got gpts=</span><span class="si">{</span><span class="n">gpts</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 
-        <span class="n">sampling</span> <span class="o">=</span> <span class="n">max_angle</span> <span class="o">/</span> <span class="p">(</span><span class="n">gpts</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span>
-        <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_angle</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="n">gpts</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
+
+        <span class="c1"># Spatial frequencies [1/Å] of the profile points</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_angle</span> <span class="o">*</span> <span class="mf">1e-3</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid_wavelength</span><span class="p">,</span> <span class="n">gpts</span><span class="p">)</span>
+        <span class="n">sampling</span> <span class="o">=</span> <span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
 
-        <span class="n">components</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="n">components</span><span class="p">[</span><span class="s2">"ctf"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_to_match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_aberrations</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span><span class="o">.</span><span class="n">imag</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_envelope</span><span class="o">.</span><span class="n">angular_spread</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">components</span><span class="p">[</span><span class="s2">"spatial envelope"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_to_match</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_envelope</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span>
-            <span class="p">)</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_temporal_envelope</span><span class="o">.</span><span class="n">focal_spread</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">components</span><span class="p">[</span><span class="s2">"temporal envelope"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_to_match</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_temporal_envelope</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span>
-            <span class="p">)</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aperture</span><span class="o">.</span><span class="n">semiangle_cutoff</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
-            <span class="n">components</span><span class="p">[</span><span class="s2">"aperture"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_to_match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_aperture</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span>
-
-        <span class="n">components</span><span class="p">[</span><span class="s2">"ctf"</span><span class="p">]</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">components</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_distribution</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">components</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_profile_components</span><span class="p">(</span><span class="n">k</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Evaluate each energy at its own wavelength and stack the members</span>
+            <span class="c1"># along the leading energy axis of `ensemble_axes_metadata`.</span>
+            <span class="n">members</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">member</span><span class="o">.</span><span class="n">_profile_components</span><span class="p">(</span><span class="n">k</span> <span class="o">*</span> <span class="n">member</span><span class="o">.</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_members</span><span class="p">()</span>
+            <span class="p">]</span>
+            <span class="n">components</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">key</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">member</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">members</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">members</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">}</span>
 
         <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">components</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -2734,7 +2904,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">else</span><span class="p">:</span>
             <span class="n">profiles</span> <span class="o">=</span> <span class="n">components</span><span class="p">[</span><span class="s2">"ctf"</span><span class="p">]</span>
 
-        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"energy"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">}</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy_metadata</span>
 
         <span class="n">profiles</span> <span class="o">=</span> <span class="n">ReciprocalSpaceLineProfiles</span><span class="p">(</span>
             <span class="n">profiles</span><span class="p">,</span>
@@ -2744,7 +2914,33 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">profiles</span></div>
-</div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_profile_components</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">phi</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""The radial line profiles of each CTF component, and of their product</span>
+<span class="sd">        under the key "ctf", at a single energy."""</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+        <span class="n">components</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">components</span><span class="p">[</span><span class="s2">"ctf"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_to_match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_aberrations</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span><span class="o">.</span><span class="n">imag</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_envelope</span><span class="o">.</span><span class="n">angular_spread</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">components</span><span class="p">[</span><span class="s2">"spatial envelope"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_to_match</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_spatial_envelope</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_temporal_envelope</span><span class="o">.</span><span class="n">focal_spread</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">components</span><span class="p">[</span><span class="s2">"temporal envelope"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_to_match</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_temporal_envelope</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aperture</span><span class="o">.</span><span class="n">semiangle_cutoff</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
+            <span class="n">components</span><span class="p">[</span><span class="s2">"aperture"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_to_match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_aperture</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span>
+
+        <span class="n">components</span><span class="p">[</span><span class="s2">"ctf"</span><span class="p">]</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">components</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">components</span></div>
 
 
 
