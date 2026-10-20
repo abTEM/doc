@@ -2,10 +2,13 @@
 
 name: deploy-book
 
-# Updates public documentation for new releases, or on demand.
+# Publishes the stable documentation (the site root) when main is updated, which
+# happens for a release (dev or a release/ branch is merged into main), or on
+# demand. Publish the abTEM release to PyPI first: the build installs the
+# released abTEM.
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
   workflow_dispatch: {}
 
 # This job installs dependencies, builds the book, and pushes it to `gh-pages`
@@ -28,6 +31,10 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r docs/requirements.txt
+
+    - name: Mirror the changelog of the released abTEM
+      run: |
+        python scripts/fetch_changelog.py main
 
     # Defensive cleanup: strip any orphaned ipywidgets state (metadata.widgets
     # entries no longer referenced by a cell's widget-view output) before
