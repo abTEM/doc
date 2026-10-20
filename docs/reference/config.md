@@ -19,10 +19,9 @@ defaults before they are used to configure the build.
 
 ## Access configuration
 
-```{autodoc2-summary}
-:renderer: myst
-
-abtem.core.config.get abtem.config.get
+```{eval-rst}
+.. autosummary::
+   abtem.config.get
 ```
 
 The *ab*TEM configuration system is usually accessed using the `abtem.config.get` function. You can use `.` for nested
@@ -35,10 +34,9 @@ abtem.config.get("dask.chunk-size") # use "." for nested access
 
 ## Specify configuration in Python
 
-```{autodoc2-summary}
-:renderer: myst
-
-abtem.core.config.set abtem.config.set
+```{eval-rst}
+.. autosummary::
+   abtem.config.set
 ```
 
 The configuration is stored within a normal Python dictionary in `abtem.config.config` and can be modified using normal

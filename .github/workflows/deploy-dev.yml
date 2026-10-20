@@ -1,13 +1,13 @@
-# Publishes the development documentation (this repo's main branch, built
+# Publishes the development documentation (this repo's dev branch, built
 # against abTEM's unreleased `dev` branch) under /dev/ on gh-pages. The
-# stable docs at the site root are published by deploy-book.yml on each
-# release and are the default readers see.
+# stable docs at the site root are published by deploy-book.yml when main is
+# updated (a release) and are the default readers see.
 
 name: deploy-dev-docs
 
 on:
   push:
-    branches: [main]
+    branches: [dev]
     paths:
       - "docs/**"
       - "scripts/**"
@@ -41,6 +41,10 @@ jobs:
     - name: Install abTEM from the dev branch (unreleased)
       run: |
         pip install --no-deps --force-reinstall git+https://github.com/abTEM/abTEM.git@dev
+
+    - name: Mirror the changelog of abTEM dev
+      run: |
+        python scripts/fetch_changelog.py dev
 
     - name: Strip orphaned ipywidgets state
       run: |
