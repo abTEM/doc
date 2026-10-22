@@ -736,7 +736,7 @@ V(\mathbf{r}) = \frac{4 \pi \epsilon_0}{2 \pi a_0 e} \int F(g) \exp(2\pi i \math
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/be51dee73f3249a8a0cfc365fc75a937aff4acbe12490433668a54b144fad94f.png" src="../../_images/be51dee73f3249a8a0cfc365fc75a937aff4acbe12490433668a54b144fad94f.png" />
+<img alt="../../_images/8b93c2db482f432864b7763f3ce226676628add017f9d095904d25a0ea0fe149.png" src="../../_images/8b93c2db482f432864b7763f3ce226676628add017f9d095904d25a0ea0fe149.png" />
 </div>
 </div>
 <p>We can approximate the inclusion of phonons by providing a <code class="docutils literal notranslate"><span class="pre">thermal_sigma</span></code>, which will apply a Debye-Waller factor to the structure factor, effectively, blurring the potential in real space</p>
@@ -769,7 +769,7 @@ F_{absorption}(g) = F(g) + 0.1 i F(g).
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/c481b4e61092dda82807dbd67a34507d9885bf1f15ea6b037740ce56154bd947.png" src="../../_images/c481b4e61092dda82807dbd67a34507d9885bf1f15ea6b037740ce56154bd947.png" />
+<img alt="../../_images/83f8edb40e97a81ba6b665b630d351d589b6041695f88224edf041f14dd0e754.png" src="../../_images/83f8edb40e97a81ba6b665b630d351d589b6041695f88224edf041f14dd0e754.png" />
 </div>
 </div>
 <p>Crystallographic literature typically tabulates thermal vibrations as the Debye–Waller B-factor, related to the displacement standard deviation by <span class="math notranslate nohighlight">\(B = 8\pi^2\sigma^2\)</span>. Since version 1.0.10, the helper functions <code class="docutils literal notranslate"><span class="pre">abtem.atoms.sigma_to_B</span></code> and <code class="docutils literal notranslate"><span class="pre">abtem.atoms.B_to_sigma</span></code> convert between the two conventions.</p>
@@ -805,7 +805,7 @@ F_{absorption}(g) = F(g) + 0.1 i F(g).
 <span class="math notranslate nohighlight">\(
 s_g = -g_z - \frac{g^2}{2 k_0} \ ,
 \)</span>
-where the Ewald sphere is approximated as a parabola.</p>
+which is the signed distance of the reflection from the Ewald sphere (to first order in <span class="math notranslate nohighlight">\(s_g / k_0\)</span>). This excitation error selects the beams whatever form of the Bloch-wave equation is solved (see below).</p>
 <p>For a given orientation, the <span class="math notranslate nohighlight">\(i\)</span>’th Bloch waves is included if
 <span class="math notranslate nohighlight">\(
 |s_{g,i}| \leq s_{g,max} \ .
@@ -832,13 +832,14 @@ where the Ewald sphere is approximated as a parabola.</p>
 </div>
 <p>Once we have defined a structure factor, an energy and decided how many Bloch waves to include, our simulation is defined.</p>
 <p>The dropdown goes through how <em>ab</em>TEM calculates the structure matrix and the final simluation output.</p>
-<p>The first step is calculating the structure matrix, <span class="math notranslate nohighlight">\(\mathbf{A}\)</span>, this is a square matrix with the same number of rows as the number of excited beams considered in the simulation. We define the diagonal elements as</p>
+<p>The first step is calculating the structure matrix, <span class="math notranslate nohighlight">\(\mathbf{A}\)</span>, a square matrix with one row for each beam included in the simulation. Its form depends on which form of the Bloch-wave equation is solved, selected with the <code class="docutils literal notranslate"><span class="pre">use_wave_eq</span></code> keyword.</p>
+<p>With the default, <code class="docutils literal notranslate"><span class="pre">use_wave_eq=&quot;exact&quot;</span></code>, <em>ab</em>TEM solves the non-paraxial wave equation that multislice solves with its default exact propagator, <code class="docutils literal notranslate"><span class="pre">FourierMultislice(order=&quot;exact&quot;)</span></code>. The diagonal elements are</p>
 <p><span class="math notranslate nohighlight">\(
-A_{ii} = \frac{2 k_0 s_g}{\sqrt{1 + g_{z,i} / k_0}}
+A_{ii} = 2 k_0 s_{g_i} \ , \qquad s_g = -g_z + k_0 \left( \sqrt{1 - g_\perp^2 / k_0^2} - 1 \right) \ ,
 \)</span></p>
-<p>and the off-diagonal elements as</p>
+<p>and the off-diagonal elements are</p>
 <p><span class="math notranslate nohighlight">\(
-A_{ij} = \frac{U_{g_i - g_j}}{\sqrt{1 + g_{z,i} / k_0} \sqrt{1 + g_{z,j} / k_0}},
+A_{ij} = U_{g_i - g_j} \ ,
 \)</span></p>
 <p>where</p>
 <p><span class="math notranslate nohighlight">\(
@@ -846,11 +847,17 @@ U_{g} = F_g.
 \)</span></p>
 <p>The scattering matrix is given as</p>
 <p><span class="math notranslate nohighlight">\(
-\mathbf{S} = \mathbf{M} \exp\left(\frac{2\pi i t}{2 k_0} \mathbf{A}\right) \mathbf{M}^{-1}
+\mathbf{S} = \exp\left(\frac{2\pi i t}{2 k_0} \mathbf{A}\right) \ .
 \)</span></p>
-<p>where <span class="math notranslate nohighlight">\(\mathbf{M}\)</span> is a diagonal matrix with</p>
+<p>Beams with <span class="math notranslate nohighlight">\(g_\perp \geq k_0\)</span> cannot propagate in this form; they are excluded with a warning.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">use_wave_eq=True</span></code>, the excitation error is the paraxial <span class="math notranslate nohighlight">\(s_g = -g_z - g_\perp^2 / (2 k_0)\)</span>; this is the counterpart of multislice with the first-order (Fresnel) propagator, <code class="docutils literal notranslate"><span class="pre">FourierMultislice(order=1)</span></code>.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">use_wave_eq=False</span></code>, <em>ab</em>TEM solves the standard (textbook) Bloch-wave equation, with the Ewald-sphere excitation error above. It is a generalized eigenproblem, which is made Hermitian with the diagonal matrix</p>
 <p><span class="math notranslate nohighlight">\(
-M_{ii} = \frac{1}{\sqrt{1+ g_z / k_0}} \ .
+M_{ii} = \frac{1}{\sqrt{1+ g_{z,i} / k_0}} \ ,
+\)</span></p>
+<p>so that</p>
+<p><span class="math notranslate nohighlight">\(
+A_{ii} = 2 k_0 s_{g_i} M_{ii}^2 \ , \qquad A_{ij} = U_{g_i - g_j} M_{ii} M_{jj} \ , \qquad \mathbf{S} = \mathbf{M} \exp\left(\frac{2\pi i t}{2 k_0} \mathbf{A}\right) \mathbf{M}^{-1} \ .
 \)</span></p>
 <p>We can get the structure matrix as follows.</p>
 <div class="cell docutils container">
@@ -868,7 +875,7 @@ M_{ii} = \frac{1}{\sqrt{1+ g_z / k_0}} \ .
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/fea979f770ce21de51a5cb31b4494276bc3e6943d401dd11f2199fd0188fa743.png" src="../../_images/fea979f770ce21de51a5cb31b4494276bc3e6943d401dd11f2199fd0188fa743.png" />
+<img alt="../../_images/ae8be21dee9bd53d978adc28f93bbdfc61908c52ff518cb1e6bc0619d1e22148.png" src="../../_images/ae8be21dee9bd53d978adc28f93bbdfc61908c52ff518cb1e6bc0619d1e22148.png" />
 </div>
 </div>
 <p>We can run our Bloch-wave simulation using the <code class="docutils literal notranslate"><span class="pre">calculate_diffraction_patterns</span></code> method, which takes the keyword <code class="docutils literal notranslate"><span class="pre">thicknesses</span></code> which can be a single thickness or a sequence of thicknesses. Here, we will get the results for each thickness of <span class="math notranslate nohighlight">\(5.43 \ \mathrm{Å}\)</span> up to <span class="math notranslate nohighlight">\(645 \ \mathrm{Å}\)</span>.</p>
@@ -930,7 +937,7 @@ M_{ii} = \frac{1}{\sqrt{1+ g_z / k_0}} \ .
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/4fa4bb4b81bde341f1f0cd67e6842bdb7c3f7a35f72f3158b1f848b2705d27fa.png" src="../../_images/4fa4bb4b81bde341f1f0cd67e6842bdb7c3f7a35f72f3158b1f848b2705d27fa.png" />
+<img alt="../../_images/84f3c55b62490f92823f8d23f773e7e41faf50681e5b558e62a14aaada68a55d.png" src="../../_images/84f3c55b62490f92823f8d23f773e7e41faf50681e5b558e62a14aaada68a55d.png" />
 </div>
 </div>
 <section id="exporting-results">
@@ -1444,19 +1451,19 @@ dl.xr-attrs {
   stroke-width: 0.8px;
 }
 </style><pre class='xr-text-repr-fallback'>&lt;xarray.DataArray (z: 118, hkl: 1821)&gt; Size: 2MB
-array([[9.97397596e-01, 6.73824151e-33, 1.14500432e-04, ...,
-        3.55769272e-08, 3.03498799e-08, 2.66860012e-09],
-       [9.90381509e-01, 2.81009909e-32, 4.68946651e-04, ...,
-        1.60062728e-07, 1.00521348e-07, 1.21364880e-08],
-       [9.79390603e-01, 6.25885172e-32, 1.07472171e-03, ...,
-        3.86241899e-07, 2.01785047e-07, 2.93774299e-08],
+array([[9.97396525e-01, 1.43244983e-30, 1.14590766e-04, ...,
+        3.58188163e-08, 3.02793925e-08, 2.76612558e-09],
+       [9.90376334e-01, 5.78721368e-30, 4.69332131e-04, ...,
+        1.60904807e-07, 1.00214194e-07, 1.26268243e-08],
+       [9.79378696e-01, 1.32891283e-29, 1.07563140e-03, ...,
+        3.88040022e-07, 2.01106582e-07, 3.06136800e-08],
        ...,
-       [9.82080387e-01, 1.79856801e-28, 1.86839195e-03, ...,
-        2.27828672e-06, 3.67562955e-05, 4.16252281e-07],
-       [9.88746689e-01, 1.72619477e-28, 1.51024794e-03, ...,
-        1.73225913e-06, 3.78267688e-05, 5.30004765e-07],
-       [9.91603373e-01, 1.65068710e-28, 1.15464472e-03, ...,
-        1.20719822e-06, 3.93324802e-05, 6.82705065e-07]],
+       [9.82252838e-01, 2.26484905e-27, 1.86443596e-03, ...,
+        2.29579505e-06, 3.68266054e-05, 4.43189580e-07],
+       [9.88845677e-01, 2.54040094e-27, 1.50565880e-03, ...,
+        1.76745690e-06, 3.79269009e-05, 5.65514138e-07],
+       [9.91627163e-01, 2.83135538e-27, 1.14928192e-03, ...,
+        1.26155897e-06, 3.94357438e-05, 7.22195388e-07]],
       shape=(118, 1821))
 Coordinates:
   * z        (z) float64 944B 5.43 10.86 16.29 21.72 ... 624.4 629.9 635.3 640.7
@@ -1464,20 +1471,20 @@ Coordinates:
     k        (hkl) float64 15kB 0.0 0.3683 0.7366 1.105 ... 0.6108 0.319 0.319
 Attributes:
     long_name:  intensity
-    units:      arb. unit</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-obj-name'></div><ul class='xr-dim-list'><li><span class='xr-has-index'>z</span>: 118</li><li><span class='xr-has-index'>hkl</span>: 1821</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-7944a14e-517d-4b0c-a542-75286b5899c7' class='xr-array-in' type='checkbox' checked><label for='section-7944a14e-517d-4b0c-a542-75286b5899c7' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>0.9974 6.738e-33 0.0001145 4.315e-32 ... 1.207e-06 3.933e-05 6.827e-07</span></div><div class='xr-array-data'><pre>array([[9.97397596e-01, 6.73824151e-33, 1.14500432e-04, ...,
-        3.55769272e-08, 3.03498799e-08, 2.66860012e-09],
-       [9.90381509e-01, 2.81009909e-32, 4.68946651e-04, ...,
-        1.60062728e-07, 1.00521348e-07, 1.21364880e-08],
-       [9.79390603e-01, 6.25885172e-32, 1.07472171e-03, ...,
-        3.86241899e-07, 2.01785047e-07, 2.93774299e-08],
+    units:      arb. unit</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-obj-name'></div><ul class='xr-dim-list'><li><span class='xr-has-index'>z</span>: 118</li><li><span class='xr-has-index'>hkl</span>: 1821</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-a3da2d65-82e5-4cdc-9fce-cae6da18c0eb' class='xr-array-in' type='checkbox' checked><label for='section-a3da2d65-82e5-4cdc-9fce-cae6da18c0eb' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>0.9974 1.432e-30 0.0001146 1.66e-30 ... 1.262e-06 3.944e-05 7.222e-07</span></div><div class='xr-array-data'><pre>array([[9.97396525e-01, 1.43244983e-30, 1.14590766e-04, ...,
+        3.58188163e-08, 3.02793925e-08, 2.76612558e-09],
+       [9.90376334e-01, 5.78721368e-30, 4.69332131e-04, ...,
+        1.60904807e-07, 1.00214194e-07, 1.26268243e-08],
+       [9.79378696e-01, 1.32891283e-29, 1.07563140e-03, ...,
+        3.88040022e-07, 2.01106582e-07, 3.06136800e-08],
        ...,
-       [9.82080387e-01, 1.79856801e-28, 1.86839195e-03, ...,
-        2.27828672e-06, 3.67562955e-05, 4.16252281e-07],
-       [9.88746689e-01, 1.72619477e-28, 1.51024794e-03, ...,
-        1.73225913e-06, 3.78267688e-05, 5.30004765e-07],
-       [9.91603373e-01, 1.65068710e-28, 1.15464472e-03, ...,
-        1.20719822e-06, 3.93324802e-05, 6.82705065e-07]],
-      shape=(118, 1821))</pre></div></div></li><li class='xr-section-item'><input id='section-0d014fdc-7749-4c88-9035-01b3a2a076e7' class='xr-section-summary-in' type='checkbox'  checked><label for='section-0d014fdc-7749-4c88-9035-01b3a2a076e7' class='xr-section-summary' >Coordinates: <span>(3)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>z</span></div><div class='xr-var-dims'>(z)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>5.43 10.86 16.29 ... 635.3 640.7</div><input id='attrs-9665b823-daaa-4ed3-8120-82a94805f5ec' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-9665b823-daaa-4ed3-8120-82a94805f5ec' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-074c259a-ff4b-4860-be59-79c512b8fc82' class='xr-var-data-in' type='checkbox'><label for='data-074c259a-ff4b-4860-be59-79c512b8fc82' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>units :</span></dt><dd>Å</dd></dl></div><div class='xr-var-data'><pre>array([  5.43,  10.86,  16.29,  21.72,  27.15,  32.58,  38.01,  43.44,  48.87,
+       [9.82252838e-01, 2.26484905e-27, 1.86443596e-03, ...,
+        2.29579505e-06, 3.68266054e-05, 4.43189580e-07],
+       [9.88845677e-01, 2.54040094e-27, 1.50565880e-03, ...,
+        1.76745690e-06, 3.79269009e-05, 5.65514138e-07],
+       [9.91627163e-01, 2.83135538e-27, 1.14928192e-03, ...,
+        1.26155897e-06, 3.94357438e-05, 7.22195388e-07]],
+      shape=(118, 1821))</pre></div></div></li><li class='xr-section-item'><input id='section-5b68bf9a-dcf0-46cc-9337-70464932c20e' class='xr-section-summary-in' type='checkbox'  checked><label for='section-5b68bf9a-dcf0-46cc-9337-70464932c20e' class='xr-section-summary' >Coordinates: <span>(3)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>z</span></div><div class='xr-var-dims'>(z)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>5.43 10.86 16.29 ... 635.3 640.7</div><input id='attrs-857541e7-9cff-4381-ba2d-955192ad4cae' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-857541e7-9cff-4381-ba2d-955192ad4cae' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-571dbac4-d47b-4270-bf14-9ab6db8ac6c2' class='xr-var-data-in' type='checkbox'><label for='data-571dbac4-d47b-4270-bf14-9ab6db8ac6c2' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>units :</span></dt><dd>Å</dd></dl></div><div class='xr-var-data'><pre>array([  5.43,  10.86,  16.29,  21.72,  27.15,  32.58,  38.01,  43.44,  48.87,
         54.3 ,  59.73,  65.16,  70.59,  76.02,  81.45,  86.88,  92.31,  97.74,
        103.17, 108.6 , 114.03, 119.46, 124.89, 130.32, 135.75, 141.18, 146.61,
        152.04, 157.47, 162.9 , 168.33, 173.76, 179.19, 184.62, 190.05, 195.48,
@@ -1490,9 +1497,9 @@ Attributes:
        494.13, 499.56, 504.99, 510.42, 515.85, 521.28, 526.71, 532.14, 537.57,
        543.  , 548.43, 553.86, 559.29, 564.72, 570.15, 575.58, 581.01, 586.44,
        591.87, 597.3 , 602.73, 608.16, 613.59, 619.02, 624.45, 629.88, 635.31,
-       640.74])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>hkl</span></div><div class='xr-var-dims'>(hkl)</div><div class='xr-var-dtype'>&lt;U10</div><div class='xr-var-preview xr-preview'>&#x27;0 0 0&#x27; &#x27;0 2 0&#x27; ... &#x27;-1 -1 -1&#x27;</div><input id='attrs-10e47a40-e13e-4f5f-be9e-9d60891b09f9' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-10e47a40-e13e-4f5f-be9e-9d60891b09f9' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-580d25d2-de21-4215-b69a-3bc6e0b3cab9' class='xr-var-data-in' type='checkbox'><label for='data-580d25d2-de21-4215-b69a-3bc6e0b3cab9' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;0 0 0&#x27;, &#x27;0 2 0&#x27;, &#x27;0 4 0&#x27;, ..., &#x27;-1 -3 -1&#x27;, &#x27;-1 -1 1&#x27;, &#x27;-1 -1 -1&#x27;],
-      shape=(1821,), dtype=&#x27;&lt;U10&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>k</span></div><div class='xr-var-dims'>(hkl)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>0.0 0.3683 0.7366 ... 0.319 0.319</div><input id='attrs-1ac476aa-e6f0-47ef-a0ae-01fea638b287' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-1ac476aa-e6f0-47ef-a0ae-01fea638b287' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-0df4439d-de62-4bd8-8053-896e7aa70569' class='xr-var-data-in' type='checkbox'><label for='data-0df4439d-de62-4bd8-8053-896e7aa70569' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([0.        , 0.36832413, 0.73664825, ..., 0.61079646, 0.31897805,
-       0.31897805], shape=(1821,))</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-c982bcf0-f00f-46b9-b8f0-c283a28f2554' class='xr-section-summary-in' type='checkbox'  checked><label for='section-c982bcf0-f00f-46b9-b8f0-c283a28f2554' class='xr-section-summary' >Attributes: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>intensity</dd><dt><span>units :</span></dt><dd>arb. unit</dd></dl></div></li></ul></div></div></div></div>
+       640.74])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>hkl</span></div><div class='xr-var-dims'>(hkl)</div><div class='xr-var-dtype'>&lt;U10</div><div class='xr-var-preview xr-preview'>&#x27;0 0 0&#x27; &#x27;0 2 0&#x27; ... &#x27;-1 -1 -1&#x27;</div><input id='attrs-6b7c74ad-7d5e-4ea6-8403-21b027472d4e' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-6b7c74ad-7d5e-4ea6-8403-21b027472d4e' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-d9b3996a-286d-41f3-930e-7f44ae7cccc3' class='xr-var-data-in' type='checkbox'><label for='data-d9b3996a-286d-41f3-930e-7f44ae7cccc3' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;0 0 0&#x27;, &#x27;0 2 0&#x27;, &#x27;0 4 0&#x27;, ..., &#x27;-1 -3 -1&#x27;, &#x27;-1 -1 1&#x27;, &#x27;-1 -1 -1&#x27;],
+      shape=(1821,), dtype=&#x27;&lt;U10&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>k</span></div><div class='xr-var-dims'>(hkl)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>0.0 0.3683 0.7366 ... 0.319 0.319</div><input id='attrs-aabf460a-7a8a-40cd-b9d2-9e1dec4d8dbc' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-aabf460a-7a8a-40cd-b9d2-9e1dec4d8dbc' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-67980847-d085-4e0f-a0a4-fdaac7872208' class='xr-var-data-in' type='checkbox'><label for='data-67980847-d085-4e0f-a0a4-fdaac7872208' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([0.        , 0.36832413, 0.73664825, ..., 0.61079646, 0.31897805,
+       0.31897805], shape=(1821,))</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-6015e9fd-6cda-44d2-a2d2-bcda3c04f66b' class='xr-section-summary-in' type='checkbox'  checked><label for='section-6015e9fd-6cda-44d2-a2d2-bcda3c04f66b' class='xr-section-summary' >Attributes: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>intensity</dd><dt><span>units :</span></dt><dd>arb. unit</dd></dl></div></li></ul></div></div></div></div>
 </div>
 <p>We can use <code class="docutils literal notranslate"><span class="pre">xarray</span></code> to slice the data, for example to show the intensity of of specific.</p>
 <div class="cell tag_full-width docutils container">
@@ -1507,7 +1514,7 @@ Attributes:
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/ccab4b259e9f791e8ed3561a189a9a445d70cfef136ee92b0f0fda92abee68a6.png" src="../../_images/ccab4b259e9f791e8ed3561a189a9a445d70cfef136ee92b0f0fda92abee68a6.png" />
+<img alt="../../_images/164acbb843414dcfa87ee4e23a207462cae3f855ffaee727efb2137733f4db48.png" src="../../_images/164acbb843414dcfa87ee4e23a207462cae3f855ffaee727efb2137733f4db48.png" />
 </div>
 </div>
 </section>
@@ -1639,7 +1646,7 @@ Attributes:
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;abtem.measurements.IndexedDiffractionPatterns at 0x1d252f4d0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;abtem.measurements.IndexedDiffractionPatterns at 0x10a5fd950&gt;
 </pre></div>
 </div>
 </div>
@@ -1678,7 +1685,7 @@ Attributes:
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/2f4c24b3b1699ac5cb9e4cb92fc771e9f4e29e732e33452c6eb10807ee5db613.png" src="../../_images/2f4c24b3b1699ac5cb9e4cb92fc771e9f4e29e732e33452c6eb10807ee5db613.png" />
+<img alt="../../_images/b6601e5e6fadc1855ff57baf6cbb73daaf4518b0817f1c9962d9b90969cb7f0b.png" src="../../_images/b6601e5e6fadc1855ff57baf6cbb73daaf4518b0817f1c9962d9b90969cb7f0b.png" />
 </div>
 </div>
 <p>Arbitrary rotations may be given as a sequence of <a class="reference external" href="https://en.wikipedia.org/wiki/Euler_angles">Euler angles</a>, for example, to rotate about a vector pointing along <span class="math notranslate nohighlight">\((-1, 1, 0)\)</span>, we can rotate by <span class="math notranslate nohighlight">\(\pi/4\)</span> around <span class="math notranslate nohighlight">\(z\)</span>, apply the desired rotations around <span class="math notranslate nohighlight">\(x\)</span>, and then rotate back by <span class="math notranslate nohighlight">\(-\pi/4\)</span> around <span class="math notranslate nohighlight">\(z\)</span>.</p>
@@ -1716,7 +1723,7 @@ Attributes:
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/c00304ca39cba7bcc1aeebea1f5af6a7674f204a44cf4185229af4e89b6202bb.png" src="../../_images/c00304ca39cba7bcc1aeebea1f5af6a7674f204a44cf4185229af4e89b6202bb.png" />
+<img alt="../../_images/6831b1cbda3bfcfc525acc9b687979625d7c30f39f0c54335144767a6af0fc10.png" src="../../_images/6831b1cbda3bfcfc525acc9b687979625d7c30f39f0c54335144767a6af0fc10.png" />
 </div>
 </div>
 </section>
@@ -1779,7 +1786,7 @@ Attributes:
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/661f1723b212475f93c8e29a1b86af60d593f5ad1db2323d4f2c1bcae11e80c6.png" src="../../_images/661f1723b212475f93c8e29a1b86af60d593f5ad1db2323d4f2c1bcae11e80c6.png" />
+<img alt="../../_images/fcf75f41228dabef7d6461c4a38e762bcd182dfa3e2976f82cf380b0d1f51d86.png" src="../../_images/fcf75f41228dabef7d6461c4a38e762bcd182dfa3e2976f82cf380b0d1f51d86.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -1822,7 +1829,7 @@ Attributes:
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/tomasusi/git/abTEM/abtem/bloch/dynamical.py:1659: PerformanceWarning: Increasing number of chunks by factor of 27
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Users/tomasusi/git/abTEM/abtem/bloch/dynamical.py:2147: PerformanceWarning: Increasing number of chunks by factor of 27
   array = da.blockwise(
 </pre></div>
 </div>
@@ -1870,7 +1877,7 @@ Attributes:
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/08b3a7c48cff823f96feeae3f4de46a476b932bba93473b5cc9f926a48e0acfc.png" src="../../_images/08b3a7c48cff823f96feeae3f4de46a476b932bba93473b5cc9f926a48e0acfc.png" />
+<img alt="../../_images/0407722f71aefdac4f2eaabf860a35d3303e345430ab0768927f36085de45ffd.png" src="../../_images/0407722f71aefdac4f2eaabf860a35d3303e345430ab0768927f36085de45ffd.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -1882,7 +1889,7 @@ Attributes:
 </div>
 </div>
 </div>
-<p>The difference below for the very weak [-21 1 -1] spot is mostly due to a slightly unconverged Bloch-wave calculation.</p>
+<p>Bloch waves and multislice agree closely below, even for the very weak [-21 1 -1] spot: with their defaults, both solve the same non-paraxial wave equation (<code class="docutils literal notranslate"><span class="pre">use_wave_eq=&quot;exact&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">FourierMultislice(order=&quot;exact&quot;)</span></code>).</p>
 <div class="cell tag_full-width docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_array</span> <span class="o">=</span> <span class="n">stacked_diffraction</span><span class="o">.</span><span class="n">to_data_array</span><span class="p">()</span>
@@ -1897,7 +1904,7 @@ Attributes:
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/e06fe06b12cf6507b61fa0b75ce5c12dc697663e0fba012d34fdef413127c148.png" src="../../_images/e06fe06b12cf6507b61fa0b75ce5c12dc697663e0fba012d34fdef413127c148.png" />
+<img alt="../../_images/e357b1e57aa5c77e0bfc0ad09ec483849059c2eeb055ef73e101a4c89ea5c998.png" src="../../_images/e357b1e57aa5c77e0bfc0ad09ec483849059c2eeb055ef73e101a4c89ea5c998.png" />
 </div>
 </div>
 </section>

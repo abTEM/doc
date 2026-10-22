@@ -677,7 +677,7 @@ of panels, or <a class="reference internal" href="../examples/notebooks/animatio
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/df8835f28c778e32676b058af9f3483af80c3f39f71289ba30d7eefbaa51dfe2.png" src="../../_images/df8835f28c778e32676b058af9f3483af80c3f39f71289ba30d7eefbaa51dfe2.png" />
+<img alt="../../_images/845ebb57814b9b3ae8e6aed7c4e3960230484c7ee87f2dc06a106ac6fab03d53.png" src="../../_images/845ebb57814b9b3ae8e6aed7c4e3960230484c7ee87f2dc06a106ac6fab03d53.png" />
 </div>
 </div>
 <section id="distributions">
@@ -690,6 +690,9 @@ parameter distributions that also carry <em>weights</em>:</p>
 <li><p><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.distributions.html#abtem.distributions.gaussian" title="abtem.distributions.gaussian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">abtem.distributions.gaussian</span></code></a> — values weighted by a (possibly multidimensional) Gaussian, as used for
 example to model focal spread.</p></li>
 </ul>
+<p>The weights are <em>probabilities</em>: every ensemble member is simulated as the ordinary, unweighted wave function for its
+parameter value, and the weights are applied only when the ensemble is reduced, as the weighted average
+<span class="math notranslate nohighlight">\(\sum_i p_i I_i / \sum_i p_i\)</span> of the members’ intensities. The weights of the built-in distributions sum to one.</p>
 <p>For example, a Gaussian defocus distribution:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -703,11 +706,11 @@ example to model focal spread.</p></li>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>defocus:  -250.0 Å, weight: 0.010
-defocus:  -175.0 Å, weight: 0.295
-defocus:  -100.0 Å, weight: 0.909
-defocus:   -25.0 Å, weight: 0.295
-defocus:    50.0 Å, weight: 0.010
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>defocus:  -250.0 Å, weight: 0.007
+defocus:  -175.0 Å, weight: 0.194
+defocus:  -100.0 Å, weight: 0.598
+defocus:   -25.0 Å, weight: 0.194
+defocus:    50.0 Å, weight: 0.007
 </pre></div>
 </div>
 </div>
@@ -718,7 +721,9 @@ defocus:    50.0 Å, weight: 0.010
 <p>The <code class="docutils literal notranslate"><span class="pre">ensemble_mean</span></code> flag above does not change the values — it <em>tags</em> the axis for reduction. Whenever the ensemble
 is reduced — explicitly, by calling <a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.waves.html#abtem.waves.reduce_ensemble" title="abtem.waves.reduce_ensemble"><code class="xref py py-obj docutils literal notranslate"><span class="pre">abtem.waves.reduce_ensemble</span></code></a>, or automatically, when a detector
 integrates the signal during a scan — a weighted average is taken over every axis tagged with <code class="docutils literal notranslate"><span class="pre">ensemble_mean=True</span></code>,
-while untagged axes survive into the measurement so that each member can be inspected separately.</p>
+while untagged axes survive into the measurement so that each member can be inspected separately. An axis kept this
+way can be reduced later with <code class="docutils literal notranslate"><span class="pre">reduce_ensemble(axis=...)</span></code>, which applies the same weights; a plain <code class="docutils literal notranslate"><span class="pre">.sum()</span></code> or
+<code class="docutils literal notranslate"><span class="pre">.mean()</span></code> over it ignores the weights, and warns that it does.</p>
 <p>The difference is easy to see in a STEM simulation with a focal-spread distribution: with <code class="docutils literal notranslate"><span class="pre">ensemble_mean=True</span></code> the
 defocus axis is averaged away during detection, while with <code class="docutils literal notranslate"><span class="pre">ensemble_mean=False</span></code> it remains as an axis of the
 measurement:</p>
@@ -846,8 +851,8 @@ resources (see the <a class="reference internal" href="../walkthrough/paralleliz
   <polygon points="0.0,0.0 90.0,0.0 90.0,120.0 0.0,120.0" style="fill:#ECB172A0;stroke-width:0"/>
 
   <!-- Text -->
-  <text x="45.0" y="140.0" font-size="1.0rem" font-weight="100" text-anchor="middle" >3</text>
-  <text x="110.0" y="60.0" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(0,110.0,60.0)">4</text>
+  <text x="45.000000" y="140.000000" font-size="1.0rem" font-weight="100" text-anchor="middle" >3</text>
+  <text x="110.000000" y="60.000000" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(0,110.000000,60.000000)">4</text>
 </svg>
         </td>
     </tr>
