@@ -319,6 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../reference/api/api.html">API</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.cbed.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.cbed</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.dynamical.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.dynamical</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.indexing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.indexing</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.matrix_exponential.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.matrix_exponential</span></code></a></li>
@@ -608,6 +609,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rotations">Rotations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convergent-beam-electron-diffraction">Convergent-beam electron diffraction</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparison-to-multislice">Comparison to multislice</a></li>
 </ul>
             </nav>
@@ -1727,6 +1729,108 @@ Attributes:
 </div>
 </div>
 </section>
+<section id="convergent-beam-electron-diffraction">
+<h2>Convergent-beam electron diffraction<a class="headerlink" href="#convergent-beam-electron-diffraction" title="Link to this heading">#</a></h2>
+<p>Since version <code class="docutils literal notranslate"><span class="pre">1.1.0</span></code>, Bloch waves also simulate convergent-beam electron diffraction (CBED). A probe is a coherent sum of plane waves, one for each pixel of its reciprocal-space grid inside the aperture. The <code class="docutils literal notranslate"><span class="pre">calculate_cbed_patterns</span></code> method solves the crystal for each of these incident directions, and places the diffracted beams of each one back on the probe’s grid: beam <span class="math notranslate nohighlight">\(\mathbf{g}\)</span> of the plane wave with transverse wave vector <span class="math notranslate nohighlight">\(\mathbf{k}\)</span> exits at <span class="math notranslate nohighlight">\(\mathbf{k} + \mathbf{g}_\perp\)</span>, as in multislice.</p>
+<p>The probe’s grid sets the detector: the patterns have the probe’s <code class="docutils literal notranslate"><span class="pre">gpts</span></code> and a sampling of <span class="math notranslate nohighlight">\(1 / \mathrm{extent}\)</span>. The extent should be a whole number of unit cells, so that every reciprocal lattice vector falls on a pixel (<em>ab</em>TEM warns when it does not); the cell must then be orthogonal.</p>
+<p>Every plane wave is a Bloch-wave calculation of its own, so the cost grows with the number of pixels inside the aperture, that is, with the convergence semiangle and the extent. To keep this example fast, we use a smaller <code class="docutils literal notranslate"><span class="pre">g_max</span></code> and <code class="docutils literal notranslate"><span class="pre">sg_max</span></code> than above, and a window of <span class="math notranslate nohighlight">\(5 \times 5\)</span> unit cells.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">structure_factor_cbed</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">StructureFactor</span><span class="p">(</span>
+    <span class="n">atoms</span><span class="p">,</span> <span class="n">g_max</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">parametrization</span><span class="o">=</span><span class="s2">"lobato"</span><span class="p">,</span> <span class="n">centering</span><span class="o">=</span><span class="s2">"F"</span><span class="p">,</span> <span class="n">thermal_sigma</span><span class="o">=</span><span class="mf">0.078</span>
+<span class="p">)</span>
+
+<span class="n">bloch_waves_cbed</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">BlochWaves</span><span class="p">(</span>
+    <span class="n">structure_factor</span><span class="o">=</span><span class="n">structure_factor_cbed</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="mf">200e3</span><span class="p">,</span> <span class="n">sg_max</span><span class="o">=</span><span class="mf">0.1</span>
+<span class="p">)</span>
+
+<span class="n">probe</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Probe</span><span class="p">(</span>
+    <span class="n">semiangle_cutoff</span><span class="o">=</span><span class="mf">9.0</span><span class="p">,</span>
+    <span class="n">energy</span><span class="o">=</span><span class="mf">200e3</span><span class="p">,</span>
+    <span class="n">extent</span><span class="o">=</span><span class="mi">5</span> <span class="o">*</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">lengths</span><span class="p">()[:</span><span class="mi">2</span><span class="p">],</span>
+    <span class="n">gpts</span><span class="o">=</span><span class="mi">160</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Without a scan, the plane waves add incoherently, weighted by the aperture. This is the position-averaged CBED (PACBED) pattern, which is also the CBED pattern at any position when the discs do not overlap. As for <code class="docutils literal notranslate"><span class="pre">calculate_diffraction_patterns</span></code>, the thicknesses may be a single value or a sequence, and the calculation is lazy until computed.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pacbed</span> <span class="o">=</span> <span class="n">bloch_waves_cbed</span><span class="o">.</span><span class="n">calculate_cbed_patterns</span><span class="p">(</span>
+    <span class="n">probe</span><span class="p">,</span> <span class="n">thicknesses</span><span class="o">=</span><span class="p">[</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">300.0</span><span class="p">,</span> <span class="mf">500.0</span><span class="p">]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+
+<span class="n">pacbed</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(3, 160, 160)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell tag_full-width docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pacbed</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">max_angle</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span>
+    <span class="n">explode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span>
+    <span class="n">power</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">cbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">common_color_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/a121de728fb1063e7a1cdb90baf4fb4f4748c60867f123af80d8e2d6b8b8c2ec.png" src="../../_images/a121de728fb1063e7a1cdb90baf4fb4f4748c60867f123af80d8e2d6b8b8c2ec.png" />
+</div>
+</div>
+<p>With a <code class="docutils literal notranslate"><span class="pre">scan</span></code>, the plane waves instead add coherently at each probe position, with the probe’s aberrations. At <span class="math notranslate nohighlight">\(200 \ \mathrm{keV}\)</span> the <span class="math notranslate nohighlight">\(\{220\}\)</span> discs are <span class="math notranslate nohighlight">\(13 \ \mathrm{mrad}\)</span> from the direct beam, so discs of <span class="math notranslate nohighlight">\(9 \ \mathrm{mrad}\)</span> overlap, and where they do they interfere: the pattern depends on where the probe is. Below we compare the PACBED pattern with the patterns of a probe on an atomic column and of one between the columns, at <span class="math notranslate nohighlight">\(500 \ \mathrm{Å}\)</span>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">positions</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="n">a</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)]</span>
+
+<span class="n">cbed</span> <span class="o">=</span> <span class="n">bloch_waves_cbed</span><span class="o">.</span><span class="n">calculate_cbed_patterns</span><span class="p">(</span>
+    <span class="n">probe</span><span class="p">,</span> <span class="n">thicknesses</span><span class="o">=</span><span class="mf">500.0</span><span class="p">,</span> <span class="n">scan</span><span class="o">=</span><span class="n">positions</span>
+<span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+
+<span class="n">cbed</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(2, 160, 160)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell tag_full-width docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stack</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">pacbed</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">cbed</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cbed</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="p">(</span><span class="s2">"PACBED"</span><span class="p">,</span> <span class="s2">"On a column"</span><span class="p">,</span> <span class="s2">"Between columns"</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">stack</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">max_angle</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span>
+    <span class="n">explode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span>
+    <span class="n">power</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">cbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">common_color_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/e03ba7d7a1f636e436aac37fd90bb5a24328e0e7aed70b857e3e9662bb157a71.png" src="../../_images/e03ba7d7a1f636e436aac37fd90bb5a24328e0e7aed70b857e3e9662bb157a71.png" />
+</div>
+</div>
+<p>The probe may have ensemble axes, which appear in the result as they would in multislice. Members of an aberration or aperture series, such as a defocus series, share the Bloch-wave solutions and differ only in how the plane waves are weighted, so a series costs about as much as a single probe. Members of a tilt series, such as the tilts of precession electron diffraction, and of an energy ensemble change the incident directions, and are solved separately. A tilted probe meets the crystal at its tilt, and a crystal rotated with <code class="docutils literal notranslate"><span class="pre">rotate</span></code> also works.</p>
+</section>
 <section id="comparison-to-multislice">
 <h2>Comparison to multislice<a class="headerlink" href="#comparison-to-multislice" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
@@ -1983,6 +2087,7 @@ Attributes:
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rotations">Rotations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convergent-beam-electron-diffraction">Convergent-beam electron diffraction</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparison-to-multislice">Comparison to multislice</a></li>
 </ul>
   </nav></div>

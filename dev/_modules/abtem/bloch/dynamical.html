@@ -312,6 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../reference/api/api.html">API</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.bloch.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.bloch.cbed.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.cbed</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.bloch.dynamical.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.dynamical</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.bloch.indexing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.indexing</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.bloch.matrix_exponential.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.matrix_exponential</span></code></a></li>
@@ -615,7 +616,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">validate_per_atom_property</span><span class="p">,</span>
     <span class="n">validate_sigmas</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.measurements</span><span class="w"> </span><span class="kn">import</span> <span class="n">IndexedDiffractionPatterns</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.measurements</span><span class="w"> </span><span class="kn">import</span> <span class="n">DiffractionPatterns</span><span class="p">,</span> <span class="n">IndexedDiffractionPatterns</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.parametrizations</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parametrization</span><span class="p">,</span> <span class="n">validate_parametrization</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.iam</span><span class="w"> </span><span class="kn">import</span> <span class="n">PotentialArray</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.slicing</span><span class="w"> </span><span class="kn">import</span> <span class="n">_integrate_planes</span>
@@ -623,10 +624,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="k">if</span> <span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.bloch.matrix_exponential</span><span class="w"> </span><span class="kn">import</span> <span class="n">expm</span> <span class="k">as</span> <span class="n">expm_cupy</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="n">Waves</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="n">Probe</span><span class="p">,</span> <span class="n">Waves</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="k">pass</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.scan</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseScan</span>
 
 
 <div class="viewcode-block" id="BlochWavePrecisionWarning">
@@ -2973,6 +2974,79 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">bloch_waves</span></div>
+
+
+<div class="viewcode-block" id="BlochWaves.calculate_cbed_patterns">
+<a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.bloch.dynamical.html#abtem.bloch.dynamical.BlochWaves.calculate_cbed_patterns">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_cbed_patterns</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">probe</span><span class="p">:</span> <span class="n">Probe</span><span class="p">,</span>
+        <span class="n">thicknesses</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">scan</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">BaseScan</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">lazy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">pbar</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DiffractionPatterns</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Calculate convergent-beam electron diffraction (CBED) patterns.</span>
+
+<span class="sd">        Each plane wave of the probe, one per pixel of its reciprocal-space grid</span>
+<span class="sd">        inside the aperture, is a Bloch-wave calculation of the crystal rotated to</span>
+<span class="sd">        bring the plane wave's direction onto the optic axis. Its beams are placed</span>
+<span class="sd">        on the probe's grid, at the plane wave's wave vector plus the beam's</span>
+<span class="sd">        transverse reciprocal lattice vector.</span>
+
+<span class="sd">        Without a scan, the result is the position-averaged (PACBED) pattern: the</span>
+<span class="sd">        incoherent sum over the plane waves, weighted by the aperture. It is also</span>
+<span class="sd">        the CBED pattern at any position when the discs do not overlap. With a</span>
+<span class="sd">        scan, the plane waves add coherently at each probe position, with the</span>
+<span class="sd">        probe's aberrations, which gives the interference where discs overlap.</span>
+
+<span class="sd">        The probe may have ensemble axes. Members of an aberration or aperture</span>
+<span class="sd">        series, such as a defocus series, share the Bloch-wave solutions; members</span>
+<span class="sd">        of a tilt series or an energy ensemble are solved separately. A tilted</span>
+<span class="sd">        probe meets the crystal at its tilt, with the pattern centred on the beam,</span>
+<span class="sd">        as in multislice. Bloch waves of several energies give an energy axis.</span>
+
+<span class="sd">        The probe's extent should be a whole number of unit cells, so that the</span>
+<span class="sd">        reciprocal lattice falls on its grid; the crystal must then have an</span>
+<span class="sd">        orthogonal cell. A beam that misses the grid is placed at the nearest</span>
+<span class="sd">        pixel, with a warning.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        probe : Probe</span>
+<span class="sd">            The probe. Its grid (extent and gpts or sampling) sets the detector:</span>
+<span class="sd">            the patterns have its gpts and a sampling of 1 / extent [1/Å]. Its</span>
+<span class="sd">            energies, if given, must be among those of the Bloch waves; if not</span>
+<span class="sd">            given, the Bloch waves' energies are used. Its scan positions, if it</span>
+<span class="sd">            has any, are the scan.</span>
+<span class="sd">        thicknesses : float or sequence of floats</span>
+<span class="sd">            The thicknesses of the sample [Å].</span>
+<span class="sd">        scan : array of xy-positions or BaseScan, optional</span>
+<span class="sd">            Probe positions [Å]. If neither this nor the probe gives positions,</span>
+<span class="sd">            the position-averaged pattern is calculated.</span>
+<span class="sd">        lazy : bool</span>
+<span class="sd">            If True (default), the calculation is done lazily using dask. If False,</span>
+<span class="sd">            the calculation is done eagerly.</span>
+<span class="sd">        pbar : bool, optional</span>
+<span class="sd">            If True, a progress bar over the plane waves is shown when the</span>
+<span class="sd">            calculation is eager; a lazy result shows its progress when it is</span>
+<span class="sd">            computed. Default is None, which means the value is taken from the</span>
+<span class="sd">            configuration.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        DiffractionPatterns</span>
+<span class="sd">            The CBED patterns. Their ensemble axes are those of the probe (tilt,</span>
+<span class="sd">            aberrations, aperture), the scan's, an energy axis if there are several</span>
+<span class="sd">            energies, and a thickness axis if several thicknesses are given. For</span>
+<span class="sd">            a single position, the intensities sum to the fraction of the probe</span>
+<span class="sd">            that the beams carry onto the grid.</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.bloch.cbed</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculate_cbed_patterns</span>
+
+        <span class="k">return</span> <span class="n">calculate_cbed_patterns</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">probe</span><span class="p">,</span> <span class="n">thicknesses</span><span class="p">,</span> <span class="n">scan</span><span class="o">=</span><span class="n">scan</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="n">lazy</span><span class="p">,</span> <span class="n">pbar</span><span class="o">=</span><span class="n">pbar</span>
+        <span class="p">)</span></div>
 </div>
 
 
@@ -3000,6 +3074,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">device</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">use_wave_eq</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"exact"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"exact"</span><span class="p">,</span>
         <span class="n">use_degrees</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">orientation_matrix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="n">axes</span> <span class="o">=</span> <span class="n">args</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid_rotation_axes</span><span class="p">(</span><span class="n">axes</span><span class="p">):</span>
@@ -3040,6 +3115,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="o">.</span><span class="n">_g_max</span> <span class="o">=</span> <span class="n">g_max</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_use_wave_eq</span> <span class="o">=</span> <span class="n">validate_use_wave_eq</span><span class="p">(</span><span class="n">use_wave_eq</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_device</span> <span class="o">=</span> <span class="n">validate_device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_orientation_matrix</span> <span class="o">=</span> <span class="n">orientation_matrix</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_copy_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exclude</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span> <span class="bp">cls</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="c1"># The base implementation reads each __init__ kwarg back off `self`</span>
@@ -3123,12 +3199,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <span class="n">orientation_matrices</span> <span class="o">=</span> <span class="n">orientation_matrices</span> <span class="o">@</span> <span class="n">R</span>
 
+        <span class="c1"># a fixed orientation, applied before the rotations</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orientation_matrix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">orientation_matrices</span> <span class="o">=</span> <span class="n">orientation_matrices</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orientation_matrix</span>
+
         <span class="k">return</span> <span class="n">orientation_matrices</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">structure_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseStructureFactor</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_structure_factor</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">orientation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orientation_matrix</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">axes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>

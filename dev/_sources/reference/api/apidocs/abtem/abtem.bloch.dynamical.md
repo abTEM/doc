@@ -342,6 +342,15 @@ Bases: {py:obj}`UserWarning`
 :parser: rst
 ```
 
+````{py:method} calculate_cbed_patterns(...) -> abtem.measurements.DiffractionPatterns
+:canonical: abtem.bloch.dynamical.BlochWaves.calculate_cbed_patterns
+
+```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.calculate_cbed_patterns
+:parser: rst
+```
+
+````
+
 ````{py:method} calculate_diffraction_patterns(...) -> abtem.measurements.IndexedDiffractionPatterns
 :canonical: abtem.bloch.dynamical.BlochWaves.calculate_diffraction_patterns
 
@@ -665,6 +674,16 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 :canonical: abtem.bloch.dynamical.BlochwaveEnsemble.get_orientation_matrices
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.get_orientation_matrices
+:parser: rst
+```
+
+````
+
+````{py:property} orientation_matrix
+:canonical: abtem.bloch.dynamical.BlochwaveEnsemble.orientation_matrix
+:type: typing.Optional[numpy.ndarray]
+
+```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.orientation_matrix
 :parser: rst
 ```
 

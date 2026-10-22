@@ -14,6 +14,7 @@
 :titlesonly:
 :maxdepth: 1
 
+abtem.bloch.cbed
 abtem.bloch.dynamical
 abtem.bloch.indexing
 abtem.bloch.matrix_exponential

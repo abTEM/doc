@@ -319,6 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../reference/api/api.html">API</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.cbed.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.cbed</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.dynamical.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.dynamical</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.indexing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.indexing</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.matrix_exponential.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.matrix_exponential</span></code></a></li>
@@ -763,7 +764,7 @@ q = 0.2469 1/Å,  E =  37.0 meV
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">potential</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span>
-    <span class="n">ensemble</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="mf">0.08</span><span class="p">,</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="n">a</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">"finite"</span>
+    <span class="n">ensemble</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">"finite"</span>
 <span class="p">)</span>
 
 <span class="n">exit_waves</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">PlaneWave</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="mf">100e3</span><span class="p">)</span><span class="o">.</span><span class="n">multislice</span><span class="p">(</span><span class="n">potential</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
@@ -777,8 +778,8 @@ q = 0.2469 1/Å,  E =  37.0 meV
 -----------------  ----------------  -------------------
 EnergyLossAxis     energy loss [eV]  0.00 0.01 ... 0.04
 FrozenPhononsAxis  Frozen phonons    -
-RealSpaceAxis      x [Å]             0.00 0.08 ... 64.72
-RealSpaceAxis      y [Å]             0.00 0.08 ... 16.12
+RealSpaceAxis      x [Å]             0.00 0.05 ... 64.75
+RealSpaceAxis      y [Å]             0.00 0.05 ... 16.15
 </pre></div>
 </div>
 </div>
@@ -788,11 +789,11 @@ RealSpaceAxis      y [Å]             0.00 0.08 ... 16.12
 <h2>Coherent, incoherent and diffuse intensity<a class="headerlink" href="#coherent-incoherent-and-diffuse-intensity" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">phonon_loss_diffraction_patterns</span></code> collapses the frozen-phonon axis into the usual decomposition, one energy bin at a time:</p>
 <p><span class="math notranslate nohighlight">\(I_{\mathrm{coherent}} = \left| \frac{1}{N}\sum_j \mathcal{F} \psi_j \right|^2 \quad , \qquad I_{\mathrm{incoherent}} = \frac{1}{N} \sum_j \left| \mathcal{F} \psi_j \right|^2 \quad , \qquad I_{\mathrm{tds}} = I_{\mathrm{incoherent}} - I_{\mathrm{coherent}} \quad .\)</span></p>
-<p>Passing <code class="docutils literal notranslate"><span class="pre">component=&quot;all&quot;</span></code> returns all three stacked along a new leading axis. Below we show them for the mode at the zone boundary: the coherent part holds the Bragg reflections of the average lattice, while the diffuse part holds the phonon satellites at <span class="math notranslate nohighlight">\(\vec{G} \pm \vec{q}\)</span>.</p>
+<p>Passing <code class="docutils literal notranslate"><span class="pre">components=&quot;all&quot;</span></code> returns all three stacked along a new leading axis, in the order <code class="docutils literal notranslate"><span class="pre">total</span></code> (<span class="math notranslate nohighlight">\(I_{\mathrm{incoherent}}\)</span>), <code class="docutils literal notranslate"><span class="pre">elastic</span></code> (<span class="math notranslate nohighlight">\(I_{\mathrm{coherent}}\)</span>) and <code class="docutils literal notranslate"><span class="pre">diffuse</span></code> (<span class="math notranslate nohighlight">\(I_{\mathrm{tds}}\)</span>). Below we show them for the mode at the zone boundary: the coherent part holds the Bragg reflections of the average lattice, while the diffuse part holds the phonon satellites at <span class="math notranslate nohighlight">\(\vec{G} \pm \vec{q}\)</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dp_components</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">phonon_loss_diffraction_patterns</span><span class="p">(</span>
-    <span class="n">exit_waves</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s2">"all"</span><span class="p">,</span> <span class="n">max_angle</span><span class="o">=</span><span class="mi">25</span>
+    <span class="n">exit_waves</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="s2">"all"</span><span class="p">,</span> <span class="n">max_angle</span><span class="o">=</span><span class="mi">25</span>
 <span class="p">)</span>
 
 <span class="n">visualization</span> <span class="o">=</span> <span class="n">dp_components</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">show</span><span class="p">(</span>
@@ -802,7 +803,7 @@ RealSpaceAxis      y [Å]             0.00 0.08 ... 16.12
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/b2d7936c4a9e97406f0c657ca3c4c9c78898fd5db18d40f7ca7a3ef898024d35.png" src="../../_images/b2d7936c4a9e97406f0c657ca3c4c9c78898fd5db18d40f7ca7a3ef898024d35.png" />
+<img alt="../../_images/35ebf446a1cfc7ee30717041d1ac882f1a7ff95ee3185d0e89c63b9befc43dfc.png" src="../../_images/35ebf446a1cfc7ee30717041d1ac882f1a7ff95ee3185d0e89c63b9befc43dfc.png" />
 </div>
 </div>
 </section>
@@ -811,7 +812,7 @@ RealSpaceAxis      y [Å]             0.00 0.08 ... 16.12
 <p>Keeping only the diffuse component, we sweep a detector outwards along <span class="math notranslate nohighlight">\(q\)</span> for every energy bin. <code class="docutils literal notranslate"><span class="pre">SpectralSlitDetector</span></code> integrates a rectangular strip of full width <code class="docutils literal notranslate"><span class="pre">width</span></code> perpendicular to the sweep direction; <code class="docutils literal notranslate"><span class="pre">momentum_resolved_spectrum</span></code> applies it to the energy-resolved patterns and returns a <code class="docutils literal notranslate"><span class="pre">MomentumResolvedSpectrum</span></code>, that is <span class="math notranslate nohighlight">\(S(q, E)\)</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dp_tds</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">phonon_loss_diffraction_patterns</span><span class="p">(</span><span class="n">exit_waves</span><span class="p">)</span>  <span class="c1"># component="tds"</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dp_tds</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">phonon_loss_diffraction_patterns</span><span class="p">(</span><span class="n">exit_waves</span><span class="p">)</span>  <span class="c1"># components="diffuse"</span>
 
 <span class="n">detector</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">SpectralSlitDetector</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">q_min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">q_max</span><span class="o">=</span><span class="mf">19.0</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
@@ -822,7 +823,7 @@ RealSpaceAxis      y [Å]             0.00 0.08 ... 16.12
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/593366bb16e9bfde9b21dae6adff13273f29fa8f5ede9141fcc237d951330c4b.png" src="../../_images/593366bb16e9bfde9b21dae6adff13273f29fa8f5ede9141fcc237d951330c4b.png" />
+<img alt="../../_images/6fd14da7eeeb4d1fd30ae1eb1a306196435ca7e351d87f8457940b0a3aa85ed3.png" src="../../_images/6fd14da7eeeb4d1fd30ae1eb1a306196435ca7e351d87f8457940b0a3aa85ed3.png" />
 </div>
 </div>
 <p>The dispersion we put in is recovered — twice. Each mode scatters intensity to <span class="math notranslate nohighlight">\(\vec{G} \pm \vec{q}\)</span> around <em>every</em> Bragg reflection, so the branch rising from the direct beam is mirrored by a branch descending towards the <span class="math notranslate nohighlight">\(\{200\}\)</span> reflection at <span class="math notranslate nohighlight">\(18.3 \ \mathrm{mrad}\)</span>. The two meet at the zone boundary, halfway between the reflections, where the satellites of the two coincide and the intensity is correspondingly higher.</p>
@@ -839,7 +840,7 @@ RealSpaceAxis      y [Å]             0.00 0.08 ... 16.12
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/bac0dc93beef1187b151495e3884568678c85f134f28e6148ba16493db457c9d.png" src="../../_images/bac0dc93beef1187b151495e3884568678c85f134f28e6148ba16493db457c9d.png" />
+<img alt="../../_images/8f07426825db2cd05823ee1d10ff59e350e83507e9a9e3e0d0c49678dc55594c.png" src="../../_images/8f07426825db2cd05823ee1d10ff59e350e83507e9a9e3e0d0c49678dc55594c.png" />
 </div>
 </div>
 </section>
@@ -851,7 +852,7 @@ RealSpaceAxis      y [Å]             0.00 0.08 ... 16.12
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dp_weighted</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">phonon_loss_diffraction_patterns</span><span class="p">(</span>
-    <span class="n">exit_waves</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s2">"tds"</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mf">300.0</span>
+    <span class="n">exit_waves</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="s2">"diffuse"</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mf">300.0</span>
 <span class="p">)</span>
 
 <span class="n">spectrum_weighted</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">momentum_resolved_spectrum</span><span class="p">(</span><span class="n">dp_weighted</span><span class="p">,</span> <span class="n">detector</span><span class="p">)</span>
@@ -861,7 +862,7 @@ RealSpaceAxis      y [Å]             0.00 0.08 ... 16.12
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/73acd39911d27239c09f74f58da9b88bc0235785b26d4cdf54b4c77d559a9d51.png" src="../../_images/73acd39911d27239c09f74f58da9b88bc0235785b26d4cdf54b4c77d559a9d51.png" />
+<img alt="../../_images/41b9c8fbea5d4003c353284fe11f2c8083394a67f0bfb4164c9b0b40903cbc5c.png" src="../../_images/41b9c8fbea5d4003c353284fe11f2c8083394a67f0bfb4164c9b0b40903cbc5c.png" />
 </div>
 </div>
 <p>At room temperature <span class="math notranslate nohighlight">\(k_B T \approx 26 \ \mathrm{meV}\)</span> is comparable to the phonon energies here, so the gain side is only somewhat weaker than the loss side; it is suppressed much more strongly at low temperature or for higher-energy modes.</p>
@@ -882,7 +883,7 @@ RealSpaceAxis      y [Å]             0.00 0.08 ... 16.12
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/ddf5b46db56103ea955f3bd09fe3c9c5d6d391681ddf3188f50b62b27dbc3e5a.png" src="../../_images/ddf5b46db56103ea955f3bd09fe3c9c5d6d391681ddf3188f50b62b27dbc3e5a.png" />
+<img alt="../../_images/80738cb0bd6aaf99a4366f15350b352b9da31294d79c7e6421fe800daf5eb5e7.png" src="../../_images/80738cb0bd6aaf99a4366f15350b352b9da31294d79c7e6421fe800daf5eb5e7.png" />
 </div>
 </div>
 <div class="admonition note">

@@ -319,6 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../reference/api/api.html">API</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.cbed.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.cbed</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.dynamical.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.dynamical</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.indexing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.indexing</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.matrix_exponential.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.matrix_exponential</span></code></a></li>
@@ -608,15 +609,15 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#independent-atom-model">Independent atom model</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#potential"><code class="docutils literal notranslate"><span class="pre">Potential</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-and-saving-the-potential">Building and saving the potential</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-sampling-and-slice-thickness-automatically">Choosing sampling and slice thickness automatically</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-commensurability-matters">Why commensurability matters</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#slice-thickness-auto"><code class="docutils literal notranslate"><span class="pre">slice_thickness="auto"</span></code></a></li>
-</ul>
-</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#slicing-the-potential">Slicing the potential</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#finite-projection-integrals">Finite projection integrals</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#infinite-projection-integrals">Infinite projection integrals</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#potentials-depth-profile">Potentials depth profile</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-sampling-and-slice-thickness-automatically">Choosing sampling and slice thickness automatically</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-commensurability-matters">Why commensurability matters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#slice-thickness-auto"><code class="docutils literal notranslate"><span class="pre">slice_thickness="auto"</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#crystal-potentials">Crystal potentials</a></li>
@@ -756,7 +757,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/36aab1ff788269c9c25768159e865156c6c384bdde5e24a4c3035e3123a57298.png" src="../../_images/36aab1ff788269c9c25768159e865156c6c384bdde5e24a4c3035e3123a57298.png" />
+<img alt="../../_images/221f12da098fd6ef22281f6e206b5654b3579f996106bb7b386baae866208857.png" src="../../_images/221f12da098fd6ef22281f6e206b5654b3579f996106bb7b386baae866208857.png" />
 </div>
 </div>
 <div class="admonition note">
@@ -806,9 +807,203 @@ You can use our interactive features to scroll through all the slices in your po
 </div>
 </div>
 </section>
+<section id="slicing-the-potential">
+<span id="walkthrough-slicing"></span><h2>Slicing the potential<a class="headerlink" href="#slicing-the-potential" title="Link to this heading">#</a></h2>
+<p>The multislice algorithm underlying most modern TEM image simulations requires a mathematical discretization of the potential into slices, which is exact in the limit of infinitely thin slices. The slice thickness can be considered a convergence parameter, and since more slices increases the computational cost, an optimum providing sufficient precision at an acceptable cost can be selected.</p>
+<p>A reasonable value for slice thickness is generally between <span class="math notranslate nohighlight">\(0.5 \ \mathrm{Å}\)</span> and <span class="math notranslate nohighlight">\(2 \ \mathrm{Å}\)</span>; our default value is <span class="math notranslate nohighlight">\(1 \ \mathrm{Å}\)</span>. <em>ab</em>TEM also provides multiple options for evaluating the integrals required for slicing the potential that make slightly different tradeoffs in terms of precision and performance.</p>
+<section id="finite-projection-integrals">
+<h3>Finite projection integrals<a class="headerlink" href="#finite-projection-integrals" title="Link to this heading">#</a></h3>
+<p><em>ab</em>TEM implements an accurate finite potential projection method. Numerical integration is used to calculate the integrals of the form</p>
+<div class="math notranslate nohighlight" id="equation-eq-potentials-slice">
+<span class="eqno">(1)<a class="headerlink" href="#equation-eq-potentials-slice" title="Link to this equation">#</a></span>\[
+V_{n}(x, y) = \int_{z_n}^{z_n+\Delta z} V(x,y,z) dz \quad ,
+\]</div>
+<p>where <span class="math notranslate nohighlight">\(z_n\)</span> is the <span class="math notranslate nohighlight">\(z\)</span>-position at the entrance of the <span class="math notranslate nohighlight">\(n\)</span>’th slice and <span class="math notranslate nohighlight">\(\Delta z\)</span> is the slice thickness.</p>
+<p>We used the <em>ab</em>TEM default method of handling finite projection integrals above; additional options and a description of the methods is given in <a class="reference internal" href="../appendix/potential_integrals.html"><span class="std std-doc">an appendix</span></a>.</p>
+</section>
+<section id="infinite-projection-integrals">
+<h3>Infinite projection integrals<a class="headerlink" href="#infinite-projection-integrals" title="Link to this heading">#</a></h3>
+<p>Since the finite projection method can be computationally demanding, <em>ab</em>TEM also implements potentials using infinite projection integrals. The finite integrals are replaced by infinite integrals, which may be evaluated analytically</p>
+<div class="math notranslate nohighlight">
+\[ \int_{-\infty}^{\infty} V(x,y,z) dz \approx \int_{z_i}^{z_i+\Delta z} V(x,y,z) dz \]</div>
+<p>The infinite projection of the atomic potential for each atom is assigned to a single slice. The implementation uses the hybrid real-space/Fourier-space approach by van den Broek <span class="bibtex-citation" id="id6">[<a class="reference internal" href="../bibliography.html#id17" title="W. Van den Broek, X. Jiang, and C.T. Koch. Fdes, a gpu-based multislice algorithm with increased efficiency of the computation of the projected potential. Ultramicroscopy, 158:89–97, 2015. doi:10.1016/j.ultramic.2015.07.005.">VdBJK15</a>]</span>.</p>
+<p>Below we create the same SrTiO3 potential as above with infinite projections. The potential looks almost identical to the finite projection, but note that the slice at <span class="math notranslate nohighlight">\(z=2.96 \ \mathrm{Å}\)</span> has zero intensity because there is not atoms in this slice.</p>
+<div class="cell tag_full-width docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">potential_infinite</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span>
+    <span class="n">repeated_srtio3</span><span class="p">,</span>
+    <span class="n">sampling</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">parametrization</span><span class="o">=</span><span class="s2">"lobato"</span><span class="p">,</span>
+    <span class="n">slice_thickness</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">projection</span><span class="o">=</span><span class="s2">"infinite"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">visualization</span> <span class="o">=</span> <span class="n">potential_infinite</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">show</span><span class="p">(</span>
+    <span class="n">project</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+    <span class="n">common_color_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">cbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/bd62d7eaa5e700ec92b144c8c7d10099471e1d3d052f2ba945cd2893b1c299f4.png" src="../../_images/bd62d7eaa5e700ec92b144c8c7d10099471e1d3d052f2ba945cd2893b1c299f4.png" />
+</div>
+</div>
+<p>Using infinite projections can be <em>much</em> faster, especially for potentials with a large numbers of atoms. As shown by the time below, the potential takes less than 0.5 s to calculate, which you may compare this to the finite projection calculated above that took 4 s. The error introduced by using infinite integrals is in most, but not all, cases negligible compared to other sources of error.</p>
+<div class="cell tag_skip-test docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">potential_infinite</span><span class="o">.</span><span class="n">build</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="potentials-depth-profile">
+<h3>Potentials depth profile<a class="headerlink" href="#potentials-depth-profile" title="Link to this heading">#</a></h3>
+<p>To see the differences between finite and infinite projection more clearly, we can plot the depth profiles of the potentials together with the slice markers using <code class="docutils literal notranslate"><span class="pre">.show_depth_profile()</span></code>.</p>
+<p>Notice how especially for thinner slices, finite projection spreads the intensity of the atom across multiple slices, whereas infinite always keeps the entire atom within one slice. Even though the finite-projection side views appear dimmer, the projected potentials are essentially identical (as can be seen from the projected potentials plotted on the third row below).</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.gridspec</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gridspec</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atoms</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">abtem</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="mf">3.905</span>
+<span class="n">cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">a</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+                 <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+                 <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">a</span><span class="p">]])</span>
+<span class="n">scaled_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span>
+<span class="p">])</span>
+<span class="n">srtio3_depth</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">symbols</span><span class="o">=</span><span class="p">[</span><span class="s1">'Sr'</span><span class="p">,</span> <span class="s1">'Ti'</span><span class="p">,</span> <span class="s1">'O'</span><span class="p">,</span> <span class="s1">'O'</span><span class="p">,</span> <span class="s1">'O'</span><span class="p">],</span> <span class="n">scaled_positions</span><span class="o">=</span><span class="n">scaled_positions</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="n">cell</span><span class="p">,</span> <span class="n">pbc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">repeated_srtio3_depth</span> <span class="o">=</span> <span class="n">srtio3_depth</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+
+<span class="n">unit_z</span> <span class="o">=</span> <span class="n">srtio3_depth</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="n">vacuum</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">unit_z</span> <span class="o">/</span> <span class="mi">8</span>
+<span class="n">slicings</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">'a/4'</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="s1">'a/8'</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="s1">'a/16'</span><span class="p">,</span> <span class="mi">16</span><span class="p">)]</span>
+<span class="n">GPTS</span> <span class="o">=</span> <span class="mi">256</span>
+
+<span class="n">repeated_srtio3_depth</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">vacuum</span><span class="o">=</span><span class="n">vacuum</span><span class="p">)</span>
+<span class="n">cell_z</span> <span class="o">=</span> <span class="n">repeated_srtio3_depth</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="n">cell_x</span> <span class="o">=</span> <span class="n">repeated_srtio3_depth</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">cell_y</span> <span class="o">=</span> <span class="n">repeated_srtio3_depth</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="n">z0</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">repeated_srtio3_depth</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="mi">6</span><span class="p">)))[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">slice_center_shift</span><span class="p">(</span><span class="n">st</span><span class="p">):</span>
+    <span class="c1"># smallest-magnitude shift (positive or negative) that centers the atom</span>
+    <span class="c1"># in its assigned slice -- avoids the near-full-slice-thickness artifact</span>
+    <span class="c1"># that a plain non-negative modulo produces when the atom is already</span>
+    <span class="c1"># (near-)centered.</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">st</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">z0</span> <span class="o">+</span> <span class="n">st</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">%</span> <span class="n">st</span> <span class="o">-</span> <span class="n">st</span> <span class="o">/</span> <span class="mi">2</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">14</span><span class="p">))</span>
+<span class="n">gs</span> <span class="o">=</span> <span class="n">gridspec</span><span class="o">.</span><span class="n">GridSpec</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">figure</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span>
+                       <span class="n">height_ratios</span><span class="o">=</span><span class="p">[</span><span class="n">cell_z</span><span class="p">,</span> <span class="n">cell_z</span><span class="p">,</span> <span class="n">cell_x</span><span class="p">],</span>
+                       <span class="n">hspace</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+
+<span class="n">axes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="p">],</span> <span class="n">sharex</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="p">],</span> <span class="n">sharey</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">sharey</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">col</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">col</span><span class="p">],</span> <span class="n">sharex</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="p">],</span> <span class="n">sharey</span><span class="o">=</span><span class="n">sharey</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">ax_at</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">abtem</span><span class="o">.</span><span class="n">show_atoms</span><span class="p">(</span><span class="n">repeated_srtio3_depth</span><span class="p">,</span> <span class="n">plane</span><span class="o">=</span><span class="s1">'xz'</span><span class="p">,</span> <span class="n">show_periodic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax_at</span><span class="p">,</span>
+                     <span class="n">tight_limits</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax_at</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'Side view'</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">st_frac</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">slicings</span><span class="p">):</span>
+    <span class="n">st</span> <span class="o">=</span> <span class="n">unit_z</span> <span class="o">/</span> <span class="n">st_frac</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">slice_center_shift</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+
+    <span class="n">atoms_col</span> <span class="o">=</span> <span class="n">repeated_srtio3_depth</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">atoms_col</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">delta</span>
+
+    <span class="n">pot_inf</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">atoms_col</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">gpts</span><span class="o">=</span><span class="p">(</span><span class="n">GPTS</span><span class="p">,</span> <span class="n">GPTS</span><span class="p">),</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="n">st</span><span class="p">,</span>
+                             <span class="n">projection</span><span class="o">=</span><span class="s1">'infinite'</span><span class="p">)</span>
+    <span class="n">pot_fin</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">atoms_col</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">gpts</span><span class="o">=</span><span class="p">(</span><span class="n">GPTS</span><span class="p">,</span> <span class="n">GPTS</span><span class="p">),</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="n">st</span><span class="p">,</span>
+                             <span class="n">projection</span><span class="o">=</span><span class="s1">'finite'</span><span class="p">)</span>
+
+    <span class="n">pa_inf</span> <span class="o">=</span> <span class="n">pot_inf</span><span class="o">.</span><span class="n">build</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+    <span class="n">pa_fin</span> <span class="o">=</span> <span class="n">pot_fin</span><span class="o">.</span><span class="n">build</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+    <span class="n">dp_inf</span> <span class="o">=</span> <span class="n">pa_inf</span><span class="o">.</span><span class="n">depth_profile</span><span class="p">()</span>
+    <span class="n">dp_fin</span> <span class="o">=</span> <span class="n">pa_fin</span><span class="o">.</span><span class="n">depth_profile</span><span class="p">()</span>
+    <span class="n">vmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">dp_inf</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span> <span class="nb">float</span><span class="p">(</span><span class="n">dp_fin</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+
+    <span class="n">pot_inf</span><span class="o">.</span><span class="n">show_depth_profile</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Inf. (dz=</span><span class="si">{</span><span class="n">st</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1"> Å)'</span><span class="p">)</span>
+
+    <span class="n">pot_fin</span><span class="o">.</span><span class="n">show_depth_profile</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Fin. (dz=</span><span class="si">{</span><span class="n">st</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1"> Å)'</span><span class="p">)</span>
+
+<span class="n">st4</span> <span class="o">=</span> <span class="n">unit_z</span> <span class="o">/</span> <span class="mi">4</span>
+<span class="n">delta4</span> <span class="o">=</span> <span class="n">slice_center_shift</span><span class="p">(</span><span class="n">st4</span><span class="p">)</span>
+<span class="n">atoms_proj</span> <span class="o">=</span> <span class="n">repeated_srtio3_depth</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">atoms_proj</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">delta4</span>
+
+<span class="n">proj_inf</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">atoms_proj</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">gpts</span><span class="o">=</span><span class="p">(</span><span class="n">GPTS</span><span class="p">,</span> <span class="n">GPTS</span><span class="p">),</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="n">st4</span><span class="p">,</span>
+                           <span class="n">projection</span><span class="o">=</span><span class="s1">'infinite'</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">project</span><span class="p">()</span>
+<span class="n">proj_fin</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">atoms_proj</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">gpts</span><span class="o">=</span><span class="p">(</span><span class="n">GPTS</span><span class="p">,</span> <span class="n">GPTS</span><span class="p">),</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="n">st4</span><span class="p">,</span>
+                           <span class="n">projection</span><span class="o">=</span><span class="s1">'finite'</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">project</span><span class="p">()</span>
+<span class="n">proj_vmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">proj_inf</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span> <span class="nb">float</span><span class="p">(</span><span class="n">proj_fin</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+
+<span class="n">abtem</span><span class="o">.</span><span class="n">show_atoms</span><span class="p">(</span><span class="n">repeated_srtio3_depth</span><span class="p">,</span> <span class="n">show_periodic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">tight_limits</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'Top view'</span><span class="p">)</span>
+
+<span class="n">proj_inf</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">proj_vmax</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'Inf.'</span><span class="p">)</span>
+
+<span class="n">proj_fin</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">proj_vmax</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'Fin.'</span><span class="p">)</span>
+
+<span class="n">diff</span> <span class="o">=</span> <span class="n">proj_inf</span> <span class="o">-</span> <span class="n">proj_fin</span>
+<span class="n">diff</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="s1">'RdBu_r'</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">proj_vmax</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">proj_vmax</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'Inf. – Fin.'</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+        <span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">visible</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
+        <span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">get_yticklabels</span><span class="p">(),</span> <span class="n">visible</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">'$x$ [Å]'</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">'$z$ [Å]'</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">'$z$ [Å]'</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">'$y$ [Å]'</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../../_images/95f604359e9a37d81b4703c407a5a66b630b6497222f42828b7f6f81880f8a3c.png" src="../../_images/95f604359e9a37d81b4703c407a5a66b630b6497222f42828b7f6f81880f8a3c.png" />
+</div>
+</div>
+</section>
+</section>
 <section id="choosing-sampling-and-slice-thickness-automatically">
 <h2>Choosing sampling and slice thickness automatically<a class="headerlink" href="#choosing-sampling-and-slice-thickness-automatically" title="Link to this heading">#</a></h2>
-<p>Above we picked <code class="docutils literal notranslate"><span class="pre">sampling=0.05</span></code> and <code class="docutils literal notranslate"><span class="pre">slice_thickness=1</span></code> by hand, close to <em>ab</em>TEM’s own rule of thumb of a fine-enough sampling and a slice thickness between <span class="math notranslate nohighlight">\(0.5\)</span> and <span class="math notranslate nohighlight">\(2 \ \mathrm{Å}\)</span>. Since version <code class="docutils literal notranslate"><span class="pre">1.1.0</span></code>, passing <code class="docutils literal notranslate"><span class="pre">sampling=&quot;auto&quot;</span></code> and/or <code class="docutils literal notranslate"><span class="pre">slice_thickness=&quot;auto&quot;</span></code> lets <em>ab</em>TEM pick numbers near those same targets itself — not just close to a round number, but <em>commensurate</em> with the crystal: chosen so that atoms related by a lattice translation are discretized identically, and, where that leaves any freedom, sized so FFTs run on fast kernels.</p>
+<p>Above we picked <code class="docutils literal notranslate"><span class="pre">sampling=0.05</span></code> and <code class="docutils literal notranslate"><span class="pre">slice_thickness=1</span></code> by hand, following the rule of thumb from the previous section. Since version <code class="docutils literal notranslate"><span class="pre">1.1.0</span></code>, passing <code class="docutils literal notranslate"><span class="pre">sampling=&quot;auto&quot;</span></code> and/or <code class="docutils literal notranslate"><span class="pre">slice_thickness=&quot;auto&quot;</span></code> lets <em>ab</em>TEM pick numbers near those same targets itself — not just close to a round number, but <em>commensurate</em> with the crystal: chosen so that atoms related by a lattice translation are discretized identically, and, where that leaves any freedom, sized so FFTs run on fast kernels.</p>
 <p>Rebuilding the same SrTiO<sub>3</sub> potential this way:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -833,6 +1028,29 @@ auto:   gpts=(160, 160), sampling=(0.049314125, 0.049314125), 12 slices
 </div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">sampling=&quot;auto&quot;</span></code> targets a sampling near <span class="math notranslate nohighlight">\(0.05 \ \mathrm{Å}\)</span> (the same value we chose by hand above), but instead of simply dividing the extent by that number, it finds the grid period commensurate with the atomic positions — the greatest common divisor of the spacings between atomic planes — closest to the target, additionally preferring a size whose prime factors are all in <span class="math notranslate nohighlight">\(\{2, 3, 5, 7\}\)</span> where that is compatible with commensurability (FFT libraries run much faster, and use far less GPU memory, on such sizes than on an arbitrary length). This is governed by the <code class="docutils literal notranslate"><span class="pre">grid.round-to-fast-fft</span></code> configuration option, <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> by default; see the <a class="reference internal" href="../appendix/performance_tips.html#appendix-performance-tips"><span class="std std-ref">performance tips</span></a> for the FFT-speed side of this in more detail.</p>
+<p><code class="docutils literal notranslate"><span class="pre">sampling=&quot;auto&quot;</span></code> is not the only way in: <code class="docutils literal notranslate"><span class="pre">gpts</span></code> still works exactly as before, and takes precedence when given, bypassing the commensurate/fast-FFT search entirely — useful when you already know the grid you want, for example to match a previous run or a specific size. It composes freely with <code class="docutils literal notranslate"><span class="pre">slice_thickness=&quot;auto&quot;</span></code>, which is resolved independently:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">potential_gpts</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span>
+    <span class="n">repeated_srtio3</span><span class="p">,</span>
+    <span class="n">parametrization</span><span class="o">=</span><span class="s2">"lobato"</span><span class="p">,</span>
+    <span class="n">gpts</span><span class="o">=</span><span class="mi">160</span><span class="p">,</span>
+    <span class="n">slice_thickness</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
+    <span class="n">projection</span><span class="o">=</span><span class="s2">"finite"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"gpts=160:      </span><span class="si">{</span><span class="n">potential_gpts</span><span class="o">.</span><span class="n">gpts</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">potential_gpts</span><span class="p">)</span><span class="si">}</span><span class="s2"> slices"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sampling=auto: </span><span class="si">{</span><span class="n">potential_auto</span><span class="o">.</span><span class="n">gpts</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">potential_auto</span><span class="p">)</span><span class="si">}</span><span class="s2"> slices"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>gpts=160:      (160, 160), 12 slices
+sampling=auto: (160, 160), 12 slices
+</pre></div>
+</div>
+</div>
+</div>
 <section id="why-commensurability-matters">
 <h3>Why commensurability matters<a class="headerlink" href="#why-commensurability-matters" title="Link to this heading">#</a></h3>
 <p>The grid above came out finer (160 vs. 158 points) than the one we chose by hand, which looks like a minor difference. To see why it matters, take a more revealing case: a chain of 11 repeated unit cells along <span class="math notranslate nohighlight">\(x\)</span>, where the SrTiO<sub>3</sub> lattice constant divided into a hand-picked <span class="math notranslate nohighlight">\(0.05 \ \mathrm{Å}\)</span> sampling does not divide the chain’s grid into equal, whole-pixel unit cells.</p>
@@ -886,7 +1104,7 @@ auto:   gpts=(858, 80)
         spread across the 11 identical Sr atoms: 21.3%
 auto:   [2637.7 2637.7 2637.7 2637.7 2637.7 2637.7 2637.7 2637.7 2637.7 2637.7
  2637.7]
-        spread across the 11 identical Sr atoms: 1.9e-07
+        spread across the 11 identical Sr atoms: 9.3e-08
 </pre></div>
 </div>
 </div>
@@ -895,205 +1113,11 @@ auto:   [2637.7 2637.7 2637.7 2637.7 2637.7 2637.7 2637.7 2637.7 2637.7 2637.7
 </section>
 <section id="slice-thickness-auto">
 <h3><code class="docutils literal notranslate"><span class="pre">slice_thickness=&quot;auto&quot;</span></code><a class="headerlink" href="#slice-thickness-auto" title="Link to this heading">#</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">slice_thickness=&quot;auto&quot;</span></code> applies the same idea along <span class="math notranslate nohighlight">\(z\)</span>: rather than dividing the cell height by a target thickness, it finds the crystal planes and merges adjacent ones to stay as close as possible to a target near <span class="math notranslate nohighlight">\(1 \ \mathrm{Å}\)</span>, without ever letting a slice boundary cut through the middle of a plane of atoms. For SrTiO<sub>3</sub>, whose only two atomic planes per unit cell (SrO and TiO<sub>2</sub>) sit <span class="math notranslate nohighlight">\(\approx 1.97 \ \mathrm{Å}\)</span> apart, that is exactly what <code class="docutils literal notranslate"><span class="pre">potential_auto</span></code> above already used — 12 slices of that thickness, instead of the 24 slices of (numerically convenient but plane-agnostic) <span class="math notranslate nohighlight">\(1 \ \mathrm{Å}\)</span> that <code class="docutils literal notranslate"><span class="pre">slice_thickness=1</span></code> produced. When a material’s planes happen to be spaced closer than the target, <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> merges several into one slice near <span class="math notranslate nohighlight">\(1 \ \mathrm{Å}\)</span> instead; either way the boundaries land exactly on planes of atoms, and the result stays within the <span class="math notranslate nohighlight">\(0.5\)</span>–<span class="math notranslate nohighlight">\(2 \ \mathrm{Å}\)</span> range recommended <a class="reference internal" href="#walkthrough-slicing"><span class="std std-ref">below</span></a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">slice_thickness=&quot;auto&quot;</span></code> applies the same idea along <span class="math notranslate nohighlight">\(z\)</span>: rather than dividing the cell height by a target thickness, it finds the crystal planes and merges adjacent ones to stay as close as possible to a target near <span class="math notranslate nohighlight">\(1 \ \mathrm{Å}\)</span>, without ever letting a slice boundary cut through the middle of a plane of atoms. For SrTiO<sub>3</sub>, whose only two atomic planes per unit cell (SrO and TiO<sub>2</sub>) sit <span class="math notranslate nohighlight">\(\approx 1.97 \ \mathrm{Å}\)</span> apart, that is exactly what <code class="docutils literal notranslate"><span class="pre">potential_auto</span></code> above already used — 12 slices of that thickness, instead of the 24 slices of (numerically convenient but plane-agnostic) <span class="math notranslate nohighlight">\(1 \ \mathrm{Å}\)</span> that <code class="docutils literal notranslate"><span class="pre">slice_thickness=1</span></code> produced. When a material’s planes happen to be spaced closer than the target, <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> merges several into one slice near <span class="math notranslate nohighlight">\(1 \ \mathrm{Å}\)</span> instead; either way the boundaries land exactly on planes of atoms, and the result stays within the <span class="math notranslate nohighlight">\(0.5\)</span>–<span class="math notranslate nohighlight">\(2 \ \mathrm{Å}\)</span> range recommended <a class="reference internal" href="#walkthrough-slicing"><span class="std std-ref">above</span></a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><code class="docutils literal notranslate"><span class="pre">sampling='auto'</span></code>/<code class="docutils literal notranslate"><span class="pre">slice_thickness='auto'</span></code> are specific to <code class="docutils literal notranslate"><span class="pre">Potential</span></code>; classes that wrap it, such as <code class="docutils literal notranslate"><span class="pre">CrystalPotential</span></code>, don’t take <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> directly — apply it to the unit-cell <code class="docutils literal notranslate"><span class="pre">Potential</span></code> passed to them instead. Building the SrTiO<sub>3</sub> unit cell with <code class="docutils literal notranslate"><span class="pre">sampling='auto'</span></code> and repeating it with <code class="docutils literal notranslate"><span class="pre">CrystalPotential(unit_cell_potential,</span> <span class="pre">repetitions=(2,</span> <span class="pre">2,</span> <span class="pre">6))</span></code> reproduces <code class="docutils literal notranslate"><span class="pre">potential_auto</span></code> above, up to floating-point noise from tiling a single built slice rather than summing every atom directly.</p>
 <p>The commensurability search only applies where a shared lattice actually exists: it is skipped for structures that are not periodic in <span class="math notranslate nohighlight">\(x\)</span>/<span class="math notranslate nohighlight">\(y\)</span> (a rotated nanoparticle, say) and for a multi-configuration <code class="docutils literal notranslate"><span class="pre">AtomsEnsemble</span></code> (e.g. an MD trajectory), since each configuration is then an independent, generally non-commensurate snapshot. Both cases fall back to the target sampling directly, still rounded up to a fast FFT size.</p>
-</div>
-</section>
-</section>
-<section id="slicing-the-potential">
-<span id="walkthrough-slicing"></span><h2>Slicing the potential<a class="headerlink" href="#slicing-the-potential" title="Link to this heading">#</a></h2>
-<p>The multislice algorithm underlying most modern TEM image simulations requires a mathematical discretization of the potential into slices, which is exact in the limit of infinitely thin slices. The slice thickness can be considered a convergence parameter, and since more slices increases the computational cost, an optimum providing sufficient precision at an acceptable cost can be selected.</p>
-<p>A reasonable value for slice thickness is generally between <span class="math notranslate nohighlight">\(0.5 \ \mathrm{Å}\)</span> and <span class="math notranslate nohighlight">\(2 \ \mathrm{Å}\)</span>; our default value is <span class="math notranslate nohighlight">\(1 \ \mathrm{Å}\)</span>. <em>ab</em>TEM also provides multiple options for evaluating the integrals required for slicing the potential that make slightly different tradeoffs in terms of precision and performance.</p>
-<section id="finite-projection-integrals">
-<h3>Finite projection integrals<a class="headerlink" href="#finite-projection-integrals" title="Link to this heading">#</a></h3>
-<p><em>ab</em>TEM implements an accurate finite potential projection method. Numerical integration is used to calculate the integrals of the form</p>
-<div class="math notranslate nohighlight" id="equation-eq-potentials-slice">
-<span class="eqno">(1)<a class="headerlink" href="#equation-eq-potentials-slice" title="Link to this equation">#</a></span>\[
-V_{n}(x, y) = \int_{z_n}^{z_n+\Delta z} V(x,y,z) dz \quad ,
-\]</div>
-<p>where <span class="math notranslate nohighlight">\(z_n\)</span> is the <span class="math notranslate nohighlight">\(z\)</span>-position at the entrance of the <span class="math notranslate nohighlight">\(n\)</span>’th slice and <span class="math notranslate nohighlight">\(\Delta z\)</span> is the slice thickness.</p>
-<p>We used the <em>ab</em>TEM default method of handling finite projection integrals above; additional options and a description of the methods is given in <a class="reference internal" href="../appendix/potential_integrals.html"><span class="std std-doc">an appendix</span></a>.</p>
-</section>
-<section id="infinite-projection-integrals">
-<h3>Infinite projection integrals<a class="headerlink" href="#infinite-projection-integrals" title="Link to this heading">#</a></h3>
-<p>Since the finite projection method can be computationally demanding, <em>ab</em>TEM also implements potentials using infinite projection integrals. The finite integrals are replaced by infinite integrals, which may be evaluated analytically</p>
-<div class="math notranslate nohighlight">
-\[ \int_{-\infty}^{\infty} V(x,y,z) dz \approx \int_{z_i}^{z_i+\Delta z} V(x,y,z) dz \]</div>
-<p>The infinite projection of the atomic potential for each atom is assigned to a single slice. The implementation uses the hybrid real-space/Fourier-space approach by van den Broek <span class="bibtex-citation" id="id6">[<a class="reference internal" href="../bibliography.html#id17" title="W. Van den Broek, X. Jiang, and C.T. Koch. Fdes, a gpu-based multislice algorithm with increased efficiency of the computation of the projected potential. Ultramicroscopy, 158:89–97, 2015. doi:10.1016/j.ultramic.2015.07.005.">VdBJK15</a>]</span>.</p>
-<p>Below we create the same SrTiO3 potential as above with infinite projections. The potential looks almost identical to the finite projection, but note that the slice at <span class="math notranslate nohighlight">\(z=2.96 \ \mathrm{Å}\)</span> has zero intensity because there is not atoms in this slice.</p>
-<div class="cell tag_full-width docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">potential_infinite</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span>
-    <span class="n">repeated_srtio3</span><span class="p">,</span>
-    <span class="n">sampling</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
-    <span class="n">parametrization</span><span class="o">=</span><span class="s2">"lobato"</span><span class="p">,</span>
-    <span class="n">slice_thickness</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">projection</span><span class="o">=</span><span class="s2">"infinite"</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="n">visualization</span> <span class="o">=</span> <span class="n">potential_infinite</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">show</span><span class="p">(</span>
-    <span class="n">project</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
-    <span class="n">common_color_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">cbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">);</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../../_images/7300c03ef8a51a0d4cad8c244e966599ab17b140c0b2206f3a7fe0d2809b9717.png" src="../../_images/7300c03ef8a51a0d4cad8c244e966599ab17b140c0b2206f3a7fe0d2809b9717.png" />
-</div>
-</div>
-<p>Using infinite projections can be <em>much</em> faster, especially for potentials with a large numbers of atoms. As shown by the time below, the potential takes less than 0.5 s to calculate, which you may compare this to the finite projection calculated above that took 4 s. The error introduced by using infinite integrals is in most, but not all, cases negligible compared to other sources of error.</p>
-<div class="cell tag_skip-test docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">potential_infinite</span><span class="o">.</span><span class="n">build</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">();</span>
-</pre></div>
-</div>
-</div>
-</div>
-</section>
-<section id="potentials-depth-profile">
-<h3>Potentials depth profile<a class="headerlink" href="#potentials-depth-profile" title="Link to this heading">#</a></h3>
-<p>To see the differences between finite and infinite projection more clearly, we can plot the depth profiles of the potentials together with the slice markers using <code class="docutils literal notranslate"><span class="pre">.show_depth_profile()</span></code>.</p>
-<p>Notice how especially for thinner slices, finite projection spreads the intensity of the atom across multiple slices, whereas infinite always keeps the entire atom within one slice. Even though the finite-projection side views appear dimmer, the projected potentials are essentially identical (as can be seen from the projected potentials plotted on the third row below).</p>
-<div class="cell tag_hide-input docutils container">
-<details class="admonition hide above-input">
-<summary aria-label="Toggle hidden content">
-<p class="collapsed admonition-title">Show code cell source</p>
-<p class="expanded admonition-title">Hide code cell source</p>
-</summary>
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.gridspec</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gridspec</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atoms</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">abtem</span>
-
-<span class="n">a</span> <span class="o">=</span> <span class="mf">3.905</span>
-<span class="n">cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">a</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-                 <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-                 <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">a</span><span class="p">]])</span>
-<span class="n">scaled_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
-    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span>
-<span class="p">])</span>
-<span class="n">srtio3</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">symbols</span><span class="o">=</span><span class="p">[</span><span class="s1">'Sr'</span><span class="p">,</span> <span class="s1">'Ti'</span><span class="p">,</span> <span class="s1">'O'</span><span class="p">,</span> <span class="s1">'O'</span><span class="p">,</span> <span class="s1">'O'</span><span class="p">],</span> <span class="n">scaled_positions</span><span class="o">=</span><span class="n">scaled_positions</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="n">cell</span><span class="p">,</span> <span class="n">pbc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">repeated_srtio3</span> <span class="o">=</span> <span class="n">srtio3</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
-
-<span class="n">unit_z</span> <span class="o">=</span> <span class="n">srtio3</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
-<span class="n">vacuum</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">unit_z</span> <span class="o">/</span> <span class="mi">8</span>
-<span class="n">slicings</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">'a/4'</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="s1">'a/8'</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="s1">'a/16'</span><span class="p">,</span> <span class="mi">16</span><span class="p">)]</span>
-<span class="n">GPTS</span> <span class="o">=</span> <span class="mi">256</span>
-
-<span class="n">repeated_srtio3</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">vacuum</span><span class="o">=</span><span class="n">vacuum</span><span class="p">)</span>
-<span class="n">cell_z</span> <span class="o">=</span> <span class="n">repeated_srtio3</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
-<span class="n">cell_x</span> <span class="o">=</span> <span class="n">repeated_srtio3</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-<span class="n">cell_y</span> <span class="o">=</span> <span class="n">repeated_srtio3</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-
-<span class="n">z0</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">repeated_srtio3</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="mi">6</span><span class="p">)))[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">slice_center_shift</span><span class="p">(</span><span class="n">st</span><span class="p">):</span>
-    <span class="c1"># smallest-magnitude shift (positive or negative) that centers the atom</span>
-    <span class="c1"># in its assigned slice -- avoids the near-full-slice-thickness artifact</span>
-    <span class="c1"># that a plain non-negative modulo produces when the atom is already</span>
-    <span class="c1"># (near-)centered.</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">st</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">z0</span> <span class="o">+</span> <span class="n">st</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">%</span> <span class="n">st</span> <span class="o">-</span> <span class="n">st</span> <span class="o">/</span> <span class="mi">2</span>
-
-<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">14</span><span class="p">))</span>
-<span class="n">gs</span> <span class="o">=</span> <span class="n">gridspec</span><span class="o">.</span><span class="n">GridSpec</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">figure</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span>
-                       <span class="n">height_ratios</span><span class="o">=</span><span class="p">[</span><span class="n">cell_z</span><span class="p">,</span> <span class="n">cell_z</span><span class="p">,</span> <span class="n">cell_x</span><span class="p">],</span>
-                       <span class="n">hspace</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
-
-<span class="n">axes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
-    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="p">])</span>
-<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
-    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="p">],</span> <span class="n">sharex</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="p">],</span> <span class="n">sharey</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="p">])</span>
-<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
-    <span class="n">sharey</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">col</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
-    <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">col</span><span class="p">],</span> <span class="n">sharex</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="p">],</span> <span class="n">sharey</span><span class="o">=</span><span class="n">sharey</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
-    <span class="n">ax_at</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-    <span class="n">abtem</span><span class="o">.</span><span class="n">show_atoms</span><span class="p">(</span><span class="n">repeated_srtio3</span><span class="p">,</span> <span class="n">plane</span><span class="o">=</span><span class="s1">'xz'</span><span class="p">,</span> <span class="n">show_periodic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax_at</span><span class="p">,</span>
-                     <span class="n">tight_limits</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">ax_at</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'Side view'</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">st_frac</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">slicings</span><span class="p">):</span>
-    <span class="n">st</span> <span class="o">=</span> <span class="n">unit_z</span> <span class="o">/</span> <span class="n">st_frac</span>
-    <span class="n">delta</span> <span class="o">=</span> <span class="n">slice_center_shift</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
-
-    <span class="n">atoms_col</span> <span class="o">=</span> <span class="n">repeated_srtio3</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">atoms_col</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">delta</span>
-
-    <span class="n">pot_inf</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">atoms_col</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">gpts</span><span class="o">=</span><span class="p">(</span><span class="n">GPTS</span><span class="p">,</span> <span class="n">GPTS</span><span class="p">),</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="n">st</span><span class="p">,</span>
-                             <span class="n">projection</span><span class="o">=</span><span class="s1">'infinite'</span><span class="p">)</span>
-    <span class="n">pot_fin</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">atoms_col</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">gpts</span><span class="o">=</span><span class="p">(</span><span class="n">GPTS</span><span class="p">,</span> <span class="n">GPTS</span><span class="p">),</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="n">st</span><span class="p">,</span>
-                             <span class="n">projection</span><span class="o">=</span><span class="s1">'finite'</span><span class="p">)</span>
-
-    <span class="n">pa_inf</span> <span class="o">=</span> <span class="n">pot_inf</span><span class="o">.</span><span class="n">build</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
-    <span class="n">pa_fin</span> <span class="o">=</span> <span class="n">pot_fin</span><span class="o">.</span><span class="n">build</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
-    <span class="n">dp_inf</span> <span class="o">=</span> <span class="n">pa_inf</span><span class="o">.</span><span class="n">depth_profile</span><span class="p">()</span>
-    <span class="n">dp_fin</span> <span class="o">=</span> <span class="n">pa_fin</span><span class="o">.</span><span class="n">depth_profile</span><span class="p">()</span>
-    <span class="n">vmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">dp_inf</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span> <span class="nb">float</span><span class="p">(</span><span class="n">dp_fin</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
-
-    <span class="n">pot_inf</span><span class="o">.</span><span class="n">show_depth_profile</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
-    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Inf. (dz=</span><span class="si">{</span><span class="n">st</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1"> Å)'</span><span class="p">)</span>
-
-    <span class="n">pot_fin</span><span class="o">.</span><span class="n">show_depth_profile</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
-    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Fin. (dz=</span><span class="si">{</span><span class="n">st</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1"> Å)'</span><span class="p">)</span>
-
-<span class="n">st4</span> <span class="o">=</span> <span class="n">unit_z</span> <span class="o">/</span> <span class="mi">4</span>
-<span class="n">delta4</span> <span class="o">=</span> <span class="n">slice_center_shift</span><span class="p">(</span><span class="n">st4</span><span class="p">)</span>
-<span class="n">atoms_proj</span> <span class="o">=</span> <span class="n">repeated_srtio3</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">atoms_proj</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">delta4</span>
-
-<span class="n">proj_inf</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">atoms_proj</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">gpts</span><span class="o">=</span><span class="p">(</span><span class="n">GPTS</span><span class="p">,</span> <span class="n">GPTS</span><span class="p">),</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="n">st4</span><span class="p">,</span>
-                           <span class="n">projection</span><span class="o">=</span><span class="s1">'infinite'</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">project</span><span class="p">()</span>
-<span class="n">proj_fin</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">atoms_proj</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">gpts</span><span class="o">=</span><span class="p">(</span><span class="n">GPTS</span><span class="p">,</span> <span class="n">GPTS</span><span class="p">),</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="n">st4</span><span class="p">,</span>
-                           <span class="n">projection</span><span class="o">=</span><span class="s1">'finite'</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">project</span><span class="p">()</span>
-<span class="n">proj_vmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">proj_inf</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span> <span class="nb">float</span><span class="p">(</span><span class="n">proj_fin</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
-
-<span class="n">abtem</span><span class="o">.</span><span class="n">show_atoms</span><span class="p">(</span><span class="n">repeated_srtio3</span><span class="p">,</span> <span class="n">show_periodic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                 <span class="n">tight_limits</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'Top view'</span><span class="p">)</span>
-
-<span class="n">proj_inf</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">proj_vmax</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'Inf.'</span><span class="p">)</span>
-
-<span class="n">proj_fin</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">proj_vmax</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'Fin.'</span><span class="p">)</span>
-
-<span class="n">diff</span> <span class="o">=</span> <span class="n">proj_inf</span> <span class="o">-</span> <span class="n">proj_fin</span>
-<span class="n">diff</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="s1">'RdBu_r'</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">proj_vmax</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">proj_vmax</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'Inf. – Fin.'</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
-        <span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">visible</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
-        <span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">get_yticklabels</span><span class="p">(),</span> <span class="n">visible</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
-    <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">'$x$ [Å]'</span><span class="p">)</span>
-
-<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">'$z$ [Å]'</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">'$z$ [Å]'</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">'$y$ [Å]'</span><span class="p">);</span>
-</pre></div>
-</div>
-</div>
-</details>
-<div class="cell_output docutils container">
-<img alt="../../_images/29835d74bacf22f185ca0bad13f7c90cedb91b9c63018051af6292083e415e44.png" src="../../_images/29835d74bacf22f185ca0bad13f7c90cedb91b9c63018051af6292083e415e44.png" />
-</div>
 </div>
 </section>
 </section>
@@ -1138,7 +1162,7 @@ V_{n}(x, y) = \int_{z_n}^{z_n+\Delta z} V(x,y,z) dz \quad ,
                     </tr>
                     <tr>
                         <th> Dask graph </th>
-                        <td colspan="2"> 1 chunks in 6 graph layers </td>
+                        <td colspan="2"> 1 chunks in 7 graph layers </td>
                     </tr>
                     <tr>
                         <th> Data type </th>
@@ -1276,15 +1300,15 @@ V_{n}(x, y) = \int_{z_n}^{z_n+\Delta z} V(x,y,z) dz \quad ,
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#independent-atom-model">Independent atom model</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#potential"><code class="docutils literal notranslate"><span class="pre">Potential</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-and-saving-the-potential">Building and saving the potential</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-sampling-and-slice-thickness-automatically">Choosing sampling and slice thickness automatically</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-commensurability-matters">Why commensurability matters</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#slice-thickness-auto"><code class="docutils literal notranslate"><span class="pre">slice_thickness="auto"</span></code></a></li>
-</ul>
-</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#slicing-the-potential">Slicing the potential</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#finite-projection-integrals">Finite projection integrals</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#infinite-projection-integrals">Infinite projection integrals</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#potentials-depth-profile">Potentials depth profile</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-sampling-and-slice-thickness-automatically">Choosing sampling and slice thickness automatically</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-commensurability-matters">Why commensurability matters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#slice-thickness-auto"><code class="docutils literal notranslate"><span class="pre">slice_thickness="auto"</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#crystal-potentials">Crystal potentials</a></li>
