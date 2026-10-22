@@ -29,7 +29,7 @@ pip install git+https://github.com/abTEM/abTEM
 
 A few optional Python packages are bundled as pip *extras*, so they can be installed together with *ab*TEM:
 
-- `abtem[gpaw]` installs [hankel](https://hankel.readthedocs.io/) and [sympy](https://www.sympy.org/), the Python-side requirements of the DFT-based features — the form factors for core-loss EELS, and the potential parametrization fitted to an all-electron calculation. GPAW itself is *not* installed by this extra, see below.
+- `abtem[gpaw]` installs [hankel](https://hankel.readthedocs.io/), [sympy](https://www.sympy.org/) and [xraydb](https://github.com/xraypy/XrayDB), the Python-side requirements of the DFT-based features — the form factors for core-loss EELS and EDX, the potential parametrization fitted to an all-electron calculation, and the atomic data (fluorescence yields, emission line energies) used to turn an ionisation probability into detected X-ray counts. GPAW itself is *not* installed by this extra, see below.
 - `abtem[extra]` installs [bokeh](https://bokeh.org/), [ipycytoscape](https://ipycytoscape.readthedocs.io/) and the [Dask labextension](https://github.com/dask/dask-labextension), used for the task-graph visualizations and the diagnostics dashboard shown in the [parallelization walkthrough](walkthrough:parallelization).
 - `abtem[all]` installs both of the above.
 
@@ -40,7 +40,7 @@ pip install abtem[all]
 With conda, install the packages by name instead, for example:
 
 ```{code-block}
-conda install -c conda-forge hankel sympy bokeh ipycytoscape
+conda install -c conda-forge hankel sympy xraydb bokeh ipycytoscape
 ```
 
 ```{note}
