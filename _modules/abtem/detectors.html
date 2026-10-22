@@ -739,8 +739,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">energy2wavelength</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">_wrap_with_array</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.fft</span><span class="w"> </span><span class="kn">import</span> <span class="n">fft_interpolate</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">units_type</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dtype</span><span class="p">,</span> <span class="n">safe_floor_int</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.measurements</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">BaseMeasurements</span><span class="p">,</span>
     <span class="n">DiffractionPatterns</span><span class="p">,</span>
@@ -785,7 +784,9 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    list of BaseDetector</span>
-<span class="sd">        A list of validated detectors.</span>
+<span class="sd">        A list of validated detectors. With `waves`, every detector that matches</span>
+<span class="sd">        itself to the waves (e.g. by auto-sizing its outer angle) is returned as a</span>
+<span class="sd">        matched copy, and the detectors that were passed in are not modified.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
@@ -805,9 +806,20 @@
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Detectors must be BaseDetector or list of BaseDetector."</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">waves</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">matched</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="n">detectors</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="s2">"_match_waves"</span><span class="p">):</span>
+                <span class="c1"># Matching writes the waves' cutoff angle onto the detector. Done on</span>
+                <span class="c1"># a copy, the caller's detector keeps no outer angle that a later,</span>
+                <span class="c1"># unrelated run (another energy, grid or algorithm) would reuse.</span>
+                <span class="n">detector</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
                 <span class="n">detector</span><span class="o">.</span><span class="n">_match_waves</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+                <span class="c1"># Fixed for the rest of this run: a later match against other</span>
+                <span class="c1"># waves of the same run (PRISM reduces with cropped probes) must</span>
+                <span class="c1"># not size the detector again.</span>
+                <span class="n">detector</span><span class="o">.</span><span class="n">_outer_is_explicit</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">_outer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="n">matched</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">detector</span><span class="p">)</span>
+        <span class="n">detectors</span> <span class="o">=</span> <span class="n">matched</span>
 
     <span class="k">return</span> <span class="n">detectors</span></div>
 
@@ -949,6 +961,11 @@
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span> <span class="o">=</span> <span class="n">inner</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_outer</span> <span class="o">=</span> <span class="n">outer</span>
+        <span class="c1"># Whether `outer` was ever given explicitly (constructor or setter), as</span>
+        <span class="c1"># opposed to auto-matched from waves in `_match_waves`. `outer is None`</span>
+        <span class="c1"># alone cannot tell these apart once a value has been auto-matched, which</span>
+        <span class="c1"># made `_match_waves` latch onto the first waves it ever saw.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outer_is_explicit</span> <span class="o">=</span> <span class="n">outer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rotation</span> <span class="o">=</span> <span class="n">rotation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span> <span class="o">=</span> <span class="n">offset</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">to_cpu</span><span class="o">=</span><span class="n">to_cpu</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">)</span>
@@ -970,11 +987,17 @@
     <span class="nd">@outer</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">outer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_outer</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outer_is_explicit</span> <span class="o">=</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">rotation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Rotation of the bins around the origin [rad]."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">offset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Offset of the detector centre from the origin in `x` and `y` [mrad]."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span>
 
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
@@ -1033,14 +1056,23 @@
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">angular_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="n">inner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_binned_outer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_outer_for</span><span class="p">(</span><span class="n">waves</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">outer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outer</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">outer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">cutoff_angles</span><span class="p">))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_binned_outer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Outer edge of the outermost bin for a requested ``outer`` [mrad]."""</span>
+        <span class="k">return</span> <span class="n">outer</span>
 
-        <span class="k">return</span> <span class="n">inner</span><span class="p">,</span> <span class="n">outer</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_nbins_within</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Number of radial bins for a requested ``outer`` [mrad]."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbins_radial</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_outer_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The ``outer`` used to detect ``waves`` [mrad]: the given one, or</span>
+<span class="sd">        else the antialias cutoff angle of ``waves`` (see `_match_waves`)."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_explicit_outer</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">outer</span>
+
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">cutoff_angles</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_new_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -1057,7 +1089,21 @@
 <span class="sd">        """</span>
         <span class="n">inner</span><span class="p">,</span> <span class="n">outer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_limits</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
 
-        <span class="n">measurement</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">diffraction_patterns</span><span class="p">(</span><span class="n">max_angle</span><span class="o">=</span><span class="n">outer</span><span class="p">,</span> <span class="n">parity</span><span class="o">=</span><span class="s2">"same"</span><span class="p">)</span>
+        <span class="c1"># The pattern is cropped about k=0 and polar_binning then shifts the</span>
+        <span class="c1"># bins by the offset, so the crop reaches `outer` beyond the offset</span>
+        <span class="c1"># centre, plus a pixel for the nearest-pixel rounding of the offset.</span>
+        <span class="c1"># A detector reaching past the grid uses the full pattern: the bins</span>
+        <span class="c1"># shifted beyond the Nyquist frequency are dropped, not wrapped round.</span>
+        <span class="n">max_angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">outer</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_offset</span><span class="p">)</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="n">max_angle</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">outer</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_offset</span><span class="p">))</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">angular_sampling</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">gpts</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">_gpts_within_angle</span><span class="p">(</span><span class="n">max_angle</span><span class="p">,</span> <span class="n">parity</span><span class="o">=</span><span class="s2">"same"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">g</span> <span class="o">&gt;=</span> <span class="n">n</span> <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">waves</span><span class="o">.</span><span class="n">_valid_gpts</span><span class="p">)):</span>
+                <span class="n">max_angle</span> <span class="o">=</span> <span class="s2">"full"</span>
+
+        <span class="n">measurement</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">diffraction_patterns</span><span class="p">(</span><span class="n">max_angle</span><span class="o">=</span><span class="n">max_angle</span><span class="p">,</span> <span class="n">parity</span><span class="o">=</span><span class="s2">"same"</span><span class="p">)</span>
 
         <span class="n">measurement</span> <span class="o">=</span> <span class="n">measurement</span><span class="o">.</span><span class="n">polar_binning</span><span class="p">(</span>
             <span class="n">nbins_radial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbins_radial</span><span class="p">,</span>
@@ -1073,8 +1119,22 @@
 
         <span class="k">return</span> <span class="n">measurement</span><span class="o">.</span><span class="n">_eager_array</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_has_explicit_outer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="c1"># an object that predates the flag (an old pickle, a subclass that does</span>
+        <span class="c1"># not call the constructor) is explicit if it has an outer angle</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_outer_is_explicit"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_match_waves</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Auto-size ``outer`` from ``waves``, unless the user gave one.</span>
+
+<span class="sd">        This used to be guarded by ``if self.outer is None``, which conflated "the</span>
+<span class="sd">        user never gave an outer" with "not matched yet": once matched, the detector</span>
+<span class="sd">        kept the angle of the first waves it saw, also for a later, unrelated call</span>
+<span class="sd">        (for example the same instance reused for a scan at another energy).</span>
+<span class="sd">        Matching on every call makes each call consistent with its own waves.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_explicit_outer</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_outer</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">cutoff_angles</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">detect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PolarMeasurements</span><span class="p">:</span>
@@ -1094,9 +1154,23 @@
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">measurements</span><span class="p">,</span> <span class="n">PolarMeasurements</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">measurements</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_region_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseWaves</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""(inner, outer, nbins_radial) of the bins that detecting ``waves``</span>
+<span class="sd">        uses, or that the detector's own ``outer`` gives without waves."""</span>
+        <span class="k">if</span> <span class="n">waves</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">inner</span><span class="p">,</span> <span class="n">outer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">angular_limits</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">outer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"provide the waves or the outer limit of the detector"</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">inner</span><span class="p">,</span> <span class="n">outer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_binned_outer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outer</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">inner</span><span class="p">,</span> <span class="n">outer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nbins_within</span><span class="p">(</span><span class="n">outer</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">get_detector_regions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseWaves</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the polar detector regions as a polar measurement.</span>
+
+<span class="sd">        The regions are labelled on polar axes about the detector centre; a</span>
+<span class="sd">        detector ``offset`` is not represented (``show`` draws it).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1107,9 +1181,10 @@
 <span class="sd">        -------</span>
 <span class="sd">        detector_region : PolarMeasurements</span>
 <span class="sd">        """</span>
+        <span class="n">inner</span><span class="p">,</span> <span class="n">outer</span><span class="p">,</span> <span class="n">nbins_radial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_region_limits</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
 
-        <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbins_radial</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbins_azimuthal</span><span class="p">)</span>
-        <span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nbins_radial</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbins_azimuthal</span><span class="p">))</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nbins_radial</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbins_azimuthal</span><span class="p">)</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">nbins_radial</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbins_azimuthal</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">waves</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">metadata</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
@@ -1120,9 +1195,9 @@
 
         <span class="n">polar_measurements</span> <span class="o">=</span> <span class="n">PolarMeasurements</span><span class="p">(</span>
             <span class="n">bins</span><span class="p">,</span>
-            <span class="n">radial_sampling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">radial_sampling</span><span class="p">,</span>
+            <span class="n">radial_sampling</span><span class="o">=</span><span class="p">(</span><span class="n">outer</span> <span class="o">-</span> <span class="n">inner</span><span class="p">)</span> <span class="o">/</span> <span class="n">nbins_radial</span><span class="p">,</span>
             <span class="n">azimuthal_sampling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">azimuthal_sampling</span><span class="p">,</span>
-            <span class="n">radial_offset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="p">,</span>
+            <span class="n">radial_offset</span><span class="o">=</span><span class="n">inner</span><span class="p">,</span>
             <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
             <span class="n">azimuthal_offset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rotation</span><span class="p">,</span>
         <span class="p">)</span>
@@ -1140,6 +1215,9 @@
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Show the segmented detector regions as a polar plot.</span>
 
+<span class="sd">        The regions are drawn about the detector centre, including any</span>
+<span class="sd">        ``offset``, out to the bins that detecting the waves would use.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        waves : BaseWaves</span>
@@ -1147,7 +1225,8 @@
 <span class="sd">        gpts : two int, optional</span>
 <span class="sd">            Number of grid points describing the wave functions to be detected.</span>
 <span class="sd">        sampling : two float, optional</span>
-<span class="sd">            Lateral sampling of the wave functions to be detected [1 / Å].</span>
+<span class="sd">            Lateral sampling of the wave functions to be detected [Å]. If not</span>
+<span class="sd">            given, the drawn grid extends 10 % beyond the detector.</span>
 <span class="sd">        energy : float, optional</span>
 <span class="sd">            Electron energy of the wave functions to be detected [eV].</span>
 <span class="sd">        kwargs :</span>
@@ -1163,73 +1242,67 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="s2">"provide either waves or 'gpts', 'sampling' and 'energy'"</span>
                 <span class="p">)</span>
-            <span class="n">segmented_regions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_detector_regions</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
-            <span class="n">diffraction_patterns</span> <span class="o">=</span> <span class="n">segmented_regions</span><span class="o">.</span><span class="n">to_diffraction_patterns</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">gpts</span><span class="p">)</span>
             <span class="n">energy</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">energy</span>
+            <span class="n">gpts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">gpts</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"provide the waves or the energy of waves"</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">gpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">gpts</span> <span class="o">=</span> <span class="mi">1024</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">gpts</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">gpts</span><span class="p">),)</span> <span class="o">*</span> <span class="mi">2</span>
+
+        <span class="n">inner</span><span class="p">,</span> <span class="n">outer</span><span class="p">,</span> <span class="n">nbins_radial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_region_limits</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">wavelength</span> <span class="o">=</span> <span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e3</span>
+
+        <span class="k">if</span> <span class="n">sampling</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># the grid reaches 10 % beyond the outermost angle the region</span>
+            <span class="c1"># covers, about its (possibly offset) centre</span>
+            <span class="n">reach</span> <span class="o">=</span> <span class="mf">1.1</span> <span class="o">*</span> <span class="p">(</span><span class="n">outer</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="o">*</span><span class="n">offset</span><span class="p">)))</span>
+            <span class="n">angular_sampling</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">reach</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">reach</span> <span class="o">/</span> <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">reciprocal_space_sampling</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">angular_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">wavelength</span><span class="p">,</span>
+                <span class="n">angular_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">wavelength</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">units_type</span><span class="p">[</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">"units"</span><span class="p">]]</span> <span class="o">==</span> <span class="s2">"reciprocal_space"</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="s2">"energy or waves must be provided when using real space units"</span>
-                    <span class="p">)</span>
-            <span class="k">if</span> <span class="n">gpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">gpts</span> <span class="o">=</span> <span class="mi">1024</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">sampling</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">sampling</span><span class="p">),)</span> <span class="o">*</span> <span class="mi">2</span>
 
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
-                <span class="n">gpts</span> <span class="o">=</span> <span class="p">(</span><span class="n">gpts</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">2</span>
-
-            <span class="k">if</span> <span class="n">sampling</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outer</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-                <span class="n">angular_sampling</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">outer</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="mf">1.1</span><span class="p">),</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">outer</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="mf">1.1</span><span class="p">),</span>
-                <span class="p">)</span>
-                <span class="n">reciprocal_space_sampling</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">angular_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">),</span>
-                    <span class="n">angular_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">),</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-                    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
-                    <span class="n">sampling</span> <span class="o">=</span> <span class="p">(</span><span class="n">sampling</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">2</span>
-
-                <span class="n">reciprocal_space_sampling</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
-                    <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
-                <span class="p">)</span>
-                <span class="n">angular_sampling</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">reciprocal_space_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">,</span>
-                    <span class="n">reciprocal_space_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">,</span>
-                <span class="p">)</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"provide the outer limit of the detector"</span><span class="p">)</span>
-
-            <span class="n">regions</span> <span class="o">=</span> <span class="n">_polar_detector_bins</span><span class="p">(</span>
-                <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
-                <span class="n">sampling</span><span class="o">=</span><span class="n">angular_sampling</span><span class="p">,</span>
-                <span class="n">inner</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="p">,</span>
-                <span class="n">outer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">outer</span><span class="p">,</span>
-                <span class="n">nbins_radial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbins_radial</span><span class="p">,</span>
-                <span class="n">nbins_azimuthal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbins_azimuthal</span><span class="p">,</span>
-                <span class="n">fftshift</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">rotation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation</span><span class="p">,</span>
-                <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
-                <span class="n">return_indices</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">reciprocal_space_sampling</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
             <span class="p">)</span>
-            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">regions</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
-
-            <span class="n">regions</span> <span class="o">=</span> <span class="n">regions</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
-            <span class="n">regions</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">regions</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-
-            <span class="n">diffraction_patterns</span> <span class="o">=</span> <span class="n">DiffractionPatterns</span><span class="p">(</span>
-                <span class="n">regions</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="n">reciprocal_space_sampling</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">"energy"</span><span class="p">:</span> <span class="n">energy</span><span class="p">}</span>
+            <span class="n">angular_sampling</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">reciprocal_space_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">wavelength</span><span class="p">,</span>
+                <span class="n">reciprocal_space_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">wavelength</span><span class="p">,</span>
             <span class="p">)</span>
 
-        <span class="n">n_bins_radial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbins_radial</span>
+        <span class="n">regions</span> <span class="o">=</span> <span class="n">_polar_detector_bins</span><span class="p">(</span>
+            <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="n">angular_sampling</span><span class="p">,</span>
+            <span class="n">inner</span><span class="o">=</span><span class="n">inner</span><span class="p">,</span>
+            <span class="n">outer</span><span class="o">=</span><span class="n">outer</span><span class="p">,</span>
+            <span class="n">nbins_radial</span><span class="o">=</span><span class="n">nbins_radial</span><span class="p">,</span>
+            <span class="n">nbins_azimuthal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbins_azimuthal</span><span class="p">,</span>
+            <span class="n">fftshift</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">rotation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">return_indices</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">regions</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+
+        <span class="n">regions</span> <span class="o">=</span> <span class="n">regions</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+        <span class="n">regions</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">regions</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="n">diffraction_patterns</span> <span class="o">=</span> <span class="n">DiffractionPatterns</span><span class="p">(</span>
+            <span class="n">regions</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="n">reciprocal_space_sampling</span><span class="p">,</span>
+            <span class="n">fftshift</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">"energy"</span><span class="p">:</span> <span class="n">energy</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="n">n_bins_radial</span> <span class="o">=</span> <span class="n">nbins_radial</span>
         <span class="n">n_bins_azimuthal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbins_azimuthal</span>
         <span class="n">num_colors</span> <span class="o">=</span> <span class="n">n_bins_radial</span> <span class="o">*</span> <span class="n">n_bins_azimuthal</span>
 
@@ -1322,6 +1395,7 @@
     <span class="nd">@outer</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">outer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_outer</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outer_is_explicit</span> <span class="o">=</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">offset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
@@ -1359,7 +1433,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">angular_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">BaseWaves</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
         <span class="n">inner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_explicit_outer</span><span class="p">:</span>
             <span class="n">outer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outer</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">outer</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">cutoff_angles</span><span class="p">)</span>
@@ -1383,10 +1457,17 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_out_ensemble_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="o">...</span><span class="p">]:</span>
         <span class="n">ensemble_shapes</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_out_ensemble_shape</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_scan_shape</span><span class="p">(</span><span class="n">waves</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">_scan_axes</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">source</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">ensemble_shapes</span>  <span class="c1"># No 2D scan axes: keep PositionsAxis in ensemble as-is</span>
 
-        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">ensemble_shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">ensemble_shape</span> <span class="ow">in</span> <span class="n">ensemble_shapes</span><span class="p">)</span>
+        <span class="c1"># Drop exactly the axes _scan_axes identifies, by position: a LineScan has</span>
+        <span class="c1"># only one, so the last two entries need not all be scan axes.</span>
+        <span class="n">drop</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">source</span><span class="p">}</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ensemble_shape</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">drop</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">ensemble_shape</span> <span class="ow">in</span> <span class="n">ensemble_shapes</span>
+        <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_out_base_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">_scan_shape</span><span class="p">(</span><span class="n">waves</span><span class="p">),)</span>
@@ -1420,8 +1501,9 @@
         <span class="n">diffraction_patterns</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">diffraction_patterns</span><span class="p">(</span>
             <span class="n">max_angle</span><span class="o">=</span><span class="s2">"full"</span><span class="p">,</span> <span class="n">parity</span><span class="o">=</span><span class="s2">"same"</span><span class="p">,</span> <span class="n">fftshift</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
         <span class="n">measurement</span> <span class="o">=</span> <span class="n">diffraction_patterns</span><span class="o">.</span><span class="n">integrate_radial</span><span class="p">(</span>
-            <span class="n">inner</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="p">,</span> <span class="n">outer</span><span class="o">=</span><span class="n">outer</span>
+            <span class="n">inner</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="p">,</span> <span class="n">outer</span><span class="o">=</span><span class="n">outer</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_cpu</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">measurement</span><span class="p">,</span> <span class="s2">"to_cpu"</span><span class="p">):</span>
@@ -1470,7 +1552,8 @@
             <span class="n">return_indices</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">array</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="c1"># A detector efficiency in %: 100 where the detector is sensitive.</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">array</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span> <span class="o">*</span> <span class="mf">100.0</span>
 
 <div class="viewcode-block" id="AnnularDetector.get_detector_region">
 <a class="viewcode-back" href="../../reference/api/_autosummary/abtem.detectors.AnnularDetector.html#abtem.detectors.AnnularDetector.get_detector_region">[docs]</a>
@@ -1498,7 +1581,10 @@
             <span class="s2">"units"</span><span class="p">:</span> <span class="s2">"%"</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="n">diffraction_patterns</span> <span class="o">=</span> <span class="n">DiffractionPatterns</span><span class="p">(</span>
-            <span class="n">array</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">reciprocal_space_sampling</span>
+            <span class="n">array</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">reciprocal_space_sampling</span><span class="p">,</span>
+            <span class="n">fftshift</span><span class="o">=</span><span class="n">fftshift</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">diffraction_patterns</span></div>
 </div>
@@ -1519,7 +1605,11 @@
 <span class="sd">    inner : float, optional</span>
 <span class="sd">        Inner integration limit of the bins [mrad].</span>
 <span class="sd">    outer : float, optional</span>
-<span class="sd">        Outer integration limit of the bins [mrad].</span>
+<span class="sd">        Outer integration limit of the bins [mrad]. Every bin is ``step_size``</span>
+<span class="sd">        wide, so if ``outer - inner`` is not a multiple of ``step_size`` the</span>
+<span class="sd">        trailing partial step is dropped and the last bin ends at</span>
+<span class="sd">        ``inner + n * step_size``. If not given, the antialias cutoff angle of</span>
+<span class="sd">        the detected waves is used.</span>
 <span class="sd">    to_cpu : bool, optional</span>
 <span class="sd">        If True, copy the measurement data from the calculation device to CPU memory</span>
 <span class="sd">        after applying the detector, otherwise the data stays on the respective</span>
@@ -1552,9 +1642,20 @@
         <span class="p">)</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_nbins_within</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="c1"># The number of whole steps, floored after the division: a trailing</span>
+        <span class="c1"># partial step (always present for the default auto outer) is dropped,</span>
+        <span class="c1"># so the bins are as wide as the step_size reported as radial_sampling.</span>
+        <span class="k">return</span> <span class="n">safe_floor_int</span><span class="p">((</span><span class="n">outer</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_size</span><span class="p">)</span>
+
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">nbins_radial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outer</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nbins_within</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outer</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_binned_outer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="c1"># The binned range ends at the last whole step, so every bin is exactly</span>
+        <span class="c1"># step_size wide: bin i is [inner + i * step, inner + (i + 1) * step).</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nbins_within</span><span class="p">(</span><span class="n">outer</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_size</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">nbins_azimuthal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1629,7 +1730,7 @@
         <span class="n">outer</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">rotation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">offset</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
-        <span class="n">to_cpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">to_cpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_nbins_radial</span> <span class="o">=</span> <span class="n">nbins_radial</span>
@@ -1727,6 +1828,11 @@
         <span class="n">to_cpu</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">reciprocal_space</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">resample</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"resample=</span><span class="si">{</span><span class="n">resample</span><span class="si">!r}</span><span class="s2"> applies to diffraction patterns only; "</span>
+                <span class="s2">"in real space give the sampling of the images [Å]."</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_resample</span> <span class="o">=</span> <span class="n">resample</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_angle</span> <span class="o">=</span> <span class="n">max_angle</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reciprocal_space</span> <span class="o">=</span> <span class="n">reciprocal_space</span>
@@ -1815,8 +1921,24 @@
 
         <span class="k">return</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">gpts</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_real_space_sampling_and_gpts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The sampling [Å] and grid points of the intensity images detected in real</span>
+<span class="sd">        space: the waves' own grid, or the grid `Images.interpolate` gives with</span>
+<span class="sd">        `resample` as its sampling."""</span>
+        <span class="n">sampling</span><span class="p">,</span> <span class="n">gpts</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">_valid_sampling</span><span class="p">,</span> <span class="n">waves</span><span class="o">.</span><span class="n">_valid_gpts</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resample</span><span class="p">:</span>
+            <span class="n">extent</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">d</span> <span class="o">*</span> <span class="n">n</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="n">gpts</span><span class="p">))</span>
+            <span class="n">resample</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resample</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resample</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">resample</span>
+            <span class="p">)</span>
+            <span class="n">gpts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">e</span> <span class="o">/</span> <span class="n">d</span><span class="p">))</span> <span class="k">for</span> <span class="n">e</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">extent</span><span class="p">,</span> <span class="n">resample</span><span class="p">))</span>
+            <span class="n">sampling</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">e</span> <span class="o">/</span> <span class="n">n</span> <span class="k">for</span> <span class="n">e</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">extent</span><span class="p">,</span> <span class="n">gpts</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">gpts</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_out_base_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_new_sampling_and_gpts</span><span class="p">(</span><span class="n">waves</span><span class="p">)[</span><span class="mi">1</span><span class="p">],)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_space</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_new_sampling_and_gpts</span><span class="p">(</span><span class="n">waves</span><span class="p">)[</span><span class="mi">1</span><span class="p">],)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_real_space_sampling_and_gpts</span><span class="p">(</span><span class="n">waves</span><span class="p">)[</span><span class="mi">1</span><span class="p">],)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_out_dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">),)</span>
@@ -1846,14 +1968,11 @@
                 <span class="p">],</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="n">sampling</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_real_space_sampling_and_gpts</span><span class="p">(</span><span class="n">waves</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">return</span> <span class="p">(</span>
                 <span class="p">[</span>
-                    <span class="n">RealSpaceAxis</span><span class="p">(</span>
-                        <span class="n">label</span><span class="o">=</span><span class="s2">"x"</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">_valid_sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"Å"</span>
-                    <span class="p">),</span>
-                    <span class="n">RealSpaceAxis</span><span class="p">(</span>
-                        <span class="n">label</span><span class="o">=</span><span class="s2">"y"</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">_valid_sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"Å"</span>
-                    <span class="p">),</span>
+                    <span class="n">RealSpaceAxis</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">"x"</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"Å"</span><span class="p">),</span>
+                    <span class="n">RealSpaceAxis</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">"y"</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"Å"</span><span class="p">),</span>
                 <span class="p">],</span>
             <span class="p">)</span>
 
@@ -1935,10 +2054,18 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
+<span class="sd">    gpts : two int, optional</span>
+<span class="sd">       Number of grid points of the detected wave functions. The waves are</span>
+<span class="sd">       Fourier-interpolated onto `gpts` points over their unchanged extent, as</span>
+<span class="sd">       :meth:`abtem.waves.Waves.downsample` does. If not given (default), the waves</span>
+<span class="sd">       keep their grid.</span>
 <span class="sd">    to_cpu : bool, optional</span>
 <span class="sd">       If True, copy the measurement data from the calculation device to CPU memory</span>
 <span class="sd">       after applying the detector, otherwise the data stays on the respective devices.</span>
-<span class="sd">       Default is True.</span>
+<span class="sd">       Default is False: unlike the other detectors, this one returns the (large)</span>
+<span class="sd">       wave functions themselves, and it is the implicit detector used when no</span>
+<span class="sd">       detectors are given, so the data is left on the calculation device rather</span>
+<span class="sd">       than forcing a device-to-host copy of every exit wave.</span>
 <span class="sd">    url : str, optional</span>
 <span class="sd">       If this parameter is set the measurement data is saved at the specified location,</span>
 <span class="sd">       typically a path to a local file. A URL can also include a protocol specifier</span>
@@ -1957,6 +2084,11 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">to_cpu</span><span class="o">=</span><span class="n">to_cpu</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">)</span></div>
 
 
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gpts</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""Number of grid points of the detected wave functions."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpts</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_out_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Waves</span><span class="p">]]:</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.waves</span><span class="w"> </span><span class="kn">import</span> <span class="n">Waves</span>
 
@@ -1965,7 +2097,34 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_out_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
         <span class="n">metadata</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_out_metadata</span><span class="p">(</span><span class="n">array_object</span><span class="o">=</span><span class="n">waves</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">metadata</span><span class="p">[</span><span class="s2">"reciprocal_space"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpts</span><span class="p">:</span>
+            <span class="c1"># as `Waves.downsample` records it: the resampled waves keep the</span>
+            <span class="c1"># band limit of the waves they were resampled from</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="s2">"adjusted_antialias_cutoff_gpts"</span><span class="p">]</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">antialias_cutoff_gpts</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">metadata</span><span class="p">,)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_out_base_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpts</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_gpts</span><span class="p">),)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_out_base_shape</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_out_base_axes_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">WavesType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpts</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_out_base_axes_metadata</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="c1"># `gpts` points over the extent of the waves, as `Waves.downsample` gives</span>
+        <span class="n">sampling</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">length</span> <span class="o">/</span> <span class="n">n</span> <span class="k">for</span> <span class="n">length</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">_valid_extent</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpts</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">RealSpaceAxis</span><span class="p">(</span>
+                    <span class="n">label</span><span class="o">=</span><span class="s2">"x"</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"Å"</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">),</span>
+                <span class="n">RealSpaceAxis</span><span class="p">(</span>
+                    <span class="n">label</span><span class="o">=</span><span class="s2">"y"</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span><span class="n">sampling</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"Å"</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">),</span>
+            <span class="p">],</span>
+        <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_new_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensure_real_space</span><span class="p">()</span>
@@ -1973,10 +2132,8 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_cpu</span><span class="p">:</span>
             <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">to_cpu</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">fft_interpolate</span><span class="p">(</span>
-                <span class="n">waves</span><span class="o">.</span><span class="n">_eager_array</span><span class="p">,</span> <span class="n">new_shape</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpts</span>
-            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gpts</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">fft_interpolate</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">_eager_array</span><span class="p">,</span> <span class="n">new_shape</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_gpts</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">array</span>
 
@@ -2049,7 +2206,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

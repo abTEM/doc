@@ -770,10 +770,15 @@
             </div>
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#upcoming-major-features">Upcoming: major features</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1.0.10</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.0.9</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">1.0.8</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1.0.11</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed-results-that-change">Fixed: results that change</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed-errors-and-crashes">Fixed: errors and crashes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changed-behaviour">Changed: behaviour</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.0.10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">1.0.9</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">1.0.8</a></li>
 </ul>
             </nav>
         </div>
@@ -787,23 +792,97 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">#</a></h1>
-<section id="upcoming-major-features">
-<h2>Upcoming: major features<a class="headerlink" href="#upcoming-major-features" title="Link to this heading">#</a></h2>
-<p>Features:</p>
+<p>The changes of each release, newest first. The changes of the next release go under a
+heading <code class="docutils literal notranslate"><span class="pre">##</span> <span class="pre">Upcoming:</span> <span class="pre">&lt;version&gt;</span></code>, which is renamed to the version when it is released.</p>
+<section id="id1">
+<h2>1.0.11<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<p>A bugfix release on top of 1.0.10 with fixes ported from <code class="docutils literal notranslate"><span class="pre">dev</span></code>; no features and no new defaults.
+Plain potentials, plane-wave and probe multislice with default settings, ensembles of unweighted
+parameters, zarr round trips and the configuration defaults are bit-identical to 1.0.10 at the
+default float32 precision (checked on 66 scenarios).</p>
+<section id="fixed-results-that-change">
+<h3>Fixed: results that change<a class="headerlink" href="#fixed-results-that-change" title="Link to this heading">#</a></h3>
+<p>Magnitudes are from small test systems and vary with the data.</p>
+<p><strong>4D-STEM and measurements</strong></p>
 <ul class="simple">
-<li><p>Energy ensemble support across the codebase (PlaneWave, Probe, SMatrix, Bloch) (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/257">PR #257</a>)</p></li>
-<li><p>Significant improvements on simulating large potentials on GPU, alongside minor performance improvements (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/269">PR #269</a>)</p></li>
-<li><p>In addition to the Gaussian (G) distribution, now also implemented Lorentzian (L), Voigtian (convolution L * G) and
-pseudo-Voigtian (L + G) source-size distributions and filters (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/270">PR #270</a>)</p></li>
-<li><p>Support for skewed pixels (non-orthogonal x,y,z cell axes) (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/282">PR #282</a>)</p></li>
-<li><p>Linear-scaling PRISM-EELS for core-loss simulations (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/289">PR #289</a>)</p></li>
-<li><p>Radially variable detector sensitivity (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/283">PR #283</a>)</p></li>
-<li><p>Plasmons: fast <code class="docutils literal notranslate"><span class="pre">PhaseScramblePlasmons</span></code> for multislice and PRISM, and <code class="docutils literal notranslate"><span class="pre">MonteCarloPlasmons</span></code> for Bloch wave</p></li>
-<li><p>CBED patterns for Bloch waves (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/254">PR #254</a>)</p></li>
+<li><p>Centre of mass and iCOM are divided by the captured intensity (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/417">#417</a>); an all-zero pattern gives NaN instead of 0.</p></li>
+<li><p>Default diffraction patterns are unshifted: their coordinates, <code class="docutils literal notranslate"><span class="pre">azimuthal_average</span></code>, <code class="docutils literal notranslate"><span class="pre">bandlimit</span></code> and centre of mass now agree with that (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/463">#463</a>; azimuthal averages differ by up to 80 %).</p></li>
+<li><p>Radial bins are exactly <code class="docutils literal notranslate"><span class="pre">step_size</span></code> wide (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/469">#469</a>; default ADF/HAADF move by 0.2 to 0.8 %, <code class="docutils literal notranslate"><span class="pre">radial_binning</span></code> by 13 to 33 %).</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">FlexibleAnnularDetector</span></code> without <code class="docutils literal notranslate"><span class="pre">outer</span></code> follows the waves of each call, not the first ones it saw (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/434">#434</a>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PolarMeasurements.integrate</span></code> azimuthal limits (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/459">#459</a>), rad/deg conversions (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/458">#458</a>, off by 1e6), <code class="docutils literal notranslate"><span class="pre">depth_profile</span></code> and <code class="docutils literal notranslate"><span class="pre">Images.coordinates</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/461">#461</a>), <code class="docutils literal notranslate"><span class="pre">interpolate_line</span></code> and <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">/</span> <span class="pre">images</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/470">#470</a>), periodic spline interpolation (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/506">#506</a>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">AnnularDetector(offset=...)</span></code> is applied (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/324">#324</a>); <code class="docutils literal notranslate"><span class="pre">get_detector_region</span></code> returns percent as a float (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/283">#283</a>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">block_direct=True</span></code> blocks the whole bright-field disk instead of 1 mrad (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/484">#484</a>); <code class="docutils literal notranslate"><span class="pre">block_direct()</span></code> without cutoff blocks only the zero-angle pixel (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/556">#556</a>).</p></li>
+<li><p>Reciprocal-space waves measure like real-space ones (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/565">#565</a>, <a class="reference external" href="https://github.com/abTEM/abTEM/pull/566">#566</a>); lazy <code class="docutils literal notranslate"><span class="pre">gaussian_source_size</span></code> is periodic like the eager one (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/485">#485</a>); <code class="docutils literal notranslate"><span class="pre">integrate_gradient</span></code> takes the minimum per image (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/556">#556</a>).</p></li>
+<li><p>Seeded Poisson and scan noise give another realisation for the same seed (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/464">#464</a>, <a class="reference external" href="https://github.com/abTEM/abTEM/pull/475">#475</a>). Float32 stays float32 in transfer functions, <code class="docutils literal notranslate"><span class="pre">integrate_gradient</span></code> and <code class="docutils literal notranslate"><span class="pre">center_of_mass</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/604">#604</a>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PixelatedDetector(reciprocal_space=False)</span></code> has real-space axes, <code class="docutils literal notranslate"><span class="pre">WavesDetector(gpts=...)</span></code> declares the right shape, and <code class="docutils literal notranslate"><span class="pre">block_direct</span></code> no longer grows its metadata (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/499">#499</a>).</p></li>
+</ul>
+<p><strong>PRISM</strong></p>
+<ul class="simple">
+<li><p>Aberrated <code class="docutils literal notranslate"><span class="pre">SMatrix.reduce</span></code>/<code class="docutils literal notranslate"><span class="pre">scan</span></code> match <code class="docutils literal notranslate"><span class="pre">Probe</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/318">#318</a>; 17 to 75 %). An eager frozen-phonon reduce is averaged like the lazy one (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/576">#576</a>), and eager <code class="docutils literal notranslate"><span class="pre">SMatrix.scan</span></code>/<code class="docutils literal notranslate"><span class="pre">reduce</span></code> reduce the <code class="docutils literal notranslate"><span class="pre">CTF</span></code> ensemble axes (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/466">#466</a>). PRISM no longer leaves its outer angle on the caller’s detector (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/491">#491</a>).</p></li>
+</ul>
+<p><strong>Potentials and atoms</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">orthogonalize_cell</span></code> followed by <code class="docutils literal notranslate"><span class="pre">Potential</span></code> no longer drops atoms near cell faces (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/345">#345</a>, <a class="reference external" href="https://github.com/abTEM/abTEM/pull/390">#390</a>, <a class="reference external" href="https://github.com/abTEM/abTEM/pull/555">#555</a>; wurtzite GaN lost 2 of 8 atoms, projected potential +33 %). Non-periodic cells keep displaced atoms (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/460">#460</a>, <a class="reference external" href="https://github.com/abTEM/abTEM/pull/555">#555</a>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CrystalPotential</span></code> honours <code class="docutils literal notranslate"><span class="pre">first_slice</span></code>/<code class="docutils literal notranslate"><span class="pre">last_slice</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/269">#269</a>); <code class="docutils literal notranslate"><span class="pre">GPAWPotential(repetitions=...)</span></code> was wrong by about 100 % (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/494">#494</a>); <code class="docutils literal notranslate"><span class="pre">GPAWParametrization</span></code> applies <code class="docutils literal notranslate"><span class="pre">charge</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/329">#329</a>).</p></li>
+<li><p>GPAW and Bloch slices are integrated centred on their slices, which shifts each slice by dz/2 (5 % for GPAW, 17 to 30 % for Bloch; whole-cell sums unchanged) (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/574">#574</a>); <code class="docutils literal notranslate"><span class="pre">ChargeDensityPotential</span></code> slices are sampled at midpoints (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/472">#472</a>).</p></li>
+<li><p>IAM magnetic fields change by ~1e-6 and their slices are labelled <code class="docutils literal notranslate"><span class="pre">ÅT</span></code>, <code class="docutils literal notranslate"><span class="pre">Å²T</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/543">#543</a>); <code class="docutils literal notranslate"><span class="pre">projection=&quot;finite&quot;</span></code> with sigmas for only some elements dropped the others (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/480">#480</a>); the GPAW magnetic <code class="docutils literal notranslate"><span class="pre">real_space</span></code> projection ignored <code class="docutils literal notranslate"><span class="pre">first_slice</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/544">#544</a>); <code class="docutils literal notranslate"><span class="pre">wrapped_crop_2d</span></code> outside the cell (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/389">#389</a>); eager multislice of potentials with two or more ensemble axes scrambled the results (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/333">#333</a>).</p></li>
+</ul>
+<p><strong>Bloch waves</strong></p>
+<ul class="simple">
+<li><p>Non-centrosymmetric structures were computed for the negated structure (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/379">#379</a>; wurtzite exit waves change by up to 1.27).</p></li>
+<li><p>The symmetrising metric is applied consistently (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/448">#448</a>): the eigendecomposition and matrix-exponential paths now agree to rounding. For Si at 100 keV, default intensities change by R = 1.5e-3 to 2.2e-3 on the zone axis and 3e-4 to 1.3e-3 at a 7° tilt (R = Σ|ΔI| / ΣI).</p></li>
+<li><p>Eager rotation ensembles (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/450">#450</a>), A/B/C centring (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/487">#487</a>) and CuPy scattering matrices (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/449">#449</a>).</p></li>
+</ul>
+<p><strong>HRTEM and CTF</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">set_aberrations('scherzer')</span></code> C10 sign and ordering (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/471">#471</a>); <code class="docutils literal notranslate"><span class="pre">apply_ctf</span></code> no longer writes the waves’ energy into the CTF (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/489">#489</a>).</p></li>
+</ul>
+<p><strong>Core-loss</strong></p>
+<ul class="simple">
+<li><p>Continuum normalisation (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/364">#364</a>), the (2l+1) double count (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/368">#368</a>; L2,3 ÷3, M4,5 ÷5), site threshold and a spurious 1.02 factor (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/468">#468</a>; K +3 to 4 %, L2,3 −22 to −27 %) and the vxc vacuum tail (−4 % at 3 eV). Single-channel frozen-phonon core loss was <code class="docutils literal notranslate"><span class="pre">num_configs</span></code> times too large or zero (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/387">#387</a>).</p></li>
+</ul>
+<p><strong>Backscattering</strong></p>
+<ul class="simple">
+<li><p>Back-propagation is corrected (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/562">#562</a>) and ensembles work (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/499">#499</a>).</p></li>
+</ul>
+<p><strong>Weighted distributions</strong></p>
+<ul class="simple">
+<li><p>Distribution weights are probabilities applied when the ensemble is reduced (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/466">#466</a>). In 1.0.10 a STEM focal spread was effectively a top-hat, an HRTEM Gaussian spread had a standard deviation of σ/√2, and tilt and aperture weights were ignored. The peak of the reduced intensity of a 200 kV, 25 mrad probe with <code class="docutils literal notranslate"><span class="pre">gaussian(σ,</span> <span class="pre">num_samples=11)</span></code> defocus is 1.76 times the 1.0.10 value at σ = 25 Å and 2.21 times at 50 Å. Frozen-phonon results are unchanged.</p></li>
+<li><p>New: <code class="docutils literal notranslate"><span class="pre">OrdinalAxis.weights</span></code>/<code class="docutils literal notranslate"><span class="pre">from_distribution</span></code> and <code class="docutils literal notranslate"><span class="pre">reduce_ensemble(axis=)</span></code>. <code class="docutils literal notranslate"><span class="pre">gaussian</span></code> weights sum to one; <code class="docutils literal notranslate"><span class="pre">normalize='intensity'</span></code> and <code class="docutils literal notranslate"><span class="pre">'amplitude'</span></code> are deprecated; <code class="docutils literal notranslate"><span class="pre">.sum()</span></code>/<code class="docutils literal notranslate"><span class="pre">.mean()</span></code> over a weighted axis warn; negative or wrong-length weights raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>. Bloch rotation spreads and noise axes carry no weights, as before. Zarr files with a weighted axis cannot be read by 1.0.10.</p></li>
+</ul>
+<p><strong>Distributed computations</strong></p>
+<ul class="simple">
+<li><p>The client’s configuration reaches the workers of a <code class="docutils literal notranslate"><span class="pre">distributed</span></code> client, also for <code class="docutils literal notranslate"><span class="pre">to_tiff</span></code> and <code class="docutils literal notranslate"><span class="pre">to_zarr(compute=False)</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/346">#346</a>). Workers used to see only the YAML defaults, so for example <code class="docutils literal notranslate"><span class="pre">precision='float64'</span></code> runs were computed in <code class="docutils literal notranslate"><span class="pre">float32</span></code>. Distributed results obtained with a non-default configuration are worth repeating.</p></li>
+</ul>
+<p><strong>Other</strong></p>
+<ul class="simple">
+<li><p>FFTW <code class="docutils literal notranslate"><span class="pre">fftn</span></code> over three axes transformed the wrong axes and strided input with <code class="docutils literal notranslate"><span class="pre">overwrite_x=True</span></code> raised (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/558">#558</a>); a lazy <code class="docutils literal notranslate"><span class="pre">fft2_convolve</span></code> had the wrong shape for long kernels (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/577">#577</a>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Waves.phase_shift</span></code> relabelled reciprocal-space waves and widened complex64 (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/550">#550</a>), as did <code class="docutils literal notranslate"><span class="pre">tile(renormalize=True)</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/414">#414</a>); 1D <code class="docutils literal notranslate"><span class="pre">interpolate</span></code> lost float64/complex dtypes (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/427">#427</a>); <code class="docutils literal notranslate"><span class="pre">bandlimit</span></code> and <code class="docutils literal notranslate"><span class="pre">block_direct(radius=0)</span></code> kept the direct beam on some grids (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/506">#506</a>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">StructureFactorArray.get_projected_potential</span></code> honours <code class="docutils literal notranslate"><span class="pre">sampling=</span></code> and an integer <code class="docutils literal notranslate"><span class="pre">gpts</span></code> and <code class="docutils literal notranslate"><span class="pre">IndexedDiffractionPatterns.positions_dict</span></code> is complete (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/456">#456</a>).</p></li>
 </ul>
 </section>
-<section id="id1">
-<h2>1.0.10<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<section id="fixed-errors-and-crashes">
+<h3>Fixed: errors and crashes<a class="headerlink" href="#fixed-errors-and-crashes" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>No longer raising: <code class="docutils literal notranslate"><span class="pre">Images.scan_noise</span></code>, <code class="docutils literal notranslate"><span class="pre">apply_ctf</span></code> at a second energy, <code class="docutils literal notranslate"><span class="pre">number</span> <span class="pre">-</span> <span class="pre">Images</span></code>, lazy <code class="docutils literal notranslate"><span class="pre">gaussian_filter</span></code> with a constant boundary, lazy <code class="docutils literal notranslate"><span class="pre">normalize</span></code>, single-point <code class="docutils literal notranslate"><span class="pre">GridScan</span></code>, noisy near-orthogonal <code class="docutils literal notranslate"><span class="pre">Potential</span></code> cells, tilted eager Bloch exit waves with scalar thickness, <code class="docutils literal notranslate"><span class="pre">IndexedDiffractionPatterns.sort()</span></code>, core loss on 16 or 17 pixel grids, <code class="docutils literal notranslate"><span class="pre">AnnularDetector</span></code> over a <code class="docutils literal notranslate"><span class="pre">LineScan</span></code> with an extra ensemble axis, GPAW 26 calculators, frozen-phonon <code class="docutils literal notranslate"><span class="pre">GPAWPotential</span></code>, ensemble backscattering, A/B/C centring, graphene repeated along c, and numba typing on some numba/numpy pairings.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray.filter_sites</span></code> with <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> of several elements and a threshold no longer raises <code class="docutils literal notranslate"><span class="pre">IndexError</span></code>; it returns the kept atoms of the element of the transition potential, as <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> for <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> input and as positions for positions (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/375">#375</a>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">show(overlay=...)</span></code> of an ensemble that has no base axes, such as the integrated core-loss measurements of the core-loss tutorial, gave more line labels than lines, and an ensemble of complex lines fewer. Matplotlib 3.11 raises an error for this (“label must be scalar or have the same length as the input data”); older versions took the whole list as the label. The lines are now labelled by the axes that are overlaid.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">excitations_weights</span></code> fails no longer on NumPy 2 (<code class="docutils literal notranslate"><span class="pre">np.math</span></code>). On CuPy 14.2 a lazy FFT in a dask worker thread no longer fails with <code class="docutils literal notranslate"><span class="pre">CUFFT_EXEC_FAILED</span></code> (see <code class="docutils literal notranslate"><span class="pre">cupy.fft-cache-size</span></code>).</p></li>
+</ul>
+</section>
+<section id="changed-behaviour">
+<h3>Changed: behaviour<a class="headerlink" href="#changed-behaviour" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>abTEM reads <code class="docutils literal notranslate"><span class="pre">~/.config/abtem</span></code> and <code class="docutils literal notranslate"><span class="pre">$ABTEM_CONFIG</span></code> as well as dask’s configuration files (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/416">#416</a>); 1.0.10 ignored them. A leftover <code class="docutils literal notranslate"><span class="pre">cupy.fft-cache-size:</span> <span class="pre">0</span> <span class="pre">MB</span></code> there now disables the cuFFT plan cache.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cupy.fft-cache-size</span></code>, ignored in 1.0.10, is read and defaults to <code class="docutils literal notranslate"><span class="pre">auto</span></code> (25 % of the device memory per thread); <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">MB</span></code> disables the cache, <code class="docutils literal notranslate"><span class="pre">-1</span></code> removes the bound, and a plan larger than the bound runs uncached with a warning.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LineScan.angle</span></code> reports degrees (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/470">#470</a>). <code class="docutils literal notranslate"><span class="pre">SegmentedDetector(to_cpu=...)</span></code> defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code> as documented (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/371">#371</a>). Exploded <code class="docutils literal notranslate"><span class="pre">show()</span></code> grids use 0.25 between panels (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/354">#354</a>).</p></li>
+<li><p>New errors instead of wrong results: backscattering with exit planes that do not start at the entrance plane or are not after every slice (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/562">#562</a>, <a class="reference external" href="https://github.com/abTEM/abTEM/pull/499">#499</a>); a built <code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray</span></code> at another energy or grid (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/386">#386</a>); <code class="docutils literal notranslate"><span class="pre">PixelatedDetector(resample='uniform')</span></code> without reciprocal space (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/499">#499</a>); <code class="docutils literal notranslate"><span class="pre">transition_potential_scan</span></code> with <code class="docutils literal notranslate"><span class="pre">expansion_scope=&quot;full&quot;</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/506">#506</a>).</p></li>
+<li><p>Zarr arrays over 512 MiB use a multi-chunk layout and a failed write removes the partial file (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/363">#363</a>, <a class="reference external" href="https://github.com/abTEM/abTEM/pull/369">#369</a>). <code class="docutils literal notranslate"><span class="pre">GPAWParametrization</span></code> for Pm, Sm, Eu and Pu falls back to an unpolarised atom with a warning (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/467">#467</a>). Importing <code class="docutils literal notranslate"><span class="pre">abtem</span></code> no longer fails if <code class="docutils literal notranslate"><span class="pre">cupyx.scipy.ndimage</span></code> cannot be loaded (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/381">#381</a>).</p></li>
+</ul>
+</section>
+</section>
+<section id="id2">
+<h2>1.0.10<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
 <p>Features:</p>
 <ul class="simple">
 <li><p>Expanded real-space multislice with propagator- and fully-corrected algorithms, and backscattered waves (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/236">PR #236</a>)</p>
@@ -848,14 +927,14 @@ factors (<a class="reference external" href="https://github.com/abTEM/abTEM/pull
 </li>
 <li><p><code class="docutils literal notranslate"><span class="pre">CrystalPotential</span></code> with frozen phonons bugs (especially bad on – luckily rare – eager compute) (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/306">PR #306</a>)</p></li>
 <li><p>Minor bugs, unsafe patterns, and dead code (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/265">PR #265</a>)</p></li>
-<li><p>Anistropic Debye-Waller factors for Bloch wave (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/271">PR #271</a>)</p>
+<li><p>Anisotropic Debye-Waller factors for Bloch waves (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/271">PR #271</a>)</p>
 <ul>
 <li><p>Added helper functions to convert between crystallographic B-factors and thermal sigmas</p></li>
 </ul>
 </li>
-<li><p>Added missing <code class="docutils literal notranslate"><span class="pre">.calculate_exit_waves</span></code> for <code class="docutils literal notranslate"><span class="pre">BlochwaveEnsamble</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/294">PR #294</a>)</p></li>
-<li><p>Silent atom drop when <code class="docutils literal notranslate"><span class="pre">z</span></code>-position lands in SliceIndexedAtoms blind spot  (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/273">PR #273</a>)</p></li>
-<li><p>Early-exit bug in orthogonalize_cell (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/291">PR #291</a>)</p></li>
+<li><p>Added missing <code class="docutils literal notranslate"><span class="pre">.calculate_exit_waves</span></code> for <code class="docutils literal notranslate"><span class="pre">BlochwaveEnsemble</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/294">PR #294</a>)</p></li>
+<li><p>Silent atom drop when <code class="docutils literal notranslate"><span class="pre">z</span></code>-position lands in <code class="docutils literal notranslate"><span class="pre">SliceIndexedAtoms</span></code> blind spot (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/273">PR #273</a>)</p></li>
+<li><p>Early-exit bug in <code class="docutils literal notranslate"><span class="pre">orthogonalize_cell</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/291">PR #291</a>)</p></li>
 <li><p>Fixed broken tutorial workflow for core-loss filtered imaging (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/284">PR #284</a>)</p>
 <ul>
 <li><p>Minor performance improvements for <code class="docutils literal notranslate"><span class="pre">transition_potential_scan</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/286">PR #286</a>)</p></li>
@@ -868,16 +947,16 @@ units introduced by the soft-edge redesign (<a class="reference external" href="
 previously read a different, non-functional key) (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/321">PR #321</a>)</p></li>
 </ul>
 </section>
-<section id="id2">
-<h2>1.0.9<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
+<section id="id3">
+<h2>1.0.9<a class="headerlink" href="#id3" title="Link to this heading">#</a></h2>
 <p>Dependencies:</p>
 <ul class="simple">
 <li><p>Support for <code class="docutils literal notranslate"><span class="pre">scipy&gt;=1.7</span></code> and <code class="docutils literal notranslate"><span class="pre">cupy&gt;=12</span></code>.</p></li>
-<li><p>Restricted Dask versions (<code class="docutils literal notranslate"><span class="pre">&gt;=2022.12.1,!=2025.12.*,!=2026.1.*&quot;</span></code>) to avoid an issue with Numba in the latest ones</p></li>
+<li><p>Restricted Dask versions (<code class="docutils literal notranslate"><span class="pre">&gt;=2022.12.1,!=2025.12.*,!=2026.1.*</span></code>) to avoid an issue with Numba in the latest ones</p></li>
 </ul>
 </section>
-<section id="id3">
-<h2>1.0.8<a class="headerlink" href="#id3" title="Link to this heading">#</a></h2>
+<section id="id4">
+<h2>1.0.8<a class="headerlink" href="#id4" title="Link to this heading">#</a></h2>
 <p>Starting the changelog with version 1.0.8.</p>
 <p>Features:</p>
 <ul class="simple">
@@ -956,10 +1035,15 @@ previously read a different, non-functional key) (<a class="reference external" 
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#upcoming-major-features">Upcoming: major features</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1.0.10</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.0.9</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">1.0.8</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1.0.11</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed-results-that-change">Fixed: results that change</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed-errors-and-crashes">Fixed: errors and crashes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changed-behaviour">Changed: behaviour</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.0.10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">1.0.9</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">1.0.8</a></li>
 </ul>
   </nav></div>
 
@@ -987,7 +1071,7 @@ previously read a different, non-functional key) (<a class="reference external" 
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

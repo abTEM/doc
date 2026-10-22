@@ -6,8 +6,10 @@ feature flags.
 
 ## Configuration files
 
-The configuration is specified by *any* YAML file in `~/.config/abtem/` or `/etc/abtem/`. *ab*TEM searches for all YAML
-files within each of these directories and merges them together.
+The configuration is specified by *any* YAML file in `~/.config/abtem/` (or the directory given by the environment
+variable `ABTEM_CONFIG`), and in the configuration directories of dask (`~/.config/dask/`, `/etc/dask/` and the `etc/dask`
+directory of the Python environment). *ab*TEM searches for all YAML files within each of these directories and merges
+them together; the files in the *ab*TEM directory take precedence.
 
 Below is the full default configuration file. Anything you set in your own YAML will be merged into these
 defaults before they are used to configure the build.

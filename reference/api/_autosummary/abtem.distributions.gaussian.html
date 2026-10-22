@@ -787,7 +787,7 @@
 <h1>gaussian<a class="headerlink" href="#gaussian" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.distributions.gaussian">
-<span class="sig-prename descclassname"><span class="pre">abtem.distributions.</span></span><span class="sig-name descname"><span class="pre">gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">standard_deviation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble_mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'intensity'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/abtem/distributions.html#gaussian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.distributions.gaussian" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abtem.distributions.</span></span><span class="sig-name descname"><span class="pre">gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">standard_deviation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble_mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'probability'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/abtem/distributions.html#gaussian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.distributions.gaussian" title="Link to this definition">#</a></dt>
 <dd><p>Return a distribution with values weighted according to a (multidimensional)
 Gaussian distribution. The values are evenly spaced within a given truncation of the
 Gaussian distribution. As an example, this distribution may be used for simulating
@@ -807,13 +807,25 @@ for all axes.</p></li>
 <li><p><strong>ensemble_mean</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the mean of ensemble of measurements defined by the distribution is
 calculated, otherwise the full ensemble is kept. Default is True.</p></li>
 <li><p><strong>sampling_limit</strong> (<em>float</em><em>, </em><em>optional</em>) – Truncate the distribution at this many standard deviations (default is 3.0).</p></li>
-<li><p><strong>normalize</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies whether to normalize the ‘intensity’ (default) or ‘amplitude’.</p></li>
+<li><p><strong>normalize</strong> (<em>str</em><em>, </em><em>optional</em>) – Scaling of the stored probability weights: ‘probability’ (default)
+normalizes them to sum to one. The weights are probabilities applied when
+the ensemble is reduced (Σ p_i I_i / Σ p_i), so the scaling never changes a
+reduced result. ‘intensity’ and ‘amplitude’ are deprecated remnants of the
+former convention in which the weights multiplied the wave amplitude; both
+now emit a FutureWarning and behave as ‘probability’.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="abtem.distributions.MultidimensionalDistribution.html#abtem.distributions.MultidimensionalDistribution" title="abtem.distributions.MultidimensionalDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultidimensionalDistribution</span></code></a></span></p>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>The weights are the probabilities p_i ∝ exp(-x_i² / 2σ²) of the sampled values:
+each ensemble member is simulated unweighted and the reduced (incoherently
+averaged) measurement is Σ p_i I(x_i) / Σ p_i, so the parameter seen by the
+intensity has standard deviation σ (up to the truncation at <code class="docutils literal notranslate"><span class="pre">sampling_limit</span></code>).
+For a defocus spread this corresponds to Kirkland’s 1/e focal-spread width
+Δ = √2·σ used by <a class="reference internal" href="abtem.transfer.TemporalEnvelope.html#abtem.transfer.TemporalEnvelope" title="abtem.transfer.TemporalEnvelope"><code class="xref py py-class docutils literal notranslate"><span class="pre">abtem.transfer.TemporalEnvelope</span></code></a>.</p>
 </dd></dl>
 
 </section>
@@ -912,7 +924,7 @@ calculated, otherwise the full ensemble is kept. Default is True.</p></li>
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

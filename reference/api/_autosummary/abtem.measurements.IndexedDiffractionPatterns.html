@@ -962,7 +962,7 @@ must match the ensemble axes.</p></li>
 <td><p>Rechunk to remove chunks across the base dimensions.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#abtem.measurements.IndexedDiffractionPatterns.normalize_ensemble" title="abtem.measurements.IndexedDiffractionPatterns.normalize_ensemble"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_ensemble</span></code></a>([scale, shift])</p></td>
-<td><p>Normalize the ensemble by shifting ad scaling each member.</p></td>
+<td><p>Normalize the ensemble by shifting and scaling each member.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#abtem.measurements.IndexedDiffractionPatterns.normalize_to_spot" title="abtem.measurements.IndexedDiffractionPatterns.normalize_to_spot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_to_spot</span></code></a>([spot])</p></td>
 <td><p>Normalize the intensity of the diffraction spots.</p></td>
@@ -979,8 +979,8 @@ must match the ensemble axes.</p></li>
 <tr class="row-odd"><td><p><a class="reference internal" href="#abtem.measurements.IndexedDiffractionPatterns.rechunk" title="abtem.measurements.IndexedDiffractionPatterns.rechunk"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rechunk</span></code></a>(chunks, **kwargs)</p></td>
 <td><p>Rechunk dask array.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#abtem.measurements.IndexedDiffractionPatterns.reduce_ensemble" title="abtem.measurements.IndexedDiffractionPatterns.reduce_ensemble"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduce_ensemble</span></code></a>()</p></td>
-<td><p>Calculates the mean of an ensemble measurement (e.g. of frozen phonon configurations).</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#abtem.measurements.IndexedDiffractionPatterns.reduce_ensemble" title="abtem.measurements.IndexedDiffractionPatterns.reduce_ensemble"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduce_ensemble</span></code></a>([axis])</p></td>
+<td><p>Calculates the probability-weighted mean of an ensemble measurement.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#abtem.measurements.IndexedDiffractionPatterns.relative_difference" title="abtem.measurements.IndexedDiffractionPatterns.relative_difference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">relative_difference</span></code></a>(other[, min_relative_tol])</p></td>
 <td><p>Calculates the relative difference with respect to another compatible measurement.</p></td>
@@ -1593,12 +1593,15 @@ one. Default is False.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="abtem.measurements.IndexedDiffractionPatterns.normalize_ensemble">
 <span class="sig-name descname"><span class="pre">normalize_ensemble</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'max'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abtem.measurements.IndexedDiffractionPatterns.normalize_ensemble" title="Link to this definition">#</a></dt>
-<dd><p>Normalize the ensemble by shifting ad scaling each member.</p>
+<dd><p>Normalize the ensemble by shifting and scaling each member.</p>
+<p>Each member (a single measurement, i.e. one entry along the ensemble
+axes) is shifted by <cite>shift</cite> and divided by <cite>scale</cite>, both reduced over
+the member’s base axes and evaluated on the unshifted member.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>scale</strong> (<em>{'max'</em><em>, </em><em>'min'</em><em>, </em><em>'sum'</em><em>, </em><em>'mean'</em><em>, </em><em>'ptp'}</em>)</p></li>
-<li><p><strong>shift</strong> (<em>{'max'</em><em>, </em><em>'min'</em><em>, </em><em>'sum'</em><em>, </em><em>'mean'</em><em>, </em><em>'ptp'}</em>)</p></li>
+<li><p><strong>shift</strong> (<em>{'max'</em><em>, </em><em>'min'</em><em>, </em><em>'sum'</em><em>, </em><em>'mean'</em><em>, </em><em>'ptp'</em><em>, </em><em>'none'}</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1714,12 +1717,23 @@ measurement.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="abtem.measurements.IndexedDiffractionPatterns.reduce_ensemble">
-<span class="sig-name descname"><span class="pre">reduce_ensemble</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#abtem.measurements.IndexedDiffractionPatterns.reduce_ensemble" title="Link to this definition">#</a></dt>
-<dd><p>Calculates the mean of an ensemble measurement (e.g. of frozen phonon
-configurations).</p>
+<span class="sig-name descname"><span class="pre">reduce_ensemble</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abtem.measurements.IndexedDiffractionPatterns.reduce_ensemble" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the probability-weighted mean of an ensemble measurement.</p>
+<p>Each ensemble axis may carry probability weights <code class="docutils literal notranslate"><span class="pre">p_i</span></code> in its metadata
+(set from the weights of the distribution that generated it, e.g.
+<a class="reference internal" href="abtem.distributions.gaussian.html#abtem.distributions.gaussian" title="abtem.distributions.gaussian"><code class="xref py py-func docutils literal notranslate"><span class="pre">abtem.distributions.gaussian()</span></code></a>); the reduction over the axis is then
+<code class="docutils literal notranslate"><span class="pre">Σ_i</span> <span class="pre">p_i</span> <span class="pre">I_i</span> <span class="pre">/</span> <span class="pre">Σ_i</span> <span class="pre">p_i</span></code>, where <code class="docutils literal notranslate"><span class="pre">I_i</span></code> is the measurement for the i’th
+ensemble member. Axes without weights, such as frozen phonon configurations,
+are reduced with a plain mean. Over several axes, the weights are the outer
+product of the per-axis weights.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Self</span></code></span></p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axis</strong> (<em>int</em><em> or </em><em>tuple</em><em> of </em><em>int</em><em>, </em><em>optional</em>) – The ensemble axes to reduce. By default, all axes flagged for ensemble
+averaging (<code class="docutils literal notranslate"><span class="pre">ensemble_mean=True</span></code>) are reduced. Pass the axis explicitly
+to reduce an ensemble kept with <code class="docutils literal notranslate"><span class="pre">ensemble_mean=False</span></code>.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Self</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1846,8 +1860,7 @@ the axes of the plots.</p></li>
 <dd><p>Sort the diffraction spots according to a given criterion.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>criterion</strong> (<em>{'distance'</em><em>, </em><em>'intensity'}</em>) – <p>The boundary parameter determines how the images are extended beyond their
-boundaries when the filter overlaps with a border.</p>
+<dd class="field-odd"><p><strong>criterion</strong> (<em>{'distance'</em><em>, </em><em>'intensity'}</em>) – <p>The sort key, descending:</p>
 <blockquote>
 <div><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">distance</span></code> :</dt><dd><p>Sort according to the distance in reciprocal space from the zero
@@ -2017,6 +2030,21 @@ about Hyperspy at <a class="reference external" href="https://hyperspy.org">http
 <dt class="sig sig-object py" id="abtem.measurements.IndexedDiffractionPatterns.to_quantem">
 <span class="sig-name descname"><span class="pre">to_quantem</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#abtem.measurements.IndexedDiffractionPatterns.to_quantem" title="Link to this definition">#</a></dt>
 <dd><p>Convert ArrayObject to quantem Dataset object.</p>
+<p>The units of the axes are converted to quantem’s spelling (for example “A” and
+“A^-1”), and an axis without units gets “pixels”. The signal units are the
+“units” entry of the metadata, passed on unchanged; if there is none they are
+“arb. unit”. The metadata is deep-copied into the metadata of the Dataset, so
+changing one does not change the other.</p>
+<p>A quantem Dataset holds NumPy arrays only: a lazy object is computed (the
+object itself stays lazy) and an array on a GPU is copied to the host.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dataset</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>quantem.core.datastructures.Dataset</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -2218,7 +2246,7 @@ overwrite=True will replace the existing data.</p></li>
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

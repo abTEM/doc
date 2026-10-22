@@ -725,6 +725,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span><span class="p">,</span> <span class="n">reduce</span>
@@ -741,6 +742,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.array</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayObject</span><span class="p">,</span> <span class="n">validate_lazy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.atoms</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_wrap_far_atoms</span><span class="p">,</span>
     <span class="n">best_orthogonal_cell</span><span class="p">,</span>
     <span class="n">cut_cell</span><span class="p">,</span>
     <span class="n">is_cell_orthogonal</span><span class="p">,</span>
@@ -748,6 +750,7 @@
     <span class="n">pad_atoms</span><span class="p">,</span>
     <span class="n">plane_to_axes</span><span class="p">,</span>
     <span class="n">rotate_atoms_to_plane</span><span class="p">,</span>
+    <span class="n">_wrap_and_snap_atoms</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AxisMetadata</span><span class="p">,</span>
@@ -1173,7 +1176,7 @@
     <span class="c1">#    raise ValueError()</span>
 
     <span class="k">if</span> <span class="n">waves</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">potential</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">potential</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="n">potential</span><span class="o">.</span><span class="n">match_grid</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">potential</span></div>
 
@@ -1343,7 +1346,7 @@
 
             <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
             <span class="n">chunks</span> <span class="o">=</span> <span class="n">validate_chunks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_ensemble_chunks</span><span class="p">)</span>
-            <span class="n">chunks</span> <span class="o">=</span> <span class="n">chunks</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_shape</span>
+            <span class="n">chunks</span> <span class="o">=</span> <span class="n">chunks</span> <span class="o">+</span> <span class="p">(</span><span class="n">last_slice</span> <span class="o">-</span> <span class="n">first_slice</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">:</span>
                 <span class="n">new_axis</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
@@ -1388,11 +1391,23 @@
                 <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">slic</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generate_slices</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">)):</span>
                     <span class="n">array</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">slic</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
+        <span class="c1"># The exit planes index the slices of the whole potential; the range keeps</span>
+        <span class="c1"># those inside it, counted from its first slice. With none left, the exit</span>
+        <span class="c1"># plane is the last slice of the range. A range starting at the first slice</span>
+        <span class="c1"># also keeps the entrance plane (-1, the incident wave) of the potential.</span>
+        <span class="n">exit_planes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">plane</span> <span class="o">-</span> <span class="n">first_slice</span>
+            <span class="k">for</span> <span class="n">plane</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_planes</span>
+            <span class="k">if</span> <span class="n">first_slice</span> <span class="o">&lt;=</span> <span class="n">plane</span> <span class="o">&lt;</span> <span class="n">last_slice</span>
+        <span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">last_slice</span> <span class="o">-</span> <span class="n">first_slice</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,)</span>
+        <span class="k">if</span> <span class="n">first_slice</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">:</span>
+            <span class="n">exit_planes</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="n">exit_planes</span>
+
         <span class="n">output_potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_object</span><span class="p">(</span>
             <span class="n">array</span><span class="p">,</span>
             <span class="n">sampling</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_valid_sampling</span><span class="p">,</span>
             <span class="n">slice_thickness</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">[</span><span class="n">first_slice</span><span class="p">:</span><span class="n">last_slice</span><span class="p">],</span>
-            <span class="n">exit_planes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">,</span>
+            <span class="n">exit_planes</span><span class="o">=</span><span class="n">exit_planes</span><span class="p">,</span>
             <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">output_potential</span>
@@ -1469,11 +1484,43 @@
 <span class="sd">        transformed_atoms : Atoms</span>
 <span class="sd">            Transformed atoms.</span>
 <span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_atoms</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_margins</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""The margin the integrator needs along each axis beyond the cell.</span>
+
+<span class="sd">        A real-space finite integrator needs every atom within its cutoff of</span>
+<span class="sd">        the cell in all three directions. One built by FFT in-plane already</span>
+<span class="sd">        sees the in-plane neighbours through the periodic build, so it needs</span>
+<span class="sd">        them along z only, and an infinite projection needs none at all.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrator</span><span class="o">.</span><span class="n">finite</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="n">cutoffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cutoffs</span><span class="p">()</span>
+        <span class="n">margin</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">cutoffs</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cutoffs</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrator</span><span class="o">.</span><span class="n">periodic</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">margin</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">margin</span><span class="p">,</span> <span class="n">margin</span><span class="p">,</span> <span class="n">margin</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_transform_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Atoms</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""The transformed atoms, and whether they were cut out of a larger</span>
+<span class="sd">        repeated structure, in which case they already carry the integrator's</span>
+<span class="sd">        margin and must not be padded again."""</span>
         <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen_phonons</span><span class="o">.</span><span class="n">atoms</span>
         <span class="k">if</span> <span class="n">is_cell_orthogonal</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">plane</span> <span class="o">!=</span> <span class="s2">"xy"</span><span class="p">:</span>
             <span class="n">atoms</span> <span class="o">=</span> <span class="n">rotate_atoms_to_plane</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plane</span><span class="p">)</span>
 
-        <span class="k">elif</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">))</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">:</span>
+        <span class="c1"># `diag(atoms.cell) == self.box` is not by itself proof the cell is</span>
+        <span class="c1"># orthogonal: for a near-orthorhombic cell with off-diagonal noise</span>
+        <span class="c1"># below ~2e-8 relative, the box norms round to the exact diagonal</span>
+        <span class="c1"># entries in float64. Also require is_cell_orthogonal so such noisy</span>
+        <span class="c1"># cells still reach orthogonalize_cell instead of being used as-is.</span>
+        <span class="k">elif</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">))</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">box</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">is_cell_orthogonal</span><span class="p">(</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span>
+        <span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">:</span>
                 <span class="n">atoms</span> <span class="o">=</span> <span class="n">orthogonalize_cell</span><span class="p">(</span>
                     <span class="n">atoms</span><span class="p">,</span>
@@ -1483,21 +1530,29 @@
                     <span class="n">return_transform</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                     <span class="n">allow_transform</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="p">)</span>
-                <span class="k">return</span> <span class="n">atoms</span>
+                <span class="k">return</span> <span class="n">atoms</span><span class="p">,</span> <span class="kc">False</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">cutoffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cutoffs</span><span class="p">()</span>
+                <span class="c1"># The margin comes from the larger repeated structure, so it</span>
+                <span class="c1"># is the true neighbourhood of a cell that need not be</span>
+                <span class="c1"># commensurate with it. Periodic padding on top of it added</span>
+                <span class="c1"># images of the margin atoms -- in-plane, where an FFT build</span>
+                <span class="c1"># also wraps them, and in depth -- and inflated the potential</span>
+                <span class="c1"># of a transformed non-periodic cell many times over. An</span>
+                <span class="c1"># infinite projection's cutoff is infinite, which cut every</span>
+                <span class="c1"># atom; it needs no margin.</span>
                 <span class="n">atoms</span> <span class="o">=</span> <span class="n">cut_cell</span><span class="p">(</span>
                     <span class="n">atoms</span><span class="p">,</span>
                     <span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span>
                     <span class="n">plane</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plane</span><span class="p">,</span>
                     <span class="n">origin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span>
-                    <span class="n">margin</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">cutoffs</span><span class="p">)</span> <span class="k">if</span> <span class="n">cutoffs</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span>
+                    <span class="n">margin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_margins</span><span class="p">(),</span>
                 <span class="p">)</span>
+                <span class="k">return</span> <span class="n">atoms</span><span class="p">,</span> <span class="kc">True</span>
 
-        <span class="k">return</span> <span class="n">atoms</span>
+        <span class="k">return</span> <span class="n">atoms</span><span class="p">,</span> <span class="kc">False</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transformed_atoms</span><span class="p">()</span>
+        <span class="n">atoms</span><span class="p">,</span> <span class="n">is_cut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_atoms</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrator</span><span class="o">.</span><span class="n">finite</span><span class="p">:</span>
             <span class="n">cutoffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cutoffs</span><span class="p">()</span>
@@ -1507,16 +1562,30 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">:</span>
             <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen_phonons</span><span class="o">.</span><span class="n">randomize</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
-            <span class="n">atoms</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-            <span class="c1"># wrap(eps=0.0) uses strict modulo: z positions that are tiny-negative</span>
-            <span class="c1"># (floating-point artifact from ASE surface builders) become z ≈ cell_z</span>
-            <span class="c1"># instead of z = 0.  The SliceIndexedAtoms bin edges are nudged down by</span>
-            <span class="c1"># 1e-12 to fix cumsum drift, so any atom in (cell_z-1e-12, cell_z) falls</span>
-            <span class="c1"># outside all bins and is silently dropped.  Snap those back to 0.</span>
-            <span class="n">cell_z</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
-            <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">cell_z</span> <span class="o">-</span> <span class="mf">1e-10</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="c1"># Shared with SliceIndexedAtoms, which applies the same wrap to the</span>
+            <span class="c1"># atoms it is handed directly -- e.g. explicit core-loss ``sites``</span>
+            <span class="c1"># and CrystalPotential's tiled atoms, which do not come through</span>
+            <span class="c1"># here.</span>
+            <span class="c1">#</span>
+            <span class="c1"># Copy, because these atoms are *not* this method's own. For</span>
+            <span class="c1"># DummyFrozenPhonons -- the wrapper every plain Potential(atoms)</span>
+            <span class="c1"># gets -- get_transformed_atoms() and randomize() are both the</span>
+            <span class="c1"># identity, so writing in place here mutates the object the</span>
+            <span class="c1"># potential stores and ships into the task graph as ONE shared</span>
+            <span class="c1"># node, and for a list of atoms or a pre-built frozen-phonons</span>
+            <span class="c1"># object it is the CALLER's own object. _wrap_and_snap_atoms copies</span>
+            <span class="c1"># only when it has to change something.</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="n">_wrap_and_snap_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrator</span><span class="o">.</span><span class="n">periodic</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrator</span><span class="o">.</span><span class="n">finite</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">is_cut</span><span class="p">:</span>
+            <span class="c1"># cut_cell already supplied exactly the margin padding would add.</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrator</span><span class="o">.</span><span class="n">periodic</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrator</span><span class="o">.</span><span class="n">finite</span><span class="p">:</span>
+            <span class="c1"># A real-space integrator takes its in-plane images from pad_atoms,</span>
+            <span class="c1"># which does not reach an atom given far outside the cell, and the</span>
+            <span class="c1"># build is periodic in-plane.</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">_wrap_far_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="p">(</span><span class="n">margins</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">"xy"</span><span class="p">)</span>
             <span class="n">atoms</span> <span class="o">=</span> <span class="n">pad_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">margins</span><span class="o">=</span><span class="n">margins</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrator</span><span class="o">.</span><span class="n">periodic</span><span class="p">:</span>
             <span class="n">atoms</span> <span class="o">=</span> <span class="n">pad_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">margins</span><span class="o">=</span><span class="n">margins</span><span class="p">,</span> <span class="n">directions</span><span class="o">=</span><span class="s2">"z"</span><span class="p">)</span>
@@ -1530,7 +1599,11 @@
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">sliced_atoms</span> <span class="o">=</span> <span class="n">SliceIndexedAtoms</span><span class="p">(</span>
-                <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">,</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span>
+                <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">,</span>
+                <span class="n">slice_thickness</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">,</span>
+                <span class="c1"># Non-periodic potentials are randomised after padding and are</span>
+                <span class="c1"># deliberately never wrapped.</span>
+                <span class="n">wrap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">sliced_atoms</span>
@@ -1966,6 +2039,18 @@
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"array"</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"slice_thickness"</span><span class="p">]</span> <span class="o">=</span> <span class="n">slice_thickness</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"sampling"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># the exit planes index the slices, hence they have to be mapped into the</span>
+        <span class="c1"># sliced potential; those falling outside it are dropped, and if none</span>
+        <span class="c1"># remain the exit plane defaults to the last slice of the new potential</span>
+        <span class="n">selected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">potential_array</span><span class="o">.</span><span class="n">num_slices</span><span class="p">)[</span><span class="n">slic_items</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="n">exit_planes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">selected</span> <span class="o">==</span> <span class="n">plane</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">plane</span> <span class="ow">in</span> <span class="n">potential_array</span><span class="o">.</span><span class="n">exit_planes</span>
+            <span class="k">if</span> <span class="n">plane</span> <span class="ow">in</span> <span class="n">selected</span>
+        <span class="p">)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"exit_planes"</span><span class="p">]</span> <span class="o">=</span> <span class="n">exit_planes</span> <span class="k">if</span> <span class="n">exit_planes</span> <span class="k">else</span> <span class="kc">None</span>
+
         <span class="k">return</span> <span class="n">potential_array</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 <div class="viewcode-block" id="FieldArray.tile">
@@ -1991,9 +2076,12 @@
 
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">repetitions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
 
-        <span class="n">new_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="p">(</span><span class="n">repetitions</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">repetitions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">repetitions</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="p">)</span>
+        <span class="n">tile_reps</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">tile_reps</span><span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_dims</span><span class="p">]</span> <span class="o">=</span> <span class="n">repetitions</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">tile_reps</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">repetitions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">tile_reps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">repetitions</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">new_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">tile_reps</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">new_extent</span> <span class="o">=</span> <span class="p">(</span>
@@ -2365,12 +2453,20 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
 
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-
+        <span class="n">transmission</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">conjugate</span><span class="p">:</span>
-            <span class="n">waves</span><span class="o">.</span><span class="n">_array</span> <span class="o">*=</span> <span class="n">xp</span><span class="o">.</span><span class="n">conjugate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">waves</span><span class="o">.</span><span class="n">_array</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># the method, not xp.conjugate: a CuPy function rejects a dask array</span>
+            <span class="n">transmission</span> <span class="o">=</span> <span class="n">transmission</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
+
+        <span class="n">lazy_waves</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">_array</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transmission</span><span class="p">,</span> <span class="n">da</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">lazy_waves</span><span class="p">:</span>
+            <span class="c1"># The waves are transmitted in place, and an in-place NumPy or CuPy</span>
+            <span class="c1"># product cannot take a dask operand. Keep eager waves eager: compute</span>
+            <span class="c1"># the (single-slice) transmission function, synchronously so CuPy</span>
+            <span class="c1"># tasks never run concurrently.</span>
+            <span class="n">transmission</span> <span class="o">=</span> <span class="n">transmission</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">"synchronous"</span><span class="p">)</span>
+
+        <span class="n">waves</span><span class="o">.</span><span class="n">_array</span> <span class="o">*=</span> <span class="n">transmission</span>
 
         <span class="k">return</span> <span class="n">waves</span></div>
 </div>
@@ -2521,20 +2617,58 @@
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">gpts</span>
 
     <span class="nd">@gpts</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">gpts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gpts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gpts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gpts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+        <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">_validate</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
             <span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">repetitions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="ow">and</span> <span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">repetitions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="p">(</span><span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">repetitions</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
         <span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">"Number of grid points must be divisible by the number of potential"</span>
-                <span class="s2">"repetitions."</span>
+                <span class="s2">" repetitions."</span>
             <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">gpts</span> <span class="o">=</span> <span class="n">gpts</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_potential_unit</span><span class="o">.</span><span class="n">gpts</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">unit_gpts</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_repetitions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
             <span class="n">gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_repetitions</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_potential_unit</span><span class="p">,</span> <span class="n">PotentialArray</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_require_the_grid_of_a_built_unit</span><span class="p">(</span><span class="n">unit_gpts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_potential_unit</span><span class="o">.</span><span class="n">gpts</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="c1"># The unit first: a unit that rejects its gpts leaves the crystal unchanged.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_potential_unit</span><span class="o">.</span><span class="n">gpts</span> <span class="o">=</span> <span class="n">unit_gpts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">gpts</span> <span class="o">=</span> <span class="n">gpts</span>
+
+<div class="viewcode-block" id="CrystalPotential.match_grid">
+<a class="viewcode-back" href="../../../reference/api/_autosummary/abtem.potentials.iam.CrystalPotential.html#abtem.potentials.iam.CrystalPotential.match_grid">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">match_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">check_match</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Match the grid to another object with a Grid, keeping the unit in step."""</span>
+        <span class="c1"># The gpts go through the setter, which keeps the unit in step or raises</span>
+        <span class="c1"># before anything changes; the extent is checked first so that a mismatch</span>
+        <span class="c1"># leaves the gpts alone as well.</span>
+        <span class="k">if</span> <span class="n">check_match</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">Grid</span><span class="p">(</span><span class="n">extent</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">extent</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">other</span><span class="o">.</span><span class="n">extent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># An object given a sampling works out its gpts from the extent.</span>
+            <span class="n">other</span><span class="o">.</span><span class="n">extent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span>
+        <span class="k">if</span> <span class="n">other</span><span class="o">.</span><span class="n">gpts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">gpts</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gpts</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">gpts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">check_match</span><span class="o">=</span><span class="n">check_match</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_require_the_grid_of_a_built_unit</span><span class="p">(</span><span class="n">requested</span><span class="p">,</span> <span class="n">current</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        A built `PotentialArray` has the grid of its data. Setting the grid it has</span>
+<span class="sd">        changes nothing; any other grid raises, with the unit left untouched.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">requested</span><span class="p">,</span> <span class="n">current</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">"The grid of a built PotentialArray unit is that of its data and "</span>
+                <span class="s2">"cannot be changed; set the gpts or sampling of the unit before "</span>
+                <span class="s2">"building it."</span>
+            <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
@@ -2542,8 +2676,26 @@
 
     <span class="nd">@sampling</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span> <span class="o">=</span> <span class="n">sampling</span>
+        <span class="n">validated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">_validate</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">validated</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">validated</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">validated</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The sampling must be positive and finite, got </span><span class="si">{</span><span class="n">sampling</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_potential_unit</span><span class="p">,</span> <span class="n">PotentialArray</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_require_the_grid_of_a_built_unit</span><span class="p">(</span>
+                <span class="n">validated</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_potential_unit</span><span class="o">.</span><span class="n">sampling</span>
+            <span class="p">)</span>
+            <span class="k">return</span>
+        <span class="c1"># The unit rounds its own gpts up for the requested sampling, and the</span>
+        <span class="c1"># crystal takes whole units, so its gpts follow the unit's.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_potential_unit</span><span class="o">.</span><span class="n">sampling</span> <span class="o">=</span> <span class="n">sampling</span>
+        <span class="n">unit_gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_potential_unit</span><span class="o">.</span><span class="n">_valid_gpts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">gpts</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">unit_gpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_repetitions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">unit_gpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_repetitions</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">repetitions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
@@ -2751,6 +2903,14 @@
             <span class="n">ensemble_mean</span><span class="o">=</span><span class="n">fp</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
             <span class="n">seed</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">member_seed</span><span class="p">)</span> <span class="k">if</span> <span class="n">reseed</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">seed</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"frozen_phonons"</span> <span class="ow">in</span> <span class="n">unit</span><span class="o">.</span><span class="n">_arg_keys</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">unit</span><span class="p">)):</span>
+            <span class="c1"># ``GPAWPotential`` takes its frozen phonons next to its calculators,</span>
+            <span class="c1"># which may be unread ``.gpw`` paths that its constructor cannot take</span>
+            <span class="c1"># back. Only the frozen phonons differ, so the calculators are shared.</span>
+            <span class="n">pool_unit</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+            <span class="n">pool_unit</span><span class="o">.</span><span class="n">_frozen_phonons</span> <span class="o">=</span> <span class="n">new_fp</span>
+            <span class="k">return</span> <span class="n">pool_unit</span>
+
         <span class="n">kwargs</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"atoms"</span><span class="p">,))</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">unit</span><span class="p">)(</span><span class="n">new_fp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -2793,12 +2953,27 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">potentials</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
             <span class="n">potentials</span> <span class="o">=</span> <span class="n">potentials</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
+        <span class="c1"># A lazily-built PotentialArray unit (the default of Potential.build())</span>
+        <span class="c1"># carries a dask array, and tiling it would yield dask-backed slices:</span>
+        <span class="c1"># eager consumers such as build(lazy=False) cannot place those into a</span>
+        <span class="c1"># CuPy array, and on CPU compute them one slice at a time. The unit cell</span>
+        <span class="c1"># is small; materialise it once, into a new object, so that the caller's</span>
+        <span class="c1"># unit stays lazy.</span>
+        <span class="k">if</span> <span class="n">potentials</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
+            <span class="n">potentials</span> <span class="o">=</span> <span class="n">potentials</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+                <span class="n">potentials</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">"synchronous"</span><span class="p">),</span>
+                <span class="o">**</span><span class="n">potentials</span><span class="o">.</span><span class="n">_copy_kwargs</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s2">"array"</span><span class="p">,)),</span>
+            <span class="p">)</span>
+
         <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">member_seed</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="n">exit_plane_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exit_plane_after</span>
         <span class="n">cum_thickness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="n">first_slice</span>
-        <span class="n">stop</span> <span class="o">=</span> <span class="n">first_slice</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">unit_slices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span><span class="p">)</span>
+        <span class="n">global_idx</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># global slice counter across all z-repetitions</span>
 
         <span class="c1"># Lazy cache of tiled unit slices, keyed by (config_idx, slice_idx).</span>
         <span class="c1"># Without it each (z-rep, unit-slice) pair re-tiles the same array via</span>
@@ -2816,14 +2991,9 @@
         <span class="n">n_configs</span> <span class="o">=</span> <span class="n">potentials</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="c1"># The mosaic path (frozen-phonon pools, n_configs &gt; 1) needs random</span>
-        <span class="c1"># per-tile access into the pool, so materialise the (small unit-cell)</span>
-        <span class="c1"># pool array once. A lazily-built PotentialArray unit carries a dask</span>
-        <span class="c1"># array here; compute it so per-tile fancy indexing works and stays on</span>
-        <span class="c1"># the target device.</span>
+        <span class="c1"># per-tile access into the pool; the pool array is eager (see above).</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">_pool_array</span> <span class="o">=</span> <span class="n">potentials</span><span class="o">.</span><span class="n">array</span>
-        <span class="k">if</span> <span class="n">n_configs</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">_pool_array</span><span class="p">,</span> <span class="s2">"compute"</span><span class="p">):</span>
-            <span class="n">_pool_array</span> <span class="o">=</span> <span class="n">_pool_array</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">_tiled_slice</span><span class="p">(</span><span class="n">config_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PotentialArray</span><span class="p">:</span>
             <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">config_idx</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
@@ -2909,37 +3079,57 @@
             <span class="c1"># Draw an independent displaced realisation per unit cell in the x,</span>
             <span class="c1"># y and z supercell directions. For a single-config pool this</span>
             <span class="c1"># collapses to the cheap cached ``.tile()`` path below.</span>
+            <span class="c1"># Always draw (even for z-repetitions skipped below) so the</span>
+            <span class="c1"># frozen-phonon sequence and the pool budget accounting stay</span>
+            <span class="c1"># consistent regardless of first_slice -- different chunks of the</span>
+            <span class="c1"># same crystal must see the same per-layer configuration draws.</span>
             <span class="k">if</span> <span class="n">n_configs</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">config_tiles</span> <span class="o">=</span> <span class="n">_draw_config_tiles</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">config_tiles</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">global_idx</span> <span class="o">+</span> <span class="n">unit_slices</span> <span class="o">&lt;=</span> <span class="n">first_slice</span><span class="p">:</span>
+                <span class="c1"># This entire z-repetition is before the requested window;</span>
+                <span class="c1"># advance the counter and skip.</span>
+                <span class="n">global_idx</span> <span class="o">+=</span> <span class="n">unit_slices</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">global_idx</span> <span class="o">&gt;=</span> <span class="n">last_slice</span><span class="p">:</span>
+                <span class="c1"># Past the requested window; nothing more to yield.</span>
+                <span class="k">return</span>
+
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">unit_slices</span><span class="p">):</span>
+                <span class="c1"># Iterate j from 0 even for slices before first_slice in a</span>
+                <span class="c1"># partially-overlapping rep, so the unit generator advances in</span>
+                <span class="c1"># order (j=0, j=1, ...). The tiling cache ensures each</span>
+                <span class="c1"># (config, j) pair is tiled at most once.</span>
                 <span class="k">if</span> <span class="n">config_tiles</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">slic</span> <span class="o">=</span> <span class="n">_tiled_slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">slic</span> <span class="o">=</span> <span class="n">_mosaic_slice</span><span class="p">(</span><span class="n">config_tiles</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
 
-                <span class="n">exit_planes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">exit_plane_after</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">global_idx</span> <span class="o">&gt;=</span> <span class="n">first_slice</span><span class="p">:</span>
+                    <span class="n">exit_planes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">exit_plane_after</span><span class="p">[</span><span class="n">global_idx</span> <span class="p">:</span> <span class="n">global_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="c1"># Mutating the cached slice is safe in the standard</span>
+                    <span class="c1"># sequential consumption pattern (the consumer reads</span>
+                    <span class="c1"># ``slic.exit_planes`` immediately upon receiving the yield</span>
+                    <span class="c1"># and never holds a back-reference across iterations — see</span>
+                    <span class="c1"># multislice.py:672). Reset the value on every yield so</span>
+                    <span class="c1"># re-entering the same cached slice on a different z-rep</span>
+                    <span class="c1"># still carries the right metadata.</span>
+                    <span class="n">slic</span><span class="o">.</span><span class="n">_exit_planes</span> <span class="o">=</span> <span class="n">exit_planes</span>
 
-                <span class="c1"># Mutating the cached slice is safe in the standard sequential</span>
-                <span class="c1"># consumption pattern (the consumer reads ``slic.exit_planes``</span>
-                <span class="c1"># immediately upon receiving the yield and never holds a back-</span>
-                <span class="c1"># reference across iterations — see multislice.py:672). Reset</span>
-                <span class="c1"># the value on every yield so re-entering the same cached</span>
-                <span class="c1"># slice on a different z-rep still carries the right metadata.</span>
-                <span class="n">slic</span><span class="o">.</span><span class="n">_exit_planes</span> <span class="o">=</span> <span class="n">exit_planes</span>
+                    <span class="k">if</span> <span class="n">return_depth</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">cum_thickness</span><span class="p">[</span><span class="n">global_idx</span><span class="p">],</span> <span class="n">slic</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">slic</span>
 
-                <span class="n">start</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="n">stop</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">global_idx</span> <span class="o">+=</span> <span class="mi">1</span>
 
-                <span class="k">if</span> <span class="n">return_depth</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="n">cum_thickness</span><span class="p">[</span><span class="n">stop</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">slic</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="n">slic</span>
-
-                <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">last_slice</span><span class="p">:</span>
-                    <span class="k">break</span></div>
+                <span class="k">if</span> <span class="n">global_idx</span> <span class="o">&gt;=</span> <span class="n">last_slice</span><span class="p">:</span>
+                    <span class="k">return</span></div>
 </div>
 
 </pre></div>
@@ -2983,7 +3173,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

@@ -1774,12 +1774,7 @@ RealSpaceAxis      y [Å]           0.00 0.04 ... 20.36
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">haadf_images</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">exit_waves_stem</span><span class="p">)</span><span class="o">.</span><span class="n">reduce_ensemble</span><span class="p">()</span>
 
-<span class="n">haadf_images</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">"threads"</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;abtem.measurements.Images at 0x1d25808d0&gt;
+<span class="n">haadf_images</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">"threads"</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -2301,12 +2296,7 @@ RealSpaceAxis      y [Å]           0.00 0.04 ... 20.36
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">haadf_images</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">exit_waves_stem</span><span class="p">)</span><span class="o">.</span><span class="n">reduce_ensemble</span><span class="p">()</span>
-<span class="n">haadf_images</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;abtem.measurements.Images at 0x1db1fa040&gt;
+<span class="n">haadf_images</span><span class="o">.</span><span class="n">compute</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
@@ -2380,7 +2370,7 @@ RealSpaceAxis      y [Å]           0.00 0.04 ... 20.36
 <p class="admonition-title">Note</p>
 <p>The batch size only determines the maximum number of plane waves in a batch, so you need to leave room in the memory for any intermediate overhead.</p>
 </div>
-<p>Finally, <em>ab</em>TEM by default sets the <a class="reference external" href="https://docs.cupy.dev/en/stable/user_guide/fft.html#fft-plan-cache">FFT plan cache</a> size of <code class="docutils literal notranslate"><span class="pre">cupy</span></code> to zero, as we find that in most cases the increased memory consumption of the plans are not worth the small speedup they provide. You can however also change this through the <em>ab</em>TEM config.</p>
+<p>Finally, <em>ab</em>TEM bounds the memory held by the <a class="reference external" href="https://docs.cupy.dev/en/stable/user_guide/fft.html#fft-plan-cache">FFT plan cache</a> of <code class="docutils literal notranslate"><span class="pre">cupy</span></code>: by default (<code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>) the plans cached in each thread may hold up to 25 % of the device memory. You can set a fixed bound through the <em>ab</em>TEM config, <code class="docutils literal notranslate"><span class="pre">&quot;0</span> <span class="pre">MB&quot;</span></code> disables the cache, and <code class="docutils literal notranslate"><span class="pre">-1</span></code> removes the bound.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">abtem</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">({</span><span class="s2">"cupy.fft-cache-size"</span> <span class="p">:</span> <span class="s2">"1024 MB"</span><span class="p">})</span>
 </pre></div>
 </div>
@@ -2394,6 +2384,7 @@ RealSpaceAxis      y [Å]           0.00 0.04 ... 20.36
 <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>The <em>ab</em>TEM configuration of your session, for example <code class="docutils literal notranslate"><span class="pre">device</span></code> and <code class="docutils literal notranslate"><span class="pre">precision</span></code>, is sent to the workers of the client when a computation starts, so it is enough to set <code class="docutils literal notranslate"><span class="pre">abtem.config.set({&quot;device&quot;:</span> <span class="pre">&quot;gpu&quot;})</span></code> where you create the client. Each worker has its own FFT plan cache, bounded as described above. Before version 1.0.11 the workers did not receive the configuration and used the defaults.</p>
 </section>
 </section>
 </section>
@@ -2507,7 +2498,7 @@ RealSpaceAxis      y [Å]           0.00 0.04 ... 20.36
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

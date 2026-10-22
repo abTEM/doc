@@ -929,11 +929,11 @@
 <span class="w">        </span><span class="sd">"""Metadata describing (an ensemble of) tilted wave function(s)."""</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">[</span>
-                <span class="n">TiltAxis</span><span class="p">(</span>
-                    <span class="n">label</span><span class="o">=</span><span class="s2">"tilt"</span><span class="p">,</span>
+                <span class="n">TiltAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="p">,</span>
                     <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+                    <span class="n">label</span><span class="o">=</span><span class="s2">"tilt"</span><span class="p">,</span>
                     <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span>
-                    <span class="n">_ensemble_mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -989,12 +989,11 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">ensemble_axes_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">[</span>
-                <span class="n">AxisAlignedTiltAxis</span><span class="p">(</span>
+                <span class="n">AxisAlignedTiltAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="p">,</span>
                     <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"tilt_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_direction</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-                    <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
                     <span class="n">direction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_direction</span><span class="p">,</span>
                     <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span>
-                    <span class="n">_ensemble_mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1074,23 +1073,15 @@
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_x</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
             <span class="n">ensemble_axes_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">AxisAlignedTiltAxis</span><span class="p">(</span>
-                    <span class="n">label</span><span class="o">=</span><span class="s2">"tilt_x"</span><span class="p">,</span>
-                    <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_x</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-                    <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span>
-                    <span class="n">direction</span><span class="o">=</span><span class="s2">"x"</span><span class="p">,</span>
-                    <span class="n">_ensemble_mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_x</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
+                <span class="n">AxisAlignedTiltAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tilt_x</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"tilt_x"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"x"</span>
                 <span class="p">)</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_y</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
             <span class="n">ensemble_axes_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">AxisAlignedTiltAxis</span><span class="p">(</span>
-                    <span class="n">label</span><span class="o">=</span><span class="s2">"tilt_y"</span><span class="p">,</span>
-                    <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_y</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-                    <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span>
-                    <span class="n">direction</span><span class="o">=</span><span class="s2">"y"</span><span class="p">,</span>
-                    <span class="n">_ensemble_mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tilt_y</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
+                <span class="n">AxisAlignedTiltAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tilt_y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"tilt_y"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"y"</span>
                 <span class="p">)</span>
             <span class="p">)</span>
 
@@ -1137,7 +1128,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

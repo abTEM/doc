@@ -949,20 +949,27 @@
     <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">measurement</span><span class="o">=</span><span class="n">measurement</span><span class="p">)</span>
 
+        <span class="n">is_complex</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">iscomplexobj</span><span class="p">(</span><span class="n">measurement</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
         <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_data</span><span class="p">(</span><span class="n">measurement</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
 
         <span class="n">x</span> <span class="o">=</span> <span class="n">measurement</span><span class="o">.</span><span class="n">axes_metadata</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">coordinates</span><span class="p">(</span><span class="n">measurement</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
-        <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">measurement</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">:</span>
+        <span class="c1"># One line per index of the axes before the last one, which is the x axis of</span>
+        <span class="c1"># the plot. These are the ensemble axes of a line profile, but also all axes</span>
+        <span class="c1"># but the last of a measurement without base axes (an ensemble that is plotted</span>
+        <span class="c1"># along its last axis). Matplotlib refuses a number of labels that differs</span>
+        <span class="c1"># from the number of lines.</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">measurement</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">axis</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">measurement</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">measurement</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">axis</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">measurement</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">measurement</span><span class="o">.</span><span class="n">axes_metadata</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
                 <span class="n">axis</span> <span class="o">=</span> <span class="n">axis</span><span class="o">.</span><span class="n">to_ordinal_axis</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
                 <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">l</span><span class="o">.</span><span class="n">format_title</span><span class="p">(</span><span class="s2">".3g"</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">axis</span><span class="p">])</span>
 
             <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">labels</span><span class="p">))</span>
             <span class="n">label</span> <span class="o">=</span> <span class="p">[</span><span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">iscomplexobj</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+        <span class="c1"># y is real by now (_reshape_data puts the imaginary parts after the real parts)</span>
+        <span class="k">if</span> <span class="n">is_complex</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">label</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span> <span class="o">+</span> <span class="s2">"(real)"</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">label</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">l</span> <span class="o">+</span> <span class="s2">"(imag)"</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">label</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
@@ -2048,7 +2055,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

@@ -1188,9 +1188,20 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_validate_potential_ensemble_indices</span><span class="p">(</span>
     <span class="n">potential_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
-    <span class="n">exit_plane_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">exit_plane_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">slice</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">slice</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
     <span class="n">potential</span><span class="p">:</span> <span class="n">BasePotential</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">slice</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Index into a measurement's leading potential-ensemble and exit-plane axes.</span>
+
+<span class="sd">    The measurement is allocated with the potential's ensemble axes *before*</span>
+<span class="sd">    the exit-plane axis (see ``_potential_ensemble_shape_and_metadata``), so</span>
+<span class="sd">    both have to be indexed together; indexing the plane axis alone silently</span>
+<span class="sd">    addresses the ensemble axis instead whenever the potential has one.</span>
+
+<span class="sd">    ``exit_plane_index`` may be a ``slice`` for accumulations that contribute</span>
+<span class="sd">    to every plane at or beyond a depth, as the single-channel core-loss</span>
+<span class="sd">    driver does.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">:</span>
         <span class="n">potential_index</span> <span class="o">=</span> <span class="p">()</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">potential_index</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
@@ -1207,13 +1218,14 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_generate_potential_configurations</span><span class="p">(</span><span class="n">potential</span><span class="p">):</span>
+    <span class="c1"># generate_blocks() is called with its default chunks=1, which validates to</span>
+    <span class="c1"># a size-1 chunk along every ensemble axis (see Ensemble.generate_blocks),</span>
+    <span class="c1"># so potential_index from np.ndindex(shape) is already the full per-axis</span>
+    <span class="c1"># index tuple. Re-unraveling it here previously scrambled the index for any</span>
+    <span class="c1"># potential ensemble with more than one non-trivial axis (each element of</span>
+    <span class="c1"># the tuple got treated as an independent flat index into the full shape).</span>
     <span class="k">for</span> <span class="n">potential_index</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">potential_configuration</span> <span class="ow">in</span> <span class="n">potential</span><span class="o">.</span><span class="n">generate_blocks</span><span class="p">():</span>
         <span class="n">potential_configuration</span> <span class="o">=</span> <span class="n">potential_configuration</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">):</span>
-            <span class="n">potential_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span>
-                <span class="n">potential_index</span><span class="p">,</span> <span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span>
-            <span class="p">)</span>
 
         <span class="k">yield</span> <span class="n">potential_index</span><span class="p">,</span> <span class="n">potential_configuration</span>
 
@@ -1320,7 +1332,8 @@
 <span class="sd">        Algorithm used for multislice operator (default is FourierMultislice())</span>
 <span class="sd">    return_backscattered: bool, optional</span>
 <span class="sd">        If algorithm.expansion_scope="full" and return_backscatter is True, then the</span>
-<span class="sd">        backscattered components are also returned. Requires potential exit_planes</span>
+<span class="sd">        backscattered components are also returned. Requires an exit plane after</span>
+<span class="sd">        every slice (potential exit_planes=1).</span>
 
 <span class="sd">    """</span>
     <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensure_real_space</span><span class="p">()</span>
@@ -1332,9 +1345,12 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">"Backscattering contributions require expansion_scope='full'."</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="n">potential</span><span class="o">.</span><span class="n">num_exit_planes</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># A slice's backscattered wave is kept only at an exit plane, and the</span>
+        <span class="c1"># back-propagation sums the kept waves into the entrance plane.</span>
+        <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">potential</span><span class="o">.</span><span class="n">num_slices</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">"Backscattering contributions require potential.exit_planes."</span>
+                <span class="s2">"Backscattering contributions require potential.exit_planes after "</span>
+                <span class="s2">"every slice, starting with the entrance plane -1 (exit_planes=1)."</span>
             <span class="p">)</span>
 
         <span class="c1"># moved to MultisliceTransform</span>
@@ -1411,6 +1427,7 @@
             <span class="n">exit_plane_index</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="n">depth</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">forward_slices</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">for</span> <span class="n">potential_slice</span><span class="p">,</span> <span class="n">next_slice</span> <span class="ow">in</span> <span class="n">lookahead</span><span class="p">(</span>
             <span class="n">potential_configuration</span><span class="o">.</span><span class="n">generate_slices</span><span class="p">()</span>
@@ -1422,6 +1439,9 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">waves</span> <span class="o">=</span> <span class="n">multislice_step</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="n">potential_slice</span><span class="p">,</span> <span class="n">next_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
             <span class="n">tqdm_pbar</span><span class="o">.</span><span class="n">update_if_exists</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">n_waves</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">return_backscattered</span><span class="p">:</span>
+                <span class="n">forward_slices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">potential_slice</span><span class="p">)</span>
 
             <span class="n">depth</span> <span class="o">+=</span> <span class="n">potential_slice</span><span class="o">.</span><span class="n">axes_metadata</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -1449,6 +1469,17 @@
                         <span class="p">)</span>
                 <span class="n">exit_plane_index</span> <span class="o">+=</span> <span class="mi">1</span>
 
+        <span class="k">if</span> <span class="n">return_backscattered</span><span class="p">:</span>
+            <span class="c1"># The back-propagation of this configuration's backscattered waves</span>
+            <span class="c1"># uses the slices its forward pass used.</span>
+            <span class="n">_back_propagate_backscattered_waves</span><span class="p">(</span>
+                <span class="n">measurements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span>  <span class="c1"># type: ignore</span>
+                    <span class="n">_validate_potential_ensemble_indices</span><span class="p">(</span><span class="n">potential_index</span><span class="p">,</span> <span class="p">(),</span> <span class="n">potential</span><span class="p">)</span>
+                <span class="p">],</span>
+                <span class="n">forward_slices</span><span class="p">,</span>
+                <span class="n">multislice_step</span><span class="p">,</span>
+            <span class="p">)</span>
+
     <span class="c1"># Handle final output if not using intermediate measurements</span>
     <span class="k">if</span> <span class="n">measurements</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">measurements</span> <span class="o">=</span> <span class="p">[</span>
@@ -1456,96 +1487,57 @@
             <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="n">detectors</span>
         <span class="p">]</span>
 
-    <span class="k">elif</span> <span class="n">return_backscattered</span><span class="p">:</span>
-        <span class="n">_back_propagate_backscattered_waves</span><span class="p">(</span>
-            <span class="n">measurements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>  <span class="c1"># type: ignore</span>
-            <span class="n">potential</span><span class="p">,</span>
-            <span class="n">multislice_step</span><span class="p">,</span>
-        <span class="p">)</span>
-
     <span class="n">tqdm_pbar</span><span class="o">.</span><span class="n">close_if_exists</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">measurements</span></div>
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_aggregate_slices_by_exit_planes</span><span class="p">(</span><span class="n">potential_slices</span><span class="p">,</span> <span class="n">exit_planes</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Group potential slices between exit_planes, summing their thicknesses.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    potential_slices : list of PotentialSlice</span>
-<span class="sd">        Original slices along the beam direction.</span>
-<span class="sd">    exit_planes : list of int</span>
-<span class="sd">        Indices of exit planes (first can be -1 for entrance plane).</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    effective_slices : list of PotentialSlice</span>
-<span class="sd">        Aggregated slices with summed potential arrays and summed thicknesses.</span>
-<span class="sd">    """</span>
-
-    <span class="n">effective_slices</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">exit_planes</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-        <span class="n">idx_start</span> <span class="o">=</span> <span class="n">exit_planes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># slice after previous exit plane</span>
-        <span class="n">idx_end</span> <span class="o">=</span> <span class="n">exit_planes</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># include this exit plane</span>
-
-        <span class="c1"># Aggregate slices in this block</span>
-        <span class="n">combined_slice</span> <span class="o">=</span> <span class="n">potential_slices</span><span class="p">[</span><span class="n">idx_start</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">thickness</span> <span class="o">=</span> <span class="n">combined_slice</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="c1"># Add remaining slices in the block</span>
-        <span class="k">for</span> <span class="n">in_bw_slice</span> <span class="ow">in</span> <span class="n">potential_slices</span><span class="p">[</span><span class="n">idx_start</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">idx_end</span><span class="p">]:</span>
-            <span class="n">combined_slice</span> <span class="o">+=</span> <span class="n">in_bw_slice</span>
-            <span class="n">thickness</span> <span class="o">+=</span> <span class="n">in_bw_slice</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">combined_slice</span><span class="o">.</span><span class="n">_slice_thickness</span> <span class="o">=</span> <span class="p">(</span><span class="n">thickness</span><span class="p">,)</span>
-            <span class="n">combined_slice</span><span class="o">.</span><span class="n">_slice_limits</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="n">thickness</span><span class="p">)]</span>
-
-        <span class="n">effective_slices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">combined_slice</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">effective_slices</span>
-
-
 <span class="k">def</span><span class="w"> </span><span class="nf">_back_propagate_backscattered_waves</span><span class="p">(</span>
     <span class="n">backscattered_waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">,</span>
-    <span class="n">potential</span><span class="p">:</span> <span class="n">BasePotential</span><span class="p">,</span>
+    <span class="n">forward_slices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BasePotential</span><span class="p">],</span>
     <span class="n">multislice_step</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Waves</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    For each slice in the multislice step, a small part of the wave get backscattered.</span>
 <span class="sd">    This function runs the multislice in reverse for each backscattered wave summing</span>
 <span class="sd">    them for a final backscattered wave result.</span>
+
+<span class="sd">    `backscattered_waves` are those of one configuration, with one exit plane after</span>
+<span class="sd">    every slice and the entrance plane first, and `forward_slices` are the slices its</span>
+<span class="sd">    forward pass used. The wave at plane `i + 1`, after slice `i`, crosses slice `i`</span>
+<span class="sd">    to reach plane `i`.</span>
 <span class="sd">    """</span>
 
     <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">backscattered_waves</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-    <span class="n">potential_slices</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="nb">slice</span>
-        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">_generate_potential_configurations</span><span class="p">(</span><span class="n">potential</span><span class="p">)</span>
-        <span class="k">for</span> <span class="nb">slice</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">generate_slices</span><span class="p">()</span>
-    <span class="p">]</span>
-
-    <span class="n">effective_slices</span> <span class="o">=</span> <span class="n">_aggregate_slices_by_exit_planes</span><span class="p">(</span>
-        <span class="n">potential_slices</span><span class="p">,</span> <span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span>
-    <span class="p">)</span>
-
-    <span class="n">num_slices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">effective_slices</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">backscattered_waves</span><span class="p">)</span> <span class="o">!=</span> <span class="n">num_slices</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Wrong shapes"</span><span class="p">)</span>
 
     <span class="c1"># zero intensity in incoming wave</span>
     <span class="n">backscattered_waves</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_array</span><span class="p">[:]</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="c1"># Go through potential in reverse</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_slices</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">forward_slices</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
         <span class="n">contribution_at_slice</span> <span class="o">=</span> <span class="n">backscattered_waves</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">contribution_at_slice</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">contribution_at_slice</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
         <span class="n">contribution_at_slice</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">multislice_step</span><span class="p">(</span>
-            <span class="n">contribution_at_slice</span><span class="p">,</span> <span class="n">effective_slices</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">next_slice</span><span class="o">=</span><span class="kc">None</span>
+            <span class="n">contribution_at_slice</span><span class="p">,</span> <span class="n">forward_slices</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">next_slice</span><span class="o">=</span><span class="kc">None</span>
         <span class="p">)</span>
         <span class="n">backscattered_waves</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">array</span> <span class="o">+=</span> <span class="n">xp</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">contribution_at_slice</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">backscattered_waves</span>
+
+
+<span class="n">_FULL_EXPANSION_SCOPE_MESSAGE</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"RealSpaceMultislice(expansion_scope='full') is not supported by the "</span>
+    <span class="s2">"core-loss multislice. Use FourierMultislice or "</span>
+    <span class="s2">"RealSpaceMultislice(expansion_scope='propagator')."</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_full_expansion_scope</span><span class="p">(</span><span class="n">algorithm</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="nb">isinstance</span><span class="p">(</span><span class="n">algorithm</span><span class="p">,</span> <span class="n">RealSpaceMultislice</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">expansion_scope</span> <span class="o">==</span> <span class="s2">"full"</span>
+    <span class="p">)</span>
 
 
 <div class="viewcode-block" id="transition_potential_multislice_and_detect">
@@ -1578,13 +1570,19 @@
 <span class="sd">        A detector or a list of detectors defining how the wave functions should be</span>
 <span class="sd">        converted to measurements after running the multislice algorithm.</span>
 <span class="sd">    algorithm: FourierMultislice or RealSpaceMultislice, optional</span>
-<span class="sd">        Algorithm used for multislice operator (default is FourierMultislice())</span>
+<span class="sd">        Algorithm used for multislice operator (default is FourierMultislice()). A</span>
+<span class="sd">        RealSpaceMultislice must have ``expansion_scope="propagator"``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    measurements : Waves or tuple of :class:`.BaseMeasurement`</span>
 <span class="sd">        Exit waves or detected measurements or lists of measurements.</span>
 <span class="sd">    """</span>
+    <span class="c1"># The real-space step is called without a next slice, so the full expansion scope</span>
+    <span class="c1"># would return a (waves, backscattered) pair in place of the waves, and could not</span>
+    <span class="c1"># apply its correction in any case. The driver is also a public entry point.</span>
+    <span class="k">if</span> <span class="n">_is_full_expansion_scope</span><span class="p">(</span><span class="n">algorithm</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">_FULL_EXPANSION_SCOPE_MESSAGE</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_update_loss_measurements</span><span class="p">(</span>
         <span class="n">measurements</span><span class="p">,</span> <span class="n">waves</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">slice_index</span><span class="p">,</span> <span class="n">potential_index</span>
@@ -1629,7 +1627,7 @@
                 <span class="n">laplace</span><span class="o">=</span><span class="n">laplace_operator</span><span class="p">,</span>
                 <span class="n">max_terms</span><span class="o">=</span><span class="n">algorithm</span><span class="o">.</span><span class="n">max_terms</span><span class="p">,</span>
                 <span class="n">order</span><span class="o">=</span><span class="n">algorithm</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
-                <span class="n">fully_corrected</span><span class="o">=</span><span class="n">algorithm</span><span class="o">.</span><span class="n">expansion_scope</span> <span class="o">==</span> <span class="s2">"full"</span><span class="p">,</span>
+                <span class="n">fully_corrected</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">detectors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1646,6 +1644,19 @@
         <span class="n">extra_ensemble_axes_shape</span><span class="p">,</span>
         <span class="n">extra_ensemble_axes_metadata</span><span class="p">,</span>
     <span class="p">)</span>
+
+    <span class="c1"># A built TransitionPotentialArray cannot be matched: build() bakes</span>
+    <span class="c1"># self.energy into the array's form factors (k0, kn, the relativistic</span>
+    <span class="c1"># mass correction, the interaction parameter), and its array shape is</span>
+    <span class="c1"># fixed, so the match below can only change the grid or accelerator,</span>
+    <span class="c1"># never recompute the array to agree with them. Checking first, while</span>
+    <span class="c1"># grid/accelerator still report what the array actually is, catches both</span>
+    <span class="c1"># -- the grid case otherwise fails with an opaque broadcast ValueError</span>
+    <span class="c1"># inside scatter, and the energy case would silently run with form</span>
+    <span class="c1"># factors computed for another energy.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_potential</span><span class="p">,</span> <span class="n">TransitionPotential</span><span class="p">):</span>
+        <span class="n">transition_potential</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+        <span class="n">transition_potential</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
 
     <span class="n">transition_potential</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
     <span class="n">transition_potential</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
@@ -1664,7 +1675,13 @@
         <span class="n">sites</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">atoms</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
-        <span class="n">sites</span> <span class="o">=</span> <span class="n">SliceIndexedAtoms</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">slice_thickness</span><span class="o">=</span><span class="n">potential</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span>
+        <span class="c1"># Follow the potential's own convention, so explicitly passed sites</span>
+        <span class="c1"># are sliced exactly as sites=None would be.</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="n">SliceIndexedAtoms</span><span class="p">(</span>
+            <span class="n">sites</span><span class="p">,</span>
+            <span class="n">slice_thickness</span><span class="o">=</span><span class="n">potential</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">,</span>
+            <span class="n">wrap</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">potential</span><span class="p">,</span> <span class="s2">"periodic"</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="p">)</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">SliceIndexedAtoms</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="s2">"Could not derive scattering sites from the potential "</span>
@@ -1680,10 +1697,6 @@
             <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">transition_potential</span><span class="o">.</span><span class="n">Z</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
 
-    <span class="n">absolute_threshold</span> <span class="o">=</span> <span class="n">transition_potential</span><span class="o">.</span><span class="n">absolute_threshold</span><span class="p">(</span>
-        <span class="n">waves</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span>
-    <span class="p">)</span>
-
     <span class="n">n_waves</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
     <span class="n">n_slices</span> <span class="o">=</span> <span class="n">n_waves</span> <span class="o">*</span> <span class="n">potential</span><span class="o">.</span><span class="n">num_slices</span> <span class="o">*</span> <span class="n">potential</span><span class="o">.</span><span class="n">num_configurations</span>
 
@@ -1698,11 +1711,13 @@
         <span class="n">potential_configuration</span><span class="p">,</span>
     <span class="p">)</span> <span class="ow">in</span> <span class="n">_generate_potential_configurations</span><span class="p">(</span><span class="n">potential</span><span class="p">):</span>
         <span class="n">waves</span> <span class="o">=</span> <span class="n">waves_input</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-            <span class="n">measurement_index</span> <span class="o">=</span> <span class="n">_validate_potential_ensemble_indices</span><span class="p">(</span>
-                <span class="n">potential_index</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">potential</span>
-            <span class="p">)</span>
-            <span class="n">_update_measurements</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="n">measurements</span><span class="p">,</span> <span class="n">measurement_index</span><span class="p">)</span>
+
+        <span class="c1"># The entrance exit plane at t = 0 stays zero: no material has been</span>
+        <span class="c1"># traversed, so no ionisation has happened. Detecting the incident</span>
+        <span class="c1"># *elastic* wave here, as the elastic driver correctly does, wrote the</span>
+        <span class="c1"># full unscattered intensity into the t = 0 bin of a core-loss</span>
+        <span class="c1"># measurement. Measurements are allocated zeroed, so there is nothing</span>
+        <span class="c1"># to do.</span>
 
         <span class="c1"># The double-channel inner multislice re-visits slices [scatter_index+1 …]</span>
         <span class="c1"># once per site batch; pre-building (and bandlimiting) the transmission</span>
@@ -1768,6 +1783,16 @@
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sites_slice</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">continue</span>
 
+            <span class="c1"># The overlap cut is ranked on the very waves the sites of this</span>
+            <span class="c1"># slice scatter. A cut ranked once on the entrance wave and</span>
+            <span class="c1"># applied at every depth drifted as the probe propagated: a</span>
+            <span class="c1"># symmetry-tied group of sites at the cut fell below it together</span>
+            <span class="c1"># (in one 1 A vacuum slice, threshold=0.1 kept 4.8% of the signal),</span>
+            <span class="c1"># and as the probe spreads with depth it dropped ever more sites.</span>
+            <span class="n">absolute_threshold</span> <span class="o">=</span> <span class="n">transition_potential</span><span class="o">.</span><span class="n">absolute_threshold</span><span class="p">(</span>
+                <span class="n">waves</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span>
+            <span class="p">)</span>
+
             <span class="k">for</span> <span class="p">(</span>
                 <span class="n">included_sites</span><span class="p">,</span>
                 <span class="n">scattered_waves</span><span class="p">,</span>
@@ -1816,19 +1841,34 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">exit_plane_index</span> <span class="o">=</span> <span class="n">bisect_left</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">,</span> <span class="n">scatter_index</span><span class="p">)</span>
 
-                    <span class="n">measurement_plane_indices</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">slice</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
-                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                        <span class="n">exit_planes</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span>
-                            <span class="n">exit_plane_index</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">)</span>
-                        <span class="p">)</span>
-                        <span class="n">measurement_plane_indices</span> <span class="o">=</span> <span class="p">(</span><span class="n">exit_planes</span><span class="p">,)</span>
+                    <span class="c1"># Single-channel ionisation at this depth contributes to</span>
+                    <span class="c1"># every exit plane at or beyond it, hence a slice over the</span>
+                    <span class="c1"># plane axis. The potential's ensemble axes come first in</span>
+                    <span class="c1"># the measurement, so they must be indexed as well -- the</span>
+                    <span class="c1"># double-channel branch above gets this right by going</span>
+                    <span class="c1"># through _update_loss_measurements. Indexing the plane</span>
+                    <span class="c1"># axis alone meant that with a single exit plane the index</span>
+                    <span class="c1"># was empty and every configuration's contribution was</span>
+                    <span class="c1"># broadcast across all configurations (giving num_configs</span>
+                    <span class="c1"># times the correct result), while with several exit planes</span>
+                    <span class="c1"># the plane slice landed on the configuration axis and</span>
+                    <span class="c1"># either dropped the contribution (a length-1 axis) or</span>
+                    <span class="c1"># wrote it into the wrong configuration slots.</span>
+                    <span class="n">n_plane_axes</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span>
+
+                    <span class="n">measurement_indices</span> <span class="o">=</span> <span class="n">_validate_potential_ensemble_indices</span><span class="p">(</span>
+                        <span class="n">potential_index</span><span class="p">,</span>
+                        <span class="nb">slice</span><span class="p">(</span><span class="n">exit_plane_index</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">)),</span>
+                        <span class="n">potential</span><span class="p">,</span>
+                    <span class="p">)</span>
 
                     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">detector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detectors</span><span class="p">):</span>
                         <span class="n">new_measurement</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">scattered_waves</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">0</span><span class="p">,))</span>
-                        <span class="n">measurements</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">measurement_plane_indices</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
-                            <span class="n">new_measurement</span><span class="o">.</span><span class="n">array</span><span class="p">[</span>
-                                <span class="p">(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">measurement_plane_indices</span><span class="p">)</span>
-                            <span class="p">]</span>
+                        <span class="c1"># Only the plane axis is a slice and so survives the</span>
+                        <span class="c1"># indexing; the ensemble axes are integers and are</span>
+                        <span class="c1"># dropped, so broadcast over the plane axis alone.</span>
+                        <span class="n">measurements</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="n">measurement_indices</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="n">new_measurement</span><span class="o">.</span><span class="n">array</span><span class="p">[(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n_plane_axes</span><span class="p">]</span>
                         <span class="p">)</span>
 
     <span class="n">tqdm_pbar</span><span class="o">.</span><span class="n">close_if_exists</span><span class="p">()</span>
@@ -2013,7 +2053,7 @@
         <span class="n">chunks</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">chunks</span> <span class="o">=</span> <span class="n">chunks</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span>
+            <span class="n">chunks</span> <span class="o">=</span> <span class="n">chunks</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">chunks</span> <span class="o">=</span> <span class="n">chunks</span> <span class="o">+</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">exit_planes</span><span class="p">),)</span>
@@ -2163,7 +2203,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

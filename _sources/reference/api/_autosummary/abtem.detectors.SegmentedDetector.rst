@@ -44,6 +44,7 @@ SegmentedDetector
       ~SegmentedDetector.metadata
       ~SegmentedDetector.nbins_azimuthal
       ~SegmentedDetector.nbins_radial
+      ~SegmentedDetector.offset
       ~SegmentedDetector.outer
       ~SegmentedDetector.radial_sampling
       ~SegmentedDetector.rotation

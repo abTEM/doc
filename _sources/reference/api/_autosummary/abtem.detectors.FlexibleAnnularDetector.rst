@@ -44,6 +44,7 @@ FlexibleAnnularDetector
       ~FlexibleAnnularDetector.metadata
       ~FlexibleAnnularDetector.nbins_azimuthal
       ~FlexibleAnnularDetector.nbins_radial
+      ~FlexibleAnnularDetector.offset
       ~FlexibleAnnularDetector.outer
       ~FlexibleAnnularDetector.radial_sampling
       ~FlexibleAnnularDetector.rotation

@@ -725,6 +725,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numbers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Number</span>
@@ -823,8 +824,24 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="p">))</span>
 
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">weights</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="p">),):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"expected one weight per value (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="p">)</span><span class="si">}</span><span class="s2">), got weights of "</span>
+                <span class="sa">f</span><span class="s2">"shape </span><span class="si">{</span><span class="n">weights</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">weights</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"distribution weights are probabilities: must be &gt;= 0"</span><span class="p">)</span>
+
+        <span class="c1"># No all-zero check here: the blocks built by ``divide`` (and their</span>
+        <span class="c1"># negations) may hold only zero-weight members of a valid distribution.</span>
+        <span class="c1"># ``from_values`` rejects an all-zero distribution. An ensemble axis</span>
+        <span class="c1"># whose weights are all zero (e.g. a slice of zero-weight members) has</span>
+        <span class="c1"># equal weights and is reduced with the plain mean.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_weights</span> <span class="o">=</span> <span class="n">weights</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensemble_mean</span> <span class="o">=</span> <span class="n">ensemble_mean</span></div>
@@ -1025,9 +1042,12 @@
     <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
     <span class="n">values_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">DistributionFromValues</span><span class="p">(</span>
+    <span class="n">distribution</span> <span class="o">=</span> <span class="n">DistributionFromValues</span><span class="p">(</span>
         <span class="n">values</span><span class="o">=</span><span class="n">values_array</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">ensemble_mean</span><span class="o">=</span><span class="n">ensemble_mean</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">distribution</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">distribution</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"distribution weights must not all be zero"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">distribution</span></div>
 
 
 
@@ -1071,6 +1091,24 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_normalize</span><span class="p">(</span><span class="n">normalize</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">normalize</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"intensity"</span><span class="p">,</span> <span class="s2">"amplitude"</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"normalize='</span><span class="si">{</span><span class="n">normalize</span><span class="si">}</span><span class="s2">' is deprecated and now equivalent to "</span>
+            <span class="s2">"normalize='probability'. Distribution weights are probabilities "</span>
+            <span class="s2">"applied when the ensemble is reduced (the weighted mean "</span>
+            <span class="s2">"Σ p_i I_i / Σ p_i), not factors on the wave amplitude, so the weights "</span>
+            <span class="s2">"are normalized to sum to one. Use the default normalize='probability'."</span><span class="p">,</span>
+            <span class="ne">FutureWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">normalize</span> <span class="o">!=</span> <span class="s2">"probability"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Unknown normalization method: </span><span class="si">{</span><span class="n">normalize</span><span class="si">!r}</span><span class="s2">; use 'probability'"</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="s2">"probability"</span>
+
+
 <div class="viewcode-block" id="gaussian">
 <a class="viewcode-back" href="../../reference/api/_autosummary/abtem.distributions.gaussian.html#abtem.distributions.gaussian">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">gaussian</span><span class="p">(</span>
@@ -1080,7 +1118,7 @@
     <span class="n">center</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">ensemble_mean</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">sampling_limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
-    <span class="n">normalize</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"intensity"</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"probability"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultidimensionalDistribution</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return a distribution with values weighted according to a (multidimensional)</span>
@@ -1109,8 +1147,23 @@
 <span class="sd">    sampling_limit : float, optional</span>
 <span class="sd">        Truncate the distribution at this many standard deviations (default is 3.0).</span>
 <span class="sd">    normalize : str, optional</span>
-<span class="sd">        Specifies whether to normalize the 'intensity' (default) or 'amplitude'.</span>
+<span class="sd">        Scaling of the stored probability weights: 'probability' (default)</span>
+<span class="sd">        normalizes them to sum to one. The weights are probabilities applied when</span>
+<span class="sd">        the ensemble is reduced (Σ p_i I_i / Σ p_i), so the scaling never changes a</span>
+<span class="sd">        reduced result. 'intensity' and 'amplitude' are deprecated remnants of the</span>
+<span class="sd">        former convention in which the weights multiplied the wave amplitude; both</span>
+<span class="sd">        now emit a FutureWarning and behave as 'probability'.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The weights are the probabilities p_i ∝ exp(-x_i² / 2σ²) of the sampled values:</span>
+<span class="sd">    each ensemble member is simulated unweighted and the reduced (incoherently</span>
+<span class="sd">    averaged) measurement is Σ p_i I(x_i) / Σ p_i, so the parameter seen by the</span>
+<span class="sd">    intensity has standard deviation σ (up to the truncation at ``sampling_limit``).</span>
+<span class="sd">    For a defocus spread this corresponds to Kirkland's 1/e focal-spread width</span>
+<span class="sd">    Δ = √2·σ used by :class:`abtem.transfer.TemporalEnvelope`.</span>
 <span class="sd">    """</span>
+    <span class="n">normalize</span> <span class="o">=</span> <span class="n">_validate_normalize</span><span class="p">(</span><span class="n">normalize</span><span class="p">)</span>
     <span class="n">center</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
     <span class="n">standard_deviation</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">standard_deviation</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
     <span class="n">ensemble_mean</span> <span class="o">=</span> <span class="n">number_to_tuple</span><span class="p">(</span><span class="n">ensemble_mean</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
@@ -1127,12 +1180,7 @@
 
         <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">values</span> <span class="o">-</span> <span class="n">center</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">standard_deviation</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"intensity"</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-        <span class="k">elif</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">"amplitude"</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">/=</span> <span class="n">weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown normalization method: </span><span class="si">{</span><span class="n">normalize</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">weights</span> <span class="o">/=</span> <span class="n">weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
         <span class="n">distributions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="n">DistributionFromValues</span><span class="p">(</span>
@@ -1194,8 +1242,10 @@
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">distribution</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
         <span class="n">distribution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">distribution</span><span class="p">)</span>
 
+        <span class="c1"># One weight per value (not ``ones_like``: for an (N, 2) array of tilts</span>
+        <span class="c1"># that would give (N, 2) weights, misaligned with the N values).</span>
         <span class="k">return</span> <span class="n">DistributionFromValues</span><span class="p">(</span>
-            <span class="n">distribution</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">distribution</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+            <span class="n">distribution</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">distribution</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -1214,9 +1264,14 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_unpack_distributions</span><span class="p">(</span>
     <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">BaseDistribution</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">xp</span><span class="p">:</span> <span class="n">ArrayModule</span> <span class="o">=</span> <span class="n">np</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Broadcastable parameter values of the given (distributions of) parameters.</span>
+
+<span class="sd">    The distribution weights are not returned: they are probabilities carried by</span>
+<span class="sd">    the ensemble axis metadata and applied when the ensemble is reduced.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(),</span> <span class="mf">1.0</span>
+        <span class="k">return</span> <span class="p">()</span>
 
     <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">xp</span><span class="p">)</span>
     <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -1225,7 +1280,6 @@
     <span class="n">base_axes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_new_axes</span><span class="p">,</span> <span class="n">num_new_axes</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)))</span>
 
     <span class="n">unpacked</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">weights</span> <span class="o">=</span> <span class="mf">1.0</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
@@ -1234,15 +1288,9 @@
             <span class="n">axis</span> <span class="o">=</span> <span class="n">tuple_range_except</span><span class="p">(</span><span class="n">num_new_axes</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="n">base_axes</span>
             <span class="n">values</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
             <span class="n">unpacked</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
-            <span class="n">new_weights</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span>
-            <span class="p">)</span>
-            <span class="n">weights</span> <span class="o">=</span> <span class="n">new_weights</span> <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">weights</span> <span class="o">*</span> <span class="n">new_weights</span>
             <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
 
-    <span class="n">unpacked_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">unpacked</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">unpacked_tuple</span><span class="p">,</span> <span class="n">weights</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">unpacked</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="EnsembleFromDistributions">
@@ -1358,7 +1406,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

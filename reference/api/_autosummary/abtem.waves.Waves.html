@@ -1400,9 +1400,12 @@ extent is projected.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>depth_profile</strong> – 2D image(s) with the depth (z) as the first base axis and the
-remaining spatial axis as the second. Any additional ensemble axes
-(e.g. scan positions) are preserved.</p>
+<dd class="field-even"><p><strong>depth_profile</strong> – 2D image(s) with the remaining spatial axis as the first base axis
+and the depth (z) as the second, with one z row per exit plane.
+The z sampling is the exit-plane spacing. Since images have no
+coordinate offset, z is measured from the first exit plane (the
+entrance surface, z = 0, for integer <code class="docutils literal notranslate"><span class="pre">exit_planes</span></code>). Any
+additional ensemble axes (e.g. scan positions) are preserved.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="abtem.measurements.Images.html#abtem.measurements.Images" title="abtem.measurements.Images">Images</a></p>
@@ -1440,8 +1443,12 @@ region is included.</p>
 </dl>
 </div></blockquote>
 </p></li>
-<li><p><strong>block_direct</strong> (<em>bool</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – If True the direct beam is masked (default is False). If given as a float,
-masks up to that scattering angle [mrad].</p></li>
+<li><p><strong>block_direct</strong> (<em>bool</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – If True the direct beam is masked (default is False): the bright-field disk
+and its margin if the metadata has a finite <code class="docutils literal notranslate"><span class="pre">semiangle_cutoff</span></code> larger
+than half the smaller angular sampling, otherwise (a plane wave, or an
+ensemble of cutoffs) the zero-angle pixel only. If given as a float,
+masks up to that scattering angle [mrad], plus the same margin when the
+metadata has a <code class="docutils literal notranslate"><span class="pre">semiangle_cutoff</span></code>.</p></li>
 <li><p><strong>fftshift</strong> (<em>bool</em><em>, </em><em>optional</em>) – If False, do not shift the direct beam to the center of the diffraction
 patterns (default is True).</p></li>
 <li><p><strong>parity</strong> (<em>{'same'</em><em>, </em><em>'even'</em><em>, </em><em>'odd'</em><em>, </em><em>'none'}</em>) – The parity of the shape of the diffraction patterns. Default is ‘odd’, so
@@ -2020,11 +2027,13 @@ scan.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>potential</strong> (<a class="reference internal" href="abtem.potentials.iam.BasePotential.html#abtem.potentials.iam.BasePotential" title="abtem.potentials.iam.BasePotential"><em>BasePotential</em></a><em> or </em><em>Atoms</em>) – The scattering potential.</p></li>
-<li><p><strong>scan</strong> (<a class="reference internal" href="abtem.scan.BaseScan.html#abtem.scan.BaseScan" title="abtem.scan.BaseScan"><em>BaseScan</em></a>) – Positions of the probe wave functions. If not given, scans across the entire
-potential at Nyquist sampling.</p></li>
+<li><p><strong>scan</strong> (<a class="reference internal" href="abtem.scan.BaseScan.html#abtem.scan.BaseScan" title="abtem.scan.BaseScan"><em>BaseScan</em></a><em> or </em><em>np.ndarray</em>) – Positions of the probe wave functions.</p></li>
+<li><p><strong>potential</strong> (<a class="reference internal" href="abtem.potentials.iam.BasePotential.html#abtem.potentials.iam.BasePotential" title="abtem.potentials.iam.BasePotential"><em>BasePotential</em></a><em> or </em><em>Atoms</em><em>, </em><em>optional</em>) – The scattering potential. If not given, the shifted wave functions are
+returned without running the multislice algorithm.</p></li>
 <li><p><strong>detectors</strong> (<a class="reference internal" href="abtem.detectors.BaseDetector.html#abtem.detectors.BaseDetector" title="abtem.detectors.BaseDetector"><em>BaseDetector</em></a><em>, </em><em>list</em><em> of </em><a class="reference internal" href="abtem.detectors.BaseDetector.html#abtem.detectors.BaseDetector" title="abtem.detectors.BaseDetector"><em>BaseDetector</em></a><em>, </em><em>optional</em>) – A detector or a list of detectors defining how the wave functions should be
-converted to measurements after running the multislice algorithm.
+converted to measurements after running the multislice algorithm. If not
+given, the exit wave functions are returned (equivalent to
+<code class="xref py py-class docutils literal notranslate"><span class="pre">WavesDetector</span></code>).
 See abtem.measurements.detect for a list of implemented detectors.</p></li>
 <li><p><strong>max_batch</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of wave functions in each chunk of the Dask array.
 If ‘auto’ (default), the batch size is automatically chosen based on the
@@ -2033,16 +2042,12 @@ abtem user configuration settings “dask.chunk-size” and
 <li><p><strong>**multislice_func_kwargs</strong> – Additional keyword arguments passed to the multislice function.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="#abtem.waves.Waves" title="abtem.waves.Waves"><code class="xref py py-class docutils literal notranslate"><span class="pre">Waves</span></code></a>, <a class="reference internal" href="abtem.measurements.BaseMeasurements.html#abtem.measurements.BaseMeasurements" title="abtem.measurements.BaseMeasurements"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMeasurements</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="#abtem.waves.Waves" title="abtem.waves.Waves"><code class="xref py py-class docutils literal notranslate"><span class="pre">Waves</span></code></a>, <a class="reference internal" href="abtem.measurements.BaseMeasurements.html#abtem.measurements.BaseMeasurements" title="abtem.measurements.BaseMeasurements"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMeasurements</span></code></a>]]]</span></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>detected_waves</strong> – The detected measurement(s). These are <a class="reference internal" href="#abtem.waves.Waves" title="abtem.waves.Waves"><code class="xref py py-class docutils literal notranslate"><span class="pre">Waves</span></code></a> only if a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">WavesDetector</span></code> is given.</p>
 </dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><ul class="simple">
-<li><p><strong>detected_waves</strong> (<em>BaseMeasurements or list of BaseMeasurement</em>) – The detected measurement (if detector(s) given).</p></li>
-<li><p><strong>exit_waves</strong> (<em>Waves</em>) – Wave functions at the exit plane(s) of the potential
-(if no detector(s) given).</p></li>
-</ul>
-</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="abtem.measurements.BaseMeasurements.html#abtem.measurements.BaseMeasurements" title="abtem.measurements.BaseMeasurements">BaseMeasurements</a> or <a class="reference internal" href="#abtem.waves.Waves" title="abtem.waves.Waves">Waves</a> or list of <a class="reference internal" href="abtem.measurements.BaseMeasurements.html#abtem.measurements.BaseMeasurements" title="abtem.measurements.BaseMeasurements">BaseMeasurements</a> or <a class="reference internal" href="#abtem.waves.Waves" title="abtem.waves.Waves">Waves</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2302,6 +2307,21 @@ about Hyperspy at <a class="reference external" href="https://hyperspy.org">http
 <dt class="sig sig-object py" id="abtem.waves.Waves.to_quantem">
 <span class="sig-name descname"><span class="pre">to_quantem</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#abtem.waves.Waves.to_quantem" title="Link to this definition">#</a></dt>
 <dd><p>Convert ArrayObject to quantem Dataset object.</p>
+<p>The units of the axes are converted to quantem’s spelling (for example “A” and
+“A^-1”), and an axis without units gets “pixels”. The signal units are the
+“units” entry of the metadata, passed on unchanged; if there is none they are
+“arb. unit”. The metadata is deep-copied into the metadata of the Dataset, so
+changing one does not change the other.</p>
+<p>A quantem Dataset holds NumPy arrays only: a lazy object is computed (the
+object itself stays lazy) and an array on a GPU is copied to the host.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dataset</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>quantem.core.datastructures.Dataset</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -2523,7 +2543,7 @@ overwrite=True will replace the existing data.</p></li>
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

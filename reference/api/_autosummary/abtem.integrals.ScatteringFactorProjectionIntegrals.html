@@ -831,7 +831,7 @@ doi:10.1016/j.ultramic.2015.07.005.</p>
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#abtem.integrals.ScatteringFactorProjectionIntegrals.integrate_on_grid" title="abtem.integrals.ScatteringFactorProjectionIntegrals.integrate_on_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">integrate_on_grid</span></code></a>(atoms, a, b, gpts, sampling)</p></td>
-<td><p>Integrate radial potential between two limits at the given 2D positions on a grid.</p></td>
+<td><p>Integrate radial potential between two limits at the given atomic positions on a grid.</p></td>
 </tr>
 </tbody>
 </table>
@@ -849,7 +849,7 @@ doi:10.1016/j.ultramic.2015.07.005.</p>
 <td><p>True indicates that the created projection integrators are implemented only for periodic potentials.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#abtem.integrals.ScatteringFactorProjectionIntegrals.scattering_factors" title="abtem.integrals.ScatteringFactorProjectionIntegrals.scattering_factors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scattering_factors</span></code></a></p></td>
-<td><p>Projected scattering factor array on a 2D grid.</p></td>
+<td><p>Cached projected scattering factors, keyed by element, grid and device.</p></td>
 </tr>
 </tbody>
 </table>
@@ -886,19 +886,17 @@ for infinite potential projections.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="abtem.integrals.ScatteringFactorProjectionIntegrals.integrate_on_grid">
 <span class="sig-name descname"><span class="pre">integrate_on_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gpts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/abtem/integrals.html#ScatteringFactorProjectionIntegrals.integrate_on_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.integrals.ScatteringFactorProjectionIntegrals.integrate_on_grid" title="Link to this definition">#</a></dt>
-<dd><p>Integrate radial potential between two limits at the given 2D positions on a
-grid. The integration limits are only used when the integration method is
+<dd><p>Integrate radial potential between two limits at the given atomic positions on
+a grid. The integration limits are only used when the integration method is
 finite.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>positions</strong> (<em>np.ndarray</em>) – 2D array of xy-positions of the centers of each radial function [Å].</p></li>
-<li><p><strong>a</strong> (<em>np.ndarray</em>) – Lower integration limit of the pr
-ojection integrals along z for each position [Å]. The limit is given
-relative to the center of the radial function.</p></li>
-<li><p><strong>b</strong> (<em>np.ndarray</em>) – Upper integration limit of the projection integrals along z for each
-position [Å]. The limit is given relative to the center of the radial
-function.</p></li>
+<li><p><strong>atoms</strong> (<em>ase.Atoms</em>) – The atoms whose radial functions are integrated onto the grid.</p></li>
+<li><p><strong>a</strong> (<em>float</em>) – Lower integration limit of the projection integrals along z [Å]. The limit
+is given relative to the center of the radial function.</p></li>
+<li><p><strong>b</strong> (<em>float</em>) – Upper integration limit of the projection integrals along z [Å]. The limit
+is given relative to the center of the radial function.</p></li>
 <li><p><strong>gpts</strong> (<em>two int</em>) – Number of grid points in <cite>x</cite> and <cite>y</cite> describing each slice of the potential.</p></li>
 <li><p><strong>sampling</strong> (<em>two float</em>) – Sampling of the potential in <cite>x</cite> and <cite>y</cite> [1 / Å].</p></li>
 <li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The device used for calculating the potential, ‘cpu’ or ‘gpu’. The default
@@ -917,8 +915,9 @@ for periodic potentials.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="abtem.integrals.ScatteringFactorProjectionIntegrals.scattering_factors">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scattering_factors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#abtem.integrals.ScatteringFactorProjectionIntegrals.scattering_factors" title="Link to this definition">#</a></dt>
-<dd><p>Projected scattering factor array on a 2D grid.</p>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scattering_factors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#abtem.integrals.ScatteringFactorProjectionIntegrals.scattering_factors" title="Link to this definition">#</a></dt>
+<dd><p>Cached projected scattering factors, keyed by element, grid and
+device.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1028,7 +1027,7 @@ for periodic potentials.</p>
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

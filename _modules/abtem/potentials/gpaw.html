@@ -725,8 +725,9 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
@@ -738,10 +739,12 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atoms</span><span class="p">,</span> <span class="n">units</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ase.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">atomic_numbers</span><span class="p">,</span> <span class="n">chemical_symbols</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dask.delayed</span><span class="w"> </span><span class="kn">import</span> <span class="n">Delayed</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.atoms</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_cell_orthogonal</span><span class="p">,</span> <span class="n">plane_to_axes</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">AxisMetadata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy_to_device</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.electron_configurations</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">config_str_to_config_tuples</span><span class="p">,</span>
     <span class="n">electron_configurations</span><span class="p">,</span>
@@ -758,6 +761,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.parametrizations</span><span class="w"> </span><span class="kn">import</span> <span class="n">EwaldParametrization</span><span class="p">,</span> <span class="n">LobatoParametrization</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.charge_density</span><span class="w"> </span><span class="kn">import</span> <span class="n">_interpolate_slice</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.potentials.iam</span><span class="w"> </span><span class="kn">import</span> <span class="n">Potential</span><span class="p">,</span> <span class="n">PotentialArray</span><span class="p">,</span> <span class="n">_PotentialBuilder</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.slicing</span><span class="w"> </span><span class="kn">import</span> <span class="n">_integrate_planes</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">gpaw</span><span class="w"> </span><span class="kn">import</span> <span class="n">GPAW</span>
@@ -770,11 +774,21 @@
     <span class="kn">from</span><span class="w"> </span><span class="nn">gpaw.mpi</span><span class="w"> </span><span class="kn">import</span> <span class="n">SerialCommunicator</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_get_gpaw_setups</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">xc</span><span class="p">):</span>
-    <span class="n">gpaw</span> <span class="o">=</span> <span class="n">GPAW</span><span class="p">(</span><span class="n">txt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="n">xc</span><span class="p">)</span>
-    <span class="n">gpaw</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">gpaw</span><span class="o">.</span><span class="n">setups</span>
+<span class="c1"># GPAW keeps one FFT plan per grid shape and dtype for the whole process</span>
+<span class="c1"># (``gpaw.fftw.create_plans`` caches them in a module-level dict), and each plan</span>
+<span class="c1"># owns the scratch arrays (``tmp_R``, ``tmp_Q``) that every transform writes its</span>
+<span class="c1"># input to and reads its output from. All calculators on the same grid share</span>
+<span class="c1"># these arrays, so two threads evaluating GPAW at once overwrite each other's</span>
+<span class="c1"># transforms: a read gives a wrong potential without an error, and concurrent</span>
+<span class="c1"># ``_DummyGPAW.setups`` calls can make GPAW itself fail. Dask's threaded</span>
+<span class="c1"># scheduler runs the tasks of a multi-file ``GPAWPotential`` in parallel, and</span>
+<span class="c1"># tasks of an earlier build can still be running when the caller's thread</span>
+<span class="c1"># returns to GPAW. Every abTEM call that makes a GPAW calculator compute on its</span>
+<span class="c1"># grids (reading a ``.gpw`` file, initializing, evaluating a density or</span>
+<span class="c1"># potential) therefore holds this lock; attribute reads, and GPAW's radial atom</span>
+<span class="c1"># solvers, which create no FFT plans, do not. The lock is re-entrant because</span>
+<span class="c1"># ``_read_gpw`` calls ``_DummyGPAW.from_gpaw``.</span>
+<span class="n">_GPAW_LOCK</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
 
 
 <span class="nd">@dataclass</span>
@@ -793,27 +807,43 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">setups</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">gpaw</span> <span class="o">=</span> <span class="n">GPAW</span><span class="p">(</span><span class="n">txt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">setup_mode</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">setup_xc</span><span class="p">)</span>
-        <span class="n">gpaw</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">gpaw</span><span class="o">.</span><span class="n">setups</span>
+        <span class="k">with</span> <span class="n">_GPAW_LOCK</span><span class="p">:</span>
+            <span class="n">gpaw</span> <span class="o">=</span> <span class="n">GPAW</span><span class="p">(</span><span class="n">txt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">setup_mode</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">setup_xc</span><span class="p">)</span>
+            <span class="n">gpaw</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">gpaw</span><span class="o">.</span><span class="n">setups</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_gpaw</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">gpaw</span><span class="p">,</span> <span class="n">lazy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="c1"># if lazy:</span>
         <span class="c1">#    return dask.delayed(cls.from_gpaw)(gpaw, lazy=False)</span>
 
+        <span class="k">with</span> <span class="n">_GPAW_LOCK</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_from_gpaw</span><span class="p">(</span><span class="n">gpaw</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_gpaw</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">gpaw</span><span class="p">):</span>
         <span class="n">atoms</span> <span class="o">=</span> <span class="n">gpaw</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="kc">None</span>
 
+        <span class="n">valence_potential</span> <span class="o">=</span> <span class="n">gpaw</span><span class="o">.</span><span class="n">get_electrostatic_potential</span><span class="p">()</span>
+
+        <span class="c1"># GPAW's new-style calculator (default since GPAW 26) renames the</span>
+        <span class="c1"># compensation charge coefficients from Q_aL to ccc_aL. Read it after</span>
+        <span class="c1"># get_electrostatic_potential(), which fills in Q_aL on a restarted</span>
+        <span class="c1"># old-style calculator.</span>
+        <span class="n">Q_aL</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">gpaw</span><span class="o">.</span><span class="n">density</span><span class="p">,</span> <span class="s2">"Q_aL"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">Q_aL</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Q_aL</span> <span class="o">=</span> <span class="n">gpaw</span><span class="o">.</span><span class="n">density</span><span class="o">.</span><span class="n">ccc_aL</span>
+
         <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">"setup_mode"</span><span class="p">:</span> <span class="n">gpaw</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"mode"</span><span class="p">],</span>
-            <span class="s2">"setup_xc"</span><span class="p">:</span> <span class="n">gpaw</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"xc"</span><span class="p">],</span>
+            <span class="s2">"setup_mode"</span><span class="p">:</span> <span class="n">gpaw</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span>
+            <span class="s2">"setup_xc"</span><span class="p">:</span> <span class="n">gpaw</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span>
             <span class="s2">"nt_sG"</span><span class="p">:</span> <span class="n">gpaw</span><span class="o">.</span><span class="n">density</span><span class="o">.</span><span class="n">nt_sG</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
             <span class="s2">"gd"</span><span class="p">:</span> <span class="n">gpaw</span><span class="o">.</span><span class="n">density</span><span class="o">.</span><span class="n">gd</span><span class="o">.</span><span class="n">new_descriptor</span><span class="p">(</span><span class="n">comm</span><span class="o">=</span><span class="n">SerialCommunicator</span><span class="p">()),</span>
             <span class="s2">"D_asp"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">gpaw</span><span class="o">.</span><span class="n">density</span><span class="o">.</span><span class="n">D_asp</span><span class="p">),</span>
             <span class="s2">"atoms"</span><span class="p">:</span> <span class="n">atoms</span><span class="p">,</span>
-            <span class="s2">"valence_potential"</span><span class="p">:</span> <span class="n">gpaw</span><span class="o">.</span><span class="n">get_electrostatic_potential</span><span class="p">(),</span>
-            <span class="s2">"Q_aL"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">gpaw</span><span class="o">.</span><span class="n">density</span><span class="o">.</span><span class="n">Q_aL</span><span class="p">),</span>
+            <span class="s2">"valence_potential"</span><span class="p">:</span> <span class="n">valence_potential</span><span class="p">,</span>
+            <span class="s2">"Q_aL"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">Q_aL</span><span class="p">),</span>
         <span class="p">}</span>
 
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -821,11 +851,9 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_file</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">lazy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">lazy</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">from_file</span><span class="p">)(</span><span class="n">path</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">_read_gpw</span><span class="p">)(</span><span class="n">path</span><span class="p">)</span>
 
-        <span class="n">calc</span> <span class="o">=</span> <span class="n">GPAW</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_gpaw</span><span class="p">(</span><span class="n">calc</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_read_gpw</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_generic</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">calculator</span><span class="p">,</span> <span class="n">lazy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
@@ -837,6 +865,69 @@
             <span class="k">return</span> <span class="n">calculator</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_gpw</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_DummyGPAW</span><span class="p">:</span>
+    <span class="c1"># Module level, so that a task calling it pickles it by reference; a</span>
+    <span class="c1"># classmethod in a task is pickled by value together with the globals it</span>
+    <span class="c1"># uses, and the lock cannot be pickled.</span>
+    <span class="k">with</span> <span class="n">_GPAW_LOCK</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_DummyGPAW</span><span class="o">.</span><span class="n">from_gpaw</span><span class="p">(</span><span class="n">GPAW</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_LastRead</span><span class="p">:</span>
+    <span class="c1"># Reads the ``.gpw`` placeholders of one eager ``_partition_args`` call and</span>
+    <span class="c1"># keeps only the calculator read last. Consecutive blocks that share a</span>
+    <span class="c1"># placeholder (one path with ``FrozenPhonons``) reuse it; a block with</span>
+    <span class="c1"># another placeholder drops it before reading. An eager build therefore</span>
+    <span class="c1"># holds one read calculator while it generates slices, and two while it</span>
+    <span class="c1"># reads the next file, since the caller still holds the previous block's</span>
+    <span class="c1"># potential. The object lives in that call's block array and goes with</span>
+    <span class="c1"># it, so no calculator outlives the build.</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_placeholder</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placeholder</span><span class="p">:</span> <span class="n">Delayed</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"_DummyGPAW"</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">placeholder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placeholder</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_placeholder</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="c1"># Synchronous: one task, and no thread pool started from</span>
+                <span class="c1"># inside a caller's task. ``_read_gpw`` takes the GPAW lock.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span> <span class="o">=</span> <span class="n">placeholder</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">"synchronous"</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_placeholder</span> <span class="o">=</span> <span class="n">placeholder</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculator</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_PendingRead</span><span class="p">:</span>
+    <span class="c1"># A ``.gpw`` placeholder in an eager block, read when the block's potential</span>
+    <span class="c1"># is made (``GPAWPotential._gpaw_potential``), not when the blocks are.</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"placeholder"</span><span class="p">,</span> <span class="s2">"reads"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placeholder</span><span class="p">:</span> <span class="n">Delayed</span><span class="p">,</span> <span class="n">reads</span><span class="p">:</span> <span class="n">_LastRead</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">placeholder</span> <span class="o">=</span> <span class="n">placeholder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reads</span> <span class="o">=</span> <span class="n">reads</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_defer_placeholders</span><span class="p">(</span><span class="n">calculators</span><span class="p">,</span> <span class="n">reads</span><span class="p">:</span> <span class="n">_LastRead</span><span class="p">):</span>
+    <span class="c1"># ``from_file`` leaves each ``.gpw`` path as a ``Delayed`` read. A lazy</span>
+    <span class="c1"># graph resolves it as a task argument; eager blocks read it one block at</span>
+    <span class="c1"># a time through ``reads``.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">calculators</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">_defer_placeholders</span><span class="p">(</span><span class="n">calculator</span><span class="p">,</span> <span class="n">reads</span><span class="p">)</span> <span class="k">for</span> <span class="n">calculator</span> <span class="ow">in</span> <span class="n">calculators</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">calculators</span><span class="p">,</span> <span class="n">Delayed</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_PendingRead</span><span class="p">(</span><span class="n">calculators</span><span class="p">,</span> <span class="n">reads</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">calculators</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_pending</span><span class="p">(</span><span class="n">calculators</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">calculators</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">_read_pending</span><span class="p">(</span><span class="n">calculator</span><span class="p">)</span> <span class="k">for</span> <span class="n">calculator</span> <span class="ow">in</span> <span class="n">calculators</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">calculators</span><span class="p">,</span> <span class="n">_PendingRead</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">calculators</span><span class="o">.</span><span class="n">reads</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">calculators</span><span class="o">.</span><span class="n">placeholder</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">calculators</span>
 
 
 <div class="viewcode-block" id="get_core_correction_interpolators">
@@ -876,20 +967,45 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_same_elements_and_cell</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Whether two atoms have the same elements in the same order and cell."""</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">numbers</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">numbers</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">cell</span><span class="p">))</span>
+    <span class="p">)</span>
+
+
 <div class="viewcode-block" id="integrate_slice">
 <a class="viewcode-back" href="../../../reference/api/_autosummary/abtem.potentials.gpaw.integrate_slice.html#abtem.potentials.gpaw.integrate_slice">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">integrate_slice</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">gpts</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">thickness</span><span class="p">):</span>
-    <span class="n">dz</span> <span class="o">=</span> <span class="n">thickness</span> <span class="o">/</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">na</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">a</span> <span class="o">/</span> <span class="n">dz</span><span class="p">))</span>
-    <span class="n">nb</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">b</span> <span class="o">/</span> <span class="n">dz</span><span class="p">))</span>
-    <span class="n">slice_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">na</span><span class="p">:</span><span class="n">nb</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dz</span>
-    <span class="n">new_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">nb</span> <span class="o">-</span> <span class="n">na</span><span class="p">,)</span> <span class="o">+</span> <span class="n">gpts</span>
-    <span class="n">old_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">nb</span> <span class="o">-</span> <span class="n">na</span><span class="p">,)</span> <span class="o">+</span> <span class="n">slice_array</span><span class="o">.</span><span class="n">shape</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Integrate the planes of `array` along its last axis between the heights `a`</span>
+<span class="sd">    and `b`, and Fourier interpolate the result to `gpts`.</span>
+
+<span class="sd">    Plane k is the sample at the height k * dz, with dz the plane spacing, and</span>
+<span class="sd">    stands for the heights from k * dz - dz / 2 to k * dz + dz / 2; the grid is</span>
+<span class="sd">    periodic, so plane 0 also stands for the heights within dz / 2 below the</span>
+<span class="sd">    thickness. A slice takes each plane times the length of the plane's heights</span>
+<span class="sd">    that lie between `a` and `b`. Consecutive slices share their limit, so the</span>
+<span class="sd">    weights of every plane add up to dz. A limit on a plane splits it between the</span>
+<span class="sd">    slices on either side (the trapezoidal rule), so the integral of a slice is</span>
+<span class="sd">    centred on the slice. Taking the planes from floor(a / dz) to floor(b / dz)</span>
+<span class="sd">    whole (a left Riemann sum) put it dz / 2 below the slice.</span>
+<span class="sd">    """</span>
+    <span class="n">nz</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">dz</span> <span class="o">=</span> <span class="n">thickness</span> <span class="o">/</span> <span class="n">nz</span>
+    <span class="c1"># The limits in plane spacings; the grid ends at plane nz.</span>
+    <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">a</span> <span class="o">/</span> <span class="n">dz</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">b</span> <span class="o">/</span> <span class="n">dz</span><span class="p">,</span> <span class="n">nz</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">stop</span> <span class="o">&lt;=</span> <span class="n">start</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="n">slice_array</span> <span class="o">=</span> <span class="n">_integrate_planes</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span> <span class="o">*</span> <span class="n">dz</span>
+    <span class="n">old_shape</span> <span class="o">=</span> <span class="n">slice_array</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">slice_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftn</span><span class="p">(</span><span class="n">slice_array</span><span class="p">)</span>
     <span class="n">slice_array</span> <span class="o">=</span> <span class="n">fft_crop</span><span class="p">(</span><span class="n">slice_array</span><span class="p">,</span> <span class="n">gpts</span><span class="p">)</span>
-    <span class="n">slice_array</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftn</span><span class="p">(</span><span class="n">slice_array</span><span class="p">)</span><span class="o">.</span><span class="n">real</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">old_shape</span><span class="p">)</span>
-    <span class="p">)</span>
+    <span class="n">slice_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftn</span><span class="p">(</span><span class="n">slice_array</span><span class="p">)</span><span class="o">.</span><span class="n">real</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">gpts</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">old_shape</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">slice_array</span></div>
 
 
@@ -916,19 +1032,32 @@
     <span class="n">plane</span><span class="o">=</span><span class="s2">"xy"</span><span class="p">,</span>
     <span class="n">first_slice</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">last_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="n">potential_generators</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># `atoms` is the calculator's atoms or whole copies of them one after another</span>
+    <span class="c1"># (`atoms * repetitions`), so atom i of every copy, atoms[i::n], takes the core</span>
+    <span class="c1"># correction of atom i of the calculator.</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">interpolators</span><span class="p">)</span>
+    <span class="n">potentials</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">interpolator</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">interpolators</span><span class="p">):</span>
         <span class="n">parametrization</span> <span class="o">=</span> <span class="n">_DummyParametrization</span><span class="p">(</span><span class="n">interpolator</span><span class="p">)</span>
         <span class="n">potential</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span>
             <span class="n">gpts</span><span class="o">=</span><span class="n">gpts</span><span class="p">,</span>
-            <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">[</span><span class="n">i</span><span class="p">::</span><span class="n">n</span><span class="p">],</span>
             <span class="n">parametrization</span><span class="o">=</span><span class="n">parametrization</span><span class="p">,</span>
             <span class="n">slice_thickness</span><span class="o">=</span><span class="n">slice_thickness</span><span class="p">,</span>
             <span class="n">projection</span><span class="o">=</span><span class="s2">"finite"</span><span class="p">,</span>
             <span class="n">plane</span><span class="o">=</span><span class="n">plane</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">potential_generators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">potential</span><span class="o">.</span><span class="n">generate_slices</span><span class="p">())</span>
+        <span class="n">potentials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">potential</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="p">)</span>
+
+    <span class="n">potential_generators</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">potential</span><span class="o">.</span><span class="n">generate_slices</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">)</span> <span class="k">for</span> <span class="n">potential</span> <span class="ow">in</span> <span class="n">potentials</span>
+    <span class="p">]</span>
 
     <span class="n">transform_valence_potential</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">potential</span><span class="o">.</span><span class="n">plane</span> <span class="o">!=</span> <span class="s2">"xy"</span><span class="p">:</span>
@@ -948,9 +1077,6 @@
     <span class="k">elif</span> <span class="n">transform_valence_potential</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">transform_valence_potential</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential</span><span class="p">)</span>
-
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">slice_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">)):</span>
         <span class="n">slic</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">potential_generators</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
@@ -959,14 +1085,17 @@
         <span class="k">for</span> <span class="n">potential_generator</span> <span class="ow">in</span> <span class="n">potential_generators</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
             <span class="n">slic</span><span class="o">.</span><span class="n">array</span><span class="p">[:]</span> <span class="o">+=</span> <span class="nb">next</span><span class="p">(</span><span class="n">potential_generator</span><span class="p">)</span><span class="o">.</span><span class="n">array</span>
 
+        <span class="c1"># The valence potential is on the host; its slice is moved to the device</span>
+        <span class="c1"># of the slice array.</span>
         <span class="k">if</span> <span class="n">transform_valence_potential</span><span class="p">:</span>
-            <span class="n">slic</span><span class="o">.</span><span class="n">array</span><span class="p">[:]</span> <span class="o">-=</span> <span class="n">_interpolate_slice</span><span class="p">(</span>
+            <span class="n">valence_slice</span> <span class="o">=</span> <span class="n">_interpolate_slice</span><span class="p">(</span>
                 <span class="n">valence_potential</span><span class="p">,</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="n">potential</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="n">potential</span><span class="o">.</span><span class="n">sampling</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">slic</span><span class="o">.</span><span class="n">array</span><span class="p">[:]</span> <span class="o">-=</span> <span class="n">integrate_slice</span><span class="p">(</span>
+            <span class="n">valence_slice</span> <span class="o">=</span> <span class="n">integrate_slice</span><span class="p">(</span>
                 <span class="n">valence_potential</span><span class="p">,</span> <span class="n">potential</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">potential</span><span class="o">.</span><span class="n">thickness</span>
             <span class="p">)</span>
+        <span class="n">slic</span><span class="o">.</span><span class="n">array</span><span class="p">[:]</span> <span class="o">-=</span> <span class="n">copy_to_device</span><span class="p">(</span><span class="n">valence_slice</span><span class="p">,</span> <span class="n">slic</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
 
         <span class="k">yield</span> <span class="n">slic</span>
 
@@ -1032,7 +1161,9 @@
 <span class="sd">        cut out of a larger repeated potential, which may not preserve periodicity.</span>
 <span class="sd">    frozen_phonons : abtem.AbstractFrozenPhonons, optional</span>
 <span class="sd">        Approximates frozen phonons for a single GPAW calculator by displacing only the</span>
-<span class="sd">        nuclear core potentials. Supercedes the atoms from the calculator.</span>
+<span class="sd">        nuclear core potentials. Supercedes the atoms from the calculator. A</span>
+<span class="sd">        trajectory (:class:`~abtem.inelastic.phonons.AtomsEnsemble`) is not accepted:</span>
+<span class="sd">        pass one calculator per frame instead.</span>
 <span class="sd">    repetitions : tuple of int</span>
 <span class="sd">        Repeats the atoms by integer amounts in the `x`, `y` and `z` directions before</span>
 <span class="sd">        applying frozen phonon displacements to calculate the potential contribution of</span>
@@ -1089,11 +1220,24 @@
 
             <span class="k">if</span> <span class="n">frozen_phonons</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">frozen_phonons</span> <span class="o">=</span> <span class="n">DummyFrozenPhonons</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">num_configs</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">frozen_phonons</span><span class="o">.</span><span class="n">ensemble_shape</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">frozen_phonons</span><span class="p">,</span> <span class="n">FrozenPhonons</span>
+            <span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"One calculator takes `FrozenPhonons`; for a trajectory, pass "</span>
+                    <span class="s2">"one calculator per frame."</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">_same_elements_and_cell</span><span class="p">(</span><span class="n">frozen_phonons</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"The frozen phonons must have the calculator's atoms: the same "</span>
+                    <span class="s2">"elements in the same order and the same cell, with positions "</span>
+                    <span class="s2">"that may differ. Repeat the cell with `repetitions`."</span>
+                <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_calculators</span> <span class="o">=</span> <span class="n">calculators</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_frozen_phonons</span> <span class="o">=</span> <span class="n">frozen_phonons</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gridrefinement</span> <span class="o">=</span> <span class="n">gridrefinement</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_repetitions</span> <span class="o">=</span> <span class="n">repetitions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_repetitions</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">repetitions</span><span class="p">)</span>
 
         <span class="n">cell</span> <span class="o">=</span> <span class="n">frozen_phonons</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span> <span class="o">*</span> <span class="n">repetitions</span>
         <span class="n">frozen_phonons</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1118,8 +1262,9 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frozen_phonons</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">num_configurations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen_phonons</span><span class="o">.</span><span class="n">num_configs</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_configurations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Number of potential configurations; 1 when there is no ensemble axis."""</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frozen_phonons</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">repetitions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1237,8 +1382,11 @@
         <span class="n">calculator</span> <span class="o">=</span> <span class="n">_DummyGPAW</span><span class="o">.</span><span class="n">from_generic</span><span class="p">(</span><span class="n">calculator</span><span class="p">)</span>
 
         <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen_phonons</span><span class="o">.</span><span class="n">atoms</span>
+        <span class="n">valence_potential</span> <span class="o">=</span> <span class="n">calculator</span><span class="o">.</span><span class="n">valence_potential</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repetitions</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="c1"># The valence potential is periodic with the calculator's cell.</span>
+            <span class="n">valence_potential</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">valence_potential</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">repetitions</span><span class="p">)</span>
             <span class="c1"># cell_cv = calculator.gd.cell_cv * self.repetitions</span>
             <span class="c1"># N_c = tuple(</span>
             <span class="c1">#    n_c * rep for n_c, rep in zip(calculator.gd.N_c, self.repetitions)</span>
@@ -1267,12 +1415,13 @@
         <span class="k">for</span> <span class="n">slic</span> <span class="ow">in</span> <span class="n">_generate_slices</span><span class="p">(</span>
             <span class="n">interpolators</span><span class="p">,</span>
             <span class="n">plane</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plane</span><span class="p">,</span>
-            <span class="n">valence_potential</span><span class="o">=</span><span class="n">calculator</span><span class="o">.</span><span class="n">valence_potential</span><span class="p">,</span>
+            <span class="n">valence_potential</span><span class="o">=</span><span class="n">valence_potential</span><span class="p">,</span>
             <span class="n">atoms</span><span class="o">=</span><span class="n">random_atoms</span><span class="p">,</span>
             <span class="n">gpts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span>
             <span class="n">slice_thickness</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">,</span>
             <span class="n">first_slice</span><span class="o">=</span><span class="n">first_slice</span><span class="p">,</span>
             <span class="n">last_slice</span><span class="o">=</span><span class="n">last_slice</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
         <span class="p">):</span>
             <span class="k">yield</span> <span class="n">slic</span></div>
 
@@ -1287,7 +1436,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">num_frozen_phonons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calculators</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_configurations</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">ensemble_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1301,10 +1450,11 @@
 
         <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s2">"frozen_phonons"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">frozen_phonons</span> <span class="o">=</span> <span class="n">frozen_phonons_partial</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">"frozen_phonons"</span><span class="p">])</span>
+            <span class="n">frozen_phonons</span> <span class="o">=</span> <span class="n">frozen_phonons</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">frozen_phonons</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="n">calculators</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">"calculators"</span><span class="p">]</span>
+        <span class="n">calculators</span> <span class="o">=</span> <span class="n">_read_pending</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">"calculators"</span><span class="p">])</span>
 
         <span class="n">new_potential</span> <span class="o">=</span> <span class="n">GPAWPotential</span><span class="p">(</span>
             <span class="n">calculators</span><span class="p">,</span> <span class="n">frozen_phonons</span><span class="o">=</span><span class="n">frozen_phonons</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
@@ -1335,11 +1485,21 @@
 
         <span class="n">calculators</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculators</span>
 
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">lazy</span><span class="p">:</span>
+            <span class="n">calculators</span> <span class="o">=</span> <span class="n">_defer_placeholders</span><span class="p">(</span><span class="n">calculators</span><span class="p">,</span> <span class="n">_LastRead</span><span class="p">())</span>
+
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frozen_phonons</span><span class="p">,</span> <span class="n">FrozenPhonons</span><span class="p">):</span>
             <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frozen_phonons</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">frozen_phonons</span><span class="o">.</span><span class="n">_partition_args</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="n">lazy</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="p">):</span>
+            <span class="n">partitioned</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen_phonons</span><span class="o">.</span><span class="n">_partition_args</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="n">lazy</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># Iterating a dask array yields per-element dask array slices;</span>
+            <span class="c1"># passing those into dask.delayed() and wrapping the result with</span>
+            <span class="c1"># another from_delayed()/concatenate() confuses dask's shape</span>
+            <span class="c1"># inference (IndexError deep in dask.array.core during compute).</span>
+            <span class="c1"># Delayed objects from to_delayed() compose correctly instead.</span>
+            <span class="n">fp_chunks</span> <span class="o">=</span> <span class="n">partitioned</span><span class="o">.</span><span class="n">to_delayed</span><span class="p">()</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="k">if</span> <span class="n">lazy</span> <span class="k">else</span> <span class="n">partitioned</span>
+
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fp_chunks</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">lazy</span><span class="p">:</span>
                     <span class="n">block</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">frozen_phonons</span><span class="p">)(</span><span class="n">calculators</span><span class="p">,</span> <span class="n">fp</span><span class="p">)</span>
 
@@ -1436,25 +1596,45 @@
         <span class="k">return</span> <span class="n">electrons</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_all_electron_atom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">charge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">gpaw.atom.aeatom</span><span class="w"> </span><span class="kn">import</span> <span class="n">AllElectronAtom</span>
-
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">Number</span><span class="p">):</span>
             <span class="n">symbol</span> <span class="o">=</span> <span class="n">chemical_symbols</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span>
 
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">,</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
-            <span class="n">ae</span> <span class="o">=</span> <span class="n">AllElectronAtom</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">spinpol</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="s2">"PBE"</span><span class="p">)</span>
+        <span class="n">added_electrons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_added_electrons</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">charge</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_all_electron_atom</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">added_electrons</span><span class="p">,</span> <span class="n">spinpol</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+            <span class="c1"># GPAW's radial solver fails to find a bound state for some open-shell</span>
+            <span class="c1"># atoms (e.g. Pm, Sm, Eu, Pu) in the spin-polarized calculation,</span>
+            <span class="c1"># independent of the SCF mixing. The spin-polarized and unpolarized</span>
+            <span class="c1"># total densities differ by only ~0.1 electrons, which is negligible</span>
+            <span class="c1"># for the independent-atom potential.</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The spin-polarized all-electron calculation for </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> failed "</span>
+                <span class="s2">"to converge in GPAW; falling back to a non-spin-polarized "</span>
+                <span class="s2">"calculation."</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_all_electron_atom</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">added_electrons</span><span class="p">,</span> <span class="n">spinpol</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run_all_electron_atom</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">added_electrons</span><span class="p">,</span> <span class="n">spinpol</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">gpaw.atom.aeatom</span><span class="w"> </span><span class="kn">import</span> <span class="n">AllElectronAtom</span>
+
+        <span class="n">ae</span> <span class="o">=</span> <span class="n">AllElectronAtom</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">spinpol</span><span class="o">=</span><span class="n">spinpol</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="s2">"PBE"</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">())</span>
+
+        <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">added_electrons</span><span class="p">:</span>
+            <span class="n">ae</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">added_electrons</span><span class="p">:</span>
+            <span class="c1"># The occupations perturbed by add() need a more conservative</span>
+            <span class="c1"># mixing schedule to reach self-consistency than the default,</span>
+            <span class="c1"># which is tuned for the unperturbed (neutral) configuration.</span>
+            <span class="n">ae</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">mix</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">dnmax</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="n">ae</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-            <span class="n">ae</span><span class="o">.</span><span class="n">scalar_relativistic</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">ae</span><span class="o">.</span><span class="n">refine</span><span class="p">()</span>
 
-        <span class="c1"># added_electrons = self._get_added_electrons(symbol, charge)</span>
-        <span class="c1">#</span>
-        <span class="c1"># for added_electron in added_electrons:</span>
-        <span class="c1">#     ae.add(*added_electron[:2], added_electron[-1])</span>
-
-        <span class="c1"># # ae.run()</span>
-        <span class="c1"># ae.run(mix=0.005, maxiter=5000, dnmax=1e-5)</span>
-        <span class="c1"># maxiter=5000, mix=0.005, dnmax=1e-5)</span>
+        <span class="n">ae</span><span class="o">.</span><span class="n">scalar_relativistic</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">ae</span><span class="o">.</span><span class="n">refine</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">ae</span>
 
@@ -1605,7 +1785,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

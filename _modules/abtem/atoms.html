@@ -1569,6 +1569,30 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_snap_scaled_positions_to_cell_boundary</span><span class="p">(</span><span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Snap scaled positions that are within `tolerance` (in Angstrom, along the</span>
+<span class="sd">    relevant lattice vector) of a cell boundary to exactly 0.</span>
+
+<span class="sd">    Relaxed structures from DFT or machine-learned potentials often leave atoms</span>
+<span class="sd">    that are physically on a cell boundary or corner with a tiny numerical</span>
+<span class="sd">    residual, e.g. a scaled coordinate of -1e-9 instead of exactly 0. Since</span>
+<span class="sd">    `ase.build.tools.cut` (used to build the orthogonal supercell) computes</span>
+<span class="sd">    scaled positions with a plain `% 1.0`, such a residual wraps to just below</span>
+<span class="sd">    1.0 rather than staying just above 0.0 depending on its sign, and is then</span>
+<span class="sd">    silently excluded by `cut`'s boundary mask. This makes `orthogonalize_cell`</span>
+<span class="sd">    non-deterministic under sub-tolerance numerical noise, dropping atoms for</span>
+<span class="sd">    some inputs but not others even though they represent the same structure.</span>
+<span class="sd">    """</span>
+    <span class="n">scaled</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_scaled_positions</span><span class="p">(</span><span class="n">wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">lengths</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">lengths</span><span class="p">()</span>
+    <span class="n">lengths</span><span class="p">[</span><span class="n">lengths</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">tolerance</span> <span class="o">/</span> <span class="n">lengths</span>
+    <span class="n">near_boundary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">scaled</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">scaled</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">eps</span>
+    <span class="n">scaled</span><span class="p">[</span><span class="n">near_boundary</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">scaled</span><span class="p">[</span><span class="n">near_boundary</span><span class="p">])</span>
+    <span class="n">atoms</span><span class="o">.</span><span class="n">set_scaled_positions</span><span class="p">(</span><span class="n">scaled</span> <span class="o">%</span> <span class="mf">1.0</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="orthogonalize_cell">
 <a class="viewcode-back" href="../../reference/api/_autosummary/abtem.atoms.orthogonalize_cell.html#abtem.atoms.orthogonalize_cell">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">orthogonalize_cell</span><span class="p">(</span>
@@ -1641,6 +1665,15 @@
 <span class="sd">        The applied transform given as Euler angles (by default not returned).</span>
 <span class="sd">    """</span>
 
+    <span class="c1"># Copy once, up front, rather than at each mutating call below. Three</span>
+    <span class="c1"># separate ASE calls on `atoms` in this function mutate in place --</span>
+    <span class="c1"># `set_cell`/`wrap` immediately below, `translate`/`wrap` when `origin`</span>
+    <span class="c1"># is non-default, and `_snap_scaled_positions_to_cell_boundary` right</span>
+    <span class="c1"># before `cut()` in the repeat-and-cut branch further down -- so copying</span>
+    <span class="c1"># at only one of those call sites still leaves the others writing into</span>
+    <span class="c1"># the caller's object.</span>
+    <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
     <span class="n">cell</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span>
     <span class="n">cell</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">atoms</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
@@ -1662,23 +1695,66 @@
         <span class="k">if</span> <span class="n">is_cell_orthogonal</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">return_transform</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">atoms</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">return_transform_matrix</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">atoms</span>
-        <span class="c1"># Early-exit bug: diag==box with non-orthogonal cell -&gt; GS fallback</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">return_transform</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">return_transform_matrix</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">dot</span>
-            <span class="n">_cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-            <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v3</span> <span class="o">=</span> <span class="n">_cell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">_cell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">_cell</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-            <span class="n">v2_new</span> <span class="o">=</span> <span class="n">v2</span> <span class="o">-</span> <span class="n">dot</span><span class="p">(</span><span class="n">v2</span><span class="p">,</span> <span class="n">v1</span><span class="p">)</span> <span class="o">/</span> <span class="n">dot</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v1</span><span class="p">)</span> <span class="o">*</span> <span class="n">v1</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atoms</span> <span class="k">as</span> <span class="n">_Atoms</span>
-            <span class="n">atoms</span> <span class="o">=</span> <span class="n">_Atoms</span><span class="p">(</span><span class="n">symbols</span><span class="o">=</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">(),</span>
-                           <span class="n">positions</span><span class="o">=</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-                           <span class="n">cell</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2_new</span><span class="p">,</span> <span class="n">v3</span><span class="p">]),</span> <span class="n">pbc</span><span class="o">=</span><span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span><span class="p">)</span>
-            <span class="n">atoms</span><span class="o">.</span><span class="n">wrap</span><span class="p">()</span>
+
+        <span class="c1"># `best_orthogonal_cell` computes box lengths as norms of (possibly</span>
+        <span class="c1"># repeated) lattice vectors. For a near-orthorhombic cell whose</span>
+        <span class="c1"># off-diagonal components are smaller than about 2e-8 relative to the</span>
+        <span class="c1"># corresponding diagonal entry, those norms round to the exact</span>
+        <span class="c1"># diagonal entries in float64, so `diag(cell) == box` can be True</span>
+        <span class="c1"># even though `is_cell_orthogonal` (tol=1e-12) still correctly</span>
+        <span class="c1"># reports the cell as non-orthogonal. This is a relative, not</span>
+        <span class="c1"># absolute, effect: a 5000 A cell can carry noise up to ~1e-4 A and</span>
+        <span class="c1"># still trip it, while a 5 A cell only does so below ~1e-7 A. No</span>
+        <span class="c1"># repetition is needed in this case, just removal of the numerical</span>
+        <span class="c1"># residual, so remove it by zeroing the off-diagonal components</span>
+        <span class="c1"># directly, rather than falling through to the general repeat-and-cut</span>
+        <span class="c1"># path below (which assumes real repetition is needed to reach</span>
+        <span class="c1"># `box`).</span>
+        <span class="c1">#</span>
+        <span class="c1"># A Gram-Schmidt process on the three vectors would only guarantee</span>
+        <span class="c1"># they end up mutually orthogonal, not axis-aligned: if the noise</span>
+        <span class="c1"># sits in the first vector (whose direction seeds the process), the</span>
+        <span class="c1"># result is a valid orthogonal box rotated slightly off the</span>
+        <span class="c1"># coordinate axes, which is not what the rest of this function</span>
+        <span class="c1"># assumes. Since reaching this branch already means every</span>
+        <span class="c1"># off-diagonal component is at or below float64's ~2e-8 relative</span>
+        <span class="c1"># rounding floor (see above), zeroing them directly is both simpler</span>
+        <span class="c1"># and correct; anything larger is guarded against below rather than</span>
+        <span class="c1"># silently discarded.</span>
+        <span class="n">cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">off_diagonal</span> <span class="o">=</span> <span class="n">cell</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)]</span>
+        <span class="n">max_off_diagonal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">off_diagonal</span><span class="p">))</span>
+        <span class="n">relative_off_diagonal</span> <span class="o">=</span> <span class="n">max_off_diagonal</span> <span class="o">/</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">lengths</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">relative_off_diagonal</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">"Cell is not orthogonal and the off-diagonal components "</span>
+                <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">max_off_diagonal</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2"> A, </span><span class="si">{</span><span class="n">relative_off_diagonal</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2"> "</span>
+                <span class="s2">"relative to the cell size) are too large to be numerical "</span>
+                <span class="s2">"noise; refusing to silently drop them. This should not "</span>
+                <span class="s2">"normally happen; please report this cell."</span>
+            <span class="p">)</span>
+
+        <span class="n">orthogonal_cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">cell</span><span class="p">))</span>
+
+        <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="n">orthogonal_cell</span><span class="p">)</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">wrap</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">return_transform</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">atoms</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">return_transform_matrix</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">atoms</span>
 
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">lengths</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">tolerance</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Cell vectors must have non-zero length."</span><span class="p">)</span>
+
+    <span class="n">_snap_scaled_positions_to_cell_boundary</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
 
     <span class="n">inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span>
     <span class="n">vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">box</span><span class="p">),</span> <span class="n">inv</span><span class="p">)</span>
@@ -1733,8 +1809,13 @@
     <span class="n">scaled_positions</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_scaled_positions</span><span class="p">(</span><span class="n">wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">scaled_margins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">margin</span><span class="p">)</span> <span class="o">/</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">lengths</span><span class="p">()</span>
 
+    <span class="c1"># The interval is half-open, [-m, 1 + m), and the tolerance shifts *both*</span>
+    <span class="c1"># ends down so that it stays a period long. With it on the lower end only,</span>
+    <span class="c1"># float noise from a rotation or orthogonalisation -- an atom at -3e-17</span>
+    <span class="c1"># and its periodic image at 1 - 1e-16 -- kept both copies, and a</span>
+    <span class="c1"># non-periodic cut of hcp Mg held 8 atoms where its cell has 4.</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">scaled_positions</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="o">-</span><span class="n">scaled_margins</span> <span class="o">-</span> <span class="mf">1e-12</span><span class="p">)[</span><span class="kc">None</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
-        <span class="n">scaled_positions</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">scaled_margins</span><span class="p">)[</span><span class="kc">None</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
+        <span class="n">scaled_positions</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">scaled_margins</span> <span class="o">-</span> <span class="mf">1e-12</span><span class="p">)[</span><span class="kc">None</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
     <span class="p">)</span>
 
     <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
@@ -1754,7 +1835,7 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fit the given atoms into a given cell by cropping atoms that are outside the cell,</span>
 <span class="sd">    ignoring periodicity. If the given atoms do not originally fill the cell, they are</span>
-<span class="sd">    first repeated until they do.</span>
+<span class="sd">    first repeated until they do, also when some of them lie outside the cell.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1811,9 +1892,11 @@
     <span class="n">corners</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">scaled_corners_new_cell</span><span class="p">,</span> <span class="n">new_cell</span><span class="p">)</span>
     <span class="n">scaled_corners</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">corners</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
     <span class="n">repetitions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ptp</span><span class="p">(</span><span class="n">scaled_corners</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"int"</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">floor_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">scaled_corners</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
     <span class="n">new_atoms</span> <span class="o">=</span> <span class="n">atoms</span> <span class="o">*</span> <span class="n">repetitions</span>
 
-    <span class="n">center_translate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">scaled_corners</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)),</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span>
+    <span class="n">center_translate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">floor_min</span><span class="p">,</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span>
     <span class="n">margin_translate</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">cartesian_positions</span><span class="p">(</span><span class="n">scaled_margin</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="n">new_atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:]</span> <span class="o">+=</span> <span class="n">center_translate</span> <span class="o">-</span> <span class="n">margin_translate</span>
@@ -1821,9 +1904,127 @@
     <span class="n">new_atoms</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">cell</span>
     <span class="n">new_atoms</span> <span class="o">=</span> <span class="n">atoms_in_cell</span><span class="p">(</span><span class="n">new_atoms</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="n">margin</span><span class="p">)</span>
 
+    <span class="c1"># The repetitions are the lattice shifts [first, first + repetitions). They reach</span>
+    <span class="c1"># every image in the region kept of an atom given in the cell, except in a</span>
+    <span class="c1"># non-orthogonal cell with a margin, and at a face within rounding. They miss</span>
+    <span class="c1"># those of an atom given outside the cell. Those images are placed directly, at</span>
+    <span class="c1"># the lattice shifts the region kept needs, and follow the atoms of the</span>
+    <span class="c1"># repetitions, which are as they would be without them. Their number is set by</span>
+    <span class="c1"># the box, not by how far outside the cell the atom is.</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="n">floor_min</span> <span class="o">-</span> <span class="n">scaled_margin</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># The region kept is the one `atoms_in_cell` keeps, which allows 1e-12 of the box</span>
+    <span class="c1"># length at both faces of the box.</span>
+    <span class="n">kept</span> <span class="o">=</span> <span class="n">scaled_corners</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">margin</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-12</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">scaled_positions</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_scaled_positions</span><span class="p">(</span><span class="n">wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">unreached</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">scaled_positions</span> <span class="o">&lt;</span> <span class="n">kept</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">first</span> <span class="o">-</span> <span class="n">repetitions</span><span class="p">)</span>
+            <span class="o">|</span> <span class="p">(</span><span class="n">scaled_positions</span> <span class="o">&gt;=</span> <span class="n">kept</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">first</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="c1"># The region kept spans fewer than `repetitions` shifts along each axis.</span>
+    <span class="n">steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="n">repetitions</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">shifts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">kept</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">scaled_positions</span><span class="p">[</span><span class="n">unreached</span><span class="p">])[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">steps</span>
+    <span class="n">shifts</span> <span class="o">=</span> <span class="n">shifts</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">reached</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="n">shifts</span> <span class="o">&gt;=</span> <span class="n">first</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">shifts</span> <span class="o">&lt;</span> <span class="n">first</span> <span class="o">+</span> <span class="n">repetitions</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">missed</span> <span class="o">=</span> <span class="n">atoms</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">unreached</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">))[</span><span class="o">~</span><span class="n">reached</span><span class="p">]]</span>
+    <span class="n">missed</span><span class="o">.</span><span class="n">positions</span><span class="p">[:]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">shifts</span><span class="p">[</span><span class="o">~</span><span class="n">reached</span><span class="p">],</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span>
+    <span class="n">missed</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">cell</span>
+    <span class="n">new_atoms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">atoms_in_cell</span><span class="p">(</span><span class="n">missed</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="n">margin</span><span class="p">))</span>
+
     <span class="c1"># new_atoms = wrap_with_tolerance(new_atoms)</span>
     <span class="k">return</span> <span class="n">new_atoms</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_wrap_and_snap_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span> <span class="n">copy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Wrap atoms into their cell by modulo, snapping the boundary cases to zero.</span>
+
+<span class="sd">    Wrapping is by ``np.mod`` rather than ``Atoms.wrap``, because ``wrap`` is a</span>
+<span class="sd">    **no-op along any axis where ``pbc`` is False** -- which is ASE's default</span>
+<span class="sd">    for a hand-built ``Atoms`` and what every ``ase.build.*(vacuum=...)`` slab</span>
+<span class="sd">    carries. The slicing this feeds models an infinite-projection potential</span>
+<span class="sd">    that is periodic in all three directions whatever the ``Atoms`` object</span>
+<span class="sd">    declares, so the bin index must be taken modulo the cell regardless.</span>
+
+<span class="sd">    The snap is still needed: positions land in ``[0, L)``, and the</span>
+<span class="sd">    ``SliceIndexedAtoms`` bin edges are nudged down by 1e-12, so anything in</span>
+<span class="sd">    ``(L - 1e-12, L)`` would fall outside every bin and be dropped. The same</span>
+<span class="sd">    applies in x and y, where a value a hair below ``L`` puts the atom's FFT</span>
+<span class="sd">    peak at the wrong position.</span>
+
+<span class="sd">    Idempotent, and the caller's ``Atoms`` is not modified unless ``copy`` is</span>
+<span class="sd">    False.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    atoms : Atoms</span>
+<span class="sd">        Atoms to wrap. Not modified unless ``copy`` is False.</span>
+<span class="sd">    copy : bool, optional</span>
+<span class="sd">        If False, wrap in place. Only for callers that own ``atoms``.</span>
+<span class="sd">    """</span>
+    <span class="n">cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">))</span>
+
+    <span class="n">positions</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span>
+    <span class="k">if</span> <span class="n">positions</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">cell</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">):</span>
+        <span class="c1"># A degenerate cell is reported better by the caller's own validation</span>
+        <span class="c1"># than by a modulo-by-zero here.</span>
+        <span class="k">return</span> <span class="n">atoms</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="n">positions</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">positions</span> <span class="o">&lt;</span> <span class="n">cell</span> <span class="o">-</span> <span class="mf">1e-10</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">atoms</span>
+
+    <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+        <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">cell</span><span class="p">[</span><span class="n">ax</span><span class="p">]</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="n">ax</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">length</span> <span class="o">-</span> <span class="mf">1e-10</span><span class="p">,</span> <span class="n">ax</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="n">ax</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">,</span> <span class="n">ax</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">return</span> <span class="n">atoms</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pad_images</span><span class="p">(</span><span class="n">margin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The number of cell lengths `pad_atoms` repeats a cell to each side."""</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">margin</span> <span class="o">/</span> <span class="n">length</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_wrap_far_atoms</span><span class="p">(</span>
+    <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span> <span class="n">margins</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">directions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"xy"</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Wrap into the cell, in place, the atoms that `pad_atoms` would not keep with all</span>
+<span class="sd">    their images, along the given directions.</span>
+
+<span class="sd">    `pad_atoms` repeats the cell `_pad_images` times to each side and crops to the</span>
+<span class="sd">    margin. The images of an atom given outside the cell are all in the repetitions</span>
+<span class="sd">    only up to the distance they reach less the margin, and the atom itself is kept</span>
+<span class="sd">    only up to the margin. Wrapping the atoms further out, by whole cell lengths,</span>
+<span class="sd">    leaves the periodic structure unchanged. An atom closer to the cell is not moved.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    atoms : ase.Atoms</span>
+<span class="sd">        The atoms to wrap, with an orthogonal cell.</span>
+<span class="sd">    margins : tuple of three floats</span>
+<span class="sd">        The padding margin along `x`, `y` and `z`.</span>
+<span class="sd">    directions : str</span>
+<span class="sd">        The directions to wrap along, as for `pad_atoms`.</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">direction</span> <span class="ow">in</span> <span class="n">directions</span><span class="p">:</span>
+        <span class="n">axis</span> <span class="o">=</span> <span class="s2">"xyz"</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="n">axis</span><span class="p">,</span> <span class="n">axis</span><span class="p">]</span>
+        <span class="n">reach</span> <span class="o">=</span> <span class="n">_pad_images</span><span class="p">(</span><span class="n">margins</span><span class="p">[</span><span class="n">axis</span><span class="p">],</span> <span class="n">length</span><span class="p">)</span> <span class="o">*</span> <span class="n">length</span>
+        <span class="n">slack</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">reach</span> <span class="o">-</span> <span class="n">margins</span><span class="p">[</span><span class="n">axis</span><span class="p">],</span> <span class="n">margins</span><span class="p">[</span><span class="n">axis</span><span class="p">])</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="n">axis</span><span class="p">]</span>
+        <span class="n">far</span> <span class="o">=</span> <span class="p">(</span><span class="n">positions</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">slack</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">positions</span> <span class="o">&gt;=</span> <span class="n">length</span> <span class="o">+</span> <span class="n">slack</span><span class="p">)</span>
+        <span class="n">positions</span><span class="p">[</span><span class="n">far</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">positions</span><span class="p">[</span><span class="n">far</span><span class="p">],</span> <span class="n">length</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="pad_atoms">
@@ -1834,8 +2035,12 @@
     <span class="n">directions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"xyz"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Repeat the atoms in the `x` and `y` directions, retaining only the repeated atoms</span>
+<span class="sd">    Repeat the atoms in the given directions, retaining only the repeated atoms</span>
 <span class="sd">    within the margin distance from the cell boundary.</span>
+
+<span class="sd">    Atoms are cropped only along the directions that were repeated. Along any other</span>
+<span class="sd">    direction, including a padded direction with a zero margin, every atom is kept,</span>
+<span class="sd">    even one outside the cell.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1843,7 +2048,7 @@
 <span class="sd">        The atoms that should be padded.</span>
 <span class="sd">    margins: one or tuple of three floats</span>
 <span class="sd">        The padding margin. Can be specified either as a single value for all</span>
-<span class="sd">        directions, or three separate values.</span>
+<span class="sd">        directions, or three separate values for `x`, `y` and `z`.</span>
 <span class="sd">    directions : str</span>
 <span class="sd">        The directions to pad the atoms as a concatenation of one or more of `x`, `y`</span>
 <span class="sd">        and `z` for each of the principal directions.</span>
@@ -1868,16 +2073,27 @@
     <span class="n">axes</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"x"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"z"</span><span class="p">:</span> <span class="mi">2</span><span class="p">}[</span><span class="n">direction</span><span class="p">]</span> <span class="k">for</span> <span class="n">direction</span> <span class="ow">in</span> <span class="n">directions</span><span class="p">]</span>
 
     <span class="n">reps</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">margin</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">margins</span><span class="p">):</span>
-        <span class="n">reps</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">margin</span> <span class="o">/</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="n">axis</span><span class="p">,</span> <span class="n">axis</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+        <span class="n">reps</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">_pad_images</span><span class="p">(</span><span class="n">margins</span><span class="p">[</span><span class="n">axis</span><span class="p">],</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="n">axis</span><span class="p">,</span> <span class="n">axis</span><span class="p">])</span>
 
-    <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">rep</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">rep</span> <span class="ow">in</span> <span class="n">reps</span><span class="p">]):</span>
-        <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span> <span class="o">*</span> <span class="n">reps</span>
-        <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:]</span> <span class="o">-=</span> <span class="n">old_cell</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">[</span><span class="n">rep</span> <span class="o">//</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">rep</span> <span class="ow">in</span> <span class="n">reps</span><span class="p">]</span>
-        <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">old_cell</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">([</span><span class="n">rep</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">rep</span> <span class="ow">in</span> <span class="n">reps</span><span class="p">]):</span>
+        <span class="k">return</span> <span class="n">atoms</span>
 
-    <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms_in_cell</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">margins</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">atoms</span></div>
+    <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span> <span class="o">*</span> <span class="n">reps</span>
+    <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:]</span> <span class="o">-=</span> <span class="n">old_cell</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">[</span><span class="n">rep</span> <span class="o">//</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">rep</span> <span class="ow">in</span> <span class="n">reps</span><span class="p">]</span>
+    <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">old_cell</span>
+
+    <span class="c1"># Crop only along the repeated axes: the crop is there to trim the images</span>
+    <span class="c1"># just added. Along any other axis it can only remove original atoms, and a</span>
+    <span class="c1"># non-periodic potential holds those unwrapped -- an atom displaced out of</span>
+    <span class="c1"># the cell before it reached the potential (frozen phonons iterated by</span>
+    <span class="c1"># hand, an MD snapshot) was dropped here and lost its whole contribution,</span>
+    <span class="c1"># where the same displacement applied by the potential after padding was</span>
+    <span class="c1"># kept. An infinite margin disables atoms_in_cell along that axis.</span>
+    <span class="n">crop_margins</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">margins</span><span class="p">[</span><span class="n">axis</span><span class="p">])</span> <span class="k">if</span> <span class="n">reps</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">atoms_in_cell</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">crop_margins</span><span class="p">)</span></div>
 
 
 
@@ -2132,7 +2348,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

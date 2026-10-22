@@ -860,21 +860,22 @@
 <p>The weighting function, <span class="math notranslate nohighlight">\(p(\Delta f)\)</span>, is assumed to be Gaussian</p>
 <div class="math notranslate nohighlight" id="equation-eq-gaussian-weights">
 <span class="eqno">(6)<a class="headerlink" href="#equation-eq-gaussian-weights" title="Link to this equation">#</a></span>\[
-    p(\Delta f) = \frac{1}{\sigma\sqrt{2\pi}} \exp\left(\frac{(\Delta f_{center} - \Delta f) ^ 2}{2\sigma ^ 2}\right) \quad ,
+    p(\Delta f) = \frac{1}{\sigma\sqrt{2\pi}} \exp\left(-\frac{(\Delta f_{center} - \Delta f) ^ 2}{2\sigma ^ 2}\right) \quad ,
 \]</div>
 <p>where <span class="math notranslate nohighlight">\(\sigma\)</span> is the standard deviation of the defocus distribution. Note that the <code class="docutils literal notranslate"><span class="pre">focal_spread</span></code> parameter of the quasi-coherent CTF uses the 1/e width convention, related to <span class="math notranslate nohighlight">\(\sigma\)</span> by <span class="math notranslate nohighlight">\(\delta = \sqrt{2}\,\sigma\)</span>.</p>
 <p>We can approximate Eq. <a class="reference internal" href="#equation-eq-incoherent-integral">(5)</a> as a Riemann sum</p>
 <div class="math notranslate nohighlight">
 \[
-    I_{incoherent} = \sum_{\Delta f_n} p(\Delta f_n) I(\Delta f_n)
+    I_{incoherent} = \frac{\sum_{\Delta f_n} p(\Delta f_n) I(\Delta f_n)}{\sum_{\Delta f_n} p(\Delta f_n)}
 \]</div>
+<p>where dividing by the sum of the weights keeps the result normalized when the distribution is sampled and truncated.</p>
 <p>where we need to choose a set of <span class="math notranslate nohighlight">\(N\)</span> samples</p>
 <div class="math notranslate nohighlight">
 \[
     \Delta f_n = \Delta f_{center} - \Delta f_{truncation} + \frac{2 n \Delta f_{truncation}}{N}
 \]</div>
 <p>where <span class="math notranslate nohighlight">\(n=0,1,\ldots,N\)</span>. The Gaussian is unbounded, however, we may assume that contributions beyond a chosen truncation, <span class="math notranslate nohighlight">\(\Delta f_{truncation}\)</span>, are small enough to be neglected.</p>
-<p>To calculate this in abTEM, we create the distribution in Eq. <a class="reference internal" href="#equation-eq-gaussian-weights">(6)</a> using <code class="docutils literal notranslate"><span class="pre">abtem.distributions.gaussian</span></code>, we can then copy the coherent CTF from above and set the <code class="docutils literal notranslate"><span class="pre">defocus</span></code> to this distribution. The center of the distribution is set to the Scherzer defocus (<span class="math notranslate nohighlight">\(\Delta f_0 = 111.92 \ \mathrm{Å}\)</span>) and the standard deviation is set to the focal spread (<span class="math notranslate nohighlight">\(\sigma = 52.5 \ \mathrm{Å}\)</span>). The truncation of the Riemann sum set to <span class="math notranslate nohighlight">\(\Delta f_{truncation} = 1.5 \sigma = 78.75 \ \mathrm{Å}\)</span> and we use <span class="math notranslate nohighlight">\(N=7\)</span> linearly spaced samples. This was found to be sufficent for a reasonably converged simulation.</p>
+<p>To calculate this in abTEM, we create the distribution in Eq. <a class="reference internal" href="#equation-eq-gaussian-weights">(6)</a> using <code class="docutils literal notranslate"><span class="pre">abtem.distributions.gaussian</span></code>, we can then copy the coherent CTF from above and set the <code class="docutils literal notranslate"><span class="pre">defocus</span></code> to this distribution. The center of the distribution is set to the Scherzer defocus (<span class="math notranslate nohighlight">\(\Delta f_0 = 111.92 \ \mathrm{Å}\)</span>) and the standard deviation to <span class="math notranslate nohighlight">\(\sigma = \delta / \sqrt{2} = 37.12 \ \mathrm{Å}\)</span>, matching the focal spread <span class="math notranslate nohighlight">\(\delta = 52.5 \ \mathrm{Å}\)</span> of the quasi-coherent CTF. The truncation of the Riemann sum is set to <span class="math notranslate nohighlight">\(\Delta f_{truncation} = 1.5 \sigma = 55.68 \ \mathrm{Å}\)</span> and we use <span class="math notranslate nohighlight">\(N=7\)</span> linearly spaced samples. This was found to be sufficent for a reasonably converged simulation.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">defocus_distribution</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">gaussian</span><span class="p">(</span>
@@ -890,7 +891,7 @@
 </div>
 </div>
 </div>
-<p>We apply the CTF as usual and calculate the intensity, obtaining the ensemble of images representing <span class="math notranslate nohighlight">\(p(\Delta f_n) I(\Delta f_n)\)</span> for each defocus sample.</p>
+<p>We apply the CTF as usual and calculate the intensity, obtaining an ensemble with one image <span class="math notranslate nohighlight">\(I(\Delta f_n)\)</span> for each defocus sample. The weights <span class="math notranslate nohighlight">\(p(\Delta f_n)\)</span> are not applied to the images: the distribution stores them on the defocus axis of the ensemble, and they are applied when the ensemble is reduced.</p>
 <div class="cell tag_skip-test docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">images_incoherent</span> <span class="o">=</span> <span class="n">exit_wave</span><span class="o">.</span><span class="n">apply_ctf</span><span class="p">(</span><span class="n">ctf_incoherent</span><span class="p">)</span><span class="o">.</span><span class="n">intensity</span><span class="p">()</span>
@@ -911,7 +912,7 @@ RealSpaceAxis  y [Å]    0.00 0.05 ... 5.46
 </div>
 </div>
 </div>
-<p>We show the ensemble of images below, we see that the image intensity has the highest weight at <span class="math notranslate nohighlight">\(\Delta f_0 = 111.92 \ \mathrm{Å}\)</span> and drops off to almost zero at <span class="math notranslate nohighlight">\(\Delta f_0 \pm \Delta f_{truncation}\)</span>.</p>
+<p>We show the ensemble of images below. Each image is the ordinary image at its defocus, so the contrast changes across the ensemble, but the images are not scaled by their weights. The weight is highest at <span class="math notranslate nohighlight">\(\Delta f_0 = 111.92 \ \mathrm{Å}\)</span> and falls to about a third of that at <span class="math notranslate nohighlight">\(\Delta f_0 \pm \Delta f_{truncation}\)</span>.</p>
 <div class="cell tag_full-width docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">images_incoherent</span><span class="o">.</span><span class="n">show</span><span class="p">(</span>
@@ -924,13 +925,13 @@ RealSpaceAxis  y [Å]    0.00 0.05 ... 5.46
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/4d0083183a8d860f4d5138168d1dea1f2cdf4b8950d0dcafe5813e2a9ef88831.png" src="../../_images/4d0083183a8d860f4d5138168d1dea1f2cdf4b8950d0dcafe5813e2a9ef88831.png" />
+<img alt="../../_images/f1e9e5d44bac341a4d5bd8d6b15ebe33a9753a42d39da2ccc57680d5087c990f.png" src="../../_images/f1e9e5d44bac341a4d5bd8d6b15ebe33a9753a42d39da2ccc57680d5087c990f.png" />
 </div>
 </div>
-<p>To obtain the incoherent image, we sum across the image ensemble.</p>
+<p>To obtain the incoherent image, we reduce the ensemble, which computes the weighted average in Eq. <a class="reference internal" href="#equation-eq-incoherent-integral">(5)</a> over the defocus axis. A plain <code class="docutils literal notranslate"><span class="pre">.sum()</span></code> or <code class="docutils literal notranslate"><span class="pre">.mean()</span></code> over the axis would ignore the weights, and warns that it does.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_incoherent</span> <span class="o">=</span> <span class="n">images_incoherent</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_incoherent</span> <span class="o">=</span> <span class="n">images_incoherent</span><span class="o">.</span><span class="n">reduce_ensemble</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -953,7 +954,7 @@ RealSpaceAxis  y [Å]    0.00 0.05 ... 5.46
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/43cb5e4f3c44f5fd33110d92ff7594d2d3394350b15cc50c74d4f346372aae54.png" src="../../_images/43cb5e4f3c44f5fd33110d92ff7594d2d3394350b15cc50c74d4f346372aae54.png" />
+<img alt="../../_images/54d248f50072d1f0481178c4e921caf68a5c33d3cf9512e740aeb0725bee3790.png" src="../../_images/54d248f50072d1f0481178c4e921caf68a5c33d3cf9512e740aeb0725bee3790.png" />
 </div>
 </div>
 <p>The quantitative differences are clearer when shown as a line profile.</p>
@@ -964,7 +965,7 @@ RealSpaceAxis  y [Å]    0.00 0.05 ... 5.46
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/21b9b8f76a1d79693f3134932e545ebee58a9d9afb4e2439259163f1dfd98f87.png" src="../../_images/21b9b8f76a1d79693f3134932e545ebee58a9d9afb4e2439259163f1dfd98f87.png" />
+<img alt="../../_images/8cff145249993fe9a8c3620b3dee3cbe8c636f931b1e9c974af68bc8974facac.png" src="../../_images/8cff145249993fe9a8c3620b3dee3cbe8c636f931b1e9c974af68bc8974facac.png" />
 </div>
 </div>
 <p>It should be noted that the quasi-coherent model is better for smaller focal spread, hence, it may be more appropriate at higher electron energies.</p>
@@ -974,9 +975,9 @@ RealSpaceAxis  y [Å]    0.00 0.05 ... 5.46
 <p>We can also simulate partial temporal coherence using probe wave functions using the weighted incoherent integral in Eq. <a class="reference internal" href="#equation-eq-incoherent-integral">(5)</a>. However, we now have to integrate over the initial conditions of the wave functions</p>
 <div class="math notranslate nohighlight">
 \[
-    \hat{I}(\Delta f) = \left\| p(\Delta f) \mathcal{M} \left[\hat{\psi}_0(\Delta f) \right] \right\|^2 \quad ,
+    \hat{I}(\Delta f) = \left\| \mathcal{M} \left[\hat{\psi}_0(\Delta f) \right] \right\|^2 \quad ,
 \]</div>
-<p>where <span class="math notranslate nohighlight">\(\mathcal{M}\)</span> is the multislice operator, defined in Eq. <a class="reference internal" href="../walkthrough/multislice.html#equation-eq-multislice-symbol">(3)</a> in the <a class="reference internal" href="../walkthrough/multislice.html#walkthrough-multislice"><span class="std std-ref">walkthrough on multislice</span></a>. This means that a run of the multislice algorithm is required for every <span class="math notranslate nohighlight">\(\Delta f_n\)</span> sample, and hence, including temporal partial incoherence can be expensive.</p>
+<p>and the weights <span class="math notranslate nohighlight">\(p(\Delta f)\)</span> multiply these intensities, not the wave functions. Here <span class="math notranslate nohighlight">\(\mathcal{M}\)</span> is the multislice operator, defined in Eq. <a class="reference internal" href="../walkthrough/multislice.html#equation-eq-multislice-symbol">(3)</a> in the <a class="reference internal" href="../walkthrough/multislice.html#walkthrough-multislice"><span class="std std-ref">walkthrough on multislice</span></a>. This means that a run of the multislice algorithm is required for every <span class="math notranslate nohighlight">\(\Delta f_n\)</span> sample, and hence, including temporal partial incoherence can be expensive.</p>
 <p>Partial spatial coherence can be simulated by a weighted integral over source positions. For a probe at the position, <span class="math notranslate nohighlight">\((x_0, y_0)\)</span>, we have to do a 2D integral over the probe displacements <span class="math notranslate nohighlight">\((\Delta x, \Delta y)\)</span></p>
 <div class="math notranslate nohighlight" id="equation-eq-incoherent-integral-spatial">
 <span class="eqno">(7)<a class="headerlink" href="#equation-eq-incoherent-integral-spatial" title="Link to this equation">#</a></span>\[
@@ -984,7 +985,7 @@ RealSpaceAxis  y [Å]    0.00 0.05 ... 5.46
 \]</div>
 <p>where each image is given as
 <span class="math notranslate nohighlight">\(
-    \hat{I}(\Delta x, \Delta y) = \left\| p(\Delta x, \Delta y) \mathcal{M} \left[\psi_0(x_0 + \Delta x, y_0 + \Delta y) \right] \right\|^2 \quad .
+    \hat{I}(\Delta x, \Delta y) = \left\| \mathcal{M} \left[\psi_0(x_0 + \Delta x, y_0 + \Delta y) \right] \right\|^2 \quad .
 \)</span></p>
 <p>Performing this 2D integral as a Riemann sum is very expensive. Fortunately, in scanning TEM, we already have to simulate a dense sampling of probe positions. Hence, we can just use those samples, this is equivalent to applying a Gaussian filter, and thus partial spatial coherence is almost free in scanning TEM.</p>
 <p>This trick obviously does not work for simulating diffraction with single probes, such as CBED, however, in CBED we typically use a small aperture, making partial spatial incoherence insignificant.</p>
@@ -1000,7 +1001,7 @@ RealSpaceAxis  y [Å]    0.00 0.05 ... 5.46
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/a9146313a4c6bf3f2bc93090b75bee717275553720124f3ad67a4fbed8731ee9.png" src="../../_images/a9146313a4c6bf3f2bc93090b75bee717275553720124f3ad67a4fbed8731ee9.png" />
+<img alt="../../_images/dfc6583d521f2bf3b4d7e6d1031eb3636e0e8e37303ce544e934e1fb08081975.png" src="../../_images/dfc6583d521f2bf3b4d7e6d1031eb3636e0e8e37303ce544e934e1fb08081975.png" />
 </div>
 </div>
 <p>Next, we create the probe.</p>
@@ -1088,9 +1089,9 @@ one would instead pass <span class="math notranslate nohighlight">\(\delta = \sq
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stacked</span> <span class="o">=</span> <span class="n">abtem</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
     <span class="p">(</span>
         <span class="n">measurement_coherent</span><span class="p">,</span>
-        <span class="n">measurement_temporal</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+        <span class="n">measurement_temporal</span><span class="o">.</span><span class="n">reduce_ensemble</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
         <span class="n">measurement_spatial</span><span class="p">,</span>
-        <span class="n">measurement_temporal_spatial</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+        <span class="n">measurement_temporal_spatial</span><span class="o">.</span><span class="n">reduce_ensemble</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
     <span class="p">),</span>
     <span class="p">(</span><span class="s2">"coherent"</span><span class="p">,</span> <span class="s2">"temporal"</span><span class="p">,</span> <span class="s2">"spatial"</span><span class="p">,</span> <span class="s2">"temporal + spatial"</span><span class="p">),</span>
 <span class="p">)</span>
@@ -1111,7 +1112,7 @@ one would instead pass <span class="math notranslate nohighlight">\(\delta = \sq
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/457e9df13fd6bbe1516699b15e16ced67b859e6d81e850e1aa2513e756743690.png" src="../../_images/457e9df13fd6bbe1516699b15e16ced67b859e6d81e850e1aa2513e756743690.png" />
+<img alt="../../_images/c3e4e657f6709f86e7e18e7c8b37e9af99008e042ec34f527d7481fa0a8d4e34.png" src="../../_images/c3e4e657f6709f86e7e18e7c8b37e9af99008e042ec34f527d7481fa0a8d4e34.png" />
 </div>
 </div>
 <p>It is immediately clear that partial coherence reduces the contrast in the diffraction patterns.</p>
@@ -1128,7 +1129,7 @@ one would instead pass <span class="math notranslate nohighlight">\(\delta = \sq
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/f98e5982f708a8e7dc929802781ef8df00af1359d5e31b40c8b90cd97b4f3540.png" src="../../_images/f98e5982f708a8e7dc929802781ef8df00af1359d5e31b40c8b90cd97b4f3540.png" />
+<img alt="../../_images/1a72c64e0dd3fac46e8e5f8769e202a6043a87fae4aae87cf3b3bb4259c625e4.png" src="../../_images/1a72c64e0dd3fac46e8e5f8769e202a6043a87fae4aae87cf3b3bb4259c625e4.png" />
 </div>
 </div>
 <p>Finally we show the absolute value of the center of mass</p>
@@ -1145,7 +1146,7 @@ one would instead pass <span class="math notranslate nohighlight">\(\delta = \sq
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/a62e4a0a8b07f9e6f70f85b63020f2e79e967a50ca900a786ada0622d5e69acf.png" src="../../_images/a62e4a0a8b07f9e6f70f85b63020f2e79e967a50ca900a786ada0622d5e69acf.png" />
+<img alt="../../_images/24bf3482818a85101f5b15601b9f62d95be96dd1ec181dba7aa7382662f9c448.png" src="../../_images/24bf3482818a85101f5b15601b9f62d95be96dd1ec181dba7aa7382662f9c448.png" />
 </div>
 </div>
 <p>The preceding results show that partial spatial coherence is very important, we see that it both lowers the contrast and generally changes both the integrated and COM images. Partial temporal coherence, even at this low energy, had a less important role and its main contribution was to lower the contrast. We should also note that the cost of including partial spatial coherence is almost non-existent, whereas partial temporal coherence may give a <span class="math notranslate nohighlight">\(\sim 10 x\)</span> overhead.</p>
@@ -1247,7 +1248,7 @@ one would instead pass <span class="math notranslate nohighlight">\(\delta = \sq
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

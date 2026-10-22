@@ -791,8 +791,10 @@
 feature flags.</p>
 <section id="configuration-files">
 <h2>Configuration files<a class="headerlink" href="#configuration-files" title="Link to this heading">#</a></h2>
-<p>The configuration is specified by <em>any</em> YAML file in <code class="docutils literal notranslate"><span class="pre">~/.config/abtem/</span></code> or <code class="docutils literal notranslate"><span class="pre">/etc/abtem/</span></code>. <em>ab</em>TEM searches for all YAML
-files within each of these directories and merges them together.</p>
+<p>The configuration is specified by <em>any</em> YAML file in <code class="docutils literal notranslate"><span class="pre">~/.config/abtem/</span></code> (or the directory given by the environment
+variable <code class="docutils literal notranslate"><span class="pre">ABTEM_CONFIG</span></code>), and in the configuration directories of dask (<code class="docutils literal notranslate"><span class="pre">~/.config/dask/</span></code>, <code class="docutils literal notranslate"><span class="pre">/etc/dask/</span></code> and the <code class="docutils literal notranslate"><span class="pre">etc/dask</span></code>
+directory of the Python environment). <em>ab</em>TEM searches for all YAML files within each of these directories and merges
+them together; the files in the <em>ab</em>TEM directory take precedence.</p>
 <p>Below is the full default configuration file. Anything you set in your own YAML will be merged into these
 defaults before they are used to configure the build.</p>
 <div class="full-width highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Configuration file for abtem</span>
@@ -816,9 +818,11 @@ defaults before they are used to configure the build.</p>
 <span class="w">  </span><span class="c1"># The target chunk size to use for dask arrays on the gpu</span>
 <span class="w">  </span><span class="nt">chunk-size-gpu</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">512 MB</span>
 <span class="nt">cupy</span><span class="p">:</span>
-<span class="w">  </span><span class="c1"># The size of the fft cache in MB used by cupy</span>
+<span class="w">  </span><span class="c1"># The memory bound on the workspace of the cuFFT plans cached by cupy, in each</span>
+<span class="w">  </span><span class="c1"># thread: a size such as "512 MB", "auto" (25% of the device memory), 0 MB to</span>
+<span class="w">  </span><span class="c1"># disable the cache, or -1 for no bound.</span>
 <span class="w">  </span><span class="c1"># https://docs.cupy.dev/en/stable/user_guide/fft.html#fft-plan-cache</span>
-<span class="w">  </span><span class="nt">fft-cache-size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0 MB</span>
+<span class="w">  </span><span class="nt">fft-cache-size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span>
 <span class="nt">mkl</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># The number of threads to use for mkl</span>
 <span class="w">  </span><span class="nt">threads</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
@@ -999,7 +1003,7 @@ a dictionary as an input and interprets “.” as nested access:</p>
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

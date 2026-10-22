@@ -788,9 +788,23 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="abtem.prism.utils.wrapped_slices">
 <span class="sig-prename descclassname"><span class="pre">abtem.prism.utils.</span></span><span class="sig-name descname"><span class="pre">wrapped_slices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/abtem/prism/utils.html#wrapped_slices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.prism.utils.wrapped_slices" title="Link to this definition">#</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">slice</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">slice</span></code>]</span></p>
+<dd><p>Two slices covering <code class="docutils literal notranslate"><span class="pre">[start,</span> <span class="pre">stop)</span></code> on a periodic axis of length <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">start</span></code> may be any integer. Normalising it into <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">n)</span></code> first leaves
+only two cases – the window fits, or it wraps once – which is what two
+slices can express.</p>
+<p>The previous implementation assumed <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">&lt;=</span> <span class="pre">start</span> <span class="pre">&lt;</span> <span class="pre">n</span></code> and <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">&lt;</span> <span class="pre">stop</span> <span class="pre">&lt;=</span> <span class="pre">2n</span></code>
+and split on the raw values. For a window lying entirely in negative indices
+(<code class="docutils literal notranslate"><span class="pre">stop</span> <span class="pre">&lt;=</span> <span class="pre">0</span></code>) it produced <code class="docutils literal notranslate"><span class="pre">slice(0,</span> <span class="pre">stop)</span></code>, which is Python’s <em>negative
+indexing</em> and selects <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">+</span> <span class="pre">stop</span></code> elements rather than none, so the two
+pieces concatenated to <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">+</span> <span class="pre">size</span></code> elements instead of <code class="docutils literal notranslate"><span class="pre">size</span></code>. The
+mis-shaped array then surfaced as a broadcast error frames away from here.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>RuntimeError</strong> – If <code class="docutils literal notranslate"><span class="pre">stop</span> <span class="pre">-</span> <span class="pre">start</span> <span class="pre">&gt;</span> <span class="pre">n</span></code>. Two slices cannot cover more than one period;
+    <code class="docutils literal notranslate"><span class="pre">wrapped_crop_2d</span></code> catches this and takes its general path.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">slice</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">slice</span></code>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -891,7 +905,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

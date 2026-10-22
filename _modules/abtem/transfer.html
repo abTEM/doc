@@ -734,7 +734,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">AxisMetadata</span><span class="p">,</span> <span class="n">OrdinalAxis</span><span class="p">,</span> <span class="n">ParameterAxis</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">cp</span><span class="p">,</span> <span class="n">get_array_module</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_array_module</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.complex</span><span class="w"> </span><span class="kn">import</span> <span class="n">complex_exponential</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.energy</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Accelerator</span><span class="p">,</span>
@@ -817,17 +817,20 @@
 <span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">waves</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">device</span> <span class="o">=</span> <span class="s2">"cpu"</span>
+            <span class="n">transfer_function</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="bp">self</span><span class="p">,</span> <span class="s2">"cpu"</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+            <span class="c1"># Match a copy, so that evaluating against `waves` does not leave this</span>
+            <span class="c1"># transfer function with their energy or grid.</span>
+            <span class="n">transfer_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">transfer_function</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+            <span class="n">transfer_function</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
             <span class="n">device</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">device</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
+        <span class="n">transfer_function</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
+        <span class="n">transfer_function</span><span class="o">.</span><span class="n">accelerator</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
 
-        <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_angular_grid</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluate_from_angular_grid</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span>
+        <span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="n">transfer_function</span><span class="o">.</span><span class="n">_angular_grid</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">transfer_function</span><span class="o">.</span><span class="n">_evaluate_from_angular_grid</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span>
 
 <div class="viewcode-block" id="BaseTransferFunction.to_diffraction_patterns">
 <a class="viewcode-back" href="../../reference/api/_autosummary/abtem.transfer.BaseTransferFunction.html#abtem.transfer.BaseTransferFunction.to_diffraction_patterns">[docs]</a>
@@ -883,7 +886,7 @@
             <span class="n">xp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
             <span class="n">sampling</span><span class="o">=</span><span class="n">ctf</span><span class="o">.</span><span class="n">reciprocal_space_sampling</span><span class="p">,</span>
             <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="n">ctf</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">,</span>
-            <span class="n">fftshift</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">fftshift</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">"energy"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">},</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">diffraction_patterns</span></div>
@@ -1119,12 +1122,11 @@
         <span class="n">ensemble_axes_metadata</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">AxisMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">semiangle_cutoff</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
             <span class="n">ensemble_axes_metadata</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="n">ParameterAxis</span><span class="p">(</span>
+                <span class="n">ParameterAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">semiangle_cutoff</span><span class="p">,</span>
                     <span class="n">label</span><span class="o">=</span><span class="s2">"semiangle_cutoff"</span><span class="p">,</span>
-                    <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">semiangle_cutoff</span><span class="p">),</span>
                     <span class="n">units</span><span class="o">=</span><span class="s2">"mrad"</span><span class="p">,</span>
                     <span class="n">tex_label</span><span class="o">=</span><span class="s2">"$</span><span class="se">\\</span><span class="s2">alpha_</span><span class="si">{cut}</span><span class="s2">$"</span><span class="p">,</span>
-                    <span class="n">_ensemble_mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">semiangle_cutoff</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">]</span>
         <span class="k">return</span> <span class="n">ensemble_axes_metadata</span>
@@ -1339,7 +1341,7 @@
         <span class="n">edge_w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_edge_softness</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1e3</span><span class="p">,</span> <span class="mf">1e-30</span><span class="p">)</span>
         <span class="n">k_corner</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_corner_radius</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1e3</span>
 
-        <span class="n">aperture</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">aperture</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
 
         <span class="k">for</span> <span class="n">a0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_rings</span><span class="p">):</span>
             <span class="n">k_inner</span> <span class="o">=</span> <span class="n">a0</span> <span class="o">*</span> <span class="p">(</span><span class="n">ds</span> <span class="o">+</span> <span class="n">d0</span><span class="p">)</span>
@@ -1357,8 +1359,8 @@
                             <span class="n">t_deg</span> <span class="o">+=</span> <span class="mf">360.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spoke_num</span> <span class="o">/</span> <span class="mf">2.0</span>
 
                         <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">t_deg</span><span class="p">)</span>
-                        <span class="n">ct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-                        <span class="n">st</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+                        <span class="n">ct</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+                        <span class="n">st</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
 
                         <span class="n">u</span> <span class="o">=</span> <span class="n">kx</span> <span class="o">*</span> <span class="n">ct</span> <span class="o">+</span> <span class="n">ky</span> <span class="o">*</span> <span class="n">st</span>
                         <span class="n">v</span> <span class="o">=</span> <span class="n">ky</span> <span class="o">*</span> <span class="n">ct</span> <span class="o">-</span> <span class="n">kx</span> <span class="o">*</span> <span class="n">st</span>
@@ -1382,8 +1384,8 @@
                         <span class="n">t_deg</span> <span class="o">+=</span> <span class="mf">360.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spoke_num</span> <span class="o">/</span> <span class="mf">2.0</span>
 
                     <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">t_deg</span><span class="p">)</span>
-                    <span class="n">ct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-                    <span class="n">st</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+                    <span class="n">ct</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+                    <span class="n">st</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
 
                     <span class="n">u</span> <span class="o">=</span> <span class="n">kx</span> <span class="o">*</span> <span class="n">ct</span> <span class="o">+</span> <span class="n">ky</span> <span class="o">*</span> <span class="n">st</span>
                     <span class="n">v</span> <span class="o">=</span> <span class="n">ky</span> <span class="o">*</span> <span class="n">ct</span> <span class="o">-</span> <span class="n">kx</span> <span class="o">*</span> <span class="n">st</span>
@@ -1396,7 +1398,7 @@
             <span class="n">aper</span> <span class="o">=</span> <span class="n">_ramp01</span><span class="p">((</span><span class="o">-</span><span class="n">d_keep</span><span class="p">)</span> <span class="o">/</span> <span class="n">edge_w</span><span class="p">)</span>
             <span class="n">aperture</span> <span class="o">+=</span> <span class="n">aper</span>
         <span class="n">aperture</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">aperture</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">aperture</span></div>
+        <span class="k">return</span> <span class="n">aperture</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span></div>
 
 
 
@@ -1712,10 +1714,17 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">alpha_normed</span> <span class="o">=</span> <span class="p">(</span><span class="n">alpha_normed</span> <span class="o">-</span> <span class="n">alpha_normed</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="n">ptp</span>
 
-        <span class="n">phase_shift</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha_normed</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_flips</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">0.0</span>
-        <span class="n">phase_shift</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase_shift</span> <span class="o">*</span> <span class="n">phase_shift</span><span class="p">)</span>
+        <span class="c1"># The sign of sin(pi * k) at the integer k reached outside the cutoff is set</span>
+        <span class="c1"># by rounding, so this is deliberately evaluated in float64 whatever the</span>
+        <span class="c1"># configured precision: in float32 it flips the phase of most of the grid.</span>
+        <span class="n">flipped</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">xp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha_normed</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">xp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_flips</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">0.0</span>
+        <span class="p">)</span>
+        <span class="c1"># The exponent is 0 or phase_shift: built in the dtype of the grid, so that</span>
+        <span class="c1"># the complex result is in the configured precision without a cast.</span>
+        <span class="n">flipped</span> <span class="o">=</span> <span class="n">flipped</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">alpha</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase_shift</span>
 
-        <span class="k">return</span> <span class="n">phase_shift</span></div>
+        <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">flipped</span><span class="p">)</span></div>
 
 
 
@@ -1786,8 +1795,9 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
 
-        <span class="n">unpacked</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_unpack_distributions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">focal_spread</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">alpha</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">xp</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">focal_spread</span><span class="p">,)</span> <span class="o">=</span> <span class="n">unpacked</span>
+        <span class="p">(</span><span class="n">focal_spread</span><span class="p">,)</span> <span class="o">=</span> <span class="n">_unpack_distributions</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">focal_spread</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">alpha</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">xp</span>
+        <span class="p">)</span>
 
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_ensemble_axes</span><span class="p">)))</span>
@@ -1941,11 +1951,10 @@
         <span class="k">for</span> <span class="n">parameter_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aberration_coefficients</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">BaseDistribution</span><span class="p">):</span>
                 <span class="n">axes_metadata</span> <span class="o">+=</span> <span class="p">[</span>
-                    <span class="n">ParameterAxis</span><span class="p">(</span>
+                    <span class="n">ParameterAxis</span><span class="o">.</span><span class="n">from_distribution</span><span class="p">(</span>
+                        <span class="n">value</span><span class="p">,</span>
                         <span class="n">label</span><span class="o">=</span><span class="n">parameter_name</span><span class="p">,</span>
-                        <span class="n">values</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
                         <span class="n">units</span><span class="o">=</span><span class="s2">"Å"</span><span class="p">,</span>
-                        <span class="n">_ensemble_mean</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">ensemble_mean</span><span class="p">,</span>
                         <span class="n">tex_label</span><span class="o">=</span><span class="n">symbol_to_tex_symbol</span><span class="p">(</span><span class="n">parameter_name</span><span class="p">),</span>
                     <span class="p">)</span>
                 <span class="p">]</span>
@@ -1976,16 +1985,32 @@
 <span class="sd">        aberration_coefficients : dict</span>
 <span class="sd">            Mapping from aberration symbols to their corresponding values.</span>
 <span class="sd">        """</span>
-        <span class="k">for</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">aberration_coefficients</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"defocus"</span><span class="p">,</span> <span class="s2">"C10"</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"scherzer"</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                            <span class="s2">"energy undefined, Scherzer defocus cannot be evaluated"</span>
-                        <span class="p">)</span>
-                    <span class="n">C30</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aberration_coefficients</span><span class="p">[</span><span class="s2">"C30"</span><span class="p">]</span>
-                    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">C30</span><span class="p">,</span> <span class="n">SupportsFloat</span><span class="p">)</span>
-                    <span class="n">value</span> <span class="o">=</span> <span class="n">scherzer_defocus</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">C30</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid_energy</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">is_scherzer</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="n">symbol</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"defocus"</span><span class="p">,</span> <span class="s2">"C10"</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"scherzer"</span>
+            <span class="p">)</span>
+
+        <span class="c1"># The Scherzer defocus depends on C30, so resolve it only after every</span>
+        <span class="c1"># other coefficient has been set, whatever the order they were given in.</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="n">aberration_coefficients</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="n">is_scherzer</span><span class="p">(</span><span class="o">*</span><span class="n">item</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_scherzer</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                        <span class="s2">"energy undefined, Scherzer defocus cannot be evaluated"</span>
+                    <span class="p">)</span>
+                <span class="n">C30</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aberration_coefficients</span><span class="p">[</span><span class="s2">"C30"</span><span class="p">]</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">C30</span><span class="p">,</span> <span class="n">SupportsFloat</span><span class="p">)</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">scherzer_defocus</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">C30</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid_energy</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">symbol</span> <span class="o">==</span> <span class="s2">"C10"</span><span class="p">:</span>
+                    <span class="c1"># scherzer_defocus returns a defocus; C10 = -defocus.</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="n">value</span>
 
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"string values only allowed for defocus"</span><span class="p">)</span>
@@ -2118,8 +2143,10 @@
 
         <span class="n">args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aberration_coefficients</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angular_spread</span><span class="p">,)</span>
 
-        <span class="n">unpacked</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_unpack_distributions</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">alpha</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">xp</span><span class="p">)</span>
-        <span class="n">angular_spread</span> <span class="o">=</span> <span class="n">unpacked</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1e3</span>
+        <span class="n">unpacked</span> <span class="o">=</span> <span class="n">_unpack_distributions</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">alpha</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">xp</span><span class="p">)</span>
+        <span class="c1"># An array, so that its sign (a float64 NumPy scalar for a plain float)</span>
+        <span class="c1"># does not widen the single-precision envelope.</span>
+        <span class="n">angular_spread</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">unpacked</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1e3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
         <span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">polar_symbols</span><span class="p">,</span> <span class="n">unpacked</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
 
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
@@ -2304,7 +2331,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span> <span class="o">+</span> <span class="n">alpha</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="p">)</span>
 
-        <span class="n">parameter_values</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">_unpack_distributions</span><span class="p">(</span>
+        <span class="n">parameter_values</span> <span class="o">=</span> <span class="n">_unpack_distributions</span><span class="p">(</span>
             <span class="o">*</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aberration_coefficients</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">shape</span><span class="o">=</span><span class="n">alpha</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">xp</span>
         <span class="p">)</span>
 
@@ -2382,12 +2409,10 @@
         <span class="n">array</span> <span class="o">*=</span> <span class="n">xp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">array</span> <span class="o">=</span> <span class="n">complex_exponential</span><span class="p">(</span><span class="o">-</span><span class="n">array</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">cp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">array</span>
-
+        <span class="c1"># The distribution weights are NOT applied here: each ensemble member is</span>
+        <span class="c1"># the unweighted transfer function for its parameter values, and the</span>
+        <span class="c1"># weights (carried by the ensemble axis metadata) are applied as</span>
+        <span class="c1"># probabilities when the ensemble of measurements is reduced.</span>
         <span class="k">return</span> <span class="n">array</span></div>
 
 
@@ -2963,7 +2988,7 @@
   <div class="footer-item">
     
 <div class="extra_footer">
-  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.10.</p>
+  <p>Tested against <a href="https://github.com/abTEM/abTEM">abTEM</a> v1.0.11.</p>
 </div>
   </div>
   

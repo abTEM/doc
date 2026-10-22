@@ -37,6 +37,7 @@ WavesDetector
       ~WavesDetector.base_shape
       ~WavesDetector.ensemble_axes_metadata
       ~WavesDetector.ensemble_shape
+      ~WavesDetector.gpts
       ~WavesDetector.metadata
       ~WavesDetector.shape
       ~WavesDetector.to_cpu
