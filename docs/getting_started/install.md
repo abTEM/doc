@@ -168,13 +168,44 @@ Import *ab*TEM (or PyTorch) before importing `pyfftw` yourself. PyTorch and FFTW
 imported earlier, using the `mps` device raises an error explaining this, rather than letting PyTorch crash.
 ```
 
-Two things are worth knowing before you benchmark:
+#### Double precision
 
-- **Metal is single precision.** `precision` must be `float32`; pairing `device="mps"` with `float64` is
-  refused outright rather than silently narrowed. Use the `cpu` or `gpu` device if you need double precision.
-- **Grid size matters more than on other backends.** Metal's FFT degrades sharply on sizes whose prime
-  factors exceed 7. A grid of 272 (which is 16 times 17) can be no faster than the CPU, where 256 or 512
-  runs several times faster. Choose `gpts` accordingly, or set `grid.round-to-fast-fft`.
+Metal has no `float64`, so with `precision="float32"` the arrays live on the GPU in single precision. With
+`precision="float64"`, `device="mps"` instead means *emulated* double precision: the data stay `float64` NumPy
+arrays on the host, while the heavy loops run on the GPU in double-float arithmetic (pairs of `float32`),
+accurate to about 10⁻¹⁴ relative, as in NumPy's `float64`, rather than the 10⁻⁷ of `float32`:
+
+```python
+with abtem.config.set({"device": "mps", "precision": "float64"}):
+    potential = abtem.Potential(atoms, gpts=512)
+    exit_waves = abtem.PlaneWave(energy=100e3).multislice(potential).compute()
+```
+
+Nothing needs enabling, but this path compiles *ab*TEM's own Metal kernels, which needs a PyTorch that has
+`torch.mps.compile_shader`; a PyTorch without it raises an error saying so. The multislice (also for
+core-loss), the potential and large FFTs run on the GPU. The Fourier-space multislice with tilt axes and
+frozen-phonon ensembles is included. Whatever cannot, such as the real-space multislice, runs on the CPU in the
+same `float64` and issues a `SlowFFTSizeWarning`. The Bloch-wave method always stays on the CPU, which is faster
+there. On an Apple M2, a 512² multislice with 16 probes took 2.9 s instead of 35 s on the CPU in `float64`.
+To measure your own machine, run `benchmarks/benchmark_metal_float64.py` from the *ab*TEM repository.
+
+The key `torch.emulate-float64` asks for the same emulation with `device="cpu"`; it does nothing in single
+precision. Like any configuration key it is read when the computation runs, so set it around `compute()`, not
+only around building the graph.
+
+#### Grid sizes
+
+The automatic grid is the same on every device. Because grid size matters more on Metal, *ab*TEM warns, once per
+grid, with a `SlowFFTSizeWarning` when your grid is slow there, and suggests another:
+
+- **In single precision**, Metal's FFT is much faster for powers of two, and degrades sharply on sizes with
+  prime factors above 7. A grid of 272 (which is 16 times 17) can be no faster than the CPU, where 256 or 512 runs
+  several times faster.
+- **In emulated double precision**, powers of two are not faster. Factors of 7 cost 1.3 to 3.6 times more per
+  pixel, and sides longer than 2048 take about twice as long; sides with a prime factor above 7 are not run on
+  the GPU at all.
+
+Choose `gpts` accordingly, or set `grid.round-to-fast-fft`.
 
 ### Development installation
 
