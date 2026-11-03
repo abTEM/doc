@@ -25,6 +25,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`BackscatterEnergyAxis <abtem.core.axes.BackscatterEnergyAxis>`
+  - ```{autodoc2-docstring} abtem.core.axes.BackscatterEnergyAxis
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`EnergyAxis <abtem.core.axes.EnergyAxis>`
   -
 * - {py:obj}`EnergyLossAxis <abtem.core.axes.EnergyLossAxis>`
@@ -374,6 +379,55 @@ Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
    None
 
 ```{autodoc2-docstring} abtem.core.axes.AxisMetadata.units
+:parser: rst
+```
+
+````
+
+`````
+
+`````{py:class} BackscatterEnergyAxis
+:canonical: abtem.core.axes.BackscatterEnergyAxis
+
+Bases: {py:obj}`abtem.core.axes.NonLinearAxis`
+
+```{autodoc2-docstring} abtem.core.axes.BackscatterEnergyAxis
+:parser: rst
+```
+
+````{py:method} format_title(...) -> str
+:canonical: abtem.core.axes.BackscatterEnergyAxis.format_title
+
+```{autodoc2-docstring} abtem.core.axes.BackscatterEnergyAxis.format_title
+:parser: rst
+```
+
+````
+
+````{py:method} item_metadata(...)
+:canonical: abtem.core.axes.BackscatterEnergyAxis.item_metadata
+
+````
+
+````{py:attribute} label
+:canonical: abtem.core.axes.BackscatterEnergyAxis.label
+:type: str
+:value: >
+   'backscatter energy'
+
+```{autodoc2-docstring} abtem.core.axes.BackscatterEnergyAxis.label
+:parser: rst
+```
+
+````
+
+````{py:attribute} units
+:canonical: abtem.core.axes.BackscatterEnergyAxis.units
+:type: str
+:value: >
+   'eV'
+
+```{autodoc2-docstring} abtem.core.axes.BackscatterEnergyAxis.units
 :parser: rst
 ```
 

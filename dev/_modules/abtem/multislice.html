@@ -338,6 +338,20 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.utils.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.utils</span></code></a></li>
 </ul>
 </details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.detector_pattern.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.detector_pattern</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.detectors.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.detectors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.emission.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.emission</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.emsoft.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.emsoft</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.geometry.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.geometry</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.measurements</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.orientations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.orientations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.projections.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.projections</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.reciprocity.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.reciprocity</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.reference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.reference</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.sampling.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.sampling</span></code></a></li>
+</ul>
+</details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.inelastic.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic.core_loss</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.inelastic.phonons.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic.phonons</span></code></a></li>
@@ -684,6 +698,72 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="n">f</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_tilted_exact_fresnel_propagator_array</span><span class="p">(</span>
+    <span class="n">thickness</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">gpts</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">sampling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">tilt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Exact (non-paraxial) propagator in the frame co-moving with tilted beams.</span>
+
+<span class="sd">    A beam tilted by (theta_x, theta_y) travels along (tan theta_x, tan theta_y, 1),</span>
+<span class="sd">    so its transverse and longitudinal wave numbers are k_t = K (tan theta_x,</span>
+<span class="sd">    tan theta_y) / N and k_zt = K / N, with N = sqrt(1 + tan^2 theta_x +</span>
+<span class="sd">    tan^2 theta_y) and K = 1 / lambda. Its wave is stored without the carrier</span>
+<span class="sd">    exp(2 pi i (k_t . r + k_zt z)), so the stored component k is the plane wave</span>
+<span class="sd">    k + k_t, which advances by</span>
+
+<span class="sd">        exp(2 pi i dz [sqrt(K^2 - |k + k_t|^2) - k_zt])</span>
+
+<span class="sd">    and is evanescent where |k + k_t| &gt; K. To first order in k this is the</span>
+<span class="sd">    translation exp(-2 pi i dz k . tan(theta)) of the paraxial tilt model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    thickness : float</span>
+<span class="sd">        Distance to propagate [Å].</span>
+<span class="sd">    gpts : two int</span>
+<span class="sd">        Number of grid points.</span>
+<span class="sd">    sampling : two float</span>
+<span class="sd">        Real-space sampling [Å].</span>
+<span class="sd">    energy : float</span>
+<span class="sd">        Electron energy [eV].</span>
+<span class="sd">    tilt : np.ndarray</span>
+<span class="sd">        Tilts [mrad] of shape (n, 2).</span>
+<span class="sd">    device : str</span>
+<span class="sd">        Device of the returned array.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Propagators of shape (n, *gpts).</span>
+<span class="sd">    """</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">complex_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">energy2wavelength</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span>
+
+    <span class="n">real_dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">tan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tilt</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1e3</span><span class="p">)</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">tan</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">ktx</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">tan</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">norm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">real_dtype</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">kty</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">tan</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">norm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">real_dtype</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">kzt</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">K</span> <span class="o">/</span> <span class="n">norm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">real_dtype</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="n">kx</span><span class="p">,</span> <span class="n">ky</span> <span class="o">=</span> <span class="n">spatial_frequencies</span><span class="p">(</span><span class="n">gpts</span><span class="p">,</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">xp</span><span class="o">=</span><span class="n">xp</span><span class="p">)</span>
+    <span class="n">kx</span><span class="p">,</span> <span class="n">ky</span> <span class="o">=</span> <span class="n">kx</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">ky</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="c1"># sqrt(a) - sqrt(b) = (a - b) / (sqrt(a) + sqrt(b)), with a - b = -(|k + k_t|^2</span>
+    <span class="c1"># - |k_t|^2), is stable for small k; the principal branch of the complex root</span>
+    <span class="c1"># makes the evanescent components decay</span>
+    <span class="n">dk2</span> <span class="o">=</span> <span class="n">kx</span> <span class="o">*</span> <span class="p">(</span><span class="n">kx</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">ktx</span><span class="p">)</span> <span class="o">+</span> <span class="n">ky</span> <span class="o">*</span> <span class="p">(</span><span class="n">ky</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">kty</span><span class="p">)</span>
+    <span class="n">kz</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">K</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">kx</span> <span class="o">+</span> <span class="n">ktx</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">ky</span> <span class="o">+</span> <span class="n">kty</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">complex_dtype</span><span class="p">))</span>
+    <span class="n">phase</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">thickness</span><span class="p">)</span> <span class="o">*</span> <span class="n">dk2</span> <span class="o">/</span> <span class="p">(</span><span class="n">kz</span> <span class="o">+</span> <span class="n">kzt</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">complex_exponential</span><span class="p">(</span><span class="n">phase</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">complex_dtype</span><span class="p">))</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_apply_tilt_to_fresnel_propagator_array</span><span class="p">(</span>
     <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">sampling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
@@ -717,12 +797,65 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="k">return</span> <span class="n">array</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_apply_tilt_of_waves</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">,</span> <span class="n">thickness</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Multiply a Fourier-space array by the translation of the beams of ``waves`` by</span>
+<span class="sd">    ``tan(tilt) * thickness``, for the base tilt and every tilt axis. The array gets</span>
+<span class="sd">    the ensemble axes of the tilts; without tilt it is returned as it is."""</span>
+    <span class="k">if</span> <span class="n">waves</span><span class="o">.</span><span class="n">base_tilt</span> <span class="o">!=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">):</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">_apply_tilt_to_fresnel_propagator_array</span><span class="p">(</span>
+            <span class="n">array</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">_valid_sampling</span><span class="p">,</span>
+            <span class="n">thickness</span><span class="o">=</span><span class="n">thickness</span><span class="p">,</span>
+            <span class="n">tilt</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">base_tilt</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="n">tilt_axes</span> <span class="o">=</span> <span class="n">_get_tilt_axes</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">tilt_axes</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">array</span>
+
+    <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="s2">"tilt"</span><span class="p">):</span>
+            <span class="n">tilt</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">axis</span><span class="o">.</span><span class="n">tilt</span><span class="p">)</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">_apply_tilt_to_fresnel_propagator_array</span><span class="p">(</span>
+                <span class="n">array</span><span class="p">,</span>
+                <span class="n">sampling</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">_valid_sampling</span><span class="p">,</span>
+                <span class="n">tilt</span><span class="o">=</span><span class="n">tilt</span><span class="p">,</span>
+                <span class="n">thickness</span><span class="o">=</span><span class="n">thickness</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+
+    <span class="k">return</span> <span class="n">array</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_translate_tilted_waves</span><span class="p">(</span><span class="n">waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">,</span> <span class="n">thickness</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Waves</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Translate the beams of tilted ``waves`` by ``tan(tilt) * thickness``, the</span>
+<span class="sd">    tilt of the paraxial propagator (orders 1 and 2), for algorithms that do not</span>
+<span class="sd">    apply it in a propagator. Untilted waves are returned as they are."""</span>
+    <span class="k">if</span> <span class="n">waves</span><span class="o">.</span><span class="n">base_tilt</span> <span class="o">==</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_get_tilt_axes</span><span class="p">(</span><span class="n">waves</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">waves</span>
+
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">ones</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">_valid_gpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="n">factor</span> <span class="o">=</span> <span class="n">_apply_tilt_of_waves</span><span class="p">(</span><span class="n">ones</span><span class="p">,</span> <span class="n">waves</span><span class="p">,</span> <span class="n">thickness</span><span class="p">)</span>
+    <span class="n">waves</span><span class="o">.</span><span class="n">_array</span> <span class="o">=</span> <span class="n">fft2_convolve</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">_array</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">waves</span>
+
+
 <div class="viewcode-block" id="FresnelPropagator">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.multislice.html#abtem.multislice.FresnelPropagator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FresnelPropagator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    The Fresnel propagator is used for propagating wave functions using the near-field</span>
 <span class="sd">    approximation (Fresnel diffraction).</span>
+
+<span class="sd">    With ``order="exact"`` every plane-wave component advances with its exact</span>
+<span class="sd">    longitudinal wave number, also for tilted beams, whose components are the plane</span>
+<span class="sd">    waves k + k_t; ``order=1`` and ``2`` are the paraxial expansions, with tilt</span>
+<span class="sd">    applied as a translation.</span>
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -782,6 +915,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">thickness</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"exact"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"exact"</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">tilted</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">base_tilt</span> <span class="o">!=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="n">_get_tilt_axes</span><span class="p">(</span><span class="n">waves</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="s2">"exact"</span> <span class="ow">and</span> <span class="n">tilted</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">FresnelPropagator</span><span class="o">.</span><span class="n">_calculate_tilted_exact_array</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="n">thickness</span><span class="p">)</span>
+
         <span class="n">array</span> <span class="o">=</span> <span class="n">_fresnel_propagator_array</span><span class="p">(</span>
             <span class="n">thickness</span><span class="o">=</span><span class="n">thickness</span><span class="p">,</span>
             <span class="n">gpts</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">_valid_gpts</span><span class="p">,</span>
@@ -797,34 +934,41 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">get_array_module</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
         <span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">waves</span><span class="o">.</span><span class="n">base_tilt</span> <span class="o">!=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">):</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">_apply_tilt_to_fresnel_propagator_array</span><span class="p">(</span>
-                <span class="n">array</span><span class="p">,</span>
-                <span class="n">sampling</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">_valid_sampling</span><span class="p">,</span>
-                <span class="n">thickness</span><span class="o">=</span><span class="n">thickness</span><span class="p">,</span>
-                <span class="n">tilt</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">base_tilt</span><span class="p">,</span>
-            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">_apply_tilt_of_waves</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">waves</span><span class="p">,</span> <span class="n">thickness</span><span class="p">)</span>
 
-        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_tilted_exact_array</span><span class="p">(</span><span class="n">waves</span><span class="p">:</span> <span class="n">Waves</span><span class="p">,</span> <span class="n">thickness</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="c1"># The exact kernel is not a product of per-axis factors, so it is built from</span>
+        <span class="c1"># the total tilt of every ensemble member: the base tilt plus the values of</span>
+        <span class="c1"># each tilt axis [mrad], broadcast over the ensemble axes in their order</span>
+        <span class="c1"># (other ensemble axes get length 1, as in the paraxial branch).</span>
+        <span class="n">tilt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">base_tilt</span><span class="p">)</span>
         <span class="n">tilt_axes</span> <span class="o">=</span> <span class="n">_get_tilt_axes</span><span class="p">(</span><span class="n">waves</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">tilt_axes</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">array</span>
+        <span class="k">if</span> <span class="n">tilt_axes</span><span class="p">:</span>
+            <span class="n">ensemble_axes</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ensemble_axes</span><span class="p">)</span>
+            <span class="n">tilt</span> <span class="o">=</span> <span class="n">tilt</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">n</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span><span class="p">,))</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">axis</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ensemble_axes</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="s2">"tilt"</span><span class="p">):</span>
+                    <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">axis</span><span class="o">.</span><span class="n">tilt</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                    <span class="n">shape</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span> <span class="o">+</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+                    <span class="n">tilt</span> <span class="o">=</span> <span class="n">tilt</span> <span class="o">+</span> <span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="s2">"tilt"</span><span class="p">):</span>
-                <span class="n">tilt</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">axis</span><span class="o">.</span><span class="n">tilt</span><span class="p">)</span>
-                <span class="n">array</span> <span class="o">=</span> <span class="n">_apply_tilt_to_fresnel_propagator_array</span><span class="p">(</span>
-                    <span class="n">array</span><span class="p">,</span>
-                    <span class="n">sampling</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">_valid_sampling</span><span class="p">,</span>
-                    <span class="n">tilt</span><span class="o">=</span><span class="n">tilt</span><span class="p">,</span>
-                    <span class="n">thickness</span><span class="o">=</span><span class="n">thickness</span><span class="p">,</span>
-                <span class="p">)</span>
-
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
-
-        <span class="k">return</span> <span class="n">array</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">_tilted_exact_fresnel_propagator_array</span><span class="p">(</span>
+            <span class="n">thickness</span><span class="o">=</span><span class="n">thickness</span><span class="p">,</span>
+            <span class="n">gpts</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">_valid_gpts</span><span class="p">,</span>
+            <span class="n">sampling</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">_valid_sampling</span><span class="p">,</span>
+            <span class="n">energy</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">_valid_energy</span><span class="p">,</span>
+            <span class="n">tilt</span><span class="o">=</span><span class="n">tilt</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">waves</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">array</span> <span class="o">*=</span> <span class="n">antialias_aperture</span><span class="p">(</span>
+            <span class="n">waves</span><span class="o">.</span><span class="n">_valid_gpts</span><span class="p">,</span>
+            <span class="n">waves</span><span class="o">.</span><span class="n">_valid_sampling</span><span class="p">,</span>
+            <span class="n">get_array_module</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">array</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">tilt</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
 
 <div class="viewcode-block" id="FresnelPropagator.propagate">
 <a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.multislice.html#abtem.multislice.FresnelPropagator.propagate">[docs]</a>
@@ -1170,7 +1314,9 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    order : int, optional</span>
-<span class="sd">        Propagator order, one of 1, 2, or 'exact' (default 'exact')</span>
+<span class="sd">        Propagator order, one of 1, 2, or 'exact' (default 'exact'). With 'exact',</span>
+<span class="sd">        tilted beams are propagated exactly as well; orders 1 and 2 apply the tilt as</span>
+<span class="sd">        the paraxial translation by tan(theta) per unit depth.</span>
 <span class="sd">    expansion_scope: str</span>
 <span class="sd">        Specified for compatibility. Must be "propagator" (default "propagator")</span>
 <span class="sd">    conjugate : bool, optional</span>
@@ -1204,12 +1350,17 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Finite-difference accuracy for Laplace operator (default 6)</span>
 <span class="sd">    max_terms: int, optional</span>
 <span class="sd">        Max terms in exponent Taylor series expansion (default 80)</span>
+<span class="sd">    tolerance: float, optional</span>
+<span class="sd">        Amplitude below which the exponent Taylor series is truncated</span>
+<span class="sd">        (default 1e-16). Raise it to stop the expansion early at the cost of</span>
+<span class="sd">        accuracy; the series also stops at `max_terms` regardless.</span>
 <span class="sd">    """</span>
 
     <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">expansion_scope</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"propagator"</span><span class="p">,</span> <span class="s2">"full"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"propagator"</span>
     <span class="n">derivative_accuracy</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span>
-    <span class="n">max_terms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span></div>
+    <span class="n">max_terms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span>
+    <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-16</span></div>
 
 
 
@@ -1311,15 +1462,23 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">laplace_operator</span> <span class="o">=</span> <span class="n">LaplaceOperator</span><span class="p">(</span><span class="n">algorithm</span><span class="o">.</span><span class="n">derivative_accuracy</span><span class="p">)</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">multislice_step</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="n">potential_slice</span><span class="p">,</span> <span class="n">next_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">realspace_multislice_step</span><span class="p">(</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">realspace_multislice_step</span><span class="p">(</span>
                 <span class="n">waves</span><span class="p">,</span>
                 <span class="n">potential_slice</span><span class="o">=</span><span class="n">potential_slice</span><span class="p">,</span>
                 <span class="n">next_slice</span><span class="o">=</span><span class="n">next_slice</span><span class="p">,</span>
                 <span class="n">laplace</span><span class="o">=</span><span class="n">laplace_operator</span><span class="p">,</span>
+                <span class="n">tolerance</span><span class="o">=</span><span class="n">algorithm</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span>
                 <span class="n">max_terms</span><span class="o">=</span><span class="n">algorithm</span><span class="o">.</span><span class="n">max_terms</span><span class="p">,</span>
                 <span class="n">order</span><span class="o">=</span><span class="n">algorithm</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
                 <span class="n">fully_corrected</span><span class="o">=</span><span class="n">algorithm</span><span class="o">.</span><span class="n">expansion_scope</span> <span class="o">==</span> <span class="s2">"full"</span><span class="p">,</span>
             <span class="p">)</span>
+            <span class="c1"># the stencil knows nothing of the tilt of the beams, which the Fourier</span>
+            <span class="c1"># propagator applies as a translation</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">_translate_tilted_waves</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">potential_slice</span><span class="o">.</span><span class="n">thickness</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_translate_tilted_waves</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">potential_slice</span><span class="o">.</span><span class="n">thickness</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
 
     <span class="p">(</span>
         <span class="n">extra_ensemble_axes_shape</span><span class="p">,</span>
@@ -1601,15 +1760,17 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">laplace_operator</span> <span class="o">=</span> <span class="n">LaplaceOperator</span><span class="p">(</span><span class="n">algorithm</span><span class="o">.</span><span class="n">derivative_accuracy</span><span class="p">)</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">multislice_step</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="n">potential_slice</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">realspace_multislice_step</span><span class="p">(</span>
+            <span class="n">waves</span> <span class="o">=</span> <span class="n">realspace_multislice_step</span><span class="p">(</span>
                 <span class="n">waves</span><span class="p">,</span>
                 <span class="n">potential_slice</span><span class="o">=</span><span class="n">potential_slice</span><span class="p">,</span>
                 <span class="n">next_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">laplace</span><span class="o">=</span><span class="n">laplace_operator</span><span class="p">,</span>
+                <span class="n">tolerance</span><span class="o">=</span><span class="n">algorithm</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span>
                 <span class="n">max_terms</span><span class="o">=</span><span class="n">algorithm</span><span class="o">.</span><span class="n">max_terms</span><span class="p">,</span>
                 <span class="n">order</span><span class="o">=</span><span class="n">algorithm</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
                 <span class="n">fully_corrected</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span>
+            <span class="k">return</span> <span class="n">_translate_tilted_waves</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="n">potential_slice</span><span class="o">.</span><span class="n">thickness</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">detectors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">detectors</span> <span class="o">=</span> <span class="p">[</span><span class="n">WavesDetector</span><span class="p">()]</span>

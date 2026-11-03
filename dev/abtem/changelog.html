@@ -344,6 +344,20 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.core.utils.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.utils</span></code></a></li>
 </ul>
 </details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.ebsd.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.ebsd.detector_pattern.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.detector_pattern</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.ebsd.detectors.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.detectors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.ebsd.emission.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.emission</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.ebsd.emsoft.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.emsoft</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.ebsd.geometry.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.geometry</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.ebsd.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.measurements</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.ebsd.orientations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.orientations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.ebsd.projections.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.projections</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.ebsd.reciprocity.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.reciprocity</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.ebsd.reference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.reference</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.ebsd.sampling.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.sampling</span></code></a></li>
+</ul>
+</details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.inelastic.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic.core_loss</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.inelastic.phonons.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic.phonons</span></code></a></li>
@@ -749,6 +763,11 @@ and ensemble member. The peak memory of an eager scan with 9 exit planes on a 12
 9.2 GB to 1.3 GB; an integer <code class="docutils literal notranslate"><span class="pre">max_batch*</span></code>, and a potential with one exit plane and no ensemble, are
 batched as before. Where a batch changes, values move by float32 rounding of the reduction only
 (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/563">PR #563</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BlochWaves.calculate_exit_waves</span></code> sums the plane-wave expansion as two matrix products, using that the
+beams are separable in x, y and z, instead of forming and reducing the (thickness, beam, x, y) array of
+plane waves. For 479 beams, 5 thicknesses and a 256 x 256 grid the synthesis takes 6 ms instead of
+256 ms, and its peak memory 19 MB instead of 5 GB; values agree to float64 rounding
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/630">PR #630</a>)</p></li>
 </ul>
 <p>Dependencies:</p>
 <ul class="simple">
@@ -757,6 +776,15 @@ installs every optional runtime dependency (<a class="reference external" href="
 </ul>
 <p>Bugfixes:</p>
 <ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RealSpaceMultislice</span></code> applies the tilt of the wave function, as <code class="docutils literal notranslate"><span class="pre">FourierMultislice</span></code> does at orders 1 and 2: the
+beams are translated by <code class="docutils literal notranslate"><span class="pre">tan(tilt)</span></code> per unit depth. It ignored the tilt (of <code class="docutils literal notranslate"><span class="pre">Waves</span></code>, <code class="docutils literal notranslate"><span class="pre">Probe</span></code>, <code class="docutils literal notranslate"><span class="pre">PlaneWave</span></code> and tilt
+ensembles) without any message, in both expansion scopes and in the core-loss multislice
+(<a class="reference external" href="https://github.com/abTEM/abTEM/issues/627">Issue #627</a>, <a class="reference external" href="https://github.com/abTEM/abTEM/pull/628">PR #628</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FresnelPropagator(order=&quot;exact&quot;)</span></code>, the default of <code class="docutils literal notranslate"><span class="pre">FourierMultislice</span></code>, propagates tilted beams exactly: it applied
+tilt as the first-order translation <code class="docutils literal notranslate"><span class="pre">tan(theta)</span> <span class="pre">*</span> <span class="pre">dz</span></code>, so the wave was propagated paraxially about the beam
+direction (a phase error of 0.015 rad per 1 Å slice at 100 mrad and 200 eV, 0.09 rad at 300 mrad). Results for
+tilted beams change, growing with the tilt; untilted beams and <code class="docutils literal notranslate"><span class="pre">order=1</span></code> and <code class="docutils literal notranslate"><span class="pre">2</span></code> are unchanged
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/626">PR #626</a>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">block_direct=True</span></code> in <code class="docutils literal notranslate"><span class="pre">Waves.diffraction_patterns</span></code> blocked a fixed 1 mrad radius. It now blocks the
 bright-field disk plus a margin for a probe with a semiangle cutoff, as <code class="docutils literal notranslate"><span class="pre">DiffractionPatterns.block_direct()</span></code>
 does. For a plane wave, or a cutoff below half a pixel, it blocks the zero-frequency pixel only, now also
@@ -1031,6 +1059,15 @@ from the elastic probes. Eager scans over <code class="docutils literal notransl
 computed one, and a <code class="docutils literal notranslate"><span class="pre">WavesDetector</span></code> no longer raises <code class="docutils literal notranslate"><span class="pre">AttributeError:</span> <span class="pre">'Waves'</span> <span class="pre">object</span> <span class="pre">has</span> <span class="pre">no</span> <span class="pre">attribute</span> <span class="pre">'reduce_ensemble'</span></code></p></li>
 </ul>
 </li>
+<li><p>Monte Carlo plasmons: <code class="docutils literal notranslate"><span class="pre">MonteCarloPlasmons.draw_events</span></code> runs again, where it raised <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> because
+<code class="docutils literal notranslate"><span class="pre">PlasmonScatteringEvents</span></code> was abstract (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/617">PR #617</a>)</p>
+<ul>
+<li><p><strong>Behaviour change:</strong> the combined deflection of several plasmon excitations is the 2D vector sum of
+the individual deflections, where the polar angles were summed and the sum was also used as the
+azimuth</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">CoreLoss.local_potential</span></code> docstring gives <code class="docutils literal notranslate"><span class="pre">max_angle</span></code> in mrad, not degrees</p></li>
+</ul>
+</li>
 </ul>
 <p>Documentation:</p>
 <ul class="simple">
@@ -1130,6 +1167,8 @@ default float32 precision (checked on 66 scenarios).</p>
 <h3>Fixed: errors and crashes<a class="headerlink" href="#fixed-errors-and-crashes" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>No longer raising: <code class="docutils literal notranslate"><span class="pre">Images.scan_noise</span></code>, <code class="docutils literal notranslate"><span class="pre">apply_ctf</span></code> at a second energy, <code class="docutils literal notranslate"><span class="pre">number</span> <span class="pre">-</span> <span class="pre">Images</span></code>, lazy <code class="docutils literal notranslate"><span class="pre">gaussian_filter</span></code> with a constant boundary, lazy <code class="docutils literal notranslate"><span class="pre">normalize</span></code>, single-point <code class="docutils literal notranslate"><span class="pre">GridScan</span></code>, noisy near-orthogonal <code class="docutils literal notranslate"><span class="pre">Potential</span></code> cells, tilted eager Bloch exit waves with scalar thickness, <code class="docutils literal notranslate"><span class="pre">IndexedDiffractionPatterns.sort()</span></code>, core loss on 16 or 17 pixel grids, <code class="docutils literal notranslate"><span class="pre">AnnularDetector</span></code> over a <code class="docutils literal notranslate"><span class="pre">LineScan</span></code> with an extra ensemble axis, GPAW 26 calculators, frozen-phonon <code class="docutils literal notranslate"><span class="pre">GPAWPotential</span></code>, ensemble backscattering, A/B/C centring, graphene repeated along c, and numba typing on some numba/numpy pairings.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray.filter_sites</span></code> with <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> of several elements and a threshold no longer raises <code class="docutils literal notranslate"><span class="pre">IndexError</span></code>; it returns the kept atoms of the element of the transition potential, as <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> for <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> input and as positions for positions (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/375">#375</a>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">show(overlay=...)</span></code> of an ensemble that has no base axes, such as the integrated core-loss measurements of the core-loss tutorial, gave more line labels than lines, and an ensemble of complex lines fewer. Matplotlib 3.11 raises an error for this (“label must be scalar or have the same length as the input data”); older versions took the whole list as the label. The lines are now labelled by the axes that are overlaid.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">excitations_weights</span></code> fails no longer on NumPy 2 (<code class="docutils literal notranslate"><span class="pre">np.math</span></code>). On CuPy 14.2 a lazy FFT in a dask worker thread no longer fails with <code class="docutils literal notranslate"><span class="pre">CUFFT_EXEC_FAILED</span></code> (see <code class="docutils literal notranslate"><span class="pre">cupy.fft-cache-size</span></code>).</p></li>
 </ul>
 </section>

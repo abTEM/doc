@@ -338,6 +338,20 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.core.utils.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.utils</span></code></a></li>
 </ul>
 </details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.detector_pattern.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.detector_pattern</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.detectors.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.detectors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.emission.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.emission</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.emsoft.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.emsoft</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.geometry.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.geometry</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.measurements</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.orientations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.orientations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.projections.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.projections</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.reciprocity.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.reciprocity</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.reference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.reference</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.ebsd.sampling.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.sampling</span></code></a></li>
+</ul>
+</details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.inelastic.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic.core_loss</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.inelastic.phonons.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic.phonons</span></code></a></li>
@@ -1239,6 +1253,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">write_func</span> <span class="o">=</span> <span class="n">write_to_directory</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">compute</span><span class="p">:</span>
+            <span class="c1"># The arrays are computed later, inside a task on the client's</span>
+            <span class="c1"># workers, which must then hold the configuration of this call.</span>
+            <span class="n">_push_config_to_active_client</span><span class="p">()</span>
             <span class="n">delayed_arrays</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">compute</span><span class="p">)())</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">arrays_to_write</span>
             <span class="p">]</span>
@@ -2869,6 +2886,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_lazy</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">"Lazy arrays are computed in memory before writing to tiff."</span><span class="p">)</span>
+            <span class="n">_push_config_to_active_client</span><span class="p">()</span>
             <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lazy_array</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">tifffile</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span>

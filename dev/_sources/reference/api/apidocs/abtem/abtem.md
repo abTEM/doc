@@ -16,6 +16,7 @@
 
 abtem.bloch
 abtem.core
+abtem.ebsd
 abtem.inelastic
 abtem.magnetism
 abtem.parametrizations

@@ -296,6 +296,18 @@ Bases: {py:obj}`abtem.transform.WavesTransform`\[{py:obj}`abtem.measurements.Bas
 
 ````
 
+````{py:attribute} tolerance
+:canonical: abtem.multislice.RealSpaceMultislice.tolerance
+:type: float
+:value: >
+   1e-16
+
+```{autodoc2-docstring} abtem.multislice.RealSpaceMultislice.tolerance
+:parser: rst
+```
+
+````
+
 `````
 
 ````{py:function} allocate_measurement(...) -> abtem.measurements.BaseMeasurements | abtem.waves.Waves

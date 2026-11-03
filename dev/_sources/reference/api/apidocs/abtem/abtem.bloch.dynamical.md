@@ -124,18 +124,13 @@
     :parser: rst
     :summary:
     ```
-* - {py:obj}`plane_wave_basis <abtem.bloch.dynamical.plane_wave_basis>`
-  - ```{autodoc2-docstring} abtem.bloch.dynamical.plane_wave_basis
-    :parser: rst
-    :summary:
-    ```
 * - {py:obj}`plane_wave_coefficients <abtem.bloch.dynamical.plane_wave_coefficients>`
   - ```{autodoc2-docstring} abtem.bloch.dynamical.plane_wave_coefficients
     :parser: rst
     :summary:
     ```
-* - {py:obj}`reduce_plane_wave_expansion <abtem.bloch.dynamical.reduce_plane_wave_expansion>`
-  - ```{autodoc2-docstring} abtem.bloch.dynamical.reduce_plane_wave_expansion
+* - {py:obj}`plane_wave_expansion <abtem.bloch.dynamical.plane_wave_expansion>`
+  - ```{autodoc2-docstring} abtem.bloch.dynamical.plane_wave_expansion
     :parser: rst
     :summary:
     ```
@@ -1054,14 +1049,6 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} plane_wave_basis(...) -> numpy.ndarray
-:canonical: abtem.bloch.dynamical.plane_wave_basis
-
-```{autodoc2-docstring} abtem.bloch.dynamical.plane_wave_basis
-:parser: rst
-```
-````
-
 ````{py:function} plane_wave_coefficients(...) -> numpy.ndarray
 :canonical: abtem.bloch.dynamical.plane_wave_coefficients
 
@@ -1070,10 +1057,10 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.bloch.dynamical.BaseStr
 ```
 ````
 
-````{py:function} reduce_plane_wave_expansion(...)
-:canonical: abtem.bloch.dynamical.reduce_plane_wave_expansion
+````{py:function} plane_wave_expansion(...) -> numpy.ndarray
+:canonical: abtem.bloch.dynamical.plane_wave_expansion
 
-```{autodoc2-docstring} abtem.bloch.dynamical.reduce_plane_wave_expansion
+```{autodoc2-docstring} abtem.bloch.dynamical.plane_wave_expansion
 :parser: rst
 ```
 ````

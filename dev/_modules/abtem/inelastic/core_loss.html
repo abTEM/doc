@@ -338,6 +338,20 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.core.utils.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.core.utils</span></code></a></li>
 </ul>
 </details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.ebsd.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.ebsd.detector_pattern.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.detector_pattern</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.ebsd.detectors.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.detectors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.ebsd.emission.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.emission</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.ebsd.emsoft.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.emsoft</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.ebsd.geometry.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.geometry</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.ebsd.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.measurements</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.ebsd.orientations.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.orientations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.ebsd.projections.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.projections</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.ebsd.reciprocity.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.reciprocity</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.ebsd.reference.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.reference</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.ebsd.sampling.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.ebsd.sampling</span></code></a></li>
+</ul>
+</details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.inelastic.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic.core_loss</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.inelastic.phonons.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.inelastic.phonons</span></code></a></li>
@@ -1682,7 +1696,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        max_angle : float</span>
-<span class="sd">            Maximum angle (in degrees) for the local potential calculation.</span>
+<span class="sd">            Maximum scattering angle [mrad] for the local potential calculation.</span>
 <span class="sd">        space : str, optional</span>
 <span class="sd">            Specifies the coordinate space in which the potential is calculated.</span>
 <span class="sd">            Default is "reciprocal". Possible values are "reciprocal" and "real".</span>
@@ -1974,16 +1988,37 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="viewcode-block" id="TransitionPotentialArray.filter_sites">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.inelastic.core_loss.html#abtem.inelastic.core_loss.TransitionPotentialArray.filter_sites">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">filter_sites</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waves</span><span class="p">,</span> <span class="n">sites</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The sites at which the transition potential overlaps the waves.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        waves : Waves or Probe</span>
+<span class="sd">            The waves that are scattered.</span>
+<span class="sd">        sites : Atoms, Atom or numpy.ndarray</span>
+<span class="sd">            The candidate sites, as atoms or as an (n, 2) array of positions.</span>
+<span class="sd">        threshold : float, optional</span>
+<span class="sd">            The absolute overlap threshold; sites with an overlap above it are kept.</span>
+<span class="sd">            Without a threshold all sites are kept.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Atoms or numpy.ndarray</span>
+<span class="sd">            The sites that are kept, in the form they were given: the atoms of the</span>
+<span class="sd">            transition potential's element for `Atoms`, positions otherwise. Without</span>
+<span class="sd">            a threshold nothing is filtered and an `Atoms` or `Atom` is returned as</span>
+<span class="sd">            it is; with a threshold a single `Atom` gives an array of positions.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">waves</span><span class="p">,</span> <span class="s2">"build"</span><span class="p">):</span>
             <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="c1"># As in absolute_threshold: the mask below needs the intensity in memory</span>
         <span class="n">waves</span> <span class="o">=</span> <span class="n">waves</span><span class="o">.</span><span class="n">ensure_computed</span><span class="p">(</span><span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">ensure_real_space</span><span class="p">()</span>
 
-        <span class="c1"># The mask below is computed over the validated array, which subsets</span>
-        <span class="c1"># an Atoms input to this element -- index that same array at the end,</span>
-        <span class="c1"># not the caller's object, or the two lengths disagree.</span>
-        <span class="n">sites</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_sites</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
-        <span class="n">validated_sites</span> <span class="o">=</span> <span class="n">sites</span>
+        <span class="c1"># The mask below is computed over the validated array, which subsets an</span>
+        <span class="c1"># Atoms input to this element: apply it to that subset, not to the whole</span>
+        <span class="c1"># of the caller's atoms, or the two lengths disagree.</span>
+        <span class="n">original_sites</span> <span class="o">=</span> <span class="n">sites</span>
+        <span class="n">validated_sites</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_sites</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
+        <span class="n">kept</span> <span class="o">=</span> <span class="n">validated_sites</span>
 
         <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">threshold</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">waves</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
@@ -2066,9 +2101,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <span class="c1"># print(type(mask), type(sites))</span>
 
-            <span class="n">sites</span> <span class="o">=</span> <span class="n">sites</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+            <span class="n">kept</span> <span class="o">=</span> <span class="n">kept</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>  <span class="c1"># on the host: validated_sites was moved to the device</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">original_sites</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">original_sites</span><span class="p">[</span><span class="n">original_sites</span><span class="o">.</span><span class="n">numbers</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">Z</span><span class="p">][</span><span class="n">mask</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">sites</span></div>
+            <span class="k">return</span> <span class="n">kept</span>
+
+        <span class="c1"># without a threshold nothing is filtered: the sites are returned as given</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">original_sites</span><span class="p">,</span> <span class="p">(</span><span class="n">Atoms</span><span class="p">,</span> <span class="n">Atom</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">original_sites</span>
+
+        <span class="k">return</span> <span class="n">kept</span></div>
 
 
 <div class="viewcode-block" id="TransitionPotentialArray.scatter">
