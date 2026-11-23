@@ -38,7 +38,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=6a604523" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
@@ -57,7 +57,7 @@
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../../_static/togglebutton.js?v=b8b12719"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../_static/design-tabs.js?v=fcb327ea"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
@@ -312,6 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../reference/api/api.html">API</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.band_chebyshev.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.band_chebyshev</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.cbed.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.cbed</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.dynamical.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.dynamical</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.bloch.indexing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.indexing</span></code></a></li>
@@ -398,6 +399,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.rotation_series.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.rotation_series</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.slicing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.slicing</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/api/apidocs/abtem/abtem.tilt.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.tilt</span></code></a></li>
@@ -1265,25 +1267,27 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    atoms : ase.Atoms</span>
 <span class="sd">        Smallest non-repeating cell for the given atoms.</span>
 <span class="sd">    """</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"shrink_cell needs at least one atom"</span><span class="p">)</span>
+
     <span class="n">atoms</span> <span class="o">=</span> <span class="n">wrap_with_tolerance</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">repetition</span> <span class="ow">in</span> <span class="n">repetitions</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
             <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">atoms_copy</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-                    <span class="n">atoms_copy</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">atoms_copy</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">repetition</span>
+                <span class="n">atoms_copy</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="n">atoms_copy</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">atoms_copy</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">repetition</span>
 
-                    <span class="n">atoms_copy</span> <span class="o">=</span> <span class="n">wrap_with_tolerance</span><span class="p">(</span><span class="n">atoms_copy</span><span class="p">)</span>
+                <span class="n">atoms_copy</span> <span class="o">=</span> <span class="n">wrap_with_tolerance</span><span class="p">(</span><span class="n">atoms_copy</span><span class="p">)</span>
 
-                    <span class="n">old_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">atoms_copy</span><span class="p">)</span>
-                    <span class="n">atoms_copy</span> <span class="o">=</span> <span class="n">merge_close_atoms</span><span class="p">(</span><span class="n">atoms_copy</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">)</span>
+                <span class="n">old_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">atoms_copy</span><span class="p">)</span>
+                <span class="n">atoms_copy</span> <span class="o">=</span> <span class="n">merge_close_atoms</span><span class="p">(</span><span class="n">atoms_copy</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">)</span>
 
-                    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">atoms_copy</span><span class="p">)</span> <span class="o">==</span> <span class="n">old_len</span> <span class="o">//</span> <span class="n">repetition</span>
-
-                    <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms_copy</span>
-                <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">atoms_copy</span><span class="p">)</span> <span class="o">!=</span> <span class="n">old_len</span> <span class="o">//</span> <span class="n">repetition</span><span class="p">:</span>
                     <span class="k">break</span>
+
+                <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms_copy</span>
 
     <span class="k">return</span> <span class="n">atoms</span></div>
 
@@ -1575,6 +1579,10 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">atoms</span><span class="o">.</span><span class="n">set_scaled_positions</span><span class="p">(</span><span class="n">scaled</span> <span class="o">%</span> <span class="mf">1.0</span><span class="p">)</span>
 
 
+<span class="k">class</span><span class="w"> </span><span class="nc">_NoWholeRepetitionError</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The box holds no whole repetition of the cell along some direction."""</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_box_repetitions</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    The lattice vectors of the repetition of `cell` that fills `box`, as an integer</span>
@@ -1582,15 +1590,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If the box holds no whole repetition of the cell along some direction, i.e.</span>
-<span class="sd">        the integer matrix is singular. A direction shorter than about half a period</span>
-<span class="sd">        rounds to no repetition.</span>
+<span class="sd">    _NoWholeRepetitionError</span>
+<span class="sd">        A ValueError, if the box holds no whole repetition of the cell along some</span>
+<span class="sd">        direction, i.e. the integer matrix is singular. A direction shorter than</span>
+<span class="sd">        about half a period rounds to no repetition.</span>
 <span class="sd">    """</span>
     <span class="n">vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">box</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">cell</span><span class="p">)))</span>
 
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">vectors</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="k">raise</span> <span class="n">_NoWholeRepetitionError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">"The box </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">box</span><span class="p">)</span><span class="si">}</span><span class="s2"> holds no whole repetition of "</span>
             <span class="s2">"the atoms' cell along at least one direction (it is shorter than "</span>
             <span class="s2">"about half a period), so the periodicity cannot be preserved. Use a "</span>
@@ -1690,8 +1698,9 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="n">_DEFAULT_BOX_MAX_REPETITIONS</span> <span class="o">=</span> <span class="mi">5</span>
 
 <span class="c1"># Set while a builder is rebuilt from an existing one (a lazy block, a copy): the</span>
-<span class="c1"># box, and atoms given far outside a non-periodic cell, were reported when the user</span>
-<span class="c1"># gave them.</span>
+<span class="c1"># box, atoms given far outside a non-periodic cell, and the atoms of the unit of a</span>
+<span class="c1"># crystal near its entrance or exit plane (CrystalPotential), were reported when the</span>
+<span class="c1"># user gave them.</span>
 <span class="n">_box_strain_warning_suppressed</span> <span class="o">=</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">(</span>
     <span class="s2">"abtem_box_strain_warning_suppressed"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
@@ -1772,12 +1781,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <span class="sd">    If `default` is true, `box` is the one abTEM chose because none was given: the</span>
 <span class="sd">    warning says so, names the ways to avoid the strain, and a box that holds no</span>
-<span class="sd">    whole repetition is not an error here but silent: the potential reports it when</span>
-<span class="sd">    it places the atoms, if it does.</span>
+<span class="sd">    whole repetition, or a singular cell, is not an error here but silent: the</span>
+<span class="sd">    potential reports it when it places the atoms, if it does.</span>
 <span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">strain</span> <span class="o">=</span> <span class="n">_box_strain</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="n">plane</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+    <span class="k">except</span> <span class="p">(</span><span class="n">_NoWholeRepetitionError</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">default</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">raise</span>
@@ -2146,6 +2155,290 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <span class="c1"># new_atoms = wrap_with_tolerance(new_atoms)</span>
     <span class="k">return</span> <span class="n">new_atoms</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_min_circumscribed_radius</span><span class="p">(</span><span class="n">box</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">box</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_transform_positions</span><span class="p">(</span><span class="n">basis</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">positions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Fractional coordinates of `positions` in the given (not necessarily</span>
+<span class="sd">    orthogonal) `basis`."""</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">basis</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">positions</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_box_corners</span><span class="p">(</span><span class="n">size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The eight corners of an axis-aligned box of the given size, one corner at</span>
+<span class="sd">    the origin."""</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.0</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">size</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+            <span class="p">[</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.0</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">size</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+            <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+            <span class="p">[</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_repeated_lattice</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">repetitions</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Lattice points (i.e. cell-origin repetitions) at every integer index from 0</span>
+<span class="sd">    up to `repetitions` (inclusive) along each of the three cell vectors."""</span>
+    <span class="n">xyz</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">repetitions</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="o">*</span><span class="n">xyz</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">"ij"</span><span class="p">)</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">z</span><span class="o">.</span><span class="n">ravel</span><span class="p">()))</span>
+    <span class="k">return</span> <span class="n">_transform_positions</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">cell</span><span class="p">),</span> <span class="n">indices</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_mask_box</span><span class="p">(</span><span class="n">positions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">box</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="n">positions</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">positions</span> <span class="o">&lt;</span> <span class="n">box</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_center_positions_in_box</span><span class="p">(</span><span class="n">positions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">box</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">positions</span> <span class="o">-</span> <span class="n">positions</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">box</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_rotate_positions</span><span class="p">(</span>
+    <span class="n">positions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">center</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Rotate `positions` by `angle` [rad] about the z-axis, about `center`</span>
+<span class="sd">    (default the origin)."""</span>
+    <span class="k">if</span> <span class="n">center</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">euler_to_rotation</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="s2">"zxz"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">positions</span> <span class="o">-</span> <span class="n">center</span><span class="p">)</span> <span class="o">@</span> <span class="n">R</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">center</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_tilt_rotation_matrix</span><span class="p">(</span><span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">rotation_axis</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The rotation matrix for tilting by `angle` [deg] about an axis at azimuth</span>
+<span class="sd">    `rotation_axis` [deg] about `z`, without any net rotation about `z` -- the</span>
+<span class="sd">    zxz Euler sequence `(rotation_axis, angle, -rotation_axis)` that</span>
+<span class="sd">    :mod:`abtem.rotation_series` rotates a crystallite with."""</span>
+    <span class="k">return</span> <span class="n">euler_to_rotation</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">rotation_axis</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span>
+        <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">rotation_axis</span><span class="p">),</span>
+        <span class="n">axes</span><span class="o">=</span><span class="s2">"zxz"</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_disk_range_mask</span><span class="p">(</span>
+    <span class="n">positions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">box</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">rotation_range</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">rotation_axis</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">margin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Boolean mask selecting which rows of `positions` (an (N, 3) array, in the</span>
+<span class="sd">    box frame, relative to the box center) land inside `box` (grown by `margin`</span>
+<span class="sd">    on each side) after tilting by at least one angle in `rotation_range` [deg]</span>
+<span class="sd">    about the axis at azimuth `rotation_axis` [deg] -- with the same rotation,</span>
+<span class="sd">    about the same center, as :func:`abtem.rotation_series.rotated_atoms_ensemble`</span>
+<span class="sd">    applies. This is the exact condition for an atom to be able to appear</span>
+<span class="sd">    inside the box for some angle in the range, for any cell and any axis</span>
+<span class="sd">    azimuth, so restricting to it never drops an atom a rotation step could</span>
+<span class="sd">    actually need.</span>
+
+<span class="sd">    (It used to test only the (y, z) cross-section against `box`'s y and z</span>
+<span class="sd">    sizes, in the frame before the azimuth rotation -- right for an axis along</span>
+<span class="sd">    `x`, but for any other azimuth the box's cross-section perpendicular to the</span>
+<span class="sd">    axis is wider than its y size, and atoms near its corners were dropped.)"""</span>
+    <span class="n">theta_min</span><span class="p">,</span> <span class="n">theta_max</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">rotation_range</span><span class="p">)</span>
+    <span class="c1"># Fine enough that even a rotation series with hundreds of steps samples</span>
+    <span class="c1"># this range far more coarsely than this mask does, so no angle actually</span>
+    <span class="c1"># used in a real rotation series can fall in the gap between two of</span>
+    <span class="c1"># these samples and be missed.</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">theta_max</span> <span class="o">-</span> <span class="n">theta_min</span><span class="p">)</span> <span class="o">/</span> <span class="mf">0.01</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">half</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">margin</span>
+
+    <span class="n">survives</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">theta</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">theta_min</span><span class="p">,</span> <span class="n">theta_max</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">):</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="o">~</span><span class="n">survives</span><span class="p">)</span>
+        <span class="n">rotated</span> <span class="o">=</span> <span class="n">positions</span><span class="p">[</span><span class="n">candidates</span><span class="p">]</span> <span class="o">@</span> <span class="n">_tilt_rotation_matrix</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">rotation_axis</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">survives</span><span class="p">[</span><span class="n">candidates</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rotated</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">half</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">survives</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_disk_lattice_points</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">box</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">rotation_axis</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">rotation_range</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Lattice points (cell-origin repetitions) filling a cylinder along `x`</span>
+<span class="sd">    inscribed in `box`, pre-rotated about `z` by `-rotation_axis` so that</span>
+<span class="sd">    rotating the result *back* by `rotation_axis` about `z` leaves it inscribed</span>
+<span class="sd">    in `box` again -- i.e. the points that survive rotating the crystal about the</span>
+<span class="sd">    axis at that azimuth and cropping back to `box`. If `rotation_range` is</span>
+<span class="sd">    given, restricts to points that survive only rotating by an angle within</span>
+<span class="sd">    that range about `x`, rather than by any angle -- see `cut_disk`."""</span>
+    <span class="n">rotation_axis</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">rotation_axis</span><span class="p">)</span>
+    <span class="n">box</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">margin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+
+    <span class="n">width</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">box</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">margin</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">box</span><span class="p">)</span> <span class="o">+</span> <span class="n">margin</span>
+    <span class="n">large_box</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
+
+    <span class="c1"># Count the repetitions with the cell rotated exactly as the lattice is</span>
+    <span class="c1"># below (by -rotation_axis). Counting them with the opposite rotation, as</span>
+    <span class="c1"># this used to (inherited from py3DED's make_lattice_disk), only covers the</span>
+    <span class="c1"># large box when the cell's projected extents are the same for +/- the</span>
+    <span class="c1"># azimuth -- true for a cubic cell, not e.g. for a hexagonal one, whose</span>
+    <span class="c1"># lattice then fell short of a corner of the large box: the disk lost a</span>
+    <span class="c1"># chunk, its axis was skewed, and after tilting the box was left partly</span>
+    <span class="c1"># empty near its entrance and exit faces.</span>
+    <span class="n">rotated_cell</span> <span class="o">=</span> <span class="n">_rotate_positions</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="o">-</span><span class="n">rotation_axis</span><span class="p">)</span>
+    <span class="n">transformed_corners</span> <span class="o">=</span> <span class="n">_transform_positions</span><span class="p">(</span><span class="n">rotated_cell</span><span class="p">,</span> <span class="n">_box_corners</span><span class="p">(</span><span class="n">large_box</span><span class="p">))</span>
+    <span class="n">repetitions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ptp</span><span class="p">(</span><span class="n">transformed_corners</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">_repeated_lattice</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">repetitions</span><span class="p">))</span>
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">_rotate_positions</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="o">-</span><span class="n">rotation_axis</span><span class="p">)</span>
+
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">_center_positions_in_box</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">large_box</span><span class="p">)</span>
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">lattice</span><span class="p">[</span><span class="n">_mask_box</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">large_box</span><span class="p">)]</span>
+
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">lattice</span> <span class="o">-</span> <span class="n">lattice</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rotation_range</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">lattice</span> <span class="o">=</span> <span class="n">lattice</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">lattice</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">lattice</span> <span class="o">=</span> <span class="n">_center_positions_in_box</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Unlike the full-circle mask above (deliberately oversized, so it</span>
+        <span class="c1"># tolerates the candidates not being exactly box-centered yet), the</span>
+        <span class="c1"># range mask is a tight fit: box-center the candidates, put them in the</span>
+        <span class="c1"># box frame, and keep those the tilt itself carries into the box.</span>
+        <span class="n">centered</span> <span class="o">=</span> <span class="n">_center_positions_in_box</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span>
+        <span class="n">boxed</span> <span class="o">=</span> <span class="n">_rotate_positions</span><span class="p">(</span><span class="n">centered</span><span class="p">,</span> <span class="n">rotation_axis</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">box</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">_disk_range_mask</span><span class="p">(</span>
+            <span class="n">boxed</span> <span class="o">-</span> <span class="n">box</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="n">rotation_range</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">rotation_axis</span><span class="p">),</span> <span class="n">margin</span>
+        <span class="p">)</span>
+        <span class="n">lattice</span> <span class="o">=</span> <span class="n">boxed</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">rotation_range</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">lattice</span> <span class="o">=</span> <span class="n">_rotate_positions</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">rotation_axis</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">box</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">lattice</span> <span class="o">-</span> <span class="n">cell</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">lattice</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ball_lattice_points</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">box</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Lattice points (cell-origin repetitions) filling a ball inscribed in</span>
+<span class="sd">    `box`."""</span>
+    <span class="n">box</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="n">_min_circumscribed_radius</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+
+    <span class="n">margin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">radius</span> <span class="o">+</span> <span class="n">margin</span><span class="p">)</span>
+
+    <span class="n">transformed_corners</span> <span class="o">=</span> <span class="n">_transform_positions</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">_box_corners</span><span class="p">((</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">)))</span>
+    <span class="n">repetitions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ptp</span><span class="p">(</span><span class="n">transformed_corners</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">_repeated_lattice</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">repetitions</span><span class="p">))</span>
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">lattice</span> <span class="o">-</span> <span class="n">lattice</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">lattice</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">radius</span><span class="p">]</span>
+
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">_center_positions_in_box</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span> <span class="o">-</span> <span class="n">cell</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">lattice</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_finite_crystal_from_lattice_points</span><span class="p">(</span>
+    <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">box</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Broadcast the atomic basis of `atoms` onto each of `points`. `box` is set</span>
+<span class="sd">    as the returned structure's cell -- not because the crystallite is actually</span>
+<span class="sd">    periodic, but because downstream potential-building (e.g. `Potential`) uses</span>
+<span class="sd">    the cell to size the simulation domain around the finite structure."""</span>
+    <span class="n">positions</span> <span class="o">=</span> <span class="p">(</span><span class="n">points</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">numbers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">numbers</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">numbers</span><span class="p">,</span> <span class="n">positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="n">box</span><span class="p">,</span> <span class="n">pbc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="cut_disk">
+<a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.atoms.html#abtem.atoms.cut_disk">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cut_disk</span><span class="p">(</span>
+    <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span>
+    <span class="n">box</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">rotation_axis</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">rotation_range</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Cut a disk-shaped finite crystallite out of a periodic structure, inscribed in</span>
+<span class="sd">    a box. Unlike :func:`cut_cell`, the result is *not* periodic: it is meant as a</span>
+<span class="sd">    finite, non-periodic nanocrystal or particle, e.g. for a tilt/rotation series</span>
+<span class="sd">    simulation, where the disk shape (a cylinder along `x`) makes a similar amount</span>
+<span class="sd">    of material survive cropping back to `box` after rotating the crystal about</span>
+<span class="sd">    an axis at the given azimuth, compared to a plain box that would leave gaps</span>
+<span class="sd">    at the corners once rotated.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    atoms : ase.Atoms</span>
+<span class="sd">        The periodic unit cell to cut the disk from.</span>
+<span class="sd">    box : tuple of three floats</span>
+<span class="sd">        Size of the box the disk is inscribed in, in `x`, `y` and `z` [Å]. `x` is</span>
+<span class="sd">        the disk's axis (the intended rotation axis); the disk fills the `y`-`z`</span>
+<span class="sd">        cross-section.</span>
+<span class="sd">    rotation_axis : float, optional</span>
+<span class="sd">        Azimuthal angle about `z` (i.e. in the `x`-`y` plane), in degrees, that</span>
+<span class="sd">        the crystal is intended to later be rotated about (default is 0.0).</span>
+<span class="sd">        Choose this to match that rotation so a large fraction of the disk</span>
+<span class="sd">        survives being cropped back to `box` afterwards.</span>
+<span class="sd">    rotation_range : tuple of two floats, optional</span>
+<span class="sd">        If a rotation (tilt) series is only ever going to rotate the crystal</span>
+<span class="sd">        about `x` within this angular range [deg] (e.g. `(0, 45)`), restrict</span>
+<span class="sd">        the disk to just the atoms that can appear inside `box` for some</span>
+<span class="sd">        angle in that range, instead of sizing it to survive an arbitrary</span>
+<span class="sd">        angle. By default (`None`), the disk survives rotation to any angle,</span>
+<span class="sd">        which for a box whose `z` extent is much larger than its `y` extent</span>
+<span class="sd">        (a thick sample) requires a disk far larger than the box itself, most</span>
+<span class="sd">        of which is only ever needed for angles outside a limited tilt</span>
+<span class="sd">        series. This is an exact restriction, not an approximation: every</span>
+<span class="sd">        atom kept can still appear inside the box for some angle in the</span>
+<span class="sd">        range, and none that can are ever dropped.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    disk : ase.Atoms</span>
+<span class="sd">        The disk-shaped, non-periodic crystallite, centered on the origin.</span>
+<span class="sd">    """</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">_disk_lattice_points</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">),</span> <span class="n">box</span><span class="p">,</span> <span class="n">rotation_axis</span><span class="p">,</span> <span class="n">rotation_range</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_finite_crystal_from_lattice_points</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="cut_ball">
+<a class="viewcode-back" href="../../reference/api/apidocs/abtem/abtem.atoms.html#abtem.atoms.cut_ball">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cut_ball</span><span class="p">(</span><span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span><span class="p">,</span> <span class="n">box</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Atoms</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Cut a ball-shaped finite crystallite out of a periodic structure, inscribed in</span>
+<span class="sd">    a box. Unlike :func:`cut_disk`, the ball shape is invariant under rotation</span>
+<span class="sd">    about any axis, at the cost of discarding more atoms for the same box (a ball</span>
+<span class="sd">    inscribed in a box has a smaller volume than the box itself).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    atoms : ase.Atoms</span>
+<span class="sd">        The periodic unit cell to cut the ball from.</span>
+<span class="sd">    box : tuple of three floats</span>
+<span class="sd">        Size of the box the ball is inscribed in, in `x`, `y` and `z` [Å].</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ball : ase.Atoms</span>
+<span class="sd">        The ball-shaped, non-periodic crystallite, centered on the origin.</span>
+<span class="sd">    """</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">_ball_lattice_points</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">),</span> <span class="n">box</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_finite_crystal_from_lattice_points</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span></div>
 
 
 

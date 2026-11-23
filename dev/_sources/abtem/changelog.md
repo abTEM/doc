@@ -11,6 +11,54 @@ Fixes that were also released in 1.0.11 are listed under that version as well.
 
 Features:
 
+- Double precision on Apple Metal: the device `mps` with `precision: float64` (it was refused before) keeps
+  the data as float64 on the host and runs the Fourier multislice (also the core-loss one), the
+  infinite-projection potential and the large host FFTs on the GPU in double-float arithmetic (pairs of
+  float32, ~1e-14 relative accuracy), up to ~16x faster than float64 on the CPU. What the GPU cannot do
+  (real-space multislice, a grid side with a prime factor above 7) runs on the host in the same float64,
+  with a `SlowFFTSizeWarning`; `torch.emulate-float64` asks for the same with the device `cpu`. A
+  `SlowFFTSizeWarning` also says when a grid is markedly slow on Metal, whose FFT runs powers of two 2-4x
+  faster per pixel, and which grid would be faster; the automatic grids stay the same on every device.
+  The test suite now runs its double-precision tests on Metal at the same tolerances as elsewhere
+  ([PR #620](https://github.com/abTEM/abTEM/pull/620))
+- Bloch waves on a Mac in double precision: `bloch.solver: auto` takes the band solver (see `solver='band'`) over the
+  eigendecomposition of the structure matrix from 500 beams for float64 matrices on macOS (other platforms keep the
+  eigendecomposition). On the host the band reduction now runs on the lower triangle only, through the Hermitian
+  matrix product and rank-2k update of the BLAS that SciPy is built with (called with a leading dimension, so nothing is
+  copied), and the Chebyshev recurrence is a compiled kernel, with a bandwidth of 32 instead of 128. A quartz rotation
+  series of 1000 Å took 0.23 s a frame at 1299 beams instead of 0.69 s, 0.79 s instead of 3.5 s at 2195 beams and
+  2.1 s instead of 11.3 s at 3233 beams on an Apple M2 (against `zheevr`, see the fix above), with intensities
+  within 1e-12 of the eigendecomposition. With
+  `device: mps` and `precision: float64` (or `torch.emulate-float64`) the matrix of 3000 beams or more is reduced on the
+  GPU instead, by double-float matrix products (a lean multiply-add, 160 GFLOP/s on the M2, with the panels and block
+  reflectors in float64 on the host) and the recurrence runs on the GPU for 1600 beams or more: 1.1 to 1.3x faster than
+  the host band solver from 3000 to 9000 beams (33 against 42 s at 9009), with intensities within 3e-12 (100 Å) to
+  4e-11 (2000 Å) of the eigendecomposition at 1299 beams, against 5e-14 to 6e-13 on the host
+  ([PR #700](https://github.com/abTEM/abTEM/pull/700), [PR #702](https://github.com/abTEM/abTEM/pull/702))
+- `CrystalPotential(..., correct_surfaces=...)` calculates the slices at the entrance and exit surfaces of the crystal
+  as they are in a slab, by default for a unit with a finite projection. Without it the crystal is a periodic stack,
+  whose first and last slices hold the finite-projection potential of the images of the unit beyond the surfaces
+  (atoms a slab does not have; with an atomic plane on the slice boundary the last slice differed from a slab's by as
+  much as its largest slice potential) and miss the tails of the potential of the surface atoms beyond them. With it,
+  the slices within the integration cutoff of a surface are calculated without the images, and the tails beyond the
+  surface are added to the slice next to it, which conserves the projected potential of the slab; the slices equal
+  those of a slab with vacuum, with the vacuum slices added to the adjacent ones. The crystal itself is unchanged: its
+  slices, `box`, `thickness` and `exit_planes` are as without, so nothing shifts and the exit wave is not propagated
+  further. The tails are at the depth of the outermost slice rather than their own, so the error falls with thinner
+  slices and with the distance of the atoms from the entrance and exit plane of the unit. For Si at 100 kV, the
+  diffraction intensity of a plane wave is closer to that of the slab than that of the periodic stack by a factor 2.9
+  for atoms on the plane and 7 at 0.3 Å from it on four slices per unit (5.6 and 14 on eight), and the ADF at the
+  columns of a 20 mrad probe (50-100 mrad) is within 0.4 % of the slab's from 0.3 Å on. For atoms on the plane the
+  correction is poor: the ADF at their columns is too high by 12 % for Si on four slices per unit (5 % on eight) and
+  by 10 % and 38 % for Au on quarter-lattice and half-lattice slices, against 28-37 % too low for the periodic stack
+  of Si, so a warning is given for atoms of the unit within 0.3 Å of the plane, which suggests centering them in the
+  cell with `atoms.center(axis=2)`. **Behaviour change:** the first and last slices of a `CrystalPotential` of a
+  finite-projection unit differ from those of the periodic stack; pass `correct_surfaces=False` for the previous
+  ones. A `CrystalPotential` that stacks a unit along z raises if a `CrystalPotential` at any depth of its units
+  corrects its surfaces (pass `correct_surfaces=False` to it); a built
+  crystal (a `PotentialArray` from `build()`) is a slab with no flag to check, and must not be stacked along z. An
+  infinite projection has no surfaces to correct, and a unit that is not a `Potential` is left as it is
+  ([PR #648](https://github.com/abTEM/abTEM/pull/648))
 - Energy ensemble support across the codebase: `PlaneWave`, `Probe`, `SMatrix`, `BlochWaves` and `CTF`
   accept a list of energies, and the resulting `EnergyAxis` propagates through indexing, angular sampling,
   unit conversion and diffraction-spot indexing ([PR #257](https://github.com/abTEM/abTEM/pull/257))
@@ -42,6 +90,12 @@ Features:
 - Linear-scaling PRISM-EELS for core-loss simulations: `SMatrix.transition_potential_scan`, with
   single- and double-channel scattering and an optional windowed inelastic crop
   ([PR #289](https://github.com/abTEM/abTEM/pull/289))
+    - BiP-PRISM beam partitioning for PRISM-EELS: `transition_potential_scan(reduction="beam_basis")`
+      uses a dual-scattering-matrix driver. `partitions_s1` and `partitions_s2` build `S1` and `S2` on
+      sparse hex-ring parent beams and reconstruct the full beam set at each atom by natural-neighbor
+      interpolation. `collection_angle` limits `S2` to the detector disk, and `focal_backprop` is an
+      optional accuracy lever for `S1`. Options that would have no effect raise a `ValueError`
+      ([PR #338](https://github.com/abTEM/abTEM/pull/338))
 - In addition to the Gaussian (G) distribution, now also implemented Lorentzian (L), Voigtian (convolution L * G) and
   pseudo-Voigtian (L + G) source-size distributions and filters ([PR #270](https://github.com/abTEM/abTEM/pull/270))
 - The exact free-space propagator is now the default for Fourier multislice,
@@ -103,9 +157,44 @@ Features:
   overlapping discs interfere. Aberration, aperture and tilt series (precession included) and energy
   ensembles are supported, and the calculation is lazy. `BlochwaveEnsemble` takes a fixed
   `orientation_matrix` ([PR #254](https://github.com/abTEM/abTEM/pull/254))
+- The GPU test runner `tools/gpu/run_gpu_tests.sh` has `ABTEM_CI_OFFLINE=1`, which tests the managed clone as it is,
+  without clone, fetch or reset, and installs from uv's cache only, for compute nodes without internet access. On ROCm
+  it runs one pytest process per test file, reports the passed and the failed or errored tests, detects aborts and
+  fails when no test passed. `ABTEM_CI_DESELECT` takes a pytest `-k` expression of tests to leave out of the sweep, and
+  the `status.tsv` summary names it. The recorded commit gets a `-dirty` suffix when tracked files differ from `HEAD`
+  ([PR #708](https://github.com/abTEM/abTEM/pull/708))
 
 Performance:
 
+- Multislice of an ensemble of atoms (such as a 3DED rotation series) no longer repeats host work for
+  every chunk or exit plane, and its potential needs fewer FFTs
+    - The atoms of an ensemble are sliced once per call of `generate_chunked_slices` instead of once per
+      chunk
+    - `Waves.window` keeps its taper, and the power gain of a window is computed once, instead of both
+      building an `n x n` array on the host at every exit plane
+    - `ScatteringFactorProjectionIntegrals` builds its `sinc` once per grid instead of for every slice
+      and element
+    - The default (infinite) projection transforms the real slices of the potential with `rfft2` and
+      `irfft2`, half the work and memory of the complex transforms, with `fft="numpy"`, on a GPU and
+      with torch (CPU and Metal; the wrapper allocates the output, which avoids a PyTorch warning of
+      the Metal kernels about resizing it);
+      this one agrees with the complex transforms to rounding (half an epsilon of the largest value)
+      and not bit for bit; the elements of a slice are summed as half spectra and transformed back once
+    - Measured with `benchmarks/bench_real_fft_potential.py` on an Apple silicon laptop (Metal,
+      single precision), the potential of the default projection builds 1.22x (1024 x 1024, 8 slices),
+      1.31x (2048 x 2048, 8 slices), 1.62x (4096 x 4096, 16 slices) and 1.67x (2048 x 2048, 80 slices)
+      faster with the real transforms
+    - `Potential.generate_slices` no longer finds the elements of all the atoms at every chunk
+    - Measured for one orientation of a py3DED run (160 x 160 x 1000 Å, sampling 0.02 Å, slices of
+      0.4 Å, an 8000 x 8000 grid, 251 exit planes) on a 24 GB RTX 4090 in single precision: monoclinic
+      ZrO2 takes 91.1 s instead of 199.6 s (2.19x) and kyanite 104.5 s instead of 253.0 s (2.42x). The
+      patterns of the first three changes are bit-identical; with the real transforms they differ
+      from the old ones by 4e-6 of the largest value, about a tenth of the error of the single
+      precision run itself against a double precision one (4.6e-5 and 8.9e-5), which they leave
+      unchanged
+    - Found by `benchmarks/bench_multislice_3ded_payload.py`, which splits one orientation of a py3DED
+      multislice run into stages, and measured commit by commit with
+      `benchmarks/bisect_multislice_gains.py`
 - The projection integrator is shared by reference across ensemble members instead of being deep-copied
   (and re-uploaded to the GPU) for each ([PR #350](https://github.com/abTEM/abTEM/pull/350))
 - Removed a redundant potential rebuild on every scan chunk ([PR #340](https://github.com/abTEM/abTEM/pull/340))
@@ -119,19 +208,383 @@ Performance:
   9.2 GB to 1.3 GB; an integer `max_batch*`, and a potential with one exit plane and no ensemble, are
   batched as before. Where a batch changes, values move by float32 rounding of the reduction only
   ([PR #563](https://github.com/abTEM/abTEM/pull/563))
+- More automatic batch sizes stay within the configured chunk size. Where a batch changes, values move by
+  float32 rounding of the reduction only; an integer `max_batch` or `max_batch_reduction` is batched as before
+  ([PR #649](https://github.com/abTEM/abTEM/pull/649))
+    - `Probe.multislice`, `Probe.scan`, `Probe.transition_potential_scan` and `PlaneWave.multislice` size the
+      automatic `max_batch` for the output of a block, which holds one result per exit plane and detector for
+      each of its waves: a block of exit waves or diffraction patterns was that many times larger than
+      `dask.chunk-size` (18 times with 23 exit planes on a 128 x 128 grid). The batch is divided by the output
+      of the block in units of one wave when that exceeds one wave: detectors whose outputs together exceed
+      one wave per position also shrink the batch of a potential with a single exit plane, while for realistic
+      grid sizes and plane counts integrating detectors such as `AnnularDetector` and
+      `FlexibleAnnularDetector` are batched as before
+    - The automatic `max_batch_reduction` of `SMatrixArray.reduce`, `SMatrix.reduce`, `SMatrix.scan` and
+      `CompressedSMatrixArray.reduce` is sized with `dask.chunk-size-gpu` on a GPU, where it used
+      `dask.chunk-size` on every device
+    - The automatic `max_batch_reduction` of an interpolated PRISM reduction (a window smaller than the
+      S-matrix grid) also counts the box that the batch is contracted over, which spans the batch and one
+      window: the contracted array was 1.7 times the chunk size at `dask.chunk-size="1 MB"` and 5.8 times at
+      `"16 MB"` in a 44 x 44 scan, and is now below the chunk size
 - `BlochWaves.calculate_exit_waves` sums the plane-wave expansion as two matrix products, using that the
   beams are separable in x, y and z, instead of forming and reducing the (thickness, beam, x, y) array of
   plane waves. For 479 beams, 5 thicknesses and a 256 x 256 grid the synthesis takes 6 ms instead of
   256 ms, and its peak memory 19 MB instead of 5 GB; values agree to float64 rounding
   ([PR #630](https://github.com/abTEM/abTEM/pull/630))
+- The Bloch-wave structure matrix is gathered on the device from the structure factors on a dense grid,
+  instead of being looked up through pandas on the host from the (beams², 3) array of Miller index
+  differences; on the GPU that lookup took two thirds of the time of a rotation series at 13,903 beams.
+  The eigendecomposition reuses the structure matrix's memory where the backend allows (CuPy, and NumPy
+  in double precision), and the beam amplitudes no longer form two more beams x beams arrays
+  ([PR #635](https://github.com/abTEM/abTEM/pull/635))
+    - A centrosymmetric crystal is solved as a real symmetric eigenproblem, that of the crystal moved
+      to its inversion center, which halves the memory of the structure matrix and its eigenvectors
+      and is faster to factorize; results agree with the complex solve to rounding.
+      `StructureFactor(inversion_center="auto")` detects the center from the atoms, and
+      `inversion_center=None` keeps the complex solve
+    - Measured for one orientation of monoclinic ZrO2 (13,903 beams, float32) on a 24 GB RTX 4090:
+      the structure matrix takes 0.08 s instead of 10 s and the eigendecomposition 2.8 s instead of
+      5.7 s, with a peak of 3.9 GB instead of 9.3 GB (2.5 instead of 6 complex beams x beams
+      matrices); the error against double precision is 2.6e-4 instead of 4.3e-4. Kyanite's 28,898
+      beams, which ran out of memory, fit with a peak of 16.7 GB
+- Bloch waves have a second solver, chosen by the configuration key `bloch.solver`: `"band"` reduces
+  the structure matrix in place to band form with matrix products and expands the incident wave in
+  Chebyshev polynomials of the band matrix, instead of diagonalizing it (`"eigh"`). The default `"auto"`
+  uses it on a GPU when it is estimated to be faster, which is for thousands of beams; on the CPU, and
+  for small or very thick crystals, the eigendecomposition is faster
+  ([PR #642](https://github.com/abTEM/abTEM/pull/642))
+    - Measured for one orientation on a 24 GB RTX 4090 in single precision, with thicknesses to 1000 Å:
+      monoclinic ZrO2 (13,903 beams) takes 0.71 s instead of 2.90 s (real symmetric form) and 1.13 s
+      instead of 5.77 s (complex), and kyanite (28,898 beams) 2.56 s instead of 24.3 s. The peak memory
+      is a quarter (0.5-0.7 instead of 2.5 complex beams x beams matrices, 1.1-1.3 instead of 5.0), so
+      kyanite's complex form fits (7.2 GB). The error against double precision is 4.8e-5, 9.4e-5 and
+      9.7e-5 instead of 2.6e-4, 4.3e-4 and 1.3e-3: the eigendecomposition's grows with the number of
+      beams
+    - The expansion costs about 0.3 s per 1000 Å of the largest thickness on that GPU
+    - A rotation series computes the structure factors once, not once per orientation or dask block
+- **Behaviour change:** `OMP_NUM_THREADS` caps the threads of Numba's `parallel=True` kernels and of the
+  interpolation pool of the finite-projection potential when `NUMBA_NUM_THREADS` is unset and
+  `OMP_NUM_THREADS` is a positive integer, where 1.0.11 used every CPU usable by the process for Numba and
+  every CPU of the machine for the interpolation pool
+  ([PR #658](https://github.com/abTEM/abTEM/pull/658))
+    - With `abtem` imported before `numba`, the cap is the size of Numba's whole thread pool, so it holds for
+      every `parallel=True` kernel in the process, the application's own included, and the size of the
+      interpolation pool. With `numba` imported first, Numba's pool and its configuration are unchanged and
+      the cap applies to the interpolation pool and, set on the launching thread for the duration of each
+      launch, to the real-space Laplacian stencil (`RealSpaceMultislice`) only. On a 24-CPU machine with
+      `OMP_NUM_THREADS=1` and `abtem` imported first, 1.0.11 gave Numba and the interpolation pool 24 threads
+      and both now have 1. `OMP_NUM_THREADS=1` is the default of many HPC schedulers and the value a dask
+      nanny sets in its worker processes when the variable is unset, so these kernels then run on one
+      thread. An explicit `NUMBA_NUM_THREADS` overrides the cap
+    - The cap is at most the number of CPUs usable by the process (`os.sched_getaffinity`, else
+      `os.cpu_count()`)
+- **Behaviour change:** the interpolation pool of the finite-projection potential has `NUMBA_NUM_THREADS`
+  threads when it is set and otherwise the cap above or, without one, Numba's default, the number of usable
+  CPUs, where 1.0.11 used `os.cpu_count()` whatever the process may use: under `taskset -c 0-2` the pool has 3
+  threads where it had 24 on a 24-CPU machine, and with `NUMBA_NUM_THREADS=5` it has 5 where it had 24.
+  Potentials built with different interpolation thread counts differ in the last float32 bits: for a silicon
+  cubic cell repeated 3 x 3 x 3 with `gpts=128` and finite projection, two processes with 24 and with 4
+  interpolation threads differed by up to 4.3e-7 of the maximum
+  ([PR #658](https://github.com/abTEM/abTEM/pull/658))
+- An eager `SMatrix.build`, and so an eager `SMatrix.reduce` or `SMatrix.scan`, of a `CrystalPotential` whose
+  members reseed their frozen-phonon pools (`seeds` or `num_frozen_phonons`) builds each member's pool once
+  instead of once per plane-wave block: 3 members over 14 blocks build 3 pools instead of 42, and an eager
+  `reduce` at a `dask.chunk-size` of 16 kB builds 3 instead of 165. The pool is held while the member is built and
+  released when its build returns; values are unchanged
+  ([PR #666](https://github.com/abTEM/abTEM/pull/666))
 
 Dependencies:
 
 - The `core-loss` extra is merged into a single `gpaw = ["hankel", "sympy"]` extra, and a new `all` extra
   installs every optional runtime dependency ([PR #329](https://github.com/abTEM/abTEM/pull/329))
+- The `mps` extra requires torch 2.14 (was 2.4). On torch 2.10 to 2.13, Metal has no `linalg.eigh`, and an FFT over
+  an axis before the last four (such as `gaussian_source_size` of a scan with a further ensemble axis) aborts the
+  process. Selecting the `mps` device with an older torch already installed now raises a `RuntimeError` asking for
+  an upgrade, instead of aborting later; upgrade with `pip install -U torch`
 
 Bugfixes:
 
+- A lazy `DiffractionPatterns.integrate_radial` and `azimuthal_average` of integer counts declare the dtype they
+  compute. `integrate_radial` declared the integer dtype of the counts but summed to `int64`, which is now the
+  declared and computed dtype (floating point counts keep theirs; with a `sensitivity` the result has the
+  configured precision). `azimuthal_average` declared the integer dtype but computed `float64` whatever the
+  configured precision, and with `weighting_function="gaussian"` truncated the averages to integers; the averages
+  are now in the configured precision, and floating point counts keep their dtype. The step bins of `azimuthal_average`
+  summed small integer counts (`uint8`, `int16`, `uint16`) in their own type, which wraps around, so a uniform pattern
+  averaged to a different value in every bin; they are summed in the configured precision, which the GPU kernel needs too
+  (it only reads floating point values) ([PR #695](https://github.com/abTEM/abTEM/pull/695))
+- `ChargeDensityPotential` built in chunks of several configurations (`chunks` greater than 1) gives each chunk the
+  charge densities of its own configurations. It paired density *k* with chunk *k* and dropped the rest, so
+  per-configuration charge densities were wrong unless every chunk held one configuration, the default ([PR #695](https://github.com/abTEM/abTEM/pull/695))
+- Plots: the log scale can be switched on and off for line profiles and complex (domain-coloured) images, which
+  raised a `TypeError` because their `set_logscale` took no argument (and, for complex images, then did nothing: it
+  now gives the logarithmic amplitude scale and the opacity of `show(logscale=True)` and switches back); the extent of an image converts its y axis with
+  the units of the y axis, not the x axis; `PlasmonScatteringEvents.show_cumulative_scattering_events` plots the
+  requested integer `num_excitations` instead of the first and no longer prints the axes ([PR #695](https://github.com/abTEM/abTEM/pull/695))
+- Measurements: `poisson_noise()` with neither `dose_per_area` nor `total_dose` raises the intended
+  `RuntimeError` instead of failing inside NumPy with a NaN dose; `IndexedDiffractionPatterns.normalize_to_spot` keeps
+  the reciprocal lattice vectors (it replaced them by the spot positions) and `poisson_noise(dose_per_area=...)` on it
+  raises a `RuntimeError` (a missing `@property` made it a `TypeError`); `ScanNoiseTransform` keeps the units and label of
+  the images, which it relabelled as counts ([PR #695](https://github.com/abTEM/abTEM/pull/695))
+- Bloch waves: `StructureFactor.calculate_scattering_factors` follows the `occupancy`; the excitation-error
+  selection of the beams of an orientation uses `<= sg_max`, as the selection without an orientation does, so an
+  ensemble no longer writes more beams than it selected when `sg_max` equals a beam's excitation error; an ensemble of
+  rotations selects the beams of every member whatever the rounding of the excitation errors of its rotated cells, as
+  they differ in the last bits from those of the ensemble (it could have fewer beams than a member, and raised a
+  `ValueError` writing them) ([PR #695](https://github.com/abTEM/abTEM/pull/695))
+- PRISM: `SMatrix(energy=distribution)` keeps the weights and the ensemble mean of the distribution on its energy axis,
+  as `Probe` and `PlaneWave` do, and the measurements of `scan`, `reduce`, `build().scan`, `build().reduce` and
+  `transition_potential_scan` are averaged over a distribution flagged `ensemble_mean=True` with those weights, as
+  `Probe.scan` averages them (they kept the energy axis, with the weights unused: **Behaviour change:** the result has
+  no energy axis, as for `Probe`; with `ensemble_mean=False` it is kept); wave functions keep every energy; the batches
+  of the lattice and streamed reductions
+  count the real size of an element, so at double precision they hold half the rows instead of exceeding their memory
+  budget; the window view of a compressed S-matrix keeps `max_batch_expansion` ([PR #695](https://github.com/abTEM/abTEM/pull/695))
+- Potentials and fields: `ChargeDensityPotential` with `repetitions` displaces the repeated atoms of each frozen-phonon
+  configuration (every configuration was the undisplaced repeated cell); `depth_profile` works for magnetic fields and
+  vector potentials, keeping the components as an ensemble axis (it raised a `RuntimeError`); `GPAWMagneticField` and
+  `GPAWVectorPotential` have the labelled component axis of their base classes (it was `None`); the documented default
+  `slice_thickness` of `ChargeDensityPotential` and `GPAWPotential` is the 1.0 Å of the code, not 0.5 Å ([PR #695](https://github.com/abTEM/abTEM/pull/695))
+- `BlochWaves.rotate` continues the orientation the Bloch waves already have, so `bloch_waves.rotate(a).rotate(b)`
+  is `bloch_waves.rotate(a, b)`: the rotations are about fixed axes, in the order given, whether they come in one call
+  or several, for angles and for distributions of angles. **Behaviour change:** rotating an already rotated object used
+  to discard its rotation and keep only the last. `BlochWaves.orientation_matrix` returns the (3, 3) orientation, and an
+  `orientation_matrix` that is not (3, 3) raises a `ValueError` naming its shape ([PR #695](https://github.com/abTEM/abTEM/pull/695))
+- Wave function normalization is spelled as for the builders of `Waves` everywhere: `BlochWaves.calculate_exit_waves`
+  and `BlochwaveEnsemble.calculate_exit_waves` take the bool `normalize` (default false), as `PlaneWave` does: false
+  gives an incident wave of one in every pixel, true normalizes the reciprocal-space intensity of the incident wave to one.
+  The `normalization` argument they had, `'values'` or `'amplitude'`, only wrote a label to the metadata (and
+  `'amplitude'` made `diffraction_patterns()` raise); it is deprecated: it still works, as a keyword or in its old
+  position, without effect on the exit waves, and raises a `FutureWarning`. `Waves.downsample` and `WavesDetector(gpts)`
+  keep the normalization of the waves; `Waves.downsample(normalization=...)` is deprecated too, and for one release
+  still decides what is preserved (`'values'` the pixel values, `'amplitude'` or `'intensity'` the total amplitude) and raises a
+  `FutureWarning`; the default `'values'` it used to have is gone. **Behaviour change:**
+  they preserved the pixel values of every wave, so the diffraction patterns of a downsampled `Probe` or normalized plane
+  wave summed to (N_new / N_old)² rather than one; they now preserve pixel values only for waves labelled `'values'`
+  (as `PlaneWave()` gives) and the reciprocal-space intensity otherwise, as `diffraction_patterns` already takes them.
+  `Waves.normalize()` labels its result `'reciprocal_space'`, so that `diffraction_patterns()` of a normalized wave sums to
+  one (it divided by the number of pixels once more, to 1 / N²). Waves with no `normalization` label (those of
+  `Probe.build()` and of an S-matrix have none) are taken as normalized in reciprocal space, so downsampling waves built
+  by hand without a label no longer keeps their pixel values; a stored label that is neither `'values'` nor
+  `'reciprocal_space'`, such as the `'amplitude'` that v1.0.11 wrote on Bloch exit waves given `normalization="amplitude"`, makes `downsample` and
+  `WavesDetector(gpts)` raise a `RuntimeError` ([PR #695](https://github.com/abTEM/abTEM/pull/695))
+- The default scan sampling is the probe's Nyquist sampling, as documented, and is the same for multislice and PRISM.
+  `GridScan()` with no `sampling` (and so `Probe.scan`, `SMatrixArray.scan` and `SMatrix.build().scan` without a scan) used
+  0.99 of it, a factor from before the number of scan points was counted within rounding of a whole number, while
+  `SMatrix.scan` and `SMatrix.transition_potential_scan` used the Nyquist sampling itself: for an extent of a whole number
+  of Nyquist pitches the same S-matrix gave 12 × 12 points through one and 13 × 13 through the other. **Behaviour change:**
+  the default scan of `Probe.scan` and the other routes has about 1% fewer points per axis (one fewer when the extent
+  is within 1% below a whole number of Nyquist pitches, one or two fewer above about 99 points per axis); `LineScan()` with no
+  `sampling` shares the change; the pitch is still never coarser than Nyquist, as the number of
+  points is rounded up ([PR #695](https://github.com/abTEM/abTEM/pull/695))
+- When an installed CuPy, pyFFTW, mkl_fft or PyTorch fails to import, the error raised on using it says that the
+  package "could not be imported" and carries the original import error, where it said the package was not
+  installed. A CuPy that fails to import warns at `import abtem` when the device is `"gpu"` (once, not twice), a
+  plain `ImportError` from mkl_fft no longer makes `import abtem` fail whichever FFT library is configured, and the
+  message of a missing FFT library now has the space it lacked. The error of `GPAWPotential` without a usable GPAW
+  carries the import error. `AtomsEnsemble` of `.gpw` paths, which raised a bare `AssertionError`, and the
+  interactive `show`, which failed with an `AttributeError`, raise the import error of a missing or broken GPAW or
+  ipywidgets itself. In `abtem.ebsd` the errors of a missing spglib or h5py carry the import error, and an EBSD
+  reference pattern or an EMsoft master pattern made without an importable spglib warns or raises that spglib "could
+  not be imported", with the cause, where it said spglib was not installed.
+  `abtem.visualize.widgets.ipywidgets_not_installed` and `abtem.inelastic.phonons.Reader`, which abTEM did not use,
+  are removed ([PR #697](https://github.com/abTEM/abTEM/pull/697))
+- `slider_from_axes_metadata` starts a slider at the coordinate nearest a `default_value` given as a plain Python
+  number (it started at the first item), and builds range sliders over axes whose coordinates are Python floats (it
+  raised `TypeError`). An index slider given a `default_value` that is not one number starts at the first item for
+  every axis length ([PR #697](https://github.com/abTEM/abTEM/pull/697))
+- An eager build of a `GPAWPotential` from a `.gpw` path raises the error of reading the file instead of
+  `TypeError: Delayed objects are immutable` ([PR #697](https://github.com/abTEM/abTEM/pull/697))
+- Errors raised while registering the configuration plugin on dask workers, or inside the scatter-add of an
+  infinite projection, reach the caller unchanged instead of being replaced by an unrelated error. The fallbacks
+  for `distributed` without `Client.register_plugin` and CuPy without `ufunc.at`, which the dependencies exclude,
+  are removed ([PR #697](https://github.com/abTEM/abTEM/pull/697))
+- Errors that used to be absorbed reach the caller: a `NotImplementedError` raised inside an override of a scan's
+  `_get_weights` (the weights were dropped), an error of the symmetry search of an EBSD reference pattern other than
+  spglib finding no symmetry (the pattern was built with the symmetry unknown), and an error of the strain check of a
+  default box other than a box with no whole repetition or a cell without a third vector (the check was skipped)
+  ([PR #697](https://github.com/abTEM/abTEM/pull/697))
+- abTEM warns once, where the configuration is loaded, about a section of keys that a configuration file or an
+  environment variable sets to a value (for example `diagnostics: true` or `ABTEM_DIAGNOSTICS=1`); every key in it
+  reads its default, as before, but did so silently ([PR #697](https://github.com/abTEM/abTEM/pull/697))
+- A NumPy array works as an operand of a device array on the Metal (MPS) device, on either side of the arithmetic,
+  comparison and bitwise operators (not `//`, which device arrays do not support). The host array is moved onto the
+  device first, so the device side wins: a float64 host operand is narrowed to the device's float32, and a dtype Metal
+  lacks (`uint8`, `int16`, `float16`) raises a `RuntimeError`, also with the `cpu` torch device.
+  `device_array == host_array` raised "Expected all tensors to be on the same device", and with a host array, `!=`,
+  `<`, `<=`, `>`, `>=`, `%`, `&`, `|` and `^` raised a `TypeError`. The in-place operators (`+=`, `-=`, `*=`, `/=`)
+  take a host array now and update the array in place and in float32; with the `cpu` torch device they rebound the
+  tensor, and could turn it float64. The tensor methods a device array forwards (`take`, `clip`, ...) take one too.
+  This surfaced as `Images == Images` between a host and a device object failing in one operand order
+  ([PR #691](https://github.com/abTEM/abTEM/pull/691))
+- `BlochWaves` no longer fails on macOS for complex structure matrices of an even number of about 2900 beams or
+  more (a quartz rotation series at `g_max=3` and `sg_max=0.5` with 3233 beams, for example). Apple's Accelerate
+  returns the real workspace size of `ZHEEVD`, 1 + 5n + 2n², in single precision, which rounds an odd size above
+  2²⁴ down below the minimum, so LAPACK refused the call with "Illegal value in argument 10 of internal zheevd"
+  (SciPy) or "Eigenvalues did not converge" (NumPy). The complex Hermitian solver on macOS is now `ZHEEVR`, which
+  needs a far smaller workspace and was also faster on an Apple M2: 0.60 against 0.87 s at 1300 beams, 12.5 against
+  22.7 s at 3233, and a rotation series of 11 frames at 1299 beams 7.7 instead of 10.4 s. The diffraction patterns
+  are unchanged to rounding. Real matrices and other platforms are not affected. The eigenvectors of a complex
+  matrix are written to an array of their own, not over the matrix when it may be overwritten
+- `AnnularDetector.show()` can be drawn: its one region made a one-colour colormap that matplotlib refused when
+  rendering the figure ("data mapping points must start with x=0 and end with x=1"). The detectors with several
+  regions keep their colours ([PR #677](https://github.com/abTEM/abTEM/pull/677))
+- PRISM with a downsampled S-matrix (`downsample="cutoff"`, the default, or an angle) keeps the full grid's
+  antialias cutoff. **Behaviour change:** at `interpolation=1`, `PixelatedDetector` with `max_angle="cutoff"` or
+  `"valid"` (the default) returns the pattern size that multislice returns, and the dummy probes of the
+  `SMatrix` report the full grid's cutoff angles. Before, the patterns were cropped to about two thirds of that
+  cutoff, and to a different size along x and y on a grid sampled differently along them. For the cubic Si cell
+  (5.43 Å) on a 56 x 64 grid at 100 keV, patterns of (26, 22) pixels become (38, 38), and the cutoff angles of
+  the dummy probes, 88.6 mrad unbuilt and 88.6 x 75.0 mrad for the built S-matrix, become 129.5 mrad. At a
+  larger interpolation factor the patterns lie on the coarser grid of the reduction and extend to the same
+  cutoff angle. At `interpolation=1` the same applies to core-loss PRISM
+  (`SMatrix.transition_potential_scan`): its pixelated and flexible annular outputs have the sizes of core-loss
+  multislice. The automatic outer angle of `AnnularDetector` and `FlexibleAnnularDetector` follows the full
+  grid's cutoff at every interpolation, for a window that spans the downsampled grid. Results with
+  `max_angle="full"` or a numeric angle, and with `downsample=False`, are unchanged
+- A numeric `downsample` below the full grid's antialias cutoff caps the cutoff of the downsampled S-matrix at
+  the edge of the downsampled grid. **Behaviour change:** for the cubic Si cell (5.43 Å) on a 56 x 64 grid at
+  100 keV with `downsample=60`, a 20 x 20 grid with an edge at 68.2 mrad, and `interpolation=1` (or
+  `upsample=True`), `PixelatedDetector("cutoff")` gives (20, 20) pixels instead of (14, 12), and `"valid"` (14, 14)
+  instead of (10, 8). The cutoff angles of the dummy probes are 68.2 mrad instead of 47.7 mrad, and
+  `AnnularDetector(inner=30)`, with its automatic outer angle, collects out to 68.2 mrad instead of 47.7 mrad. Its
+  signal rises by a factor of 2.03 at the centre of the one-cell-thick cell and 2.01 at (1.0, 1.5) Å, and by 1.76
+  and 1.74 for a cell two cells thick
+- `SMatrix`, `Waves.downsample` and `WavesDetector(gpts)` record the band limit of their downsampled waves in the
+  metadata key `antialias_sampling`, the sampling of the grid whose antialias aperture band-limited the waves,
+  instead of the pixel count `adjusted_antialias_cutoff_gpts`, which holds only at the extent it was counted on.
+  `Waves.downsample` and `WavesDetector(gpts)` also record the sampling of the coarsest grid the waves were
+  resampled onto in `coarsest_sampling`, where their content ends. Waves stored with the old key read as before.
+  **Behaviour change:** the cutoff angles of waves resampled by `Waves.downsample` or `WavesDetector(gpts)`
+  survive `Waves.tile`; the waves of `Probe(energy=100e3, semiangle_cutoff=20, gpts=(56, 64), extent=(10, 12))`
+  downsampled to `"cutoff"` and tiled by (2, 2) report 66.6 x 64.8 mrad, where they reported 33.3 x 32.4 mrad.
+  The cutoff angles, the `"cutoff"` and `"valid"` patterns and the bins of a `FlexibleAnnularDetector` of such
+  waves that are neither tiled nor given another extent are those of before, however often they are resampled;
+  the changes to `SMatrix` are the ones in the neighbouring entries
+- The batches of the compressed reduction of a C-PRISM window smaller than the downsampled grid are sized for the
+  grid the detectors read. A `PixelatedDetector` detects on the downsampled grid, but the positions per batch
+  followed the window, so a batch of patterns held as many times the budget as the downsampled grid has pixels per
+  window pixel: 2.08 times for a (24, 32) window in a (40, 40) grid (1600 / 768 pixels) and 64 times for a
+  128 x 128 window in a 1024 x 1024 grid. The budget is `dask.chunk-size` (`dask.chunk-size-gpu` on a GPU) for the batches of an
+  arbitrary list of positions, and 1 GiB for the lattice reduction of a `GridScan`. Every other detector reads the window, and the
+  values do not change
+- C-PRISM (`upsample=True`) with a window smaller than the downsampled grid, an explicit `window_gpts` or the
+  automatic window of a large cell, detects the diffraction patterns of a `PixelatedDetector` on the downsampled
+  grid, at the angular sampling of the cell, as multislice does, on the same grid whichever other detectors share
+  the scan. Before, a lazy scan declared a different shape and angular sampling than it computed, a frozen-phonon
+  scan or a multi-energy scan with a numeric `max_angle` raised `ValueError`, and a pattern scanned together with
+  a `FlexibleAnnularDetector` or `WavesDetector` lay on the window's coarser grid. **Behaviour change:** for the
+  cubic Si cell (5.43 Å) on a 56 x 64 grid at 100 keV with `interpolation=2`, `window_gpts=(24, 32)` and
+  `downsample="cutoff"`, `PixelatedDetector("cutoff")` gives (38, 38) pixels at 6.82 mrad instead of (16, 18),
+  `"valid"` (26, 26) instead of (12, 12), and `resample="uniform"` (38, 38) at 6.82 mrad instead of (16, 14) at
+  11.4 mrad. The automatic `FlexibleAnnularDetector` has 124 bins instead of 76, and the cutoff angles of
+  `SMatrix.dummy_probes()` are 125.0 x 127.8 mrad instead of 90.9 x 93.7 mrad. The automatic outer angle of
+  `AnnularDetector` and `FlexibleAnnularDetector` follows these cutoffs (`AnnularDetector(inner=50)` collects out
+  to 125.0 mrad instead of 90.9 mrad). Core-loss PRISM with `interpolation=2` on an 8 x 6 Å cell has the sizes of
+  the full window, (16, 12) and (12, 8) pixels and 74 bins instead of (10, 8), (8, 6) and 46 bins. Plain PRISM and
+  C-PRISM with a window that spans the downsampled grid already detected their patterns on that grid
+- C-PRISM (`upsample=True`) with a window smaller than the downsampled grid gives a `PixelatedDetector` the same
+  diffraction patterns below the blend angle whichever other detectors share the scan. Before, next to a
+  `WavesDetector` or a real-space `PixelatedDetector` the patterns were taken from the window propagated from the
+  reference depth to the exit surface on the window's own periodic grid, and differed by 2.3 % of their maximum
+  (cubic Si cell on a 56 x 64 grid at 100 keV, `interpolation=2`, `window_gpts=(24, 32)`, `downsample=False`).
+  Next to an `AnnularDetector` or `SegmentedDetector` the patterns were stitched to the plane-wave reduction at
+  that detector's band edge instead of at the blend angle. That moved them by 2.6e-4 of the maximum next to
+  `AnnularDetector(inner=50)` at the default blend and 2.6e-3 with `blend_angle=80`, by 0.81 (`GridScan`) to 0.91
+  (`CustomScan`) of the maximum next to a bright-field `AnnularDetector(inner=0, outer=15)`, and by 2.4 times the
+  maximum next to `SegmentedDetector(2, 4, 10, 50)` with `blend_angle="aperture"`. Any other detector next to one
+  that reads the wave (a `WavesDetector` or a real-space `PixelatedDetector`) changes at rounding level, about
+  1e-15 of its maximum in float64 and a few 1e-7 in float32 (at most 1.3e-15 and 4.4e-7 measured), in a cropped
+  window and, with `method="modes"` (the default on a GPU) or a `max_batch_expansion` number, on the full window
+- C-PRISM (`upsample=True`) gives every detector the value it has when scanned alone, whichever other detectors
+  share the scan ([#664](https://github.com/abTEM/abTEM/issues/664)). The blended reduction routed the detectors
+  of a list all or nothing: one detector it could not route (a `WavesDetector`, a `FlexibleAnnularDetector`, a
+  real-space `PixelatedDetector`) sent every detector to the unrouted reduction, which at the default blend is the
+  plain interpolated one. And the blend angle was snapped to the largest band edge of any detector of the list
+  below it, so one detector's band moved the cut of every other. Now each detector is routed on its own, and only
+  a band that straddles the blend angle is snapped, to its own inner edge. Detectors that read the same reduction
+  share it: the bands below the cut and the unroutable detectors at the default blend, and all the bands above the
+  cut. On cubic Si (1, 1, 8) on a 56 x 64 grid at 100 keV with `interpolation=2` (automatic blend angle
+  62.5 mrad), `AnnularDetector(inner=70)` next to a `WavesDetector` or a `FlexibleAnnularDetector` moved by 0.18
+  of its maximum, on the full window and with `window_gpts=(24, 32)`; with that window and `blend_angle=80`,
+  `AnnularDetector(50, 100)` next to `AnnularDetector(60, 70)` moved by 0.24, and a
+  `PixelatedDetector(max_angle="cutoff")` next to a `WavesDetector` by 2.8e-3 above the blend angle (0.29 with
+  `blend_angle="aperture"`). On Si (1, 1, 2), `reduce(method="modes")` of `AnnularDetector(inner=50)` next to a
+  `WavesDetector` moved by 2.5e-2. Every single-detector scan without a `blend_taper` is unchanged. With a
+  `blend_taper`, a band that lies wholly below the blend angle was snapped to its own outer edge when scanned
+  alone, which put it inside the taper; it now keeps the blend angle, so the taper ends at the blend angle as
+  documented. On the same Si (1, 1, 8) cell with `blend_angle=80` and `blend_taper=10`, `AnnularDetector(60, 70)`
+  scanned alone changes by 0.55 (full window) to 0.58 (`window_gpts=(24, 32)`) of its maximum, and
+  `AnnularDetector(0, 30)` by 2.8e-2 to 4.5e-2. A list of detectors that read different branches now takes one
+  reduction per branch instead of one for the whole list
+- The wave functions (`WavesDetector`) and real-space intensities (`PixelatedDetector(reciprocal_space=False)`)
+  of a C-PRISM window smaller than the downsampled grid, including the automatic window (for example 112 x 112
+  of the 128 x 128 downsampled grid for Si (4, 4, 8) on 192 x 192 at 200 keV with `interpolation=4`), are
+  propagated from the reference depth to the exit surface on the zero-padded full grid and cropped back to the
+  window ([#665](https://github.com/abTEM/abTEM/issues/665)). Before, the propagation ran on the window's own
+  grid, which is periodic with the window, so the probe tails it moved past one edge of the window re-entered at
+  the opposite edge. Both branches of a blend with an explicit `blend_angle` are propagated this way. On windows
+  smaller than the probe, the largest error of the real-space intensity against the waves of the full window
+  cropped to the same pixels, as a fraction of its maximum, falls from 1.1e-1 to 3.4e-2 for Si (1, 1, 8) (43 Å) on
+  a 56 x 64 grid at 100 keV, `interpolation=2`, `window_gpts=(32, 40)`, from 2.3e-2 to 1.1e-2 with
+  `window_gpts=(40, 48)`, and from 3.3e-1 to 9.1e-2 for Si (1, 1, 16) (87 Å) with `window_gpts=(32, 40)`. On
+  windows that cover the probe the change is small. The tails that leave the window are now lost, as the tails
+  beyond the window already were when the matrix was cropped, so a diffraction pattern computed from the
+  returned wave of a window smaller than the probe carries less of the bright-field disk than before. For
+  diffraction patterns use a `PixelatedDetector`, which is detected from the window at the reference depth and is
+  not affected. The waves of a window that spans the downsampled grid are bitwise unchanged
+- C-PRISM ignores `max_batch_expansion` whenever the reduced wave functions are cropped, as the docstrings
+  said. `SMatrix(upsample=True, max_batch_expansion=...)` raised a `ValueError` on every scan when the automatic
+  window came out smaller than the downsampled grid (for example 80 x 80 of 88 x 88 for Si (4, 4, 2) on
+  128 x 128 at 200 keV with `interpolation=2`), and so did `reduce(max_batch_expansion=...)` on a cropped window
+  with a `blend_angle`. Passing it together with a cropping `window_gpts` to `SMatrix` still raises
+- PRISM averages a `CTF` ensemble with `ensemble_mean=True` once, over the result. The eager `SMatrix.reduce` and
+  `SMatrix.scan` with a potential ensemble, exit planes and such a CTF returned the values of the wrong exit
+  plane, or raised a broadcast `ValueError` when the number of defoci differed from the number of exit planes,
+  and `reduce(lazy=True, disable_s_matrix_chunks=True)`, the lazy default on a GPU and with `upsample=True`,
+  averaged over a scan axis instead. `CompressedSMatrixArray.reduce` averages the ensemble with every `method`
+  and with `blend_angle`; it did so only with `method="expand"` and no `blend_angle`, the CPU default
+- The PRISM reductions `SMatrix.reduce` and `SMatrix.scan` leave the `CTF` they are given as it is. Before, a single-energy
+  reduction set its grid and energy in place, so `ctf.gpts`, `ctf.extent` and `ctf.energy` held the S-matrix's
+  afterwards, and the tasks of a lazy graph shared the one CTF. A lazy CPU scan of a frozen-phonon ensemble with a cropped C-PRISM
+  window and a `PixelatedDetector` reaching past the blend cut, whose two branches match the CTF to the window and
+  to the plane-wave period, could therefore sample the soft aperture of one configuration on the other grid
+  (15.91 x 13.63 mrad per pixel for a (24, 32) window of a (56, 64) grid, 13.63 x 13.63 mrad for its period). That
+  configuration's pattern was wrong by about 1 % at the edge of the aperture, 3e-3 of the maximum after the mean
+  over three configurations, intermittently in repeated runs of the test of this case
+- Double-channel core-loss multislice (`double_channel=True`, the default) could use the transmission function of
+  another slice, so repeated runs differed, with or without frozen phonons
+  ([#578](https://github.com/abTEM/abTEM/pull/578)). Double-channel core-loss results computed with 1.0.10 or
+  1.0.11 should be recomputed.
+- Lazy waves and diffraction patterns whose dask array is split along the grid (several chunks along `x` or `y`, as
+  `chunks="auto"`, a Zarr file or `rechunk` can give) are rechunked to one chunk along the grid before any operation
+  that needs the whole grid. Each block was transformed on its own: `apply_ctf` and the other transfer functions,
+  `PixelatedDetector` without `max_angle`, `ensure_reciprocal_space`, `ensure_real_space`, `convolve`,
+  `FresnelPropagator.propagate`, `abtem.core.fft.fft2`/`ifft2`/`fftn` on dask arrays, `Waves.downsample` and
+  `DiffractionPatterns.crop` gave wrong values or a wrong shape without a warning, and `diffraction_patterns`,
+  `multislice`, the annular detectors, `PixelatedDetector` with a `max_angle` and `DiffractionPatterns.bandlimit`,
+  `block_direct`, `interpolate` and `index_diffraction_spots` raised. The ensemble
+  chunks of such an array are chosen again by dask, so that a block holds the whole grid of as many members as fit
+  dask's `array.chunk-size`. Arrays whose grid is in one chunk are unchanged
+  ([PR #651](https://github.com/abTEM/abTEM/pull/651))
+- `to_hyperspy` listed the axes of the signal in an order other than the data's: with `transpose=False` the `x` and
+  `y` axes carried each other's size and calibration, and with two or more ensemble axes (such as the scan axes of a
+  4D-STEM export) the ensemble axes did, for either value of `transpose`. The axes now follow the order of the
+  exported array; the exported data are unchanged ([PR #651](https://github.com/abTEM/abTEM/pull/651))
+- `PolarMeasurements.to_diffraction_patterns` returned float32 whatever the precision of the polar data, and
+  `DiffractionPatterns.interpolate` computed its interpolation weights in float32, which limited float64
+  interpolations to between $10^{-6}$ and $10^{-4}$ relative, growing with the pattern size. Both now keep the
+  precision of the data, and integer polar counts get the configured precision ([PR #651](https://github.com/abTEM/abTEM/pull/651))
+- **Behaviour change:** `DiffractionPatterns.polar_binning` (and `radial_binning`) raises a `TypeError` for complex
+  diffraction patterns, for example from `Waves.diffraction_patterns(return_complex=True)`, instead of returning
+  complex polar measurements whose conversion to diffraction patterns kept only the real part. Bin the
+  `.intensity()` instead ([PR #651](https://github.com/abTEM/abTEM/pull/651))
+- PRISM handles a potential with several ensemble axes, such as an `EnergyResolvedAtomsEnsemble` (energy loss
+  x configuration): `SMatrix.build`, `reduce`, `scan` and `transition_potential_scan`, eager and lazy, match
+  multislice. The lazy build failed with "Chunks and shape must be of the same length/dimension", which also
+  stopped the elastic `reduce` and `scan` without `upsample`, eager and lazy. With `ensemble_mean=True`, the eager
+  `upsample=True` reduction and the eager `transition_potential_scan` raised an `IndexError`. Results with at
+  most one potential ensemble axis are unchanged ([PR #650](https://github.com/abTEM/abTEM/pull/650))
 - `RealSpaceMultislice` applies the tilt of the wave function, as `FourierMultislice` does at orders 1 and 2: the
   beams are translated by `tan(tilt)` per unit depth. It ignored the tilt (of `Waves`, `Probe`, `PlaneWave` and tilt
   ensembles) without any message, in both expansion scopes and in the core-loss multislice
@@ -389,12 +842,257 @@ Bugfixes:
       `FlexibleAnnularDetector` no longer fail to broadcast, the shape a lazy scan declares equals the
       computed one, and a `WavesDetector` no longer raises `AttributeError: 'Waves' object has no
       attribute 'reduce_ensemble'`
+- `DiffractionPatterns.interpolate` raised for `gpts=` (`TypeError`) and for two samplings
+  (`ValueError: Invalid sampling.`). Both forms now work, and `gpts=` keeps the angular extent of the
+  patterns. `PixelatedDetector(resample=(a, b))`, which raised the same `ValueError`, now resamples to two
+  samplings ([PR #659](https://github.com/abTEM/abTEM/pull/659))
+- `PixelatedDetector(resample=...)` with a sampling finer than that of the waves along either axis failed every
+  scan (`Probe.scan`, `SMatrix.scan`, eager and lazy) with `ValueError: could not broadcast input array` when
+  computed, except a lazy frozen-phonon scan and a lazy `detect`, which declared a smaller shape than they
+  computed and raised nothing; with `max_angle=None` nothing failed. The same happened in a
+  PRISM scan at `interpolation > 1` for a sampling coarser than that of the potential but finer than that of
+  the reduced waves. Such samplings now give the patterns `DiffractionPatterns.interpolate` gives; samplings
+  that worked before are unchanged ([PR #661](https://github.com/abTEM/abTEM/pull/661))
+- **Behaviour change:** `DiffractionPatterns.interpolate`, and so `PixelatedDetector(resample=...)`,
+  built the bilinear weights of float32 (and complex64) patterns from float32 frequencies, whose rounding
+  grows with the pattern size: the results deviated from linear interpolation by about $1.4 \times 10^{-4}$ of their
+  maximum at 2048 x 2048 pixels (random data; about $10^{-5}$ for a smooth probe pattern). The weights are now built in
+  float64 and cast to the precision of the patterns, so float32 results are linear interpolation to float32
+  rounding (about $2 \times 10^{-7}$) and change by up to that former deviation. Float64 results are
+  unchanged ([PR #659](https://github.com/abTEM/abTEM/pull/659))
+- `show()` of complex measurements (domain colouring) with a NaN pixel, or an infinite one on a linear scale, raised `ValueError: alpha must be
+  between 0 and 1`, also with `vmin` and `vmax` given, and so did moving a shown ensemble to a member with
+  a NaN. Pixels the amplitude norm masks (NaN, $\pm\infty$, and zero amplitude under a log scale, which was drawn
+  opaque) are now transparent; the scaling and the alpha of every other pixel are unchanged ([PR #659](https://github.com/abTEM/abTEM/pull/659))
+- `generate_slices`, `generate_chunked_slices` and `build` of every potential raise a `ValueError` for a slice
+  range outside `0 <= first_slice <= last_slice <= len(potential)`; `CrystalPotential.generate_slices(first_slice=-1)`
+  returned every slice, `CrystalPotential.generate_chunked_slices` repeated the crystal past its last slice, and the
+  other potentials raised unrelated errors or returned no slices. A `last_slice` one past the end, which
+  `CrystalPotential.generate_slices` and `ChargeDensityPotential.generate_slices` clamped and
+  `PotentialArray.generate_chunked_slices` accepted, raises too ([PR #659](https://github.com/abTEM/abTEM/pull/659))
+- A lazy frozen-phonon scan, PRISM scan (`SMatrix.scan`, `SMatrix.transition_potential_scan`) or `to_cpu()` of lazy waves from GPU or Metal work, and every result derived from one (`rechunk`, indexing, reductions, arithmetic, filters, ...), is computed with the synchronous scheduler, or on the dask-cuda client, also when it is held on the CPU (the detectors' default `to_cpu=True`, or `to_cpu()`) and the device is given per object while the global `device` is `"cpu"`. Before, these ran on dask's threaded scheduler, which the GPU and Metal backends cannot use. The lazy builds of `EBSD` (`build(lazy=True)`), `EBSDDetectorPattern` (`build(lazy=True)`, `scan(lazy=True)`) and `EBSDReferencePattern` (`build(lazy=True)`) follow the same rule. Their `SphericalPattern` results (`EBSDReferencePattern`, and `EBSD` with `BackscatterDetector(directions=...)`) always computed on dask's threaded scheduler, whatever the device; `SphericalPattern.compute` now follows the device of its graph: the synchronous scheduler, or the dask-cuda client, for GPU or Metal work, and with `dask.multi-gpu` set, more than one GPU and no client, it starts the dask-cuda cluster. A `scheduler=` passed to `compute()` is still used as given. Like `ArrayObject.compute`, `SphericalPattern.compute` now shows the progress bar set by `diagnostics.progress_bar` (`"tqdm"` by default) and returns the profilers when `profiler=True` is passed ([PR #659](https://github.com/abTEM/abTEM/pull/659), [PR #661](https://github.com/abTEM/abTEM/pull/661))
+    - **Behaviour change:** the default `SMatrix.scan` on CUDA, and `SMatrix.transition_potential_scan` and `upsample=True` scans on any accelerator, run one task per S-matrix ensemble member, and those tasks return host measurements, so no layer of the graph holds a device array. They computed on the threaded scheduler, which keeps every member's S-matrix on the GPU at once, and now use the synchronous scheduler (or the dask-cuda client). On one A100 80 GB, with 4, 6 and 12 members of 0.09, 1.44 and 3.46 GB of S-matrix, the device memory peaked at 4.5, 23.6 and 71.8 GB with the threaded scheduler and at 1.6, 5.0 and 7.6 GB with the synchronous one, and the threaded run took 7-17 % longer; the results are bit-identical. A scheduler passed to `compute` is still used as given. Under a distributed client that is not a single-threaded dask-cuda client, these scans now run on the synchronous scheduler in the client process when the device is GPU or Metal, where the client ran them before, as for other GPU results. On CUDA with `dask.multi-gpu` set, more than one GPU and no client, they start the dask-cuda cluster
 - Monte Carlo plasmons: `MonteCarloPlasmons.draw_events` runs again, where it raised `TypeError` because
   `PlasmonScatteringEvents` was abstract ([PR #617](https://github.com/abTEM/abTEM/pull/617))
     - **Behaviour change:** the combined deflection of several plasmon excitations is the 2D vector sum of
       the individual deflections, where the polar angles were summed and the sum was also used as the
       azimuth
     - The `CoreLoss.local_potential` docstring gives `max_angle` in mrad, not degrees
+- `BlochWaves` with a `g_max` above half the structure factor's runs, with the couplings between beams
+  more than that g_max apart set to zero as its warning says, where building the structure matrix raised
+  `ValueError: invalid entry in coordinates array` ([PR #635](https://github.com/abTEM/abTEM/pull/635))
+- `DiffractionPatterns.index_diffraction_spots` with one orientation matrix per member (for example
+  `(n, 3, 3)` matrices for `n` patterns, or `(n, 1, 3, 3)` for a rotation series with a second ensemble
+  axis) raised a bare `AssertionError` for eager patterns, and for lazy patterns with more than one member
+  per chunk along an axis on which the matrices vary. Each member is now indexed with its own matrix,
+  also together with the energies of an energy ensemble. Matrices with more members than the patterns
+  along an axis, which also failed before, raise a `ValueError` ([PR #660](https://github.com/abTEM/abTEM/pull/660))
+- `Visualization.set_value_limits` with a new `vmin` and an unchanged `vmax` left the colorbar, and for
+  indexed diffraction patterns the spot radii, on the old limits
+- `==` and `!=` no longer guess that lazy objects are equal ([issue #413](https://github.com/abTEM/abTEM/issues/413)).
+  A dask array never counted as a difference, so lazy `ArrayObject`s compared equal to each other regardless of
+  their array content, lazy zeros equal to lazy ones
+    - **Behaviour change:** comparing objects whose content is lazy on either side raises
+      `abtem.core.utils.LazyComparisonError`, a `TypeError` subclass that asks for computed objects, so user
+      code that did `lazy_a == lazy_b` now raises. It is raised only when no attribute differs: objects that
+      differ in an eager attribute, or whose lazy arrays differ in shape, compare unequal whatever their order of
+      attributes. Eager objects compare as before, and objects that hold the very same dask array (the same
+      object, or an array with the same name, as in a `copy()`) still compare equal. A `GPAWPotential` holds a
+      `.gpw` path as a lazy read keyed by the resolved path, so two potentials read from the same file compare
+      equal without reading it, and two read from different files raise. A relative `.gpw` path is now resolved
+      when the potential is created, so a lazy read uses the working directory of that moment, not of the later
+      computation
+- `compute()` on a `TransitionPotentialArray` read from zarr or built lazily no longer leaves the local
+  potential that site filtering reads (`absolute_threshold`, `filter_sites`, and through them
+  `scatter(threshold=)`, `generate_scattered_waves` and multislice site filtering) lazy. The computed object kept
+  reading its source: `absolute_threshold` ran the graph again on every call, followed a store that was
+  overwritten, and returned `0.0` (site filtering off) once the store was deleted, and `to_cpu()` could return a
+  lazy object
+    - **Behaviour change:** after `tp.array = new`, `absolute_threshold` and the site filtering built on it use the
+      local potential of `new`, where they kept using that of the old array. `local_potential()` itself
+      recomputes from the array and is unchanged
+    - `IndexedDiffractionPatterns` no longer keeps a second reference to its array, which `compute()` left lazy
+- `==` and `!=` on an object that holds another abTEM object use that object's own comparison, where the holder
+  judged it by the generic rule and skipped any check the object's class adds (the slice index of
+  `SliceIndexedAtoms`). The verdict no longer depends on the order of the held objects: a holder of a
+  `PotentialArray` compared with a holder of an equal-array `TransmissionFunction` was equal one way round and
+  unequal the other, and is unequal both ways, as the two objects are on their own. An error that the held
+  object's comparison raises (`TypeError`, `ValueError`, `KeyError`) escapes `==` and `!=` when the object is an
+  attribute itself; held in a list, tuple or dict it still makes the holder unequal, and a lazy comparison is
+  still deferred
+- `==` and `!=` of abTEM objects holding Metal arrays, or a Metal and a host array, whose shapes differ are `False`
+  in both orders, as on the host. Objects holding arrays of shapes `(3, 4)` and `(5, 4)`, which do not broadcast, raised
+  `RuntimeError` when both arrays were on Metal, or when the Metal one was on the right
+    - **Behaviour change:** objects holding a host array and a Metal array of equal content compare equal in both orders. With the
+      host array on the left they compared unequal, because the Metal array layer had no `np.equal`, which it now
+      maps to `torch.eq`; with the Metal array on the left they compared equal
+- `==` and `!=` compare integers exactly, where `np.allclose`'s relative tolerance took seeds a few parts per
+  million apart as equal, so `FrozenPhonons`, `Potential`, `CrystalPotential` and noise transforms that draw
+  different random numbers, and the `SMatrix` or `MultisliceTransform` that holds them, no longer compare equal
+    - **Behaviour change:** integer attributes (seeds, but also counts, sizes and an `energy` given as an integer)
+      that differ by a small relative amount compare unequal. An integer against a float, and floats, keep the
+      tolerance, so `energy=100_000` still equals `energy=100e3`
+- `==` and `!=` compare the shapes of numbers, tuples, lists and arrays as well as their values, where broadcasting
+  made `(5,)` equal to `(5, 5)` and an empty sequence equal to anything, so a `FrozenPhonons` of one configuration
+  and one of two with the same seed, and `NoiseTransform`s with seeds `(5,)` and `(5, 5)`, no longer compare equal
+    - **Behaviour change:** a number and a one-element sequence of it compare unequal, so
+      `Probe(semiangle_cutoff=20) != Probe(semiangle_cutoff=[20])`, whose `[20]` adds a length-1 ensemble axis. It
+      was equal one way round. The energy of a `PlaneWave` or `Probe` is the exception: a one-value list is stored
+      as its value, so `energy=100e3` and `energy=[100e3]` compare equal both ways
+- `==` and `!=` on an object that holds a list or tuple of abTEM array objects (`Images`, `Waves`, ...) no longer
+  raise `RuntimeError: too many indices for array`: not for equal lists, lists of different lengths or shapes, nested
+  lists, or such a list against a NumPy array. `==` on the list decides, so a list does not equal a tuple of the
+  same objects and the numbers in it compare exactly. No abTEM class compares such a list with `==`; a subclass
+  that does can now be compared
+- A `StructureFactorArray` accepts its Miller indices and cell as any array-like, lists included, so one built from
+  lists or read from zarr works with `BlochWaves`, `g_vec` and `get_projected_potential`. The Miller indices are stored
+  as an integer array and the cell as a `Cell`, and a `StructureFactor` stores its Miller indices the same way
+- An `SMatrixArray` read from zarr keeps the dtype of the wave vectors it was written with and reduces to the same
+  waves as the S-matrix that was written, where they were read as float32. The dtype is stored in the
+  zarr attributes as `wave_vectors_dtype`; a file without it holds float64 values and reads as float64, unchanged
+    - **Behaviour change:** an `SMatrixArray` file written by this version cannot be read by an earlier version, which
+      raises `TypeError` for the unexpected `wave_vectors_dtype` argument. Files written by earlier versions read
+      with float64 wave vectors, the values they hold
+- `RealSpaceMultislice(order=n)` for `n` of 4 or more uses the binomial coefficients of the Taylor series of the
+  forward wavenumber, $K(\sqrt{1 + 2C/K} - 1)$ with $K = 2\pi/\lambda$ and $C$ the slice operator, in both
+  expansion scopes. The coefficients of the operator powers were geometric, $-1/(2K), 1/(2K^2), -1/(2K^3), \dots$,
+  which agree with the binomial ones, $-1/(2K), 1/(2K^2), -5/(8K^3), 7/(8K^4), \dots$, through order 3 only, so
+  raising the order past 3 stopped improving the result and the series converged to $C(2K + C)/(2(K + C))$ instead
+  of the square root. For a 300 mrad plane wave at 30 keV in vacuum, the error of the phase advance per ångström
+  stalled at $4.7 \times 10^{-5}$ rad from order 5 on; it now falls to $6 \times 10^{-8}$ rad at order 6.
+  **Behaviour change:** results at `order` 4 and higher change; orders 1 to 3, and the default `order=1`, are unchanged
+- `PixelatedDetector(max_angle=...)` raises a `ValueError` for a number of 0 or below. A `max_angle` of 0 was declared
+  as the uncropped pattern and detected as the few central pixels, so every scan raised
+  `ValueError: could not broadcast input array`; a negative number gave only the few central pixels, without an error.
+  **Behaviour change:** both now raise at construction with a clear message, so a negative `max_angle`, which used to
+  run, no longer does; `None`, `'cutoff'`, `'valid'` and `'full'` are unchanged
+- `SMatrix.reduce(lazy=False)` and `SMatrix.scan(lazy=False)` honour `max_batch_multislice`: the plane waves of the
+  S-matrix are propagated in batches of that size, as `SMatrix.build(lazy=False, max_batch=...)` does, where the
+  eager reduction always used the `'auto'` batch. The same holds for a lazy reduction with
+  `disable_s_matrix_chunks=True` (the default on a GPU and with `upsample=True`). The default `'auto'` batch is
+  unchanged. A smaller batch bounds the memory of the propagation but generates the slices of a streamed potential once
+  per batch. The `max_batch_multislice` docstrings describe the batch of plane waves rather than the Dask chunks.
+  **Behaviour change:** (i) a lazy reduction with `disable_s_matrix_chunks=True` (the default on a GPU) and any call
+  with `upsample=True` now batch the plane waves when a caller passes `max_batch_multislice`, which they ignored
+  before; (ii) `max_batch_multislice=None` or a NumPy integer, which these paths and the eager reduction ignored,
+  now raise `ValueError: limit must be an integer or a string`, as the lazy reduction in chunks already did
+- Spline interpolation on CuPy 14.1 and later of float32 or complex64 data returned the wrong value for a
+  coordinate within half a float32 spacing below a grid node, as the positions of `interpolate_line` often are:
+  cupyx took the starting index from the float32-rounded coordinate and the weights from the float64 one. For
+  `order >= 2` the result was the value at the next grid node; for `order=1` it was extrapolated linearly from
+  the next segment, off by at most the distance to the node times a second difference. This affected
+  `Images.interpolate(method="spline")`, `interpolate_line` and `interpolate_line_at_position` of `Images` and
+  `DiffractionPatterns` (so also `Probe.profiles` and `momentum_resolved_spectrum` with a
+  `SpectralSlitDetector`), and `RealSpaceLineProfiles.interpolate` and `ReciprocalSpaceLineProfiles.interpolate`.
+  On CuPy, the prefilter, the index and the weights are now computed in double precision and the sum in the
+  precision of the data, so the results agree with the NumPy results to float32 rounding. On earlier CuPy
+  versions the results change by float32 rounding only. **Behaviour change:** at the default float32 precision,
+  the pixel positions of the line in `interpolate_line` and `interpolate_line_at_position` were Å values
+  rounded to float32 (by up to 3.8e-5 pixels at 0.1 Å sampling near 100 Å). On NumPy and CuPy they are now built
+  in float64 (`LineScan.get_positions` takes an optional `dtype`, by default the configured precision as before),
+  which changes the values of these functions and of what builds on them (`Probe.profiles`,
+  `momentum_resolved_spectrum`) slightly, by 5e-6 to 4e-5 of the maximum for random data in the cases checked;
+  at float64 precision they are unchanged. Metal keeps float32 pixel positions, so its line values shift by
+  float32 noise (up to 7e-5 of the maximum in the cases checked) without becoming more accurate. The results of
+  `Images.interpolate`, `RealSpaceLineProfiles.interpolate` and `ReciprocalSpaceLineProfiles.interpolate` on
+  NumPy, Metal and float64 CuPy are unchanged
+  ([PR #680](https://github.com/abTEM/abTEM/pull/680))
+- `set_ensemble_axes_metadata` raises when the new axis does not fit the array (a `RuntimeError` for an ordinal axis
+  of the wrong length) or contradicts its energy (a `ValueError`), and leaves the object's axes unchanged. It no
+  longer writes into an axes list the object shares with its caller or with other objects, so a list read from
+  `ensemble_axes_metadata` before the call keeps the old axes
+    - **Behaviour change:** the call returned without an error and without changing anything for an axis of the
+      wrong length, and installed a contradicting `EnergyAxis`
+- `from_zarr` builds an object from the axes and metadata the file stores, and falls back to the stored constructor
+  arguments only for the classes that cannot be built that way. A file whose axes do not fit its array raises
+  instead of loading with other axes, and an error inside `from_array_and_metadata` is no longer hidden. Files
+  written by abTEM 1.0.10 and 1.0.11 load to the same objects as before
+- `ensure_cuda_cluster` raises a CUDA error from its device probe, where it started the cluster without the
+  per-worker memory limit. Only "no CUDA device" (`cudaErrorNoDevice`, `hipErrorNoDevice`) still means no
+  limit; every other error, an insufficient driver included, raises on every call
+- **Behaviour change:** `ensure_cuda_cluster` divides the per-worker memory limit by the number of GPUs the
+  cluster spans, the ones listed in `dask.multi-gpu-devices` when it is set, where it divided by every visible
+  GPU. With 4 visible GPUs and two devices listed, the workers shared 42.5 % of the memory limit in total, and
+  now share 85 %. More devices listed than visible, four listed with two visible, gave 170 %
+- A GPU or Metal computation raises the error of an active dask client that cannot answer the scheduler query,
+  where it ran on the synchronous scheduler instead. An asynchronous client inside its event loop, whose query
+  returns a coroutine, is not used: the computation runs on the synchronous scheduler, where the check raised
+  `TypeError`
+- The GPU chunk and batch size estimates raise a CUDA error from their memory probe, where they fell back to
+  `dask.chunk-size-gpu`. They still use that setting when CuPy is not installed or sees no device
+- `natural_neighbor_weights` falls back to nearest-parent weights only for degenerate (collinear or coincident)
+  parent beams; any other error from the triangulation is raised
+- `shrink_cell` works under `python -O`
+    - **Behaviour change:** an `Atoms` object without atoms raises `ValueError`, where it returned an empty
+      `Atoms` with a zero cell (and did not return under `python -O`)
+- The Miller-index labels of an indexed diffraction-pattern plot delegate only the methods of matplotlib's
+  `Annotation`: `hasattr`, `getattr` with a default and `copy.deepcopy` work on them, and any other name raises
+  `AttributeError`
+- The warning of the GPAW all-electron fallback names the assertion that failed (its source line, message and
+  location), where it reported a convergence failure for any assertion
+- Indexing an ensemble axis with a step, a negative start or stop, a reversed slice or an index array keeps the
+  coordinates of the selected members. The axis kept the unsliced offset and sampling, so `dp[::2, ::2]` of a
+  4D-STEM scan reported the full scan's sampling, and the images derived from it half their true size. A
+  partial slice of a `ReciprocalSpaceAxis` with `fftshift=False` kept the class, whose coordinates for the
+  shorter length are not those of the selected members of an axis stored in `ifftshift` order
+  ([PR #696](https://github.com/abTEM/abTEM/pull/696))
+    - **Behaviour change:** a reversed slice of a scan axis (`dp[::-1]`), or an index array whose members decrease
+      evenly, lists the same positions from the last. The axis stays a scan axis, with the first selected position as
+      its offset and a negative sampling. Before, `dp[::-1]` reversed the data and kept the axes, so its reductions
+      were mirrored. Reductions of a scan to images or line profiles return the positions in increasing order, with
+      a positive sampling, so `dp[::-1]` and `dp` give the same images: `integrate_radial`, `center_of_mass`,
+      `integrated_center_of_mass`, `PolarMeasurements.integrate`, `differentials` and `to_image_ensemble`, and the
+      detectors that reduce the scan of waves (`AnnularDetector` and the spectral detectors), `multislice` included.
+      Every other output keeps the scan in the order it was indexed, whatever else the transform returns: the
+      detectors that keep the scan as ensemble axes (`PixelatedDetector`, `FlexibleAnnularDetector`,
+      `SegmentedDetector`, `WavesDetector`), alone or next to a reducing detector in one `multislice`, the transforms
+      of waves (`apply_ctf`, `multislice` exit waves), and the operations on measurements (the source-size filters,
+      `poisson_noise`). The filters and `poisson_noise` with `dose_per_area` use the distance between neighbouring
+      positions. A scan of waves that are already scanned (`Waves.scan`) puts its own positions in increasing order
+      and keeps the scan of the waves as it was indexed. A single position selected through a reversal
+      (`dp[::-1][:1]`, `dp[3:2:-1]`) has a positive sampling and is not a reversed scan.
+      A reversed slice of another linear axis, and an index array on one, give a `NonLinearAxis` with the selected
+      coordinates, and so do a slice with a step other than one of a `ReciprocalSpaceAxis` and any slice of one with
+      `fftshift=False` that does not select every member. On a scan axis, an index array whose members are evenly
+      spaced is the equivalent slice (`dp[[0, 2, 4]]` is `dp[0:5:2]`) and keeps the scan axis. Any other index array
+      gives a `NonLinearAxis` there too, so the axis is no longer a scan axis: reductions over it return line
+      profiles instead of `Images` for a 2D scan, and a `MeasurementsEnsemble` instead of line profiles for a 1D
+      scan; `integrated_center_of_mass`, the source-size filters (`gaussian_source_size`, `lorentzian_source_size`,
+      `voigtian_source_size` and `pseudo_voigtian_source_size`, of diffraction patterns and of polar measurements)
+      and `poisson_noise` with `dose_per_area` raise when one of the two scan axes was indexed so; and a reduction of
+      `dp[:, [1, 2, 4]]` puts the indexed axis first. Outer indexing of linear ensemble axes
+      (`np.ix_`), or any index array of more than one dimension on one, raises `IndexError`.
+- **Behaviour change:** `abtem.stack` and `abtem.concatenate` raise a `ValueError` when the members have a different
+  number of axes (naming both numbers) or different axes (another part of a scan, a different offset or sampling, a
+  reversed scan), except the axis `concatenate` joins. The message names the first differing axis, the fields that
+  differ and both values (for example `offset 0.25 vs 2.25`). They gave every member the axes of the first one, so
+  the others silently got its coordinates. The `RuntimeError` of `concatenate` for an axis that cannot be joined now
+  carries a message
+- `get_items(index, keepdims=True)` with a negative integer index returns the member counted from the end of the axis,
+  and an index out of range raises `IndexError`. It returned an empty array and an empty axis. A numpy integer index
+  (`np.int64(2)`) keeps a length-1 axis like an `int`; it returned an array without the ensemble axis
+- `LinearAxis[i]` raises `TypeError` for a negative integer instead of returning an axis with the wrong offset
+- Lazy arrays on the Metal (torch) backend can be indexed with a list or a boolean mask along a chunked axis
+  (`numpy.take` is implemented), and `PolarMeasurements.to_image_ensemble` works on an eager measurement
+  (`numpy.moveaxis` is implemented)
+- `DiffractionPatterns.index_diffraction_spots` drops extra leading axes of length 1 of the orientation matrices
+  beyond the ensemble axes of the patterns, for eager and lazy patterns alike. Lazy patterns failed with an error of
+  dask for these, and eager patterns were indexed with some of these matrices and raised an `AssertionError` for
+  others. Patterns of ensemble shape `(4, 3)` with matrices of ensemble shape `(1, 4, 1)` were indexed with the wrong
+  matrices (9 of 12 members); they now equal the `(4, 1)` call
+- **Behaviour change:** `DiffractionPatterns.index_diffraction_spots` raises a `ValueError` for orientation matrices
+  with extra axes longer than 1 (an `AssertionError` for eager patterns and an error of dask for lazy ones before),
+  and for extra axes of length 1 that are not leading. Eager patterns of ensemble shape `(3,)` with matrices of
+  ensemble shape `(3, 1)` or `(3, 1, 1)`, and `(4, 3)` with `(4, 1, 1)` or `(4, 1, 1, 1)`, for example, were indexed
+  with the right matrices
+- The multi-GPU run of `tools/gpu/run_gpu_tests.sh` (`ABTEM_CI_MULTIGPU`) runs `test/test_multigpu.py` as its own
+  pytest call, which fails when no test passes or any is skipped, where a single pass anywhere was enough: the multigpu
+  test in `test/test_measure.py` needs only 2 GPUs, so a broken `dask-cuda` import ended green with one pass and six
+  skips. The other multigpu tests run in a second call that must return 0. A preflight checks that `dask_cuda` imports
+  and that 2 GPUs are visible, and the managed venv installs `cuda-bindings>=12,<13` from PyPI, the line that matches
+  `cupy-cuda12x`, instead of an unpinned `cuda-bindings` from NVIDIA's package index. **Behaviour change:**
+  `ABTEM_CI_MULTIGPU` is enabled only by `1`; `0` and empty disable it, and any other value, such as `yes` or `true`,
+  fails the run at the start. Before, any non-empty value, `0` included, enabled it ([PR #708](https://github.com/abTEM/abTEM/pull/708))
 
 Documentation:
 
@@ -411,10 +1109,16 @@ Documentation:
   tutorial, which now selects the paraxial propagator explicitly where it compares algorithms at equal order
 - The installation page documents the optional pip extras (`gpaw`, `extra`, `all`) and why the GPU packages
   are not among them
+- The `angular_spread` docstrings of `SpatialEnvelope` and `CTF` now state the 1/e width convention
+  (`angular_spread = √2·σ`), matching `focal_spread`, and the `CTF` unit is corrected from Å to mrad
+  ([PR #645](https://github.com/abTEM/abTEM/pull/645))
 - The configuration reference is synchronized with the new and changed config keys
 - The multiple-GPUs section of the parallelization walkthrough is expanded to cover the multi-GPU
   hardening fixes above, and the FFT plan-cache documentation is corrected to match the shipped `auto`
   default (it previously described a stale `0 MB` default that was never shipped)
+- The `ArrayObject.apply_func` docstring states what the function receives: the array object (for a lazy
+  one, each block as an eager array object with that block's ensemble axes metadata), and returns the new
+  array; it said the function takes the array ([PR #659](https://github.com/abTEM/abTEM/pull/659))
 
 Planned for this release (not yet merged):
 

@@ -44,19 +44,6 @@
     ```
 ````
 
-### Data
-
-````{list-table}
-:class: autosummary longtable
-:align: left
-
-* - {py:obj}`ipywidgets_not_installed <abtem.visualize.widgets.ipywidgets_not_installed>`
-  - ```{autodoc2-docstring} abtem.visualize.widgets.ipywidgets_not_installed
-    :parser: rst
-    :summary:
-    ```
-````
-
 ### API
 
 `````{py:class} BaseGUI(...)
@@ -221,17 +208,6 @@ Bases: {py:obj}`abtem.visualize.widgets.BaseGUI`
 ````
 
 `````
-
-````{py:data} ipywidgets_not_installed
-:canonical: abtem.visualize.widgets.ipywidgets_not_installed
-:value: >
-   'RuntimeError(...)'
-
-```{autodoc2-docstring} abtem.visualize.widgets.ipywidgets_not_installed
-:parser: rst
-```
-
-````
 
 ````{py:function} make_toggle_hkl_button(...)
 :canonical: abtem.visualize.widgets.make_toggle_hkl_button

@@ -175,6 +175,26 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 
 ````
 
+````{py:property} gpts_are_auto
+:canonical: abtem.core.grid.Grid.gpts_are_auto
+:type: bool
+
+```{autodoc2-docstring} abtem.core.grid.Grid.gpts_are_auto
+:parser: rst
+```
+
+````
+
+````{py:property} gpts_is_default
+:canonical: abtem.core.grid.Grid.gpts_is_default
+:type: bool
+
+```{autodoc2-docstring} abtem.core.grid.Grid.gpts_is_default
+:parser: rst
+```
+
+````
+
 ````{py:method} match(...)
 :canonical: abtem.core.grid.Grid.match
 

@@ -484,6 +484,15 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 
 ````
 
+````{py:method} apply_transform(...)
+:canonical: abtem.waves.Waves.apply_transform
+
+```{autodoc2-docstring} abtem.waves.Waves.apply_transform
+:parser: rst
+```
+
+````
+
 ````{py:property} base_tilt
 :canonical: abtem.waves.Waves.base_tilt
 :type: tuple[float, float]
@@ -498,6 +507,15 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 :canonical: abtem.waves.Waves.convolve
 
 ```{autodoc2-docstring} abtem.waves.Waves.convolve
+:parser: rst
+```
+
+````
+
+````{py:method} crop(...) -> abtem.waves.Waves
+:canonical: abtem.waves.Waves.crop
+
+```{autodoc2-docstring} abtem.waves.Waves.crop
 :parser: rst
 ```
 
@@ -762,6 +780,15 @@ Bases: {py:obj}`abtem.waves.BaseWaves`, {py:obj}`abtem.array.ArrayObject`
 :type: float
 
 ```{autodoc2-docstring} abtem.waves.Waves.wavelength
+:parser: rst
+```
+
+````
+
+````{py:method} window(...) -> abtem.waves.Waves
+:canonical: abtem.waves.Waves.window
+
+```{autodoc2-docstring} abtem.waves.Waves.window
 :parser: rst
 ```
 

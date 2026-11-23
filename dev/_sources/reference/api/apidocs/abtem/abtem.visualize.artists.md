@@ -183,7 +183,7 @@
 
 ````
 
-````{py:method} set_logscale()
+````{py:method} set_logscale(...)
 :canonical: abtem.visualize.artists.Artist.set_logscale
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist.set_logscale
@@ -364,7 +364,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist`
 
 ````
 
-````{py:method} set_logscale()
+````{py:method} set_logscale(...)
 :canonical: abtem.visualize.artists.Artist2D.set_logscale
 
 ```{autodoc2-docstring} abtem.visualize.artists.Artist2D.set_logscale
@@ -586,6 +586,15 @@ Bases: {py:obj}`abtem.visualize.artists.Artist2D`
 :canonical: abtem.visualize.artists.DomainColoringArtist.set_extent
 
 ```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.set_extent
+:parser: rst
+```
+
+````
+
+````{py:method} set_logscale(...)
+:canonical: abtem.visualize.artists.DomainColoringArtist.set_logscale
+
+```{autodoc2-docstring} abtem.visualize.artists.DomainColoringArtist.set_logscale
 :parser: rst
 ```
 
@@ -865,7 +874,7 @@ Bases: {py:obj}`abtem.visualize.artists.Artist1D`
 
 ````
 
-````{py:method} set_logscale()
+````{py:method} set_logscale(...)
 :canonical: abtem.visualize.artists.LinesArtist.set_logscale
 
 ```{autodoc2-docstring} abtem.visualize.artists.LinesArtist.set_logscale

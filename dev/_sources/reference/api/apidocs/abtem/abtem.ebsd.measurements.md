@@ -155,7 +155,7 @@ Bases: {py:obj}`abtem.core.utils.CopyMixin`, {py:obj}`abtem.core.utils.EqualityM
 
 ````
 
-````{py:method} compute(...) -> abtem.ebsd.measurements.SphericalPattern
+````{py:method} compute(...) -> SphericalPattern | tuple[SphericalPattern, tuple]
 :canonical: abtem.ebsd.measurements.SphericalPattern.compute
 
 ```{autodoc2-docstring} abtem.ebsd.measurements.SphericalPattern.compute

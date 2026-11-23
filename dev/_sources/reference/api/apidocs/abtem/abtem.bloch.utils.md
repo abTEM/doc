@@ -56,6 +56,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`find_inversion_center <abtem.bloch.utils.find_inversion_center>`
+  - ```{autodoc2-docstring} abtem.bloch.utils.find_inversion_center
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`generate_linear_combinations <abtem.bloch.utils.generate_linear_combinations>`
   - ```{autodoc2-docstring} abtem.bloch.utils.generate_linear_combinations
     :parser: rst
@@ -103,6 +108,11 @@
     ```
 * - {py:obj}`retrieve_structure_factor_values <abtem.bloch.utils.retrieve_structure_factor_values>`
   - ```{autodoc2-docstring} abtem.bloch.utils.retrieve_structure_factor_values
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`structure_factor_coupling_matrix <abtem.bloch.utils.structure_factor_coupling_matrix>`
+  - ```{autodoc2-docstring} abtem.bloch.utils.structure_factor_coupling_matrix
     :parser: rst
     :summary:
     ```
@@ -184,6 +194,14 @@
 ```
 ````
 
+````{py:function} find_inversion_center(...) -> typing.Optional[numpy.ndarray]
+:canonical: abtem.bloch.utils.find_inversion_center
+
+```{autodoc2-docstring} abtem.bloch.utils.find_inversion_center
+:parser: rst
+```
+````
+
 ````{py:function} generate_linear_combinations(...) -> numpy.ndarray
 :canonical: abtem.bloch.utils.generate_linear_combinations
 
@@ -260,6 +278,14 @@
 :canonical: abtem.bloch.utils.retrieve_structure_factor_values
 
 ```{autodoc2-docstring} abtem.bloch.utils.retrieve_structure_factor_values
+:parser: rst
+```
+````
+
+````{py:function} structure_factor_coupling_matrix(...) -> numpy.ndarray
+:canonical: abtem.bloch.utils.structure_factor_coupling_matrix
+
+```{autodoc2-docstring} abtem.bloch.utils.structure_factor_coupling_matrix
 :parser: rst
 ```
 ````

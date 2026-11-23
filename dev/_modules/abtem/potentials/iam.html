@@ -38,7 +38,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=6a604523" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
@@ -57,7 +57,7 @@
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../../../_static/togglebutton.js?v=b8b12719"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../_static/design-tabs.js?v=fcb327ea"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script async="async" src="../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
@@ -312,6 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../reference/api/api.html">API</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.bloch.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.bloch.band_chebyshev.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.band_chebyshev</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.bloch.cbed.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.cbed</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.bloch.dynamical.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.dynamical</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.bloch.indexing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.indexing</span></code></a></li>
@@ -398,6 +399,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.rotation_series.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.rotation_series</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.slicing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.slicing</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/api/apidocs/abtem/abtem.tilt.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.tilt</span></code></a></li>
@@ -571,10 +573,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span><span class="p">,</span> <span class="n">nullcontext</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span><span class="p">,</span> <span class="n">reduce</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numbers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Number</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">operator</span><span class="w"> </span><span class="kn">import</span> <span class="n">mul</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Type</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Type</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dask</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dask.array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">da</span>
@@ -780,6 +783,21 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="w">        </span><span class="sd">"""Number of projected potential slices."""</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_slice_range</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">first_slice</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""The range ``first_slice:last_slice`` of slices, ``last_slice=None`` being</span>
+<span class="sd">        the number of slices; a range outside ``0 &lt;= first_slice &lt;= last_slice &lt;=</span>
+<span class="sd">        len(self)`` raises a ValueError."""</span>
+        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">first_slice</span> <span class="o">&lt;=</span> <span class="n">last_slice</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"slice range </span><span class="si">{</span><span class="n">first_slice</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">last_slice</span><span class="si">}</span><span class="s2"> is not within the "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2"> slices"</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span>
+
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">slice_thickness</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
@@ -881,7 +899,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        -------</span>
 <span class="sd">        depth_profile : Images</span>
 <span class="sd">            2D image(s) with the remaining spatial axis horizontal and depth</span>
-<span class="sd">            (z) vertical. Any ensemble axes (e.g. frozen phonons) are preserved.</span>
+<span class="sd">            (z) vertical. Any ensemble axes (e.g. frozen phonons) are preserved; for a</span>
+<span class="sd">            magnetic field or a vector potential the components are an ensemble axis.</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">build</span><span class="p">()</span><span class="o">.</span><span class="n">depth_profile</span><span class="p">(</span>
             <span class="n">projection_axis</span><span class="o">=</span><span class="n">projection_axis</span><span class="p">,</span>
@@ -1042,6 +1061,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.potentials.iam.html#abtem.potentials.iam.BasePotential">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BasePotential</span><span class="p">(</span><span class="n">BaseField</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Base class of all potentials. Documented in the subclasses."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_holding_build_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Context in which the potential keeps state it prepares for the</span>
+<span class="sd">        multislices of one build call, released on exit."""</span>
+        <span class="k">return</span> <span class="n">nullcontext</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">base_axes_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1322,6 +1346,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">last_slice</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">max_batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">lazy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">_members</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FieldArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the potential.</span>
@@ -1347,8 +1372,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">check_is_defined</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slice_range</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">lazy</span><span class="p">:</span>
             <span class="n">blocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_blocks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_default_ensemble_chunks</span><span class="p">)</span>
@@ -1388,9 +1412,15 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">potential_wrapped</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_blocks</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
-                    <span class="n">potential</span> <span class="o">=</span> <span class="n">potential_wrapped</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                <span class="c1"># `_members` are the members of the ensemble `generate_chunked_slices`</span>
+                <span class="c1"># made once for all its chunks; without them each build makes its own</span>
+                <span class="n">members</span> <span class="o">=</span> <span class="n">_members</span>
+                <span class="k">if</span> <span class="n">members</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">members</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">wrapped</span><span class="o">.</span><span class="n">item</span><span class="p">())</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">wrapped</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_blocks</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="p">)</span>
 
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">potential</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">slic</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
                         <span class="n">potential</span><span class="o">.</span><span class="n">generate_slices</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">)</span>
                     <span class="p">):</span>
@@ -1420,6 +1450,14 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">output_potential</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_chunk_builder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""A function that builds the chunk of the given first and last slice, made</span>
+<span class="sd">        once per call of `generate_chunked_slices`, so that whatever the chunks</span>
+<span class="sd">        share is made once rather than for each."""</span>
+        <span class="k">return</span> <span class="k">lambda</span> <span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
+            <span class="n">first_slice</span><span class="o">=</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="o">=</span><span class="n">last_slice</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">generate_chunked_slices</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1462,8 +1500,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">generate_chunks</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slice_range</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">chunk_size</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
             <span class="c1"># A chunk holds every member of the ensemble.</span>
@@ -1477,13 +1514,12 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">chunk_size</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">last_slice</span> <span class="o">-</span> <span class="n">first_slice</span><span class="p">)</span>
 
         <span class="n">exit_plane_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exit_plane_after</span>
+        <span class="n">build_chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunk_builder</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">chunk_start</span><span class="p">,</span> <span class="n">chunk_end</span> <span class="ow">in</span> <span class="n">generate_chunks</span><span class="p">(</span>
             <span class="n">last_slice</span> <span class="o">-</span> <span class="n">first_slice</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">first_slice</span>
         <span class="p">):</span>
-            <span class="n">chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
-                <span class="n">first_slice</span><span class="o">=</span><span class="n">chunk_start</span><span class="p">,</span> <span class="n">last_slice</span><span class="o">=</span><span class="n">chunk_end</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="kc">False</span>
-            <span class="p">)</span>
+            <span class="n">chunk</span> <span class="o">=</span> <span class="n">build_chunk</span><span class="p">(</span><span class="n">chunk_start</span><span class="p">,</span> <span class="n">chunk_end</span><span class="p">)</span>
 
             <span class="c1"># A chunk keeps only the exit planes inside its range, counted from</span>
             <span class="c1"># its first slice: build() would add the entrance plane to the first</span>
@@ -1606,19 +1642,11 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="c1"># The exclusion is blunt, and deliberately so for now. get_sliced_atoms()</span>
     <span class="c1"># returns this object rather than a copy, so a caller who mutates what it</span>
     <span class="c1"># returned changes what the field builds while `==` still reports equal.</span>
-    <span class="c1"># What that costs depends on the projection, because the two cache classes</span>
-    <span class="c1"># differ. For projection="infinite" the cache is a SliceIndexedAtoms,</span>
-    <span class="c1"># whose _slice_index is a list of arrays that safe_equality cannot compare</span>
-    <span class="c1"># -- `==` on it raises ValueError, which becomes "unequal" -- so the</span>
-    <span class="c1"># comparison is constant-False and excluding it gives up nothing. For</span>
-    <span class="c1"># projection="finite" the cache is a SlicedAtoms, which has no</span>
-    <span class="c1"># _slice_index and compares correctly; there the exclusion does give up a</span>
-    <span class="c1"># real check, one that the np.all fix above would otherwise have made</span>
-    <span class="c1"># catch the mutation. Neither path regresses against the old behaviour,</span>
-    <span class="c1"># which missed the mutation on both. Comparing derived state only when</span>
-    <span class="c1"># both operands have it is the better rule, and belongs with the same</span>
-    <span class="c1"># question for lazy arrays -- both are abTEM issue #413 -- rather than</span>
-    <span class="c1"># here.</span>
+    <span class="c1"># Both cache classes compare correctly (SliceIndexedAtoms for</span>
+    <span class="c1"># projection="infinite", SlicedAtoms for "finite"), so the exclusion gives</span>
+    <span class="c1"># up a real check on either path. Comparing derived state only when both</span>
+    <span class="c1"># operands have it is the better rule, and belongs with the same question</span>
+    <span class="c1"># for lazy arrays -- both are abTEM issue #413 -- rather than here.</span>
     <span class="n">_eq_exclude</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_sliced_atoms"</span><span class="p">,)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -1666,6 +1694,23 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">_warn_if_given_atoms_far_outside_along_z</span><span class="p">(</span>
                 <span class="n">_given_configurations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_frozen_phonons</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">plane</span>
             <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_chunk_builder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Each build of an ensemble makes its members again, and with them the</span>
+        <span class="c1"># slicing of their atoms, which the members keep: the chunks of one call</span>
+        <span class="c1"># share one set of members.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_shape</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_chunk_builder</span><span class="p">()</span>
+
+        <span class="n">members</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">wrapped</span><span class="o">.</span><span class="n">item</span><span class="p">())</span> <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">wrapped</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_blocks</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="k">lambda</span> <span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
+            <span class="n">first_slice</span><span class="o">=</span><span class="n">first_slice</span><span class="p">,</span>
+            <span class="n">last_slice</span><span class="o">=</span><span class="n">last_slice</span><span class="p">,</span>
+            <span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">_members</span><span class="o">=</span><span class="n">members</span><span class="p">,</span>
+        <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_reports_given_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Whether atoms given far outside the cell along z are reported: for a</span>
@@ -2044,14 +2089,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        slices : generator of numpy.ndarray</span>
 <span class="sd">            Generator for the array of slices.</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slice_range</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">)</span>
 
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
         <span class="n">sliced_atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sliced_atoms</span><span class="p">()</span>
-
-        <span class="n">numbers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">sliced_atoms</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">numbers</span><span class="p">)</span>
 
         <span class="n">exit_plane_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exit_plane_after</span>
 
@@ -2060,7 +2102,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="ow">in</span> <span class="n">generate_chunks</span><span class="p">(</span>
             <span class="n">last_slice</span> <span class="o">-</span> <span class="n">first_slice</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">first_slice</span>
         <span class="p">):</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">stop</span> <span class="o">-</span> <span class="n">start</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stop</span> <span class="o">-</span> <span class="n">start</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
                     <span class="p">(</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
                     <span class="n">dtype</span><span class="o">=</span><span class="n">get_dtype</span><span class="p">(</span><span class="nb">complex</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
@@ -2217,7 +2259,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        (total number of grid points).</span>
 <span class="sd">    sampling : one or two float or 'auto', optional</span>
 <span class="sd">        Sampling of the potential in `x` and `y` [Å].</span>
-<span class="sd">        Provide either "sampling" or "gpts". If 'auto', the grid points are chosen</span>
+<span class="sd">        Provide either "sampling" or "gpts". If neither is given, the sampling is</span>
+<span class="sd">        'auto' as a default: waves that are matched to the potential adopt it, unless</span>
+<span class="sd">        they have a `gpts` or `sampling` of their own, which then takes precedence.</span>
+<span class="sd">        If 'auto' is given explicitly, a `gpts` or `sampling` of the waves is not</span>
+<span class="sd">        used (with a warning), and the grid points are chosen</span>
 <span class="sd">        to be commensurate with the atom positions (closest to a default of 0.05 Å)</span>
 <span class="sd">        and, whenever compatible with commensurability, a fast FFT size (all prime</span>
 <span class="sd">        factors in {2, 3, 5, 7}); the commensurate grid nearest the target is kept</span>
@@ -2229,7 +2275,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        target sampling is used directly (rounded up to a fast FFT size).</span>
 <span class="sd">    slice_thickness : float or sequence of float or 'auto', optional</span>
 <span class="sd">        Thickness of the potential slices in the propagation direction in [Å]</span>
-<span class="sd">        (default is 1 Å).</span>
+<span class="sd">        (default is 'auto').</span>
 <span class="sd">        If given as a float, the number of slices is calculated by dividing the slice</span>
 <span class="sd">        thickness into the `z`-height of supercell. The slice thickness may be given as</span>
 <span class="sd">        a sequence of values for each slice, in which case an error will be thrown if</span>
@@ -2324,7 +2370,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">atoms</span><span class="p">:</span> <span class="n">Atoms</span> <span class="o">|</span> <span class="n">BaseFrozenPhonons</span><span class="p">,</span>
         <span class="n">gpts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">slice_thickness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">slice_thickness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
         <span class="n">parametrization</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Parametrization</span> <span class="o">=</span> <span class="s2">"lobato"</span><span class="p">,</span>
         <span class="n">projection</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"infinite"</span><span class="p">,</span>
         <span class="n">exit_planes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2340,6 +2386,14 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">origin</span> <span class="o">=</span> <span class="n">_validate_origin</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">box</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">box</span> <span class="o">=</span> <span class="n">_validate_box</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+
+        <span class="c1"># With neither `gpts` nor `sampling`, the grid is chosen as for</span>
+        <span class="c1"># `sampling="auto"`, but only as a default: waves that have a `gpts` or</span>
+        <span class="c1"># `sampling` of their own override it, see `Grid.match`.</span>
+        <span class="n">default_grid</span> <span class="o">=</span> <span class="n">gpts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">sampling</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">default_grid</span><span class="p">:</span>
+            <span class="n">sampling</span> <span class="o">=</span> <span class="s2">"auto"</span>
+        <span class="n">auto_grid</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sampling</span> <span class="o">==</span> <span class="s2">"auto"</span>
 
         <span class="n">frozen_phonons</span> <span class="o">=</span> <span class="n">_validate_frozen_phonons</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
         <span class="n">atoms_obj</span> <span class="o">=</span> <span class="n">frozen_phonons</span><span class="o">.</span><span class="n">atoms</span>
@@ -2481,7 +2535,10 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">box</span><span class="o">=</span><span class="n">box</span><span class="p">,</span>
             <span class="n">periodic</span><span class="o">=</span><span class="n">periodic</span><span class="p">,</span>
             <span class="n">integrator</span><span class="o">=</span><span class="n">integrator</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">_gpts_is_default</span> <span class="o">=</span> <span class="n">default_grid</span>
+        <span class="c1"># A default is overridden quietly; an explicit 'auto' is warned about.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">_gpts_are_auto</span> <span class="o">=</span> <span class="n">auto_grid</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">default_grid</span></div>
 
 
 
@@ -2583,8 +2640,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_warn_if_ensemble</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slice_range</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">)</span>
 
         <span class="n">exit_plane_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exit_plane_after</span>
         <span class="c1"># cum_thickness = np.cumsum(self.slice_thickness)</span>
@@ -2657,8 +2713,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">generate_chunks</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slice_range</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">chunk_size</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
             <span class="n">chunk_size</span> <span class="o">=</span> <span class="n">estimate_potential_chunk_size</span><span class="p">(</span>
@@ -2835,7 +2890,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        -------</span>
 <span class="sd">        depth_profile : Images</span>
 <span class="sd">            2D image(s) with the remaining spatial axis horizontal and depth</span>
-<span class="sd">            (z) vertical.</span>
+<span class="sd">            (z) vertical. Any ensemble axes (e.g. frozen phonons) are preserved; for a</span>
+<span class="sd">            magnetic field or a vector potential the components are an ensemble axis.</span>
 <span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy</span>
 
@@ -2864,11 +2920,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">sum_axis</span><span class="p">)</span>
 
+        <span class="c1"># the depth axis, the first base axis, goes last (the vector components of a</span>
+        <span class="c1"># magnetic field or vector potential, between the depth and the spatial axis,</span>
+        <span class="c1"># become ensemble axes of the profile)</span>
+        <span class="n">depth_axis</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_dims</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="s2">"rechunk"</span><span class="p">):</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">depth_axis</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">depth_axis</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="n">n_z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_slices</span>
         <span class="n">z_extent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">thickness</span>
@@ -2879,7 +2939,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">return</span> <span class="n">Images</span><span class="p">(</span>
             <span class="n">array</span><span class="p">,</span>
             <span class="n">sampling</span><span class="o">=</span><span class="p">(</span><span class="n">spatial_sampling</span><span class="p">,</span> <span class="n">z_sampling</span><span class="p">),</span>
-            <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">,</span>
+            <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_axes_metadata</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+            <span class="p">),</span>
             <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
         <span class="p">)</span></div>
 
@@ -3189,6 +3251,80 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_has_finite_projection</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether `unit` is an IAM potential with a finite projection, the only kind</span>
+<span class="sd">    whose slices near a surface depend on the atoms beyond it."""</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">Potential</span><span class="p">)</span> <span class="ow">and</span> <span class="n">unit</span><span class="o">.</span><span class="n">integrator</span><span class="o">.</span><span class="n">finite</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_SurfaceUnits</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""How many units of a crystal have slices that depend on its surfaces."""</span>
+
+    <span class="c1"># The units, from each surface, within the integration cutoff of it.</span>
+    <span class="n">surface</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1"># The units of the stack the surface slices are calculated in: the surface units</span>
+    <span class="c1"># and their neighbours within the cutoff.</span>
+    <span class="n">stack</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="c1"># The units of vacuum that hold the potential of the atoms of the stack beyond it.</span>
+    <span class="n">vacuum</span><span class="p">:</span> <span class="nb">int</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_surface_units</span><span class="p">(</span>
+    <span class="n">unit</span><span class="p">,</span> <span class="n">correct_surfaces</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">repetitions_z</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_SurfaceUnits</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The units of a crystal of `unit` whose slices are calculated with its</span>
+<span class="sd">    surfaces, or None when they need not be: when the surfaces are not corrected, for</span>
+<span class="sd">    a unit that is not an IAM potential, and for one with an infinite projection (an</span>
+<span class="sd">    atom is in one slice)."""</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">correct_surfaces</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">_has_finite_projection</span><span class="p">(</span><span class="n">unit</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">reach</span> <span class="o">=</span> <span class="n">safe_ceiling_int</span><span class="p">(</span><span class="n">unit</span><span class="o">.</span><span class="n">_margins</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">unit</span><span class="o">.</span><span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="k">if</span> <span class="n">reach</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># nothing reaches across a surface</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">_SurfaceUnits</span><span class="p">(</span>
+        <span class="n">surface</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">reach</span><span class="p">,</span> <span class="n">repetitions_z</span><span class="p">),</span>
+        <span class="n">stack</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">reach</span><span class="p">,</span> <span class="n">repetitions_z</span><span class="p">),</span>
+        <span class="n">vacuum</span><span class="o">=</span><span class="n">reach</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="c1"># The distance from the entrance or exit plane of a crystal, in Å, within which the</span>
+<span class="c1"># potential of an atom is not corrected well by `correct_surfaces`.</span>
+<span class="n">_SURFACE_ATOM_WARNING_DISTANCE</span> <span class="o">=</span> <span class="mf">0.3</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_if_atoms_near_surfaces</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">repetitions_z</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Warn about the atoms of `unit` within `_SURFACE_ATOM_WARNING_DISTANCE` of the</span>
+<span class="sd">    entrance or exit plane of a crystal that corrects its surfaces.</span>
+
+<span class="sd">    The potential that falls beyond a surface is added to the slice next to it, at</span>
+<span class="sd">    the depth of that slice rather than its own. For an atom on the plane that is</span>
+<span class="sd">    half of its potential, which doubles the potential of the slice at its column,</span>
+<span class="sd">    and a focused probe scatters from it much more than from the atom in a slab."""</span>
+    <span class="k">if</span> <span class="n">_surface_units</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">repetitions_z</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">atoms</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">get_transformed_atoms</span><span class="p">()</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">)[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+    <span class="n">heights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">height</span><span class="p">)</span>
+    <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">heights</span><span class="p">,</span> <span class="n">height</span> <span class="o">-</span> <span class="n">heights</span><span class="p">)</span>
+    <span class="n">near</span> <span class="o">=</span> <span class="n">distances</span> <span class="o">&lt;</span> <span class="n">_SURFACE_ATOM_WARNING_DISTANCE</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">near</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="k">return</span>
+
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">near</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span><span class="si">}</span><span class="s2"> atom(s) of the potential unit are within "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_SURFACE_ATOM_WARNING_DISTANCE</span><span class="si">}</span><span class="s2"> Å of its entrance or exit plane (the "</span>
+        <span class="sa">f</span><span class="s2">"nearest </span><span class="si">{</span><span class="n">distances</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">:</span><span class="s2">.2g</span><span class="si">}</span><span class="s2"> Å away), where correct_surfaces, which is "</span>
+        <span class="s2">"the default for a finite projection, overestimates their scattering: for "</span>
+        <span class="s2">"a focused probe the intensity at the columns of atoms on the plane can be "</span>
+        <span class="s2">"off by 10 </span><span class="si">% o</span><span class="s2">r more. Center the atoms in the cell, e.g. with "</span>
+        <span class="s2">"`atoms.center(axis=2)`, to move them away from the plane."</span><span class="p">,</span>
+        <span class="n">stacklevel</span><span class="o">=</span><span class="n">_stacklevel_outside_package</span><span class="p">(),</span>
+    <span class="p">)</span>
+
+
 <div class="viewcode-block" id="CrystalPotential">
 <a class="viewcode-back" href="../../../reference/api/apidocs/abtem/abtem.potentials.iam.html#abtem.potentials.iam.CrystalPotential">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CrystalPotential</span><span class="p">(</span><span class="n">_PotentialBuilder</span><span class="p">):</span>
@@ -3248,13 +3384,64 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">    ensemble_mean : bool, optional</span>
 <span class="sd">        If True (default), the mean over the frozen-phonon ensemble is calculated.</span>
 <span class="sd">        If False, the individual configurations are returned.</span>
+<span class="sd">    correct_surfaces : bool, optional</span>
+<span class="sd">        Whether to calculate the slices at the surfaces of the crystal as they are in</span>
+<span class="sd">        a slab. The default is True for a unit that is a :class:`.Potential` with a</span>
+<span class="sd">        finite projection, and False otherwise.</span>
+
+<span class="sd">        The slices of a finite projection hold the potential of the atoms within the</span>
+<span class="sd">        integration cutoff of them. In a periodic stack of the unit, the first and last</span>
+<span class="sd">        slices include the periodic images of the unit beyond the surfaces, atoms that</span>
+<span class="sd">        a slab does not have, and miss the tails of the potential of the surface atoms</span>
+<span class="sd">        beyond them. With `correct_surfaces`, the slices within the cutoff of a surface</span>
+<span class="sd">        are calculated without the images, and the tails beyond the surface are added</span>
+<span class="sd">        to the slice next to it, so that the projected potential of the slab is</span>
+<span class="sd">        conserved. The crystal itself is unchanged: it has the same slices, `box`,</span>
+<span class="sd">        `thickness` and `exit_planes` as without.</span>
+
+<span class="sd">        The tails are at the depth of the outermost slice, not at their own, so the</span>
+<span class="sd">        exit wave is not that of a slab with vacuum. The error falls with thinner</span>
+<span class="sd">        slices and with the distance of the atoms from the entrance and exit plane of</span>
+<span class="sd">        the unit. For Si at 100 kV the diffraction intensity of a plane wave is closer</span>
+<span class="sd">        to the slab's than that of the periodic stack by a factor 2.9 for atoms on the</span>
+<span class="sd">        plane and 7 at 0.3 Å from it on four slices per unit (5.6 and 14 on eight). The</span>
+<span class="sd">        ADF (50-100 mrad, a 20 mrad probe focused on the entrance) at the column of the</span>
+<span class="sd">        atoms nearest the plane is within 0.4 % of the slab's from 0.3 Å on, against 3-4</span>
+<span class="sd">        % for the periodic stack. For atoms on the plane the potential beyond it is</span>
+<span class="sd">        half of their own, and it is added at the focus of the probe: the ADF at their</span>
+<span class="sd">        columns is too high by 12 % for Si on four slices per unit (5 % on eight), and</span>
+<span class="sd">        by 10 % and 38 % for Au on quarter-lattice and half-lattice slices, whereas the</span>
+<span class="sd">        periodic stack is 28-37 % too low for Si (and right for Au on half-lattice</span>
+<span class="sd">        slices only by cancellation). A warning is given for atoms within 0.3 Å of the</span>
+<span class="sd">        plane, and suggests centering them in the cell, with ``atoms.center(axis=2)``.</span>
+
+<span class="sd">        A `CrystalPotential` that stacks a unit along z cannot have a unit that</span>
+<span class="sd">        corrects its surfaces, at any depth of nested crystals, since every junction</span>
+<span class="sd">        would have the surfaces of a slab. A built crystal (a `PotentialArray` from</span>
+<span class="sd">        `build()`) is such a slab and carries no flag to check, so it must not be</span>
+<span class="sd">        stacked along z either.</span>
+
+<span class="sd">        The potential of ``1 + min(repetitions[2], 2 * ceil(cutoff / unit height))``</span>
+<span class="sd">        units is held per configuration of the unit, for the calculation of which</span>
+<span class="sd">        about ``4 * ceil(cutoff / unit height)`` units are needed, once per pool (so</span>
+<span class="sd">        once per ensemble member that reseeds its own). An infinite projection assigns</span>
+<span class="sd">        each atom to one slice, so it has no surface to correct. The potential of a</span>
+<span class="sd">        unit that is not a `Potential` (a precomputed `PotentialArray`,</span>
+<span class="sd">        `GPAWPotential`) cannot be recalculated, and its surface slices are left as</span>
+<span class="sd">        they are.</span>
 <span class="sd">    """</span>
 
     <span class="c1"># Derived state: the sliced atoms, as on _FieldBuilderFromAtoms (built by</span>
     <span class="c1"># this class's own get_sliced_atoms(); CrystalPotential descends from</span>
     <span class="c1"># _PotentialBuilder, so it does not inherit that declaration), and the pools</span>
-    <span class="c1"># that _partition_args builds once, for all members or for each member.</span>
-    <span class="n">_eq_exclude</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_sliced_atoms"</span><span class="p">,</span> <span class="s2">"_shared_pool"</span><span class="p">,</span> <span class="s2">"_member_pools"</span><span class="p">)</span>
+    <span class="c1"># that _partition_args builds once, for all members or for each member, and</span>
+    <span class="c1"># the flag that makes it keep the pools of each member it builds.</span>
+    <span class="n">_eq_exclude</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">"_sliced_atoms"</span><span class="p">,</span>
+        <span class="s2">"_shared_pool"</span><span class="p">,</span>
+        <span class="s2">"_member_pools"</span><span class="p">,</span>
+        <span class="s2">"_hold_member_pools"</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="c1"># Appended to a FrozenPhonons unit's seeds to make the root seed of a</span>
     <span class="c1"># crystal (see _root_seed_of): "CRYS" in ASCII.</span>
@@ -3266,6 +3453,13 @@ document.addEventListener("DOMContentLoaded", () => {
     <span class="n">_shared_pool</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">_member_pools</span> <span class="o">=</span> <span class="kc">None</span>
 
+    <span class="c1"># `_holding_build_state` sets it on the instance for the duration of the</span>
+    <span class="c1"># context and restores the previous value.</span>
+    <span class="n">_hold_member_pools</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># A crystal pickled before `correct_surfaces` loads without it.</span>
+    <span class="n">_correct_surfaces</span> <span class="o">=</span> <span class="kc">False</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">potential_unit</span><span class="p">:</span> <span class="n">BasePotential</span><span class="p">,</span>
@@ -3274,6 +3468,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">exit_planes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">seeds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">ensemble_mean</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">correct_surfaces</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">_root_seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># _root_seed is given when a crystal is rebuilt, e.g. for a lazy block</span>
@@ -3338,6 +3533,28 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="bp">self</span><span class="o">.</span><span class="n">_potential_unit</span> <span class="o">=</span> <span class="n">potential_unit</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_repetitions</span> <span class="o">=</span> <span class="n">repetitions</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensemble_mean</span> <span class="o">=</span> <span class="n">ensemble_mean</span>
+        <span class="k">if</span> <span class="n">correct_surfaces</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">correct_surfaces</span> <span class="o">=</span> <span class="n">_has_finite_projection</span><span class="p">(</span><span class="n">potential_unit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_correct_surfaces</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">correct_surfaces</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_correct_surfaces</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_box_strain_warning_suppressed</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+            <span class="n">_warn_if_atoms_near_surfaces</span><span class="p">(</span><span class="n">potential_unit</span><span class="p">,</span> <span class="n">repetitions</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">repetitions</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># a crystal anywhere down the chain of units</span>
+            <span class="n">unit</span> <span class="o">=</span> <span class="n">potential_unit</span>
+            <span class="k">while</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">CrystalPotential</span><span class="p">):</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">_surface_units</span><span class="p">(</span>
+                        <span class="n">unit</span><span class="o">.</span><span class="n">potential_unit</span><span class="p">,</span> <span class="n">unit</span><span class="o">.</span><span class="n">correct_surfaces</span><span class="p">,</span> <span class="n">unit</span><span class="o">.</span><span class="n">repetitions</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">"A CrystalPotential stacked along z from a CrystalPotential "</span>
+                        <span class="s2">"that corrects its surfaces would have the surfaces of a "</span>
+                        <span class="s2">"slab at every junction between its repetitions. Pass "</span>
+                        <span class="s2">"correct_surfaces=False to the crystal that corrects them."</span>
+                    <span class="p">)</span>
+                <span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">potential_unit</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sliced_atoms</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseSlicedAtoms</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_root_seed</span> <span class="o">=</span> <span class="n">root_seed</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shared_pool</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PotentialArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -3352,15 +3569,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_seed_of</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_potential_unit</span><span class="p">)</span>
             <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="c1"># The root seed is an identity, compared exactly: the generic equality</span>
-        <span class="c1"># compares numbers to a relative tolerance, under which two different</span>
-        <span class="c1"># 128-bit roots can compare equal.</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_seed</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_root_seed</span>
-
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">ensemble_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensemble_mean</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">correct_surfaces</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Whether the slices at the surfaces are calculated as in a slab."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_correct_surfaces</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">ensemble_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
@@ -3600,12 +3816,14 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">else</span><span class="p">:</span>
             <span class="n">num_frozen_phonons</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="n">new</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
-            <span class="n">potential_unit</span><span class="o">=</span><span class="n">potential</span><span class="p">,</span>
-            <span class="n">seeds</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
-            <span class="n">num_frozen_phonons</span><span class="o">=</span><span class="n">num_frozen_phonons</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="c1"># the atoms near a surface were reported where the crystal was made</span>
+        <span class="k">with</span> <span class="n">_box_strain_warning_silenced</span><span class="p">():</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
+                <span class="n">potential_unit</span><span class="o">=</span><span class="n">potential</span><span class="p">,</span>
+                <span class="n">seeds</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                <span class="n">num_frozen_phonons</span><span class="o">=</span><span class="n">num_frozen_phonons</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="n">new</span><span class="o">.</span><span class="n">_shared_pool</span> <span class="o">=</span> <span class="n">shared_pool</span>
         <span class="n">new</span><span class="o">.</span><span class="n">_member_pools</span> <span class="o">=</span> <span class="n">member_pools</span>
         <span class="k">return</span> <span class="n">_wrap_with_array</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
@@ -3641,7 +3859,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="c1"># _pool_unit_for_member), the members of an unbuilt unit draw from one</span>
         <span class="c1"># pool. It is built once, here, for all members and blocks, rather</span>
         <span class="c1"># than by every member's generate_slices. Members that reseed their</span>
-        <span class="c1"># pools are given them in a lazy graph (see below).</span>
+        <span class="c1"># pools are given them in a lazy graph or hold them in</span>
+        <span class="c1"># _holding_build_state (see below).</span>
         <span class="n">shared_pool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shared_pool</span>
         <span class="n">member_pools</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_member_pools</span>
         <span class="n">fp</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">potential_unit</span><span class="p">,</span> <span class="s2">"frozen_phonons"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -3672,7 +3891,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="c1"># one task of this graph, which every block depends on; it</span>
                 <span class="c1"># derives the pool from the graph's one copy of the unit</span>
                 <span class="n">shared_pool</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_shared_pool</span><span class="p">)(</span>
-                    <span class="n">lazy_unit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_lateral_tiles</span>
+                    <span class="n">lazy_unit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_lateral_tiles</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_surface_repetitions</span>
                 <span class="p">)</span>
             <span class="k">elif</span> <span class="n">shared_pool</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">shared_pool</span> <span class="o">=</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">shared_pool</span><span class="p">)</span>
@@ -3683,11 +3902,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="c1"># than once per block. Like the shared pool, it is derived from</span>
                 <span class="c1"># the graph's one copy of the unit. A pool is held until the last</span>
                 <span class="c1"># block of its member has run.</span>
-                <span class="n">member_pools</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-                    <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_member_pool</span><span class="p">)(</span>
-                        <span class="n">lazy_unit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_lateral_tiles</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
-                    <span class="p">)</span>
-                    <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">seeds</span>
+                <span class="n">member_pools</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_member_pools</span><span class="p">(</span>
+                    <span class="n">lazy_unit</span><span class="p">,</span> <span class="n">dask</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_member_pool</span><span class="p">)</span>
                 <span class="p">)</span>
 
             <span class="n">arrays</span> <span class="o">=</span> <span class="p">[]</span>
@@ -3720,7 +3936,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">potential_unit</span> <span class="o">=</span> <span class="n">potential_unit</span><span class="o">.</span><span class="n">ensure_computed</span><span class="p">(</span><span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">build_pool</span><span class="p">:</span>
                 <span class="n">shared_pool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_shared_pool</span><span class="p">(</span>
-                    <span class="n">potential_unit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_lateral_tiles</span>
+                    <span class="n">potential_unit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_lateral_tiles</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_surface_repetitions</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">pool_per_member</span> <span class="ow">and</span> <span class="n">member_pools</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hold_member_pools</span><span class="p">:</span>
+                <span class="n">member_pools</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_member_pools</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_member_pools</span><span class="p">(</span>
+                    <span class="n">potential_unit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_member_pool</span>
                 <span class="p">)</span>
 
             <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="mi">0</span><span class="p">]),),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
@@ -3730,9 +3950,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">seeds</span> <span class="o">=</span> <span class="kc">None</span>
 
-                <span class="c1"># An eager ensemble runs its members one after another, and each</span>
-                <span class="c1"># member that reseeds its pool builds it once, unless it was given</span>
-                <span class="c1"># its pool as a member of a lazy block.</span>
+                <span class="c1"># An eager ensemble runs its members one after another. A member</span>
+                <span class="c1"># that reseeds its pool builds it for each multislice it runs,</span>
+                <span class="c1"># unless it was given its pool as a member of a lazy block, or</span>
+                <span class="c1"># runs them inside _holding_build_state, which keeps the pool</span>
+                <span class="c1"># built above.</span>
                 <span class="n">itemset</span><span class="p">(</span>
                     <span class="n">array</span><span class="p">,</span>
                     <span class="n">i</span><span class="p">,</span>
@@ -3748,6 +3970,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="n">array</span> <span class="o">=</span> <span class="n">_wrap_with_array</span><span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ndims</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">array</span><span class="p">,)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_member_pools</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">build</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The pools of the members of this crystal, one for each seed, made by</span>
+<span class="sd">        `build` (`_build_member_pool`, or a delayed version of it)."""</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">build</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_lateral_tiles</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">seed</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_surface_repetitions</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">seeds</span>
+        <span class="p">)</span>
+
+    <span class="nd">@contextmanager</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_holding_build_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Holds the pools of the members that reseed their own for the</span>
+<span class="sd">        multislices inside the context (see `_partition_args`); on exit the</span>
+<span class="sd">        crystal holds the pools and the hold it had on entry. A crystal with N</span>
+<span class="sd">        members holds N pools inside the context; `SMatrix.build` enters it with</span>
+<span class="sd">        crystals of one member."""</span>
+        <span class="n">prior_pools</span><span class="p">,</span> <span class="n">prior_hold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_member_pools</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hold_member_pools</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hold_member_pools</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">yield</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hold_member_pools</span> <span class="o">=</span> <span class="n">prior_hold</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_member_pools</span> <span class="o">=</span> <span class="n">prior_pools</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_n_lateral_tiles</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -3784,16 +4029,142 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pool_unit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_lateral_tiles</span><span class="p">,</span> <span class="n">member_seed</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_build_shared_pool</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="n">BasePotential</span><span class="p">,</span> <span class="n">n_tiles</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PotentialArray</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_shared_pool</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="n">BasePotential</span><span class="p">,</span> <span class="n">n_tiles</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">surface_repetitions</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PotentialArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""The pool every member draws from, unless each reseeds its own."""</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_pool_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">n_tiles</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_build_pool_array</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_pool_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">n_tiles</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">surface_repetitions</span>
+        <span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_build_member_pool</span><span class="p">(</span>
-        <span class="bp">cls</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="n">BasePotential</span><span class="p">,</span> <span class="n">n_tiles</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">member_seed</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="n">BasePotential</span><span class="p">,</span>
+        <span class="n">n_tiles</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">member_seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">surface_repetitions</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PotentialArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""The pool of the member with seed `member_seed`, which reseeds its own."""</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_pool_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">n_tiles</span><span class="p">,</span> <span class="n">member_seed</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_build_pool_array</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_pool_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">n_tiles</span><span class="p">,</span> <span class="n">member_seed</span><span class="p">),</span> <span class="n">surface_repetitions</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_surface_repetitions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""What a pool needs to know of the surfaces of this crystal: its number of</span>
+<span class="sd">        z-repetitions when they are corrected, otherwise None."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">repetitions</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_correct_surfaces</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_pool_array</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">pool_unit</span><span class="p">:</span> <span class="n">BasePotential</span><span class="p">,</span> <span class="n">surface_repetitions</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PotentialArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Build the pool of configurations the slices of a crystal are drawn from.</span>
+
+<span class="sd">        The pool holds the slices of the unit. For a crystal with corrected surfaces</span>
+<span class="sd">        (`surface_repetitions` is its number of z-repetitions), the slices of a</span>
+<span class="sd">        stack of units follow them along the slice axis, calculated as in a slab: the</span>
+<span class="sd">        atoms of the stack alone, and the potential that falls beyond its ends added</span>
+<span class="sd">        to the slices next to them. A crystal takes the slices within the cutoff of</span>
+<span class="sd">        its surfaces from the stack (see `_pool_indices`), and the others from the</span>
+<span class="sd">        unit.</span>
+<span class="sd">        """</span>
+        <span class="n">potentials</span> <span class="o">=</span> <span class="n">pool_unit</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">surface_repetitions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">potentials</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="n">_surface_units</span><span class="p">(</span><span class="n">pool_unit</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">surface_repetitions</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">potentials</span>
+
+        <span class="n">configurations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+            <span class="n">pool_unit</span><span class="o">.</span><span class="n">to_atoms_ensemble</span><span class="p">()</span><span class="o">.</span><span class="n">trajectory</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_build_surface_stack</span><span class="p">(</span><span class="n">pool_unit</span><span class="p">,</span> <span class="n">configurations</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
+
+        <span class="n">array</span> <span class="o">=</span> <span class="n">potentials</span><span class="o">.</span><span class="n">array</span>
+        <span class="n">single</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span>
+        <span class="k">if</span> <span class="n">single</span><span class="p">:</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">pool_unit</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">array</span><span class="p">,</span> <span class="n">stack</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">potentials</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+            <span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">single</span> <span class="k">else</span> <span class="n">array</span><span class="p">,</span>
+            <span class="n">slice_thickness</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">pool_unit</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">units</span><span class="o">.</span><span class="n">stack</span><span class="p">),</span>
+            <span class="n">extent</span><span class="o">=</span><span class="n">potentials</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span>
+            <span class="n">ensemble_axes_metadata</span><span class="o">=</span><span class="n">potentials</span><span class="o">.</span><span class="n">ensemble_axes_metadata</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_surface_stack</span><span class="p">(</span>
+        <span class="n">pool_unit</span><span class="p">:</span> <span class="n">Potential</span><span class="p">,</span>
+        <span class="n">configurations</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Atoms</span><span class="p">],</span>
+        <span class="n">units</span><span class="p">:</span> <span class="n">_SurfaceUnits</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The slices of a stack of `units.stack` copies of each configuration of the</span>
+<span class="sd">        unit, with the configuration axis first.</span>
+
+<span class="sd">        The stack is between layers of vacuum, `units.vacuum` units thick, that hold the</span>
+<span class="sd">        potential of its atoms beyond it, and keep its periodic images out of reach.</span>
+<span class="sd">        What falls in them is added to the slice of the stack next to them, which is</span>
+<span class="sd">        where a slab without the vacuum would put it.</span>
+<span class="sd">        """</span>
+        <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="n">pool_unit</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">unit_slice_thickness</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">pool_unit</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span>
+        <span class="n">n_unit</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">unit_slice_thickness</span><span class="p">)</span>
+        <span class="n">n_vacuum</span> <span class="o">=</span> <span class="n">n_unit</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">vacuum</span>
+        <span class="n">slice_thickness</span> <span class="o">=</span> <span class="n">unit_slice_thickness</span> <span class="o">*</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">stack</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">vacuum</span><span class="p">)</span>
+
+        <span class="n">box</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pool_unit</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">vacuum</span>
+
+        <span class="n">stacks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">configuration</span> <span class="ow">in</span> <span class="n">configurations</span><span class="p">:</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="n">configuration</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">units</span><span class="o">.</span><span class="n">stack</span><span class="p">)</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">height</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">set_cell</span><span class="p">([</span><span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">sum</span><span class="p">(</span><span class="n">slice_thickness</span><span class="p">)],</span> <span class="n">scale_atoms</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="n">potential</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span>
+                <span class="n">atoms</span><span class="p">,</span>
+                <span class="n">gpts</span><span class="o">=</span><span class="n">pool_unit</span><span class="o">.</span><span class="n">_valid_gpts</span><span class="p">,</span>
+                <span class="n">slice_thickness</span><span class="o">=</span><span class="n">slice_thickness</span><span class="p">,</span>
+                <span class="n">integrator</span><span class="o">=</span><span class="n">pool_unit</span><span class="o">.</span><span class="n">integrator</span><span class="p">,</span>
+                <span class="n">device</span><span class="o">=</span><span class="n">pool_unit</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">array</span>
+            <span class="n">stack</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="n">n_vacuum</span> <span class="p">:</span> <span class="n">n_vacuum</span> <span class="o">+</span> <span class="n">n_unit</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">stack</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">stack</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">array</span><span class="p">[:</span><span class="n">n_vacuum</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">array</span><span class="p">[</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">n_vacuum</span> <span class="p">:]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">stacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">xp</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">stacks</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_pool_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The slice of the pool (see `_build_pool_array`) of every slice of the</span>
+<span class="sd">        crystal."""</span>
+        <span class="n">n_unit</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span><span class="p">)</span>
+        <span class="n">n_repetitions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repetitions</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_unit</span><span class="p">),</span> <span class="n">n_repetitions</span><span class="p">)</span>
+
+        <span class="n">units</span> <span class="o">=</span> <span class="n">_surface_units</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_correct_surfaces</span><span class="p">,</span> <span class="n">n_repetitions</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">indices</span>
+
+        <span class="n">crystal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_unit</span> <span class="o">*</span> <span class="n">n_repetitions</span><span class="p">)</span>
+        <span class="n">repetition</span> <span class="o">=</span> <span class="n">crystal</span> <span class="o">//</span> <span class="n">n_unit</span>
+        <span class="c1"># The stack follows the unit in the pool; its first units are the entrance</span>
+        <span class="c1"># surface, and its last the exit surface.</span>
+        <span class="n">exit_surface</span> <span class="o">=</span> <span class="n">repetition</span> <span class="o">&gt;=</span> <span class="n">n_repetitions</span> <span class="o">-</span> <span class="n">units</span><span class="o">.</span><span class="n">surface</span>
+        <span class="n">indices</span><span class="p">[</span><span class="n">exit_surface</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">n_unit</span> <span class="o">+</span> <span class="n">crystal</span><span class="p">[</span><span class="n">exit_surface</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">n_repetitions</span> <span class="o">-</span> <span class="n">units</span><span class="o">.</span><span class="n">stack</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_unit</span>
+        <span class="p">)</span>
+        <span class="n">entrance_surface</span> <span class="o">=</span> <span class="n">repetition</span> <span class="o">&lt;</span> <span class="n">units</span><span class="o">.</span><span class="n">surface</span>
+        <span class="n">indices</span><span class="p">[</span><span class="n">entrance_surface</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_unit</span> <span class="o">+</span> <span class="n">crystal</span><span class="p">[</span><span class="n">entrance_surface</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">indices</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_pool_unit</span><span class="p">(</span>
@@ -3880,7 +4251,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">member_seed</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">seeds</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seeds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="n">pool_unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pool_unit_for_member</span><span class="p">(</span><span class="n">member_seed</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pool_unit</span><span class="p">,</span> <span class="n">PotentialArray</span><span class="p">):</span>
-            <span class="n">potentials</span> <span class="o">=</span> <span class="n">pool_unit</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">lazy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">potentials</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_pool_array</span><span class="p">(</span><span class="n">pool_unit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_surface_repetitions</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">potentials</span> <span class="o">=</span> <span class="n">pool_unit</span>
 
@@ -3995,25 +4366,24 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        """</span>
         <span class="n">potentials</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_built_pool</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slice_range</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">)</span>
 
         <span class="n">exit_plane_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exit_plane_after</span>
         <span class="n">cum_thickness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">)</span>
         <span class="n">unit_slices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span><span class="p">)</span>
         <span class="n">global_idx</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># global slice counter across all z-repetitions</span>
+        <span class="n">pool_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pool_indices</span><span class="p">()</span>
 
-        <span class="c1"># Lazy cache of tiled unit slices, keyed by (config_idx, slice_idx).</span>
+        <span class="c1"># Lazy cache of tiled pool slices, keyed by (config_idx, slice_idx).</span>
         <span class="c1"># Without it each (z-rep, unit-slice) pair re-tiles the same array via</span>
         <span class="c1"># ``.tile(self.repetitions[:2])`` — for the no-frozen-phonon case</span>
         <span class="c1"># (n_configs == 1) every z-rep produces an identical result so the</span>
         <span class="c1"># cost scales linearly with ``repetitions[2]``. The cache turns this</span>
-        <span class="c1"># into ``n_configs * len(self.potential_unit)`` unique tile calls.</span>
+        <span class="c1"># into ``n_configs * len(pool)`` unique tile calls.</span>
         <span class="c1"># For the SrTiO3 tutorial (reps=(4,4,25), 2 unit slices, no FP) this</span>
         <span class="c1"># is 2 tiles instead of 50; the cache footprint is bounded by the</span>
         <span class="c1"># tiled-unit byte size and released with the generator.</span>
         <span class="n">tiled_cache</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">PotentialArray</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">unit_generators</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">object</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">tile_xy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repetitions</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
 
         <span class="n">n_configs</span> <span class="o">=</span> <span class="n">potentials</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -4028,16 +4398,16 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="n">cached</span> <span class="o">=</span> <span class="n">tiled_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">cached</span>
-            <span class="n">gen</span> <span class="o">=</span> <span class="n">unit_generators</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">config_idx</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">gen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">gen</span> <span class="o">=</span> <span class="n">potentials</span><span class="p">[</span><span class="n">config_idx</span><span class="p">]</span><span class="o">.</span><span class="n">generate_slices</span><span class="p">()</span>
-                <span class="n">unit_generators</span><span class="p">[</span><span class="n">config_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">gen</span>
-            <span class="n">slic</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">gen</span><span class="p">)</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">tile_xy</span><span class="p">)</span>
+            <span class="n">slic</span> <span class="o">=</span> <span class="n">potentials</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+                <span class="n">xp</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">_pool_array</span><span class="p">[</span><span class="n">config_idx</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">tile_xy</span><span class="p">)[</span><span class="kc">None</span><span class="p">],</span>
+                <span class="n">potentials</span><span class="o">.</span><span class="n">slice_thickness</span><span class="p">[</span><span class="n">j</span> <span class="p">:</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="n">extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="n">tiled_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">slic</span>
             <span class="k">return</span> <span class="n">slic</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">_mosaic_slice</span><span class="p">(</span><span class="n">config_tiles</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PotentialArray</span><span class="p">:</span>
-            <span class="c1"># Assemble sub-slice ``j`` of the lateral supercell by placing an</span>
+            <span class="c1"># Assemble pool slice ``j`` of the lateral supercell by placing an</span>
             <span class="c1"># *independently drawn* pool configuration at every lateral</span>
             <span class="c1"># repetition (a mosaic), rather than replicating a single displaced</span>
             <span class="c1"># unit across all tiles. This is what reproduces genuine lateral</span>
@@ -4083,16 +4453,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="k">return</span>
 
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">unit_slices</span><span class="p">):</span>
-                <span class="c1"># Iterate j from 0 even for slices before first_slice in a</span>
-                <span class="c1"># partially-overlapping rep, so the unit generator advances in</span>
-                <span class="c1"># order (j=0, j=1, ...). The tiling cache ensures each</span>
-                <span class="c1"># (config, j) pair is tiled at most once.</span>
-                <span class="k">if</span> <span class="n">config_tiles</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">slic</span> <span class="o">=</span> <span class="n">_tiled_slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">slic</span> <span class="o">=</span> <span class="n">_mosaic_slice</span><span class="p">(</span><span class="n">config_tiles</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
-
                 <span class="k">if</span> <span class="n">global_idx</span> <span class="o">&gt;=</span> <span class="n">first_slice</span><span class="p">:</span>
+                    <span class="c1"># The slice of the pool this slice of the crystal is drawn</span>
+                    <span class="c1"># from: its unit's, or one calculated with a surface.</span>
+                    <span class="n">pool_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pool_indices</span><span class="p">[</span><span class="n">global_idx</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">config_tiles</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">slic</span> <span class="o">=</span> <span class="n">_tiled_slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pool_idx</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">slic</span> <span class="o">=</span> <span class="n">_mosaic_slice</span><span class="p">(</span><span class="n">config_tiles</span><span class="p">,</span> <span class="n">pool_idx</span><span class="p">)</span>
+
                     <span class="n">exit_planes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
                         <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">exit_plane_after</span><span class="p">[</span><span class="n">global_idx</span> <span class="p">:</span> <span class="n">global_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="p">)</span>
@@ -4129,15 +4498,17 @@ document.addEventListener("DOMContentLoaded", () => {
 <span class="sd">        straight into its chunk. A frozen-phonon unit takes its slices from one</span>
 <span class="sd">        ``generate_slices`` call (the pool is built and the mosaic drawn once</span>
 <span class="sd">        for all chunks), and its pool, enlarged to the number of lateral tiles</span>
-<span class="sd">        when smaller, is held on top of the chunk budget for the whole call.</span>
+<span class="sd">        when smaller, is held on top of the chunk budget for the whole call. With</span>
+<span class="sd">        `correct_surfaces` the pool also holds the slices of the surface stack, so</span>
+<span class="sd">        it has ``1 + min(repetitions[2], 2 * ceil(cutoff / unit height))`` times the</span>
+<span class="sd">        slices of the unit.</span>
 
 <span class="sd">        The dtype of the output follows the unit potential's array dtype,</span>
 <span class="sd">        which is set by the abtem ``precision`` config key (float32 / float64).</span>
 <span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">abtem.core.chunks</span><span class="w"> </span><span class="kn">import</span> <span class="n">estimate_potential_chunk_size</span>
 
-        <span class="k">if</span> <span class="n">last_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">last_slice</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slice_range</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">chunk_size</span> <span class="o">==</span> <span class="s2">"auto"</span><span class="p">:</span>
             <span class="n">chunk_size</span> <span class="o">=</span> <span class="n">estimate_potential_chunk_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gpts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
@@ -4146,12 +4517,14 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="n">xp</span> <span class="o">=</span> <span class="n">get_array_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">exit_plane_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exit_plane_after</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span><span class="o">.</span><span class="n">num_configurations</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_built_pool</span><span class="p">()</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">unit_thickness</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential_unit</span><span class="o">.</span><span class="n">slice_thickness</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_built_pool</span><span class="p">()</span>
+            <span class="n">pool_array</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">pool_thickness</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">slice_thickness</span>
+            <span class="n">pool_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pool_indices</span><span class="p">()</span>
             <span class="n">slices</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="p">(</span>
-                    <span class="n">xp</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">unit</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">unit</span><span class="p">)],</span> <span class="bp">self</span><span class="o">.</span><span class="n">repetitions</span><span class="p">[:</span><span class="mi">2</span><span class="p">]),</span>
-                    <span class="n">unit_thickness</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">unit</span><span class="p">)],</span>
+                    <span class="n">xp</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">pool_array</span><span class="p">[</span><span class="n">pool_indices</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="bp">self</span><span class="o">.</span><span class="n">repetitions</span><span class="p">[:</span><span class="mi">2</span><span class="p">]),</span>
+                    <span class="n">pool_thickness</span><span class="p">[</span><span class="n">pool_indices</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span>
                 <span class="p">)</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">first_slice</span><span class="p">,</span> <span class="n">last_slice</span><span class="p">)</span>
             <span class="p">)</span>

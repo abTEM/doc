@@ -412,6 +412,11 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.core.ensemble.
 
 ````
 
+````{py:method} dummy_probes(...) -> abtem.waves.Probe
+:canonical: abtem.prism.s_matrix.SMatrix.dummy_probes
+
+````
+
 ````{py:property} energy
 :canonical: abtem.prism.s_matrix.SMatrix.energy
 :type: float | abtem.distributions.BaseDistribution
@@ -675,6 +680,7 @@ Bases: {py:obj}`abtem.prism.s_matrix.BaseSMatrix`, {py:obj}`abtem.array.ArrayObj
 ````{py:method} from_array_and_metadata(...)
 :canonical: abtem.prism.s_matrix.SMatrixArray.from_array_and_metadata
 :abstractmethod:
+:classmethod:
 
 ````
 

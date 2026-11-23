@@ -173,6 +173,24 @@
 
 ````
 
+````{py:exception} LazyComparisonError()
+:canonical: abtem.core.utils.LazyComparisonError
+
+Bases: {py:obj}`TypeError`
+
+```{autodoc2-docstring} abtem.core.utils.LazyComparisonError
+:parser: rst
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.core.utils.LazyComparisonError.__init__
+:parser: rst
+```
+
+````
+
 ````{py:data} T
 :canonical: abtem.core.utils.T
 :value: >

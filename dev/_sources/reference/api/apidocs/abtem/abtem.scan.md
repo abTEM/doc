@@ -428,6 +428,10 @@ Bases: {py:obj}`abtem.scan.BaseScan`
 ````{py:method} get_positions(...) -> numpy.ndarray
 :canonical: abtem.scan.LineScan.get_positions
 
+```{autodoc2-docstring} abtem.scan.LineScan.get_positions
+:parser: rst
+```
+
 ````
 
 ````{py:property} gpts

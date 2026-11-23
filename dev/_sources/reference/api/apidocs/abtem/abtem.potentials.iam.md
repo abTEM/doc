@@ -283,6 +283,16 @@ Bases: {py:obj}`abtem.potentials.iam._PotentialBuilder`
 :parser: rst
 ```
 
+````{py:property} correct_surfaces
+:canonical: abtem.potentials.iam.CrystalPotential.correct_surfaces
+:type: bool
+
+```{autodoc2-docstring} abtem.potentials.iam.CrystalPotential.correct_surfaces
+:parser: rst
+```
+
+````
+
 ````{py:property} ensemble_axes_metadata
 :canonical: abtem.potentials.iam.CrystalPotential.ensemble_axes_metadata
 :type: list[abtem.core.axes.AxisMetadata]

@@ -39,7 +39,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=fd3f3429" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=6a604523" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../../../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
@@ -58,7 +58,7 @@
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../../../../_static/togglebutton.js?v=b8b12719"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../../_static/design-tabs.js?v=fcb327ea"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script async="async" src="../../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
@@ -317,6 +317,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../api.html">API</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="abtem.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem</span></code></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3 has-children"><a class="reference internal" href="abtem.bloch.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="abtem.bloch.band_chebyshev.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.band_chebyshev</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="abtem.bloch.cbed.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.cbed</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="abtem.bloch.dynamical.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.dynamical</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="abtem.bloch.indexing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.indexing</span></code></a></li>
@@ -403,6 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="abtem.rotation_series.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.rotation_series</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.slicing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.slicing</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.tilt.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.tilt</span></code></a></li>
@@ -808,19 +810,24 @@ in smaller chunks via <code class="docutils literal notranslate"><span class="pr
 <p>On GPU the per-slice cost accounts for CuPy memory pool fragmentation —
 the pool may hold large contiguous blocks for live arrays (waves, probes)
 that prevent new allocations even when total free bytes suffice.  The
-effective per-slice cost under fragmentation is empirically ~5× the raw
-slice size for scan workloads at 4096² grids.</p>
+effective per-slice cost under fragmentation is empirically ~2× the raw
+slice size, measured from real peak pool usage (not just pool
+reservation, which can massively overshoot real need — see the comment
+below) on an 8000×8000 grid: a fixed chunk_size=15 held live usage to a
+stable ~0.31–0.38 GB per slice (~1.2–1.5× raw) across three separate
+rotations of a real multislice run.  2× keeps a real margin above that
+measured cost rather than tracking it exactly, since it is only
+validated at one grid size and workload shape.</p>
 <p>On CPU there is no pool fragmentation and system RAM is typically
 abundant.  The default is therefore to place the entire potential in
 a single chunk (no chunking), matching pre-chunking behaviour.  Set
 <code class="docutils literal notranslate"><span class="pre">potential.slice-chunk-size</span></code> in the configuration to a positive
 integer to enable CPU chunking when memory is genuinely limited.</p>
-<p>On GPU the budget uses the CUDA-reported free memory without calling
-<code class="docutils literal notranslate"><span class="pre">free_all_blocks()</span></code> first. Dead pool blocks represent recent memory
-pressure from build/propagation temporaries; leaving them gives a
-conservative estimate that self-adapts as the pool fills up over
-successive scan batches. Falls back to <code class="docutils literal notranslate"><span class="pre">dask.chunk-size-gpu</span></code> when
-CuPy is unavailable.</p>
+<p>On GPU the budget uses the CUDA-reported free memory plus the idle blocks
+of CuPy’s memory pool, capped by the total memory minus the pool’s live
+blocks (see <code class="docutils literal notranslate"><span class="pre">_effective_free_gpu_memory</span></code>), without calling
+<code class="docutils literal notranslate"><span class="pre">free_all_blocks()</span></code> first. Falls back to <code class="docutils literal notranslate"><span class="pre">dask.chunk-size-gpu</span></code> when
+CuPy is not installed or sees no device.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -856,7 +863,8 @@ requiring explicit cross-referencing.</p>
 <p>The raw estimate is rounded to the nearest power of two (preferring
 the upper power when within 25 % headroom) so that batch sizes snap
 to GPU-friendly values such as 8, 16, 32, 64.</p>
-<p>For CPU, falls back to the <code class="docutils literal notranslate"><span class="pre">dask.chunk-size</span></code> configuration key.</p>
+<p>For CPU, and for GPU without CuPy or a visible device, falls back to the
+<code class="docutils literal notranslate"><span class="pre">dask.chunk-size</span></code> or <code class="docutils literal notranslate"><span class="pre">dask.chunk-size-gpu</span></code> configuration key.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

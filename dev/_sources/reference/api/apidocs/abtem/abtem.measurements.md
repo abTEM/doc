@@ -817,6 +817,7 @@ Bases: {py:obj}`abtem.measurements.BaseMeasurements`
 ````{py:method} from_array_and_metadata(...) -> abtem.measurements.BaseMeasurements
 :canonical: abtem.measurements.IndexedDiffractionPatterns.from_array_and_metadata
 :abstractmethod:
+:classmethod:
 
 ````
 

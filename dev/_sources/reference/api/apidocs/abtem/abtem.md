@@ -41,6 +41,7 @@ abtem.integrals
 abtem.measurements
 abtem.multislice
 abtem.noise
+abtem.rotation_series
 abtem.scan
 abtem.slicing
 abtem.tilt

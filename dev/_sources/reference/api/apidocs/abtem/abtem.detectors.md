@@ -61,6 +61,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`WindowedPixelatedDetector <abtem.detectors.WindowedPixelatedDetector>`
+  - ```{autodoc2-docstring} abtem.detectors.WindowedPixelatedDetector
+    :parser: rst
+    :summary:
+    ```
 ````
 
 ### Functions
@@ -311,6 +316,16 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 
 ````
 
+````{py:property} margin
+:canonical: abtem.detectors.PixelatedDetector.margin
+:type: float | tuple[float, float]
+
+```{autodoc2-docstring} abtem.detectors.PixelatedDetector.margin
+:parser: rst
+```
+
+````
+
 ````{py:property} max_angle
 :canonical: abtem.detectors.PixelatedDetector.max_angle
 :type: str | float
@@ -356,6 +371,16 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 :type: bool
 
 ```{autodoc2-docstring} abtem.detectors.PixelatedDetector.unbiased
+:parser: rst
+```
+
+````
+
+````{py:property} window_func
+:canonical: abtem.detectors.PixelatedDetector.window_func
+:type: typing.Optional[str | tuple]
+
+```{autodoc2-docstring} abtem.detectors.PixelatedDetector.window_func
 :parser: rst
 ```
 
@@ -717,6 +742,16 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 
 ````
 
+````{py:property} margin
+:canonical: abtem.detectors.WavesDetector.margin
+:type: float | tuple[float, float]
+
+```{autodoc2-docstring} abtem.detectors.WavesDetector.margin
+:parser: rst
+```
+
+````
+
 ````{py:property} reduction_dtype
 :canonical: abtem.detectors.WavesDetector.reduction_dtype
 :type: typing.Optional[numpy.dtype]
@@ -727,7 +762,35 @@ Bases: {py:obj}`abtem.detectors.BaseDetector`
 
 ````
 
+````{py:property} window_func
+:canonical: abtem.detectors.WavesDetector.window_func
+:type: typing.Optional[str | tuple]
+
+```{autodoc2-docstring} abtem.detectors.WavesDetector.window_func
+:parser: rst
+```
+
+````
+
 `````
+
+````{py:class} WindowedPixelatedDetector(...)
+:canonical: abtem.detectors.WindowedPixelatedDetector
+
+Bases: {py:obj}`abtem.detectors.PixelatedDetector`
+
+```{autodoc2-docstring} abtem.detectors.WindowedPixelatedDetector
+:parser: rst
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.detectors.WindowedPixelatedDetector.__init__
+:parser: rst
+```
+
+````
 
 ````{py:function} validate_detectors(...) -> list[BaseDetector]
 :canonical: abtem.detectors.validate_detectors

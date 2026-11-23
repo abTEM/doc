@@ -132,12 +132,6 @@ Bases: {py:obj}`abtem.transform.EnsembleTransform`
 
 ````
 
-````{py:property} metadata
-:canonical: abtem.noise.ScanNoiseTransform.metadata
-:type: dict
-
-````
-
 ````{py:property} num_components
 :canonical: abtem.noise.ScanNoiseTransform.num_components
 :type: int

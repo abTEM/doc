@@ -62,11 +62,6 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`Reader <abtem.inelastic.phonons.Reader>`
-  - ```{autodoc2-docstring} abtem.inelastic.phonons.Reader
-    :parser: rst
-    :summary:
-    ```
 * - {py:obj}`SOURCE_INDEX <abtem.inelastic.phonons.SOURCE_INDEX>`
   - ```{autodoc2-docstring} abtem.inelastic.phonons.SOURCE_INDEX
     :parser: rst
@@ -446,18 +441,6 @@ Bases: {py:obj}`abtem.inelastic.phonons.BaseFrozenPhonons`
 ````
 
 `````
-
-````{py:data} Reader
-:canonical: abtem.inelastic.phonons.Reader
-:type: typing.Optional[typing.Callable]
-:value: >
-   None
-
-```{autodoc2-docstring} abtem.inelastic.phonons.Reader
-:parser: rst
-```
-
-````
 
 ````{py:data} SOURCE_INDEX
 :canonical: abtem.inelastic.phonons.SOURCE_INDEX

@@ -26,6 +26,11 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`check_metal_kernels_are_available <abtem.core.backend.check_metal_kernels_are_available>`
+  - ```{autodoc2-docstring} abtem.core.backend.check_metal_kernels_are_available
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`check_mps_is_available <abtem.core.backend.check_mps_is_available>`
   - ```{autodoc2-docstring} abtem.core.backend.check_mps_is_available
     :parser: rst
@@ -38,6 +43,11 @@
     ```
 * - {py:obj}`device_name_from_array_module <abtem.core.backend.device_name_from_array_module>`
   - ```{autodoc2-docstring} abtem.core.backend.device_name_from_array_module
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`emulates_float64 <abtem.core.backend.emulates_float64>`
+  - ```{autodoc2-docstring} abtem.core.backend.emulates_float64
     :parser: rst
     :summary:
     ```
@@ -152,6 +162,14 @@
 ```
 ````
 
+````{py:function} check_metal_kernels_are_available()
+:canonical: abtem.core.backend.check_metal_kernels_are_available
+
+```{autodoc2-docstring} abtem.core.backend.check_metal_kernels_are_available
+:parser: rst
+```
+````
+
 ````{py:function} check_mps_is_available()
 :canonical: abtem.core.backend.check_mps_is_available
 
@@ -172,6 +190,14 @@
 :canonical: abtem.core.backend.device_name_from_array_module
 
 ```{autodoc2-docstring} abtem.core.backend.device_name_from_array_module
+:parser: rst
+```
+````
+
+````{py:function} emulates_float64(...) -> bool
+:canonical: abtem.core.backend.emulates_float64
+
+```{autodoc2-docstring} abtem.core.backend.emulates_float64
 :parser: rst
 ```
 ````

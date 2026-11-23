@@ -29,6 +29,11 @@
 :class: autosummary longtable
 :align: left
 
+* - {py:obj}`emulated_fft_advice <abtem.core.fft.emulated_fft_advice>`
+  - ```{autodoc2-docstring} abtem.core.fft.emulated_fft_advice
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`fft2 <abtem.core.fft.fft2>`
   - ```{autodoc2-docstring} abtem.core.fft.fft2
     :parser: rst
@@ -89,8 +94,18 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`irfft2 <abtem.core.fft.irfft2>`
+  - ```{autodoc2-docstring} abtem.core.fft.irfft2
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`is_fast_fft_size <abtem.core.fft.is_fast_fft_size>`
   - ```{autodoc2-docstring} abtem.core.fft.is_fast_fft_size
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`metal_fft_advice <abtem.core.fft.metal_fft_advice>`
+  - ```{autodoc2-docstring} abtem.core.fft.metal_fft_advice
     :parser: rst
     :summary:
     ```
@@ -99,8 +114,23 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`real_fft2_available <abtem.core.fft.real_fft2_available>`
+  - ```{autodoc2-docstring} abtem.core.fft.real_fft2_available
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`rfft2 <abtem.core.fft.rfft2>`
+  - ```{autodoc2-docstring} abtem.core.fft.rfft2
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`share_diffraction_pattern_fft <abtem.core.fft.share_diffraction_pattern_fft>`
   - ```{autodoc2-docstring} abtem.core.fft.share_diffraction_pattern_fft
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`warn_if_slow_emulated_fft <abtem.core.fft.warn_if_slow_emulated_fft>`
+  - ```{autodoc2-docstring} abtem.core.fft.warn_if_slow_emulated_fft
     :parser: rst
     :summary:
     ```
@@ -142,6 +172,24 @@
 
 ````
 
+````{py:exception} SlowFFTSizeWarning()
+:canonical: abtem.core.fft.SlowFFTSizeWarning
+
+Bases: {py:obj}`UserWarning`
+
+```{autodoc2-docstring} abtem.core.fft.SlowFFTSizeWarning
+:parser: rst
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} abtem.core.fft.SlowFFTSizeWarning.__init__
+:parser: rst
+```
+
+````
+
 ````{py:data} U
 :canonical: abtem.core.fft.U
 :value: >
@@ -151,6 +199,14 @@
 :parser: rst
 ```
 
+````
+
+````{py:function} emulated_fft_advice(...) -> typing.Optional[str]
+:canonical: abtem.core.fft.emulated_fft_advice
+
+```{autodoc2-docstring} abtem.core.fft.emulated_fft_advice
+:parser: rst
+```
 ````
 
 ````{py:function} fft2(...) -> abtem.core.fft.U
@@ -249,10 +305,26 @@
 ```
 ````
 
+````{py:function} irfft2(...)
+:canonical: abtem.core.fft.irfft2
+
+```{autodoc2-docstring} abtem.core.fft.irfft2
+:parser: rst
+```
+````
+
 ````{py:function} is_fast_fft_size(...) -> bool
 :canonical: abtem.core.fft.is_fast_fft_size
 
 ```{autodoc2-docstring} abtem.core.fft.is_fast_fft_size
+:parser: rst
+```
+````
+
+````{py:function} metal_fft_advice(...) -> typing.Optional[tuple[int, ...]]
+:canonical: abtem.core.fft.metal_fft_advice
+
+```{autodoc2-docstring} abtem.core.fft.metal_fft_advice
 :parser: rst
 ```
 ````
@@ -265,10 +337,34 @@
 ```
 ````
 
+````{py:function} real_fft2_available(...) -> bool
+:canonical: abtem.core.fft.real_fft2_available
+
+```{autodoc2-docstring} abtem.core.fft.real_fft2_available
+:parser: rst
+```
+````
+
+````{py:function} rfft2(...)
+:canonical: abtem.core.fft.rfft2
+
+```{autodoc2-docstring} abtem.core.fft.rfft2
+:parser: rst
+```
+````
+
 ````{py:function} share_diffraction_pattern_fft(...)
 :canonical: abtem.core.fft.share_diffraction_pattern_fft
 
 ```{autodoc2-docstring} abtem.core.fft.share_diffraction_pattern_fft
+:parser: rst
+```
+````
+
+````{py:function} warn_if_slow_emulated_fft(...) -> None
+:canonical: abtem.core.fft.warn_if_slow_emulated_fft
+
+```{autodoc2-docstring} abtem.core.fft.warn_if_slow_emulated_fft
 :parser: rst
 ```
 ````

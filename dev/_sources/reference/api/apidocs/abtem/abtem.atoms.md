@@ -36,8 +36,18 @@
     :parser: rst
     :summary:
     ```
+* - {py:obj}`cut_ball <abtem.atoms.cut_ball>`
+  - ```{autodoc2-docstring} abtem.atoms.cut_ball
+    :parser: rst
+    :summary:
+    ```
 * - {py:obj}`cut_cell <abtem.atoms.cut_cell>`
   - ```{autodoc2-docstring} abtem.atoms.cut_cell
+    :parser: rst
+    :summary:
+    ```
+* - {py:obj}`cut_disk <abtem.atoms.cut_disk>`
+  - ```{autodoc2-docstring} abtem.atoms.cut_disk
     :parser: rst
     :summary:
     ```
@@ -248,10 +258,26 @@
 ```
 ````
 
+````{py:function} cut_ball(...) -> ase.Atoms
+:canonical: abtem.atoms.cut_ball
+
+```{autodoc2-docstring} abtem.atoms.cut_ball
+:parser: rst
+```
+````
+
 ````{py:function} cut_cell(...) -> ase.Atoms
 :canonical: abtem.atoms.cut_cell
 
 ```{autodoc2-docstring} abtem.atoms.cut_cell
+:parser: rst
+```
+````
+
+````{py:function} cut_disk(...) -> ase.Atoms
+:canonical: abtem.atoms.cut_disk
+
+```{autodoc2-docstring} abtem.atoms.cut_disk
 :parser: rst
 ```
 ````

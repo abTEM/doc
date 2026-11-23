@@ -303,6 +303,16 @@
 
 ````
 
+````{py:property} inversion_center
+:canonical: abtem.bloch.dynamical.BaseStructureFactor.inversion_center
+:type: typing.Optional[numpy.ndarray]
+
+```{autodoc2-docstring} abtem.bloch.dynamical.BaseStructureFactor.inversion_center
+:parser: rst
+```
+
+````
+
 `````
 
 ````{py:exception} BlochWavePrecisionWarning()
@@ -336,6 +346,16 @@ Bases: {py:obj}`UserWarning`
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.__init__
 :parser: rst
 ```
+
+````{py:property} accelerator
+:canonical: abtem.bloch.dynamical.BlochWaves.accelerator
+:type: abtem.core.energy.Accelerator
+
+```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.accelerator
+:parser: rst
+```
+
+````
 
 ````{py:method} calculate_cbed_patterns(...) -> abtem.measurements.DiffractionPatterns
 :canonical: abtem.bloch.dynamical.BlochWaves.calculate_cbed_patterns
@@ -404,7 +424,7 @@ Bases: {py:obj}`UserWarning`
 
 ````{py:property} energy
 :canonical: abtem.bloch.dynamical.BlochWaves.energy
-:type: float
+:type: float | abtem.distributions.BaseDistribution
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.energy
 :parser: rst
@@ -485,6 +505,16 @@ Bases: {py:obj}`UserWarning`
 :type: int
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.num_bloch_waves
+:parser: rst
+```
+
+````
+
+````{py:property} orientation_matrix
+:canonical: abtem.bloch.dynamical.BlochWaves.orientation_matrix
+:type: numpy.ndarray
+
+```{autodoc2-docstring} abtem.bloch.dynamical.BlochWaves.orientation_matrix
 :parser: rst
 ```
 
@@ -626,7 +656,7 @@ Bases: {py:obj}`abtem.core.ensemble.Ensemble`, {py:obj}`abtem.core.utils.CopyMix
 
 ````{py:property} energy
 :canonical: abtem.bloch.dynamical.BlochwaveEnsemble.energy
-:type: float
+:type: float | abtem.distributions.BaseDistribution
 
 ```{autodoc2-docstring} abtem.bloch.dynamical.BlochwaveEnsemble.energy
 :parser: rst

@@ -676,6 +676,7 @@ Bases: {py:obj}`abtem.array.ArrayObject`, {py:obj}`abtem.inelastic.core_loss.Bas
 ````{py:method} from_array_and_metadata(...)
 :canonical: abtem.inelastic.core_loss.TransitionPotentialArray.from_array_and_metadata
 :abstractmethod:
+:classmethod:
 
 ````
 

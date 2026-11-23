@@ -39,7 +39,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
@@ -58,7 +58,7 @@
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../_static/togglebutton.js?v=b8b12719"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
@@ -318,6 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l1 has-children"><a class="reference internal" href="../reference/api/api.html">API</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.bloch.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.bloch.band_chebyshev.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.band_chebyshev</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.bloch.cbed.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.cbed</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.bloch.dynamical.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.dynamical</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.bloch.indexing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.indexing</span></code></a></li>
@@ -404,6 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.rotation_series.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.rotation_series</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.slicing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.slicing</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/api/apidocs/abtem/abtem.tilt.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.tilt</span></code></a></li>
@@ -646,6 +648,54 @@ heading <code class="docutils literal notranslate"><span class="pre">##</span> <
 <p>Fixes that were also released in 1.0.11 are listed under that version as well.</p>
 <p>Features:</p>
 <ul class="simple">
+<li><p>Double precision on Apple Metal: the device <code class="docutils literal notranslate"><span class="pre">mps</span></code> with <code class="docutils literal notranslate"><span class="pre">precision:</span> <span class="pre">float64</span></code> (it was refused before) keeps
+the data as float64 on the host and runs the Fourier multislice (also the core-loss one), the
+infinite-projection potential and the large host FFTs on the GPU in double-float arithmetic (pairs of
+float32, ~1e-14 relative accuracy), up to ~16x faster than float64 on the CPU. What the GPU cannot do
+(real-space multislice, a grid side with a prime factor above 7) runs on the host in the same float64,
+with a <code class="docutils literal notranslate"><span class="pre">SlowFFTSizeWarning</span></code>; <code class="docutils literal notranslate"><span class="pre">torch.emulate-float64</span></code> asks for the same with the device <code class="docutils literal notranslate"><span class="pre">cpu</span></code>. A
+<code class="docutils literal notranslate"><span class="pre">SlowFFTSizeWarning</span></code> also says when a grid is markedly slow on Metal, whose FFT runs powers of two 2-4x
+faster per pixel, and which grid would be faster; the automatic grids stay the same on every device.
+The test suite now runs its double-precision tests on Metal at the same tolerances as elsewhere
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/620">PR #620</a>)</p></li>
+<li><p>Bloch waves on a Mac in double precision: <code class="docutils literal notranslate"><span class="pre">bloch.solver:</span> <span class="pre">auto</span></code> takes the band solver (see <code class="docutils literal notranslate"><span class="pre">solver='band'</span></code>) over the
+eigendecomposition of the structure matrix from 500 beams for float64 matrices on macOS (other platforms keep the
+eigendecomposition). On the host the band reduction now runs on the lower triangle only, through the Hermitian
+matrix product and rank-2k update of the BLAS that SciPy is built with (called with a leading dimension, so nothing is
+copied), and the Chebyshev recurrence is a compiled kernel, with a bandwidth of 32 instead of 128. A quartz rotation
+series of 1000 Å took 0.23 s a frame at 1299 beams instead of 0.69 s, 0.79 s instead of 3.5 s at 2195 beams and
+2.1 s instead of 11.3 s at 3233 beams on an Apple M2 (against <code class="docutils literal notranslate"><span class="pre">zheevr</span></code>, see the fix above), with intensities
+within 1e-12 of the eigendecomposition. With
+<code class="docutils literal notranslate"><span class="pre">device:</span> <span class="pre">mps</span></code> and <code class="docutils literal notranslate"><span class="pre">precision:</span> <span class="pre">float64</span></code> (or <code class="docutils literal notranslate"><span class="pre">torch.emulate-float64</span></code>) the matrix of 3000 beams or more is reduced on the
+GPU instead, by double-float matrix products (a lean multiply-add, 160 GFLOP/s on the M2, with the panels and block
+reflectors in float64 on the host) and the recurrence runs on the GPU for 1600 beams or more: 1.1 to 1.3x faster than
+the host band solver from 3000 to 9000 beams (33 against 42 s at 9009), with intensities within 3e-12 (100 Å) to
+4e-11 (2000 Å) of the eigendecomposition at 1299 beams, against 5e-14 to 6e-13 on the host
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/700">PR #700</a>, <a class="reference external" href="https://github.com/abTEM/abTEM/pull/702">PR #702</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CrystalPotential(...,</span> <span class="pre">correct_surfaces=...)</span></code> calculates the slices at the entrance and exit surfaces of the crystal
+as they are in a slab, by default for a unit with a finite projection. Without it the crystal is a periodic stack,
+whose first and last slices hold the finite-projection potential of the images of the unit beyond the surfaces
+(atoms a slab does not have; with an atomic plane on the slice boundary the last slice differed from a slab’s by as
+much as its largest slice potential) and miss the tails of the potential of the surface atoms beyond them. With it,
+the slices within the integration cutoff of a surface are calculated without the images, and the tails beyond the
+surface are added to the slice next to it, which conserves the projected potential of the slab; the slices equal
+those of a slab with vacuum, with the vacuum slices added to the adjacent ones. The crystal itself is unchanged: its
+slices, <code class="docutils literal notranslate"><span class="pre">box</span></code>, <code class="docutils literal notranslate"><span class="pre">thickness</span></code> and <code class="docutils literal notranslate"><span class="pre">exit_planes</span></code> are as without, so nothing shifts and the exit wave is not propagated
+further. The tails are at the depth of the outermost slice rather than their own, so the error falls with thinner
+slices and with the distance of the atoms from the entrance and exit plane of the unit. For Si at 100 kV, the
+diffraction intensity of a plane wave is closer to that of the slab than that of the periodic stack by a factor 2.9
+for atoms on the plane and 7 at 0.3 Å from it on four slices per unit (5.6 and 14 on eight), and the ADF at the
+columns of a 20 mrad probe (50-100 mrad) is within 0.4 % of the slab’s from 0.3 Å on. For atoms on the plane the
+correction is poor: the ADF at their columns is too high by 12 % for Si on four slices per unit (5 % on eight) and
+by 10 % and 38 % for Au on quarter-lattice and half-lattice slices, against 28-37 % too low for the periodic stack
+of Si, so a warning is given for atoms of the unit within 0.3 Å of the plane, which suggests centering them in the
+cell with <code class="docutils literal notranslate"><span class="pre">atoms.center(axis=2)</span></code>. <strong>Behaviour change:</strong> the first and last slices of a <code class="docutils literal notranslate"><span class="pre">CrystalPotential</span></code> of a
+finite-projection unit differ from those of the periodic stack; pass <code class="docutils literal notranslate"><span class="pre">correct_surfaces=False</span></code> for the previous
+ones. A <code class="docutils literal notranslate"><span class="pre">CrystalPotential</span></code> that stacks a unit along z raises if a <code class="docutils literal notranslate"><span class="pre">CrystalPotential</span></code> at any depth of its units
+corrects its surfaces (pass <code class="docutils literal notranslate"><span class="pre">correct_surfaces=False</span></code> to it); a built
+crystal (a <code class="docutils literal notranslate"><span class="pre">PotentialArray</span></code> from <code class="docutils literal notranslate"><span class="pre">build()</span></code>) is a slab with no flag to check, and must not be stacked along z. An
+infinite projection has no surfaces to correct, and a unit that is not a <code class="docutils literal notranslate"><span class="pre">Potential</span></code> is left as it is
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/648">PR #648</a>)</p></li>
 <li><p>Energy ensemble support across the codebase: <code class="docutils literal notranslate"><span class="pre">PlaneWave</span></code>, <code class="docutils literal notranslate"><span class="pre">Probe</span></code>, <code class="docutils literal notranslate"><span class="pre">SMatrix</span></code>, <code class="docutils literal notranslate"><span class="pre">BlochWaves</span></code> and <code class="docutils literal notranslate"><span class="pre">CTF</span></code>
 accept a list of energies, and the resulting <code class="docutils literal notranslate"><span class="pre">EnergyAxis</span></code> propagates through indexing, angular sampling,
 unit conversion and diffraction-spot indexing (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/257">PR #257</a>)</p>
@@ -679,7 +729,16 @@ stacked result and raises a <code class="docutils literal notranslate"><span cla
 intensity (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/484">PR #484</a>)</p></li>
 <li><p>Linear-scaling PRISM-EELS for core-loss simulations: <code class="docutils literal notranslate"><span class="pre">SMatrix.transition_potential_scan</span></code>, with
 single- and double-channel scattering and an optional windowed inelastic crop
-(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/289">PR #289</a>)</p></li>
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/289">PR #289</a>)</p>
+<ul>
+<li><p>BiP-PRISM beam partitioning for PRISM-EELS: <code class="docutils literal notranslate"><span class="pre">transition_potential_scan(reduction=&quot;beam_basis&quot;)</span></code>
+uses a dual-scattering-matrix driver. <code class="docutils literal notranslate"><span class="pre">partitions_s1</span></code> and <code class="docutils literal notranslate"><span class="pre">partitions_s2</span></code> build <code class="docutils literal notranslate"><span class="pre">S1</span></code> and <code class="docutils literal notranslate"><span class="pre">S2</span></code> on
+sparse hex-ring parent beams and reconstruct the full beam set at each atom by natural-neighbor
+interpolation. <code class="docutils literal notranslate"><span class="pre">collection_angle</span></code> limits <code class="docutils literal notranslate"><span class="pre">S2</span></code> to the detector disk, and <code class="docutils literal notranslate"><span class="pre">focal_backprop</span></code> is an
+optional accuracy lever for <code class="docutils literal notranslate"><span class="pre">S1</span></code>. Options that would have no effect raise a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/338">PR #338</a>)</p></li>
+</ul>
+</li>
 <li><p>In addition to the Gaussian (G) distribution, now also implemented Lorentzian (L), Voigtian (convolution L * G) and
 pseudo-Voigtian (L + G) source-size distributions and filters (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/270">PR #270</a>)</p></li>
 <li><p>The exact free-space propagator is now the default for Fourier multislice,
@@ -747,9 +806,47 @@ position-averaged (PACBED) pattern; with one, the plane waves add coherently at 
 overlapping discs interfere. Aberration, aperture and tilt series (precession included) and energy
 ensembles are supported, and the calculation is lazy. <code class="docutils literal notranslate"><span class="pre">BlochwaveEnsemble</span></code> takes a fixed
 <code class="docutils literal notranslate"><span class="pre">orientation_matrix</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/254">PR #254</a>)</p></li>
+<li><p>The GPU test runner <code class="docutils literal notranslate"><span class="pre">tools/gpu/run_gpu_tests.sh</span></code> has <code class="docutils literal notranslate"><span class="pre">ABTEM_CI_OFFLINE=1</span></code>, which tests the managed clone as it is,
+without clone, fetch or reset, and installs from uv’s cache only, for compute nodes without internet access. On ROCm
+it runs one pytest process per test file, reports the passed and the failed or errored tests, detects aborts and
+fails when no test passed. <code class="docutils literal notranslate"><span class="pre">ABTEM_CI_DESELECT</span></code> takes a pytest <code class="docutils literal notranslate"><span class="pre">-k</span></code> expression of tests to leave out of the sweep, and
+the <code class="docutils literal notranslate"><span class="pre">status.tsv</span></code> summary names it. The recorded commit gets a <code class="docutils literal notranslate"><span class="pre">-dirty</span></code> suffix when tracked files differ from <code class="docutils literal notranslate"><span class="pre">HEAD</span></code>
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/708">PR #708</a>)</p></li>
 </ul>
 <p>Performance:</p>
 <ul class="simple">
+<li><p>Multislice of an ensemble of atoms (such as a 3DED rotation series) no longer repeats host work for
+every chunk or exit plane, and its potential needs fewer FFTs</p>
+<ul>
+<li><p>The atoms of an ensemble are sliced once per call of <code class="docutils literal notranslate"><span class="pre">generate_chunked_slices</span></code> instead of once per
+chunk</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Waves.window</span></code> keeps its taper, and the power gain of a window is computed once, instead of both
+building an <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">x</span> <span class="pre">n</span></code> array on the host at every exit plane</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ScatteringFactorProjectionIntegrals</span></code> builds its <code class="docutils literal notranslate"><span class="pre">sinc</span></code> once per grid instead of for every slice
+and element</p></li>
+<li><p>The default (infinite) projection transforms the real slices of the potential with <code class="docutils literal notranslate"><span class="pre">rfft2</span></code> and
+<code class="docutils literal notranslate"><span class="pre">irfft2</span></code>, half the work and memory of the complex transforms, with <code class="docutils literal notranslate"><span class="pre">fft=&quot;numpy&quot;</span></code>, on a GPU and
+with torch (CPU and Metal; the wrapper allocates the output, which avoids a PyTorch warning of
+the Metal kernels about resizing it);
+this one agrees with the complex transforms to rounding (half an epsilon of the largest value)
+and not bit for bit; the elements of a slice are summed as half spectra and transformed back once</p></li>
+<li><p>Measured with <code class="docutils literal notranslate"><span class="pre">benchmarks/bench_real_fft_potential.py</span></code> on an Apple silicon laptop (Metal,
+single precision), the potential of the default projection builds 1.22x (1024 x 1024, 8 slices),
+1.31x (2048 x 2048, 8 slices), 1.62x (4096 x 4096, 16 slices) and 1.67x (2048 x 2048, 80 slices)
+faster with the real transforms</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Potential.generate_slices</span></code> no longer finds the elements of all the atoms at every chunk</p></li>
+<li><p>Measured for one orientation of a py3DED run (160 x 160 x 1000 Å, sampling 0.02 Å, slices of
+0.4 Å, an 8000 x 8000 grid, 251 exit planes) on a 24 GB RTX 4090 in single precision: monoclinic
+ZrO2 takes 91.1 s instead of 199.6 s (2.19x) and kyanite 104.5 s instead of 253.0 s (2.42x). The
+patterns of the first three changes are bit-identical; with the real transforms they differ
+from the old ones by 4e-6 of the largest value, about a tenth of the error of the single
+precision run itself against a double precision one (4.6e-5 and 8.9e-5), which they leave
+unchanged</p></li>
+<li><p>Found by <code class="docutils literal notranslate"><span class="pre">benchmarks/bench_multislice_3ded_payload.py</span></code>, which splits one orientation of a py3DED
+multislice run into stages, and measured commit by commit with
+<code class="docutils literal notranslate"><span class="pre">benchmarks/bisect_multislice_gains.py</span></code></p></li>
+</ul>
+</li>
 <li><p>The projection integrator is shared by reference across ensemble members instead of being deep-copied
 (and re-uploaded to the GPU) for each (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/350">PR #350</a>)</p></li>
 <li><p>Removed a redundant potential rebuild on every scan chunk (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/340">PR #340</a>)</p></li>
@@ -763,19 +860,395 @@ and ensemble member. The peak memory of an eager scan with 9 exit planes on a 12
 9.2 GB to 1.3 GB; an integer <code class="docutils literal notranslate"><span class="pre">max_batch*</span></code>, and a potential with one exit plane and no ensemble, are
 batched as before. Where a batch changes, values move by float32 rounding of the reduction only
 (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/563">PR #563</a>)</p></li>
+<li><p>More automatic batch sizes stay within the configured chunk size. Where a batch changes, values move by
+float32 rounding of the reduction only; an integer <code class="docutils literal notranslate"><span class="pre">max_batch</span></code> or <code class="docutils literal notranslate"><span class="pre">max_batch_reduction</span></code> is batched as before
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/649">PR #649</a>)</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">Probe.multislice</span></code>, <code class="docutils literal notranslate"><span class="pre">Probe.scan</span></code>, <code class="docutils literal notranslate"><span class="pre">Probe.transition_potential_scan</span></code> and <code class="docutils literal notranslate"><span class="pre">PlaneWave.multislice</span></code> size the
+automatic <code class="docutils literal notranslate"><span class="pre">max_batch</span></code> for the output of a block, which holds one result per exit plane and detector for
+each of its waves: a block of exit waves or diffraction patterns was that many times larger than
+<code class="docutils literal notranslate"><span class="pre">dask.chunk-size</span></code> (18 times with 23 exit planes on a 128 x 128 grid). The batch is divided by the output
+of the block in units of one wave when that exceeds one wave: detectors whose outputs together exceed
+one wave per position also shrink the batch of a potential with a single exit plane, while for realistic
+grid sizes and plane counts integrating detectors such as <code class="docutils literal notranslate"><span class="pre">AnnularDetector</span></code> and
+<code class="docutils literal notranslate"><span class="pre">FlexibleAnnularDetector</span></code> are batched as before</p></li>
+<li><p>The automatic <code class="docutils literal notranslate"><span class="pre">max_batch_reduction</span></code> of <code class="docutils literal notranslate"><span class="pre">SMatrixArray.reduce</span></code>, <code class="docutils literal notranslate"><span class="pre">SMatrix.reduce</span></code>, <code class="docutils literal notranslate"><span class="pre">SMatrix.scan</span></code> and
+<code class="docutils literal notranslate"><span class="pre">CompressedSMatrixArray.reduce</span></code> is sized with <code class="docutils literal notranslate"><span class="pre">dask.chunk-size-gpu</span></code> on a GPU, where it used
+<code class="docutils literal notranslate"><span class="pre">dask.chunk-size</span></code> on every device</p></li>
+<li><p>The automatic <code class="docutils literal notranslate"><span class="pre">max_batch_reduction</span></code> of an interpolated PRISM reduction (a window smaller than the
+S-matrix grid) also counts the box that the batch is contracted over, which spans the batch and one
+window: the contracted array was 1.7 times the chunk size at <code class="docutils literal notranslate"><span class="pre">dask.chunk-size=&quot;1</span> <span class="pre">MB&quot;</span></code> and 5.8 times at
+<code class="docutils literal notranslate"><span class="pre">&quot;16</span> <span class="pre">MB&quot;</span></code> in a 44 x 44 scan, and is now below the chunk size</p></li>
+</ul>
+</li>
 <li><p><code class="docutils literal notranslate"><span class="pre">BlochWaves.calculate_exit_waves</span></code> sums the plane-wave expansion as two matrix products, using that the
 beams are separable in x, y and z, instead of forming and reducing the (thickness, beam, x, y) array of
 plane waves. For 479 beams, 5 thicknesses and a 256 x 256 grid the synthesis takes 6 ms instead of
 256 ms, and its peak memory 19 MB instead of 5 GB; values agree to float64 rounding
 (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/630">PR #630</a>)</p></li>
+<li><p>The Bloch-wave structure matrix is gathered on the device from the structure factors on a dense grid,
+instead of being looked up through pandas on the host from the (beams², 3) array of Miller index
+differences; on the GPU that lookup took two thirds of the time of a rotation series at 13,903 beams.
+The eigendecomposition reuses the structure matrix’s memory where the backend allows (CuPy, and NumPy
+in double precision), and the beam amplitudes no longer form two more beams x beams arrays
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/635">PR #635</a>)</p>
+<ul>
+<li><p>A centrosymmetric crystal is solved as a real symmetric eigenproblem, that of the crystal moved
+to its inversion center, which halves the memory of the structure matrix and its eigenvectors
+and is faster to factorize; results agree with the complex solve to rounding.
+<code class="docutils literal notranslate"><span class="pre">StructureFactor(inversion_center=&quot;auto&quot;)</span></code> detects the center from the atoms, and
+<code class="docutils literal notranslate"><span class="pre">inversion_center=None</span></code> keeps the complex solve</p></li>
+<li><p>Measured for one orientation of monoclinic ZrO2 (13,903 beams, float32) on a 24 GB RTX 4090:
+the structure matrix takes 0.08 s instead of 10 s and the eigendecomposition 2.8 s instead of
+5.7 s, with a peak of 3.9 GB instead of 9.3 GB (2.5 instead of 6 complex beams x beams
+matrices); the error against double precision is 2.6e-4 instead of 4.3e-4. Kyanite’s 28,898
+beams, which ran out of memory, fit with a peak of 16.7 GB</p></li>
+</ul>
+</li>
+<li><p>Bloch waves have a second solver, chosen by the configuration key <code class="docutils literal notranslate"><span class="pre">bloch.solver</span></code>: <code class="docutils literal notranslate"><span class="pre">&quot;band&quot;</span></code> reduces
+the structure matrix in place to band form with matrix products and expands the incident wave in
+Chebyshev polynomials of the band matrix, instead of diagonalizing it (<code class="docutils literal notranslate"><span class="pre">&quot;eigh&quot;</span></code>). The default <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>
+uses it on a GPU when it is estimated to be faster, which is for thousands of beams; on the CPU, and
+for small or very thick crystals, the eigendecomposition is faster
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/642">PR #642</a>)</p>
+<ul>
+<li><p>Measured for one orientation on a 24 GB RTX 4090 in single precision, with thicknesses to 1000 Å:
+monoclinic ZrO2 (13,903 beams) takes 0.71 s instead of 2.90 s (real symmetric form) and 1.13 s
+instead of 5.77 s (complex), and kyanite (28,898 beams) 2.56 s instead of 24.3 s. The peak memory
+is a quarter (0.5-0.7 instead of 2.5 complex beams x beams matrices, 1.1-1.3 instead of 5.0), so
+kyanite’s complex form fits (7.2 GB). The error against double precision is 4.8e-5, 9.4e-5 and
+9.7e-5 instead of 2.6e-4, 4.3e-4 and 1.3e-3: the eigendecomposition’s grows with the number of
+beams</p></li>
+<li><p>The expansion costs about 0.3 s per 1000 Å of the largest thickness on that GPU</p></li>
+<li><p>A rotation series computes the structure factors once, not once per orientation or dask block</p></li>
+</ul>
+</li>
+<li><p><strong>Behaviour change:</strong> <code class="docutils literal notranslate"><span class="pre">OMP_NUM_THREADS</span></code> caps the threads of Numba’s <code class="docutils literal notranslate"><span class="pre">parallel=True</span></code> kernels and of the
+interpolation pool of the finite-projection potential when <code class="docutils literal notranslate"><span class="pre">NUMBA_NUM_THREADS</span></code> is unset and
+<code class="docutils literal notranslate"><span class="pre">OMP_NUM_THREADS</span></code> is a positive integer, where 1.0.11 used every CPU usable by the process for Numba and
+every CPU of the machine for the interpolation pool
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/658">PR #658</a>)</p>
+<ul>
+<li><p>With <code class="docutils literal notranslate"><span class="pre">abtem</span></code> imported before <code class="docutils literal notranslate"><span class="pre">numba</span></code>, the cap is the size of Numba’s whole thread pool, so it holds for
+every <code class="docutils literal notranslate"><span class="pre">parallel=True</span></code> kernel in the process, the application’s own included, and the size of the
+interpolation pool. With <code class="docutils literal notranslate"><span class="pre">numba</span></code> imported first, Numba’s pool and its configuration are unchanged and
+the cap applies to the interpolation pool and, set on the launching thread for the duration of each
+launch, to the real-space Laplacian stencil (<code class="docutils literal notranslate"><span class="pre">RealSpaceMultislice</span></code>) only. On a 24-CPU machine with
+<code class="docutils literal notranslate"><span class="pre">OMP_NUM_THREADS=1</span></code> and <code class="docutils literal notranslate"><span class="pre">abtem</span></code> imported first, 1.0.11 gave Numba and the interpolation pool 24 threads
+and both now have 1. <code class="docutils literal notranslate"><span class="pre">OMP_NUM_THREADS=1</span></code> is the default of many HPC schedulers and the value a dask
+nanny sets in its worker processes when the variable is unset, so these kernels then run on one
+thread. An explicit <code class="docutils literal notranslate"><span class="pre">NUMBA_NUM_THREADS</span></code> overrides the cap</p></li>
+<li><p>The cap is at most the number of CPUs usable by the process (<code class="docutils literal notranslate"><span class="pre">os.sched_getaffinity</span></code>, else
+<code class="docutils literal notranslate"><span class="pre">os.cpu_count()</span></code>)</p></li>
+</ul>
+</li>
+<li><p><strong>Behaviour change:</strong> the interpolation pool of the finite-projection potential has <code class="docutils literal notranslate"><span class="pre">NUMBA_NUM_THREADS</span></code>
+threads when it is set and otherwise the cap above or, without one, Numba’s default, the number of usable
+CPUs, where 1.0.11 used <code class="docutils literal notranslate"><span class="pre">os.cpu_count()</span></code> whatever the process may use: under <code class="docutils literal notranslate"><span class="pre">taskset</span> <span class="pre">-c</span> <span class="pre">0-2</span></code> the pool has 3
+threads where it had 24 on a 24-CPU machine, and with <code class="docutils literal notranslate"><span class="pre">NUMBA_NUM_THREADS=5</span></code> it has 5 where it had 24.
+Potentials built with different interpolation thread counts differ in the last float32 bits: for a silicon
+cubic cell repeated 3 x 3 x 3 with <code class="docutils literal notranslate"><span class="pre">gpts=128</span></code> and finite projection, two processes with 24 and with 4
+interpolation threads differed by up to 4.3e-7 of the maximum
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/658">PR #658</a>)</p></li>
+<li><p>An eager <code class="docutils literal notranslate"><span class="pre">SMatrix.build</span></code>, and so an eager <code class="docutils literal notranslate"><span class="pre">SMatrix.reduce</span></code> or <code class="docutils literal notranslate"><span class="pre">SMatrix.scan</span></code>, of a <code class="docutils literal notranslate"><span class="pre">CrystalPotential</span></code> whose
+members reseed their frozen-phonon pools (<code class="docutils literal notranslate"><span class="pre">seeds</span></code> or <code class="docutils literal notranslate"><span class="pre">num_frozen_phonons</span></code>) builds each member’s pool once
+instead of once per plane-wave block: 3 members over 14 blocks build 3 pools instead of 42, and an eager
+<code class="docutils literal notranslate"><span class="pre">reduce</span></code> at a <code class="docutils literal notranslate"><span class="pre">dask.chunk-size</span></code> of 16 kB builds 3 instead of 165. The pool is held while the member is built and
+released when its build returns; values are unchanged
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/666">PR #666</a>)</p></li>
 </ul>
 <p>Dependencies:</p>
 <ul class="simple">
 <li><p>The <code class="docutils literal notranslate"><span class="pre">core-loss</span></code> extra is merged into a single <code class="docutils literal notranslate"><span class="pre">gpaw</span> <span class="pre">=</span> <span class="pre">[&quot;hankel&quot;,</span> <span class="pre">&quot;sympy&quot;]</span></code> extra, and a new <code class="docutils literal notranslate"><span class="pre">all</span></code> extra
 installs every optional runtime dependency (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/329">PR #329</a>)</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">mps</span></code> extra requires torch 2.14 (was 2.4). On torch 2.10 to 2.13, Metal has no <code class="docutils literal notranslate"><span class="pre">linalg.eigh</span></code>, and an FFT over
+an axis before the last four (such as <code class="docutils literal notranslate"><span class="pre">gaussian_source_size</span></code> of a scan with a further ensemble axis) aborts the
+process. Selecting the <code class="docutils literal notranslate"><span class="pre">mps</span></code> device with an older torch already installed now raises a <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> asking for
+an upgrade, instead of aborting later; upgrade with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-U</span> <span class="pre">torch</span></code></p></li>
 </ul>
 <p>Bugfixes:</p>
 <ul class="simple">
+<li><p>A lazy <code class="docutils literal notranslate"><span class="pre">DiffractionPatterns.integrate_radial</span></code> and <code class="docutils literal notranslate"><span class="pre">azimuthal_average</span></code> of integer counts declare the dtype they
+compute. <code class="docutils literal notranslate"><span class="pre">integrate_radial</span></code> declared the integer dtype of the counts but summed to <code class="docutils literal notranslate"><span class="pre">int64</span></code>, which is now the
+declared and computed dtype (floating point counts keep theirs; with a <code class="docutils literal notranslate"><span class="pre">sensitivity</span></code> the result has the
+configured precision). <code class="docutils literal notranslate"><span class="pre">azimuthal_average</span></code> declared the integer dtype but computed <code class="docutils literal notranslate"><span class="pre">float64</span></code> whatever the
+configured precision, and with <code class="docutils literal notranslate"><span class="pre">weighting_function=&quot;gaussian&quot;</span></code> truncated the averages to integers; the averages
+are now in the configured precision, and floating point counts keep their dtype. The step bins of <code class="docutils literal notranslate"><span class="pre">azimuthal_average</span></code>
+summed small integer counts (<code class="docutils literal notranslate"><span class="pre">uint8</span></code>, <code class="docutils literal notranslate"><span class="pre">int16</span></code>, <code class="docutils literal notranslate"><span class="pre">uint16</span></code>) in their own type, which wraps around, so a uniform pattern
+averaged to a different value in every bin; they are summed in the configured precision, which the GPU kernel needs too
+(it only reads floating point values) (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/695">PR #695</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ChargeDensityPotential</span></code> built in chunks of several configurations (<code class="docutils literal notranslate"><span class="pre">chunks</span></code> greater than 1) gives each chunk the
+charge densities of its own configurations. It paired density <em>k</em> with chunk <em>k</em> and dropped the rest, so
+per-configuration charge densities were wrong unless every chunk held one configuration, the default (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/695">PR #695</a>)</p></li>
+<li><p>Plots: the log scale can be switched on and off for line profiles and complex (domain-coloured) images, which
+raised a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> because their <code class="docutils literal notranslate"><span class="pre">set_logscale</span></code> took no argument (and, for complex images, then did nothing: it
+now gives the logarithmic amplitude scale and the opacity of <code class="docutils literal notranslate"><span class="pre">show(logscale=True)</span></code> and switches back); the extent of an image converts its y axis with
+the units of the y axis, not the x axis; <code class="docutils literal notranslate"><span class="pre">PlasmonScatteringEvents.show_cumulative_scattering_events</span></code> plots the
+requested integer <code class="docutils literal notranslate"><span class="pre">num_excitations</span></code> instead of the first and no longer prints the axes (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/695">PR #695</a>)</p></li>
+<li><p>Measurements: <code class="docutils literal notranslate"><span class="pre">poisson_noise()</span></code> with neither <code class="docutils literal notranslate"><span class="pre">dose_per_area</span></code> nor <code class="docutils literal notranslate"><span class="pre">total_dose</span></code> raises the intended
+<code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> instead of failing inside NumPy with a NaN dose; <code class="docutils literal notranslate"><span class="pre">IndexedDiffractionPatterns.normalize_to_spot</span></code> keeps
+the reciprocal lattice vectors (it replaced them by the spot positions) and <code class="docutils literal notranslate"><span class="pre">poisson_noise(dose_per_area=...)</span></code> on it
+raises a <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> (a missing <code class="docutils literal notranslate"><span class="pre">&#64;property</span></code> made it a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>); <code class="docutils literal notranslate"><span class="pre">ScanNoiseTransform</span></code> keeps the units and label of
+the images, which it relabelled as counts (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/695">PR #695</a>)</p></li>
+<li><p>Bloch waves: <code class="docutils literal notranslate"><span class="pre">StructureFactor.calculate_scattering_factors</span></code> follows the <code class="docutils literal notranslate"><span class="pre">occupancy</span></code>; the excitation-error
+selection of the beams of an orientation uses <code class="docutils literal notranslate"><span class="pre">&lt;=</span> <span class="pre">sg_max</span></code>, as the selection without an orientation does, so an
+ensemble no longer writes more beams than it selected when <code class="docutils literal notranslate"><span class="pre">sg_max</span></code> equals a beam’s excitation error; an ensemble of
+rotations selects the beams of every member whatever the rounding of the excitation errors of its rotated cells, as
+they differ in the last bits from those of the ensemble (it could have fewer beams than a member, and raised a
+<code class="docutils literal notranslate"><span class="pre">ValueError</span></code> writing them) (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/695">PR #695</a>)</p></li>
+<li><p>PRISM: <code class="docutils literal notranslate"><span class="pre">SMatrix(energy=distribution)</span></code> keeps the weights and the ensemble mean of the distribution on its energy axis,
+as <code class="docutils literal notranslate"><span class="pre">Probe</span></code> and <code class="docutils literal notranslate"><span class="pre">PlaneWave</span></code> do, and the measurements of <code class="docutils literal notranslate"><span class="pre">scan</span></code>, <code class="docutils literal notranslate"><span class="pre">reduce</span></code>, <code class="docutils literal notranslate"><span class="pre">build().scan</span></code>, <code class="docutils literal notranslate"><span class="pre">build().reduce</span></code> and
+<code class="docutils literal notranslate"><span class="pre">transition_potential_scan</span></code> are averaged over a distribution flagged <code class="docutils literal notranslate"><span class="pre">ensemble_mean=True</span></code> with those weights, as
+<code class="docutils literal notranslate"><span class="pre">Probe.scan</span></code> averages them (they kept the energy axis, with the weights unused: <strong>Behaviour change:</strong> the result has
+no energy axis, as for <code class="docutils literal notranslate"><span class="pre">Probe</span></code>; with <code class="docutils literal notranslate"><span class="pre">ensemble_mean=False</span></code> it is kept); wave functions keep every energy; the batches
+of the lattice and streamed reductions
+count the real size of an element, so at double precision they hold half the rows instead of exceeding their memory
+budget; the window view of a compressed S-matrix keeps <code class="docutils literal notranslate"><span class="pre">max_batch_expansion</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/695">PR #695</a>)</p></li>
+<li><p>Potentials and fields: <code class="docutils literal notranslate"><span class="pre">ChargeDensityPotential</span></code> with <code class="docutils literal notranslate"><span class="pre">repetitions</span></code> displaces the repeated atoms of each frozen-phonon
+configuration (every configuration was the undisplaced repeated cell); <code class="docutils literal notranslate"><span class="pre">depth_profile</span></code> works for magnetic fields and
+vector potentials, keeping the components as an ensemble axis (it raised a <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code>); <code class="docutils literal notranslate"><span class="pre">GPAWMagneticField</span></code> and
+<code class="docutils literal notranslate"><span class="pre">GPAWVectorPotential</span></code> have the labelled component axis of their base classes (it was <code class="docutils literal notranslate"><span class="pre">None</span></code>); the documented default
+<code class="docutils literal notranslate"><span class="pre">slice_thickness</span></code> of <code class="docutils literal notranslate"><span class="pre">ChargeDensityPotential</span></code> and <code class="docutils literal notranslate"><span class="pre">GPAWPotential</span></code> is the 1.0 Å of the code, not 0.5 Å (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/695">PR #695</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BlochWaves.rotate</span></code> continues the orientation the Bloch waves already have, so <code class="docutils literal notranslate"><span class="pre">bloch_waves.rotate(a).rotate(b)</span></code>
+is <code class="docutils literal notranslate"><span class="pre">bloch_waves.rotate(a,</span> <span class="pre">b)</span></code>: the rotations are about fixed axes, in the order given, whether they come in one call
+or several, for angles and for distributions of angles. <strong>Behaviour change:</strong> rotating an already rotated object used
+to discard its rotation and keep only the last. <code class="docutils literal notranslate"><span class="pre">BlochWaves.orientation_matrix</span></code> returns the (3, 3) orientation, and an
+<code class="docutils literal notranslate"><span class="pre">orientation_matrix</span></code> that is not (3, 3) raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> naming its shape (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/695">PR #695</a>)</p></li>
+<li><p>Wave function normalization is spelled as for the builders of <code class="docutils literal notranslate"><span class="pre">Waves</span></code> everywhere: <code class="docutils literal notranslate"><span class="pre">BlochWaves.calculate_exit_waves</span></code>
+and <code class="docutils literal notranslate"><span class="pre">BlochwaveEnsemble.calculate_exit_waves</span></code> take the bool <code class="docutils literal notranslate"><span class="pre">normalize</span></code> (default false), as <code class="docutils literal notranslate"><span class="pre">PlaneWave</span></code> does: false
+gives an incident wave of one in every pixel, true normalizes the reciprocal-space intensity of the incident wave to one.
+The <code class="docutils literal notranslate"><span class="pre">normalization</span></code> argument they had, <code class="docutils literal notranslate"><span class="pre">'values'</span></code> or <code class="docutils literal notranslate"><span class="pre">'amplitude'</span></code>, only wrote a label to the metadata (and
+<code class="docutils literal notranslate"><span class="pre">'amplitude'</span></code> made <code class="docutils literal notranslate"><span class="pre">diffraction_patterns()</span></code> raise); it is deprecated: it still works, as a keyword or in its old
+position, without effect on the exit waves, and raises a <code class="docutils literal notranslate"><span class="pre">FutureWarning</span></code>. <code class="docutils literal notranslate"><span class="pre">Waves.downsample</span></code> and <code class="docutils literal notranslate"><span class="pre">WavesDetector(gpts)</span></code>
+keep the normalization of the waves; <code class="docutils literal notranslate"><span class="pre">Waves.downsample(normalization=...)</span></code> is deprecated too, and for one release
+still decides what is preserved (<code class="docutils literal notranslate"><span class="pre">'values'</span></code> the pixel values, <code class="docutils literal notranslate"><span class="pre">'amplitude'</span></code> or <code class="docutils literal notranslate"><span class="pre">'intensity'</span></code> the total amplitude) and raises a
+<code class="docutils literal notranslate"><span class="pre">FutureWarning</span></code>; the default <code class="docutils literal notranslate"><span class="pre">'values'</span></code> it used to have is gone. <strong>Behaviour change:</strong>
+they preserved the pixel values of every wave, so the diffraction patterns of a downsampled <code class="docutils literal notranslate"><span class="pre">Probe</span></code> or normalized plane
+wave summed to (N_new / N_old)² rather than one; they now preserve pixel values only for waves labelled <code class="docutils literal notranslate"><span class="pre">'values'</span></code>
+(as <code class="docutils literal notranslate"><span class="pre">PlaneWave()</span></code> gives) and the reciprocal-space intensity otherwise, as <code class="docutils literal notranslate"><span class="pre">diffraction_patterns</span></code> already takes them.
+<code class="docutils literal notranslate"><span class="pre">Waves.normalize()</span></code> labels its result <code class="docutils literal notranslate"><span class="pre">'reciprocal_space'</span></code>, so that <code class="docutils literal notranslate"><span class="pre">diffraction_patterns()</span></code> of a normalized wave sums to
+one (it divided by the number of pixels once more, to 1 / N²). Waves with no <code class="docutils literal notranslate"><span class="pre">normalization</span></code> label (those of
+<code class="docutils literal notranslate"><span class="pre">Probe.build()</span></code> and of an S-matrix have none) are taken as normalized in reciprocal space, so downsampling waves built
+by hand without a label no longer keeps their pixel values; a stored label that is neither <code class="docutils literal notranslate"><span class="pre">'values'</span></code> nor
+<code class="docutils literal notranslate"><span class="pre">'reciprocal_space'</span></code>, such as the <code class="docutils literal notranslate"><span class="pre">'amplitude'</span></code> that v1.0.11 wrote on Bloch exit waves given <code class="docutils literal notranslate"><span class="pre">normalization=&quot;amplitude&quot;</span></code>, makes <code class="docutils literal notranslate"><span class="pre">downsample</span></code> and
+<code class="docutils literal notranslate"><span class="pre">WavesDetector(gpts)</span></code> raise a <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/695">PR #695</a>)</p></li>
+<li><p>The default scan sampling is the probe’s Nyquist sampling, as documented, and is the same for multislice and PRISM.
+<code class="docutils literal notranslate"><span class="pre">GridScan()</span></code> with no <code class="docutils literal notranslate"><span class="pre">sampling</span></code> (and so <code class="docutils literal notranslate"><span class="pre">Probe.scan</span></code>, <code class="docutils literal notranslate"><span class="pre">SMatrixArray.scan</span></code> and <code class="docutils literal notranslate"><span class="pre">SMatrix.build().scan</span></code> without a scan) used
+0.99 of it, a factor from before the number of scan points was counted within rounding of a whole number, while
+<code class="docutils literal notranslate"><span class="pre">SMatrix.scan</span></code> and <code class="docutils literal notranslate"><span class="pre">SMatrix.transition_potential_scan</span></code> used the Nyquist sampling itself: for an extent of a whole number
+of Nyquist pitches the same S-matrix gave 12 × 12 points through one and 13 × 13 through the other. <strong>Behaviour change:</strong>
+the default scan of <code class="docutils literal notranslate"><span class="pre">Probe.scan</span></code> and the other routes has about 1% fewer points per axis (one fewer when the extent
+is within 1% below a whole number of Nyquist pitches, one or two fewer above about 99 points per axis); <code class="docutils literal notranslate"><span class="pre">LineScan()</span></code> with no
+<code class="docutils literal notranslate"><span class="pre">sampling</span></code> shares the change; the pitch is still never coarser than Nyquist, as the number of
+points is rounded up (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/695">PR #695</a>)</p></li>
+<li><p>When an installed CuPy, pyFFTW, mkl_fft or PyTorch fails to import, the error raised on using it says that the
+package “could not be imported” and carries the original import error, where it said the package was not
+installed. A CuPy that fails to import warns at <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">abtem</span></code> when the device is <code class="docutils literal notranslate"><span class="pre">&quot;gpu&quot;</span></code> (once, not twice), a
+plain <code class="docutils literal notranslate"><span class="pre">ImportError</span></code> from mkl_fft no longer makes <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">abtem</span></code> fail whichever FFT library is configured, and the
+message of a missing FFT library now has the space it lacked. The error of <code class="docutils literal notranslate"><span class="pre">GPAWPotential</span></code> without a usable GPAW
+carries the import error. <code class="docutils literal notranslate"><span class="pre">AtomsEnsemble</span></code> of <code class="docutils literal notranslate"><span class="pre">.gpw</span></code> paths, which raised a bare <code class="docutils literal notranslate"><span class="pre">AssertionError</span></code>, and the
+interactive <code class="docutils literal notranslate"><span class="pre">show</span></code>, which failed with an <code class="docutils literal notranslate"><span class="pre">AttributeError</span></code>, raise the import error of a missing or broken GPAW or
+ipywidgets itself. In <code class="docutils literal notranslate"><span class="pre">abtem.ebsd</span></code> the errors of a missing spglib or h5py carry the import error, and an EBSD
+reference pattern or an EMsoft master pattern made without an importable spglib warns or raises that spglib “could
+not be imported”, with the cause, where it said spglib was not installed.
+<code class="docutils literal notranslate"><span class="pre">abtem.visualize.widgets.ipywidgets_not_installed</span></code> and <code class="docutils literal notranslate"><span class="pre">abtem.inelastic.phonons.Reader</span></code>, which abTEM did not use,
+are removed (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/697">PR #697</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">slider_from_axes_metadata</span></code> starts a slider at the coordinate nearest a <code class="docutils literal notranslate"><span class="pre">default_value</span></code> given as a plain Python
+number (it started at the first item), and builds range sliders over axes whose coordinates are Python floats (it
+raised <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>). An index slider given a <code class="docutils literal notranslate"><span class="pre">default_value</span></code> that is not one number starts at the first item for
+every axis length (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/697">PR #697</a>)</p></li>
+<li><p>An eager build of a <code class="docutils literal notranslate"><span class="pre">GPAWPotential</span></code> from a <code class="docutils literal notranslate"><span class="pre">.gpw</span></code> path raises the error of reading the file instead of
+<code class="docutils literal notranslate"><span class="pre">TypeError:</span> <span class="pre">Delayed</span> <span class="pre">objects</span> <span class="pre">are</span> <span class="pre">immutable</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/697">PR #697</a>)</p></li>
+<li><p>Errors raised while registering the configuration plugin on dask workers, or inside the scatter-add of an
+infinite projection, reach the caller unchanged instead of being replaced by an unrelated error. The fallbacks
+for <code class="docutils literal notranslate"><span class="pre">distributed</span></code> without <code class="docutils literal notranslate"><span class="pre">Client.register_plugin</span></code> and CuPy without <code class="docutils literal notranslate"><span class="pre">ufunc.at</span></code>, which the dependencies exclude,
+are removed (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/697">PR #697</a>)</p></li>
+<li><p>Errors that used to be absorbed reach the caller: a <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code> raised inside an override of a scan’s
+<code class="docutils literal notranslate"><span class="pre">_get_weights</span></code> (the weights were dropped), an error of the symmetry search of an EBSD reference pattern other than
+spglib finding no symmetry (the pattern was built with the symmetry unknown), and an error of the strain check of a
+default box other than a box with no whole repetition or a cell without a third vector (the check was skipped)
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/697">PR #697</a>)</p></li>
+<li><p>abTEM warns once, where the configuration is loaded, about a section of keys that a configuration file or an
+environment variable sets to a value (for example <code class="docutils literal notranslate"><span class="pre">diagnostics:</span> <span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">ABTEM_DIAGNOSTICS=1</span></code>); every key in it
+reads its default, as before, but did so silently (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/697">PR #697</a>)</p></li>
+<li><p>A NumPy array works as an operand of a device array on the Metal (MPS) device, on either side of the arithmetic,
+comparison and bitwise operators (not <code class="docutils literal notranslate"><span class="pre">//</span></code>, which device arrays do not support). The host array is moved onto the
+device first, so the device side wins: a float64 host operand is narrowed to the device’s float32, and a dtype Metal
+lacks (<code class="docutils literal notranslate"><span class="pre">uint8</span></code>, <code class="docutils literal notranslate"><span class="pre">int16</span></code>, <code class="docutils literal notranslate"><span class="pre">float16</span></code>) raises a <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code>, also with the <code class="docutils literal notranslate"><span class="pre">cpu</span></code> torch device.
+<code class="docutils literal notranslate"><span class="pre">device_array</span> <span class="pre">==</span> <span class="pre">host_array</span></code> raised “Expected all tensors to be on the same device”, and with a host array, <code class="docutils literal notranslate"><span class="pre">!=</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&lt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;=</span></code>, <code class="docutils literal notranslate"><span class="pre">&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&gt;=</span></code>, <code class="docutils literal notranslate"><span class="pre">%</span></code>, <code class="docutils literal notranslate"><span class="pre">&amp;</span></code>, <code class="docutils literal notranslate"><span class="pre">|</span></code> and <code class="docutils literal notranslate"><span class="pre">^</span></code> raised a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>. The in-place operators (<code class="docutils literal notranslate"><span class="pre">+=</span></code>, <code class="docutils literal notranslate"><span class="pre">-=</span></code>, <code class="docutils literal notranslate"><span class="pre">*=</span></code>, <code class="docutils literal notranslate"><span class="pre">/=</span></code>)
+take a host array now and update the array in place and in float32; with the <code class="docutils literal notranslate"><span class="pre">cpu</span></code> torch device they rebound the
+tensor, and could turn it float64. The tensor methods a device array forwards (<code class="docutils literal notranslate"><span class="pre">take</span></code>, <code class="docutils literal notranslate"><span class="pre">clip</span></code>, …) take one too.
+This surfaced as <code class="docutils literal notranslate"><span class="pre">Images</span> <span class="pre">==</span> <span class="pre">Images</span></code> between a host and a device object failing in one operand order
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/691">PR #691</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BlochWaves</span></code> no longer fails on macOS for complex structure matrices of an even number of about 2900 beams or
+more (a quartz rotation series at <code class="docutils literal notranslate"><span class="pre">g_max=3</span></code> and <code class="docutils literal notranslate"><span class="pre">sg_max=0.5</span></code> with 3233 beams, for example). Apple’s Accelerate
+returns the real workspace size of <code class="docutils literal notranslate"><span class="pre">ZHEEVD</span></code>, 1 + 5n + 2n², in single precision, which rounds an odd size above
+2²⁴ down below the minimum, so LAPACK refused the call with “Illegal value in argument 10 of internal zheevd”
+(SciPy) or “Eigenvalues did not converge” (NumPy). The complex Hermitian solver on macOS is now <code class="docutils literal notranslate"><span class="pre">ZHEEVR</span></code>, which
+needs a far smaller workspace and was also faster on an Apple M2: 0.60 against 0.87 s at 1300 beams, 12.5 against
+22.7 s at 3233, and a rotation series of 11 frames at 1299 beams 7.7 instead of 10.4 s. The diffraction patterns
+are unchanged to rounding. Real matrices and other platforms are not affected. The eigenvectors of a complex
+matrix are written to an array of their own, not over the matrix when it may be overwritten</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">AnnularDetector.show()</span></code> can be drawn: its one region made a one-colour colormap that matplotlib refused when
+rendering the figure (“data mapping points must start with x=0 and end with x=1”). The detectors with several
+regions keep their colours (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/677">PR #677</a>)</p></li>
+<li><p>PRISM with a downsampled S-matrix (<code class="docutils literal notranslate"><span class="pre">downsample=&quot;cutoff&quot;</span></code>, the default, or an angle) keeps the full grid’s
+antialias cutoff. <strong>Behaviour change:</strong> at <code class="docutils literal notranslate"><span class="pre">interpolation=1</span></code>, <code class="docutils literal notranslate"><span class="pre">PixelatedDetector</span></code> with <code class="docutils literal notranslate"><span class="pre">max_angle=&quot;cutoff&quot;</span></code> or
+<code class="docutils literal notranslate"><span class="pre">&quot;valid&quot;</span></code> (the default) returns the pattern size that multislice returns, and the dummy probes of the
+<code class="docutils literal notranslate"><span class="pre">SMatrix</span></code> report the full grid’s cutoff angles. Before, the patterns were cropped to about two thirds of that
+cutoff, and to a different size along x and y on a grid sampled differently along them. For the cubic Si cell
+(5.43 Å) on a 56 x 64 grid at 100 keV, patterns of (26, 22) pixels become (38, 38), and the cutoff angles of
+the dummy probes, 88.6 mrad unbuilt and 88.6 x 75.0 mrad for the built S-matrix, become 129.5 mrad. At a
+larger interpolation factor the patterns lie on the coarser grid of the reduction and extend to the same
+cutoff angle. At <code class="docutils literal notranslate"><span class="pre">interpolation=1</span></code> the same applies to core-loss PRISM
+(<code class="docutils literal notranslate"><span class="pre">SMatrix.transition_potential_scan</span></code>): its pixelated and flexible annular outputs have the sizes of core-loss
+multislice. The automatic outer angle of <code class="docutils literal notranslate"><span class="pre">AnnularDetector</span></code> and <code class="docutils literal notranslate"><span class="pre">FlexibleAnnularDetector</span></code> follows the full
+grid’s cutoff at every interpolation, for a window that spans the downsampled grid. Results with
+<code class="docutils literal notranslate"><span class="pre">max_angle=&quot;full&quot;</span></code> or a numeric angle, and with <code class="docutils literal notranslate"><span class="pre">downsample=False</span></code>, are unchanged</p></li>
+<li><p>A numeric <code class="docutils literal notranslate"><span class="pre">downsample</span></code> below the full grid’s antialias cutoff caps the cutoff of the downsampled S-matrix at
+the edge of the downsampled grid. <strong>Behaviour change:</strong> for the cubic Si cell (5.43 Å) on a 56 x 64 grid at
+100 keV with <code class="docutils literal notranslate"><span class="pre">downsample=60</span></code>, a 20 x 20 grid with an edge at 68.2 mrad, and <code class="docutils literal notranslate"><span class="pre">interpolation=1</span></code> (or
+<code class="docutils literal notranslate"><span class="pre">upsample=True</span></code>), <code class="docutils literal notranslate"><span class="pre">PixelatedDetector(&quot;cutoff&quot;)</span></code> gives (20, 20) pixels instead of (14, 12), and <code class="docutils literal notranslate"><span class="pre">&quot;valid&quot;</span></code> (14, 14)
+instead of (10, 8). The cutoff angles of the dummy probes are 68.2 mrad instead of 47.7 mrad, and
+<code class="docutils literal notranslate"><span class="pre">AnnularDetector(inner=30)</span></code>, with its automatic outer angle, collects out to 68.2 mrad instead of 47.7 mrad. Its
+signal rises by a factor of 2.03 at the centre of the one-cell-thick cell and 2.01 at (1.0, 1.5) Å, and by 1.76
+and 1.74 for a cell two cells thick</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SMatrix</span></code>, <code class="docutils literal notranslate"><span class="pre">Waves.downsample</span></code> and <code class="docutils literal notranslate"><span class="pre">WavesDetector(gpts)</span></code> record the band limit of their downsampled waves in the
+metadata key <code class="docutils literal notranslate"><span class="pre">antialias_sampling</span></code>, the sampling of the grid whose antialias aperture band-limited the waves,
+instead of the pixel count <code class="docutils literal notranslate"><span class="pre">adjusted_antialias_cutoff_gpts</span></code>, which holds only at the extent it was counted on.
+<code class="docutils literal notranslate"><span class="pre">Waves.downsample</span></code> and <code class="docutils literal notranslate"><span class="pre">WavesDetector(gpts)</span></code> also record the sampling of the coarsest grid the waves were
+resampled onto in <code class="docutils literal notranslate"><span class="pre">coarsest_sampling</span></code>, where their content ends. Waves stored with the old key read as before.
+<strong>Behaviour change:</strong> the cutoff angles of waves resampled by <code class="docutils literal notranslate"><span class="pre">Waves.downsample</span></code> or <code class="docutils literal notranslate"><span class="pre">WavesDetector(gpts)</span></code>
+survive <code class="docutils literal notranslate"><span class="pre">Waves.tile</span></code>; the waves of <code class="docutils literal notranslate"><span class="pre">Probe(energy=100e3,</span> <span class="pre">semiangle_cutoff=20,</span> <span class="pre">gpts=(56,</span> <span class="pre">64),</span> <span class="pre">extent=(10,</span> <span class="pre">12))</span></code>
+downsampled to <code class="docutils literal notranslate"><span class="pre">&quot;cutoff&quot;</span></code> and tiled by (2, 2) report 66.6 x 64.8 mrad, where they reported 33.3 x 32.4 mrad.
+The cutoff angles, the <code class="docutils literal notranslate"><span class="pre">&quot;cutoff&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;valid&quot;</span></code> patterns and the bins of a <code class="docutils literal notranslate"><span class="pre">FlexibleAnnularDetector</span></code> of such
+waves that are neither tiled nor given another extent are those of before, however often they are resampled;
+the changes to <code class="docutils literal notranslate"><span class="pre">SMatrix</span></code> are the ones in the neighbouring entries</p></li>
+<li><p>The batches of the compressed reduction of a C-PRISM window smaller than the downsampled grid are sized for the
+grid the detectors read. A <code class="docutils literal notranslate"><span class="pre">PixelatedDetector</span></code> detects on the downsampled grid, but the positions per batch
+followed the window, so a batch of patterns held as many times the budget as the downsampled grid has pixels per
+window pixel: 2.08 times for a (24, 32) window in a (40, 40) grid (1600 / 768 pixels) and 64 times for a
+128 x 128 window in a 1024 x 1024 grid. The budget is <code class="docutils literal notranslate"><span class="pre">dask.chunk-size</span></code> (<code class="docutils literal notranslate"><span class="pre">dask.chunk-size-gpu</span></code> on a GPU) for the batches of an
+arbitrary list of positions, and 1 GiB for the lattice reduction of a <code class="docutils literal notranslate"><span class="pre">GridScan</span></code>. Every other detector reads the window, and the
+values do not change</p></li>
+<li><p>C-PRISM (<code class="docutils literal notranslate"><span class="pre">upsample=True</span></code>) with a window smaller than the downsampled grid, an explicit <code class="docutils literal notranslate"><span class="pre">window_gpts</span></code> or the
+automatic window of a large cell, detects the diffraction patterns of a <code class="docutils literal notranslate"><span class="pre">PixelatedDetector</span></code> on the downsampled
+grid, at the angular sampling of the cell, as multislice does, on the same grid whichever other detectors share
+the scan. Before, a lazy scan declared a different shape and angular sampling than it computed, a frozen-phonon
+scan or a multi-energy scan with a numeric <code class="docutils literal notranslate"><span class="pre">max_angle</span></code> raised <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>, and a pattern scanned together with
+a <code class="docutils literal notranslate"><span class="pre">FlexibleAnnularDetector</span></code> or <code class="docutils literal notranslate"><span class="pre">WavesDetector</span></code> lay on the window’s coarser grid. <strong>Behaviour change:</strong> for the
+cubic Si cell (5.43 Å) on a 56 x 64 grid at 100 keV with <code class="docutils literal notranslate"><span class="pre">interpolation=2</span></code>, <code class="docutils literal notranslate"><span class="pre">window_gpts=(24,</span> <span class="pre">32)</span></code> and
+<code class="docutils literal notranslate"><span class="pre">downsample=&quot;cutoff&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">PixelatedDetector(&quot;cutoff&quot;)</span></code> gives (38, 38) pixels at 6.82 mrad instead of (16, 18),
+<code class="docutils literal notranslate"><span class="pre">&quot;valid&quot;</span></code> (26, 26) instead of (12, 12), and <code class="docutils literal notranslate"><span class="pre">resample=&quot;uniform&quot;</span></code> (38, 38) at 6.82 mrad instead of (16, 14) at
+11.4 mrad. The automatic <code class="docutils literal notranslate"><span class="pre">FlexibleAnnularDetector</span></code> has 124 bins instead of 76, and the cutoff angles of
+<code class="docutils literal notranslate"><span class="pre">SMatrix.dummy_probes()</span></code> are 125.0 x 127.8 mrad instead of 90.9 x 93.7 mrad. The automatic outer angle of
+<code class="docutils literal notranslate"><span class="pre">AnnularDetector</span></code> and <code class="docutils literal notranslate"><span class="pre">FlexibleAnnularDetector</span></code> follows these cutoffs (<code class="docutils literal notranslate"><span class="pre">AnnularDetector(inner=50)</span></code> collects out
+to 125.0 mrad instead of 90.9 mrad). Core-loss PRISM with <code class="docutils literal notranslate"><span class="pre">interpolation=2</span></code> on an 8 x 6 Å cell has the sizes of
+the full window, (16, 12) and (12, 8) pixels and 74 bins instead of (10, 8), (8, 6) and 46 bins. Plain PRISM and
+C-PRISM with a window that spans the downsampled grid already detected their patterns on that grid</p></li>
+<li><p>C-PRISM (<code class="docutils literal notranslate"><span class="pre">upsample=True</span></code>) with a window smaller than the downsampled grid gives a <code class="docutils literal notranslate"><span class="pre">PixelatedDetector</span></code> the same
+diffraction patterns below the blend angle whichever other detectors share the scan. Before, next to a
+<code class="docutils literal notranslate"><span class="pre">WavesDetector</span></code> or a real-space <code class="docutils literal notranslate"><span class="pre">PixelatedDetector</span></code> the patterns were taken from the window propagated from the
+reference depth to the exit surface on the window’s own periodic grid, and differed by 2.3 % of their maximum
+(cubic Si cell on a 56 x 64 grid at 100 keV, <code class="docutils literal notranslate"><span class="pre">interpolation=2</span></code>, <code class="docutils literal notranslate"><span class="pre">window_gpts=(24,</span> <span class="pre">32)</span></code>, <code class="docutils literal notranslate"><span class="pre">downsample=False</span></code>).
+Next to an <code class="docutils literal notranslate"><span class="pre">AnnularDetector</span></code> or <code class="docutils literal notranslate"><span class="pre">SegmentedDetector</span></code> the patterns were stitched to the plane-wave reduction at
+that detector’s band edge instead of at the blend angle. That moved them by 2.6e-4 of the maximum next to
+<code class="docutils literal notranslate"><span class="pre">AnnularDetector(inner=50)</span></code> at the default blend and 2.6e-3 with <code class="docutils literal notranslate"><span class="pre">blend_angle=80</span></code>, by 0.81 (<code class="docutils literal notranslate"><span class="pre">GridScan</span></code>) to 0.91
+(<code class="docutils literal notranslate"><span class="pre">CustomScan</span></code>) of the maximum next to a bright-field <code class="docutils literal notranslate"><span class="pre">AnnularDetector(inner=0,</span> <span class="pre">outer=15)</span></code>, and by 2.4 times the
+maximum next to <code class="docutils literal notranslate"><span class="pre">SegmentedDetector(2,</span> <span class="pre">4,</span> <span class="pre">10,</span> <span class="pre">50)</span></code> with <code class="docutils literal notranslate"><span class="pre">blend_angle=&quot;aperture&quot;</span></code>. Any other detector next to one
+that reads the wave (a <code class="docutils literal notranslate"><span class="pre">WavesDetector</span></code> or a real-space <code class="docutils literal notranslate"><span class="pre">PixelatedDetector</span></code>) changes at rounding level, about
+1e-15 of its maximum in float64 and a few 1e-7 in float32 (at most 1.3e-15 and 4.4e-7 measured), in a cropped
+window and, with <code class="docutils literal notranslate"><span class="pre">method=&quot;modes&quot;</span></code> (the default on a GPU) or a <code class="docutils literal notranslate"><span class="pre">max_batch_expansion</span></code> number, on the full window</p></li>
+<li><p>C-PRISM (<code class="docutils literal notranslate"><span class="pre">upsample=True</span></code>) gives every detector the value it has when scanned alone, whichever other detectors
+share the scan (<a class="reference external" href="https://github.com/abTEM/abTEM/issues/664">#664</a>). The blended reduction routed the detectors
+of a list all or nothing: one detector it could not route (a <code class="docutils literal notranslate"><span class="pre">WavesDetector</span></code>, a <code class="docutils literal notranslate"><span class="pre">FlexibleAnnularDetector</span></code>, a
+real-space <code class="docutils literal notranslate"><span class="pre">PixelatedDetector</span></code>) sent every detector to the unrouted reduction, which at the default blend is the
+plain interpolated one. And the blend angle was snapped to the largest band edge of any detector of the list
+below it, so one detector’s band moved the cut of every other. Now each detector is routed on its own, and only
+a band that straddles the blend angle is snapped, to its own inner edge. Detectors that read the same reduction
+share it: the bands below the cut and the unroutable detectors at the default blend, and all the bands above the
+cut. On cubic Si (1, 1, 8) on a 56 x 64 grid at 100 keV with <code class="docutils literal notranslate"><span class="pre">interpolation=2</span></code> (automatic blend angle
+62.5 mrad), <code class="docutils literal notranslate"><span class="pre">AnnularDetector(inner=70)</span></code> next to a <code class="docutils literal notranslate"><span class="pre">WavesDetector</span></code> or a <code class="docutils literal notranslate"><span class="pre">FlexibleAnnularDetector</span></code> moved by 0.18
+of its maximum, on the full window and with <code class="docutils literal notranslate"><span class="pre">window_gpts=(24,</span> <span class="pre">32)</span></code>; with that window and <code class="docutils literal notranslate"><span class="pre">blend_angle=80</span></code>,
+<code class="docutils literal notranslate"><span class="pre">AnnularDetector(50,</span> <span class="pre">100)</span></code> next to <code class="docutils literal notranslate"><span class="pre">AnnularDetector(60,</span> <span class="pre">70)</span></code> moved by 0.24, and a
+<code class="docutils literal notranslate"><span class="pre">PixelatedDetector(max_angle=&quot;cutoff&quot;)</span></code> next to a <code class="docutils literal notranslate"><span class="pre">WavesDetector</span></code> by 2.8e-3 above the blend angle (0.29 with
+<code class="docutils literal notranslate"><span class="pre">blend_angle=&quot;aperture&quot;</span></code>). On Si (1, 1, 2), <code class="docutils literal notranslate"><span class="pre">reduce(method=&quot;modes&quot;)</span></code> of <code class="docutils literal notranslate"><span class="pre">AnnularDetector(inner=50)</span></code> next to a
+<code class="docutils literal notranslate"><span class="pre">WavesDetector</span></code> moved by 2.5e-2. Every single-detector scan without a <code class="docutils literal notranslate"><span class="pre">blend_taper</span></code> is unchanged. With a
+<code class="docutils literal notranslate"><span class="pre">blend_taper</span></code>, a band that lies wholly below the blend angle was snapped to its own outer edge when scanned
+alone, which put it inside the taper; it now keeps the blend angle, so the taper ends at the blend angle as
+documented. On the same Si (1, 1, 8) cell with <code class="docutils literal notranslate"><span class="pre">blend_angle=80</span></code> and <code class="docutils literal notranslate"><span class="pre">blend_taper=10</span></code>, <code class="docutils literal notranslate"><span class="pre">AnnularDetector(60,</span> <span class="pre">70)</span></code>
+scanned alone changes by 0.55 (full window) to 0.58 (<code class="docutils literal notranslate"><span class="pre">window_gpts=(24,</span> <span class="pre">32)</span></code>) of its maximum, and
+<code class="docutils literal notranslate"><span class="pre">AnnularDetector(0,</span> <span class="pre">30)</span></code> by 2.8e-2 to 4.5e-2. A list of detectors that read different branches now takes one
+reduction per branch instead of one for the whole list</p></li>
+<li><p>The wave functions (<code class="docutils literal notranslate"><span class="pre">WavesDetector</span></code>) and real-space intensities (<code class="docutils literal notranslate"><span class="pre">PixelatedDetector(reciprocal_space=False)</span></code>)
+of a C-PRISM window smaller than the downsampled grid, including the automatic window (for example 112 x 112
+of the 128 x 128 downsampled grid for Si (4, 4, 8) on 192 x 192 at 200 keV with <code class="docutils literal notranslate"><span class="pre">interpolation=4</span></code>), are
+propagated from the reference depth to the exit surface on the zero-padded full grid and cropped back to the
+window (<a class="reference external" href="https://github.com/abTEM/abTEM/issues/665">#665</a>). Before, the propagation ran on the window’s own
+grid, which is periodic with the window, so the probe tails it moved past one edge of the window re-entered at
+the opposite edge. Both branches of a blend with an explicit <code class="docutils literal notranslate"><span class="pre">blend_angle</span></code> are propagated this way. On windows
+smaller than the probe, the largest error of the real-space intensity against the waves of the full window
+cropped to the same pixels, as a fraction of its maximum, falls from 1.1e-1 to 3.4e-2 for Si (1, 1, 8) (43 Å) on
+a 56 x 64 grid at 100 keV, <code class="docutils literal notranslate"><span class="pre">interpolation=2</span></code>, <code class="docutils literal notranslate"><span class="pre">window_gpts=(32,</span> <span class="pre">40)</span></code>, from 2.3e-2 to 1.1e-2 with
+<code class="docutils literal notranslate"><span class="pre">window_gpts=(40,</span> <span class="pre">48)</span></code>, and from 3.3e-1 to 9.1e-2 for Si (1, 1, 16) (87 Å) with <code class="docutils literal notranslate"><span class="pre">window_gpts=(32,</span> <span class="pre">40)</span></code>. On
+windows that cover the probe the change is small. The tails that leave the window are now lost, as the tails
+beyond the window already were when the matrix was cropped, so a diffraction pattern computed from the
+returned wave of a window smaller than the probe carries less of the bright-field disk than before. For
+diffraction patterns use a <code class="docutils literal notranslate"><span class="pre">PixelatedDetector</span></code>, which is detected from the window at the reference depth and is
+not affected. The waves of a window that spans the downsampled grid are bitwise unchanged</p></li>
+<li><p>C-PRISM ignores <code class="docutils literal notranslate"><span class="pre">max_batch_expansion</span></code> whenever the reduced wave functions are cropped, as the docstrings
+said. <code class="docutils literal notranslate"><span class="pre">SMatrix(upsample=True,</span> <span class="pre">max_batch_expansion=...)</span></code> raised a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> on every scan when the automatic
+window came out smaller than the downsampled grid (for example 80 x 80 of 88 x 88 for Si (4, 4, 2) on
+128 x 128 at 200 keV with <code class="docutils literal notranslate"><span class="pre">interpolation=2</span></code>), and so did <code class="docutils literal notranslate"><span class="pre">reduce(max_batch_expansion=...)</span></code> on a cropped window
+with a <code class="docutils literal notranslate"><span class="pre">blend_angle</span></code>. Passing it together with a cropping <code class="docutils literal notranslate"><span class="pre">window_gpts</span></code> to <code class="docutils literal notranslate"><span class="pre">SMatrix</span></code> still raises</p></li>
+<li><p>PRISM averages a <code class="docutils literal notranslate"><span class="pre">CTF</span></code> ensemble with <code class="docutils literal notranslate"><span class="pre">ensemble_mean=True</span></code> once, over the result. The eager <code class="docutils literal notranslate"><span class="pre">SMatrix.reduce</span></code> and
+<code class="docutils literal notranslate"><span class="pre">SMatrix.scan</span></code> with a potential ensemble, exit planes and such a CTF returned the values of the wrong exit
+plane, or raised a broadcast <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> when the number of defoci differed from the number of exit planes,
+and <code class="docutils literal notranslate"><span class="pre">reduce(lazy=True,</span> <span class="pre">disable_s_matrix_chunks=True)</span></code>, the lazy default on a GPU and with <code class="docutils literal notranslate"><span class="pre">upsample=True</span></code>,
+averaged over a scan axis instead. <code class="docutils literal notranslate"><span class="pre">CompressedSMatrixArray.reduce</span></code> averages the ensemble with every <code class="docutils literal notranslate"><span class="pre">method</span></code>
+and with <code class="docutils literal notranslate"><span class="pre">blend_angle</span></code>; it did so only with <code class="docutils literal notranslate"><span class="pre">method=&quot;expand&quot;</span></code> and no <code class="docutils literal notranslate"><span class="pre">blend_angle</span></code>, the CPU default</p></li>
+<li><p>The PRISM reductions <code class="docutils literal notranslate"><span class="pre">SMatrix.reduce</span></code> and <code class="docutils literal notranslate"><span class="pre">SMatrix.scan</span></code> leave the <code class="docutils literal notranslate"><span class="pre">CTF</span></code> they are given as it is. Before, a single-energy
+reduction set its grid and energy in place, so <code class="docutils literal notranslate"><span class="pre">ctf.gpts</span></code>, <code class="docutils literal notranslate"><span class="pre">ctf.extent</span></code> and <code class="docutils literal notranslate"><span class="pre">ctf.energy</span></code> held the S-matrix’s
+afterwards, and the tasks of a lazy graph shared the one CTF. A lazy CPU scan of a frozen-phonon ensemble with a cropped C-PRISM
+window and a <code class="docutils literal notranslate"><span class="pre">PixelatedDetector</span></code> reaching past the blend cut, whose two branches match the CTF to the window and
+to the plane-wave period, could therefore sample the soft aperture of one configuration on the other grid
+(15.91 x 13.63 mrad per pixel for a (24, 32) window of a (56, 64) grid, 13.63 x 13.63 mrad for its period). That
+configuration’s pattern was wrong by about 1 % at the edge of the aperture, 3e-3 of the maximum after the mean
+over three configurations, intermittently in repeated runs of the test of this case</p></li>
+<li><p>Double-channel core-loss multislice (<code class="docutils literal notranslate"><span class="pre">double_channel=True</span></code>, the default) could use the transmission function of
+another slice, so repeated runs differed, with or without frozen phonons
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/578">#578</a>). Double-channel core-loss results computed with 1.0.10 or
+1.0.11 should be recomputed.</p></li>
+<li><p>Lazy waves and diffraction patterns whose dask array is split along the grid (several chunks along <code class="docutils literal notranslate"><span class="pre">x</span></code> or <code class="docutils literal notranslate"><span class="pre">y</span></code>, as
+<code class="docutils literal notranslate"><span class="pre">chunks=&quot;auto&quot;</span></code>, a Zarr file or <code class="docutils literal notranslate"><span class="pre">rechunk</span></code> can give) are rechunked to one chunk along the grid before any operation
+that needs the whole grid. Each block was transformed on its own: <code class="docutils literal notranslate"><span class="pre">apply_ctf</span></code> and the other transfer functions,
+<code class="docutils literal notranslate"><span class="pre">PixelatedDetector</span></code> without <code class="docutils literal notranslate"><span class="pre">max_angle</span></code>, <code class="docutils literal notranslate"><span class="pre">ensure_reciprocal_space</span></code>, <code class="docutils literal notranslate"><span class="pre">ensure_real_space</span></code>, <code class="docutils literal notranslate"><span class="pre">convolve</span></code>,
+<code class="docutils literal notranslate"><span class="pre">FresnelPropagator.propagate</span></code>, <code class="docutils literal notranslate"><span class="pre">abtem.core.fft.fft2</span></code>/<code class="docutils literal notranslate"><span class="pre">ifft2</span></code>/<code class="docutils literal notranslate"><span class="pre">fftn</span></code> on dask arrays, <code class="docutils literal notranslate"><span class="pre">Waves.downsample</span></code> and
+<code class="docutils literal notranslate"><span class="pre">DiffractionPatterns.crop</span></code> gave wrong values or a wrong shape without a warning, and <code class="docutils literal notranslate"><span class="pre">diffraction_patterns</span></code>,
+<code class="docutils literal notranslate"><span class="pre">multislice</span></code>, the annular detectors, <code class="docutils literal notranslate"><span class="pre">PixelatedDetector</span></code> with a <code class="docutils literal notranslate"><span class="pre">max_angle</span></code> and <code class="docutils literal notranslate"><span class="pre">DiffractionPatterns.bandlimit</span></code>,
+<code class="docutils literal notranslate"><span class="pre">block_direct</span></code>, <code class="docutils literal notranslate"><span class="pre">interpolate</span></code> and <code class="docutils literal notranslate"><span class="pre">index_diffraction_spots</span></code> raised. The ensemble
+chunks of such an array are chosen again by dask, so that a block holds the whole grid of as many members as fit
+dask’s <code class="docutils literal notranslate"><span class="pre">array.chunk-size</span></code>. Arrays whose grid is in one chunk are unchanged
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/651">PR #651</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">to_hyperspy</span></code> listed the axes of the signal in an order other than the data’s: with <code class="docutils literal notranslate"><span class="pre">transpose=False</span></code> the <code class="docutils literal notranslate"><span class="pre">x</span></code> and
+<code class="docutils literal notranslate"><span class="pre">y</span></code> axes carried each other’s size and calibration, and with two or more ensemble axes (such as the scan axes of a
+4D-STEM export) the ensemble axes did, for either value of <code class="docutils literal notranslate"><span class="pre">transpose</span></code>. The axes now follow the order of the
+exported array; the exported data are unchanged (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/651">PR #651</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PolarMeasurements.to_diffraction_patterns</span></code> returned float32 whatever the precision of the polar data, and
+<code class="docutils literal notranslate"><span class="pre">DiffractionPatterns.interpolate</span></code> computed its interpolation weights in float32, which limited float64
+interpolations to between <span class="math notranslate nohighlight">\(10^{-6}\)</span> and <span class="math notranslate nohighlight">\(10^{-4}\)</span> relative, growing with the pattern size. Both now keep the
+precision of the data, and integer polar counts get the configured precision (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/651">PR #651</a>)</p></li>
+<li><p><strong>Behaviour change:</strong> <code class="docutils literal notranslate"><span class="pre">DiffractionPatterns.polar_binning</span></code> (and <code class="docutils literal notranslate"><span class="pre">radial_binning</span></code>) raises a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> for complex
+diffraction patterns, for example from <code class="docutils literal notranslate"><span class="pre">Waves.diffraction_patterns(return_complex=True)</span></code>, instead of returning
+complex polar measurements whose conversion to diffraction patterns kept only the real part. Bin the
+<code class="docutils literal notranslate"><span class="pre">.intensity()</span></code> instead (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/651">PR #651</a>)</p></li>
+<li><p>PRISM handles a potential with several ensemble axes, such as an <code class="docutils literal notranslate"><span class="pre">EnergyResolvedAtomsEnsemble</span></code> (energy loss
+x configuration): <code class="docutils literal notranslate"><span class="pre">SMatrix.build</span></code>, <code class="docutils literal notranslate"><span class="pre">reduce</span></code>, <code class="docutils literal notranslate"><span class="pre">scan</span></code> and <code class="docutils literal notranslate"><span class="pre">transition_potential_scan</span></code>, eager and lazy, match
+multislice. The lazy build failed with “Chunks and shape must be of the same length/dimension”, which also
+stopped the elastic <code class="docutils literal notranslate"><span class="pre">reduce</span></code> and <code class="docutils literal notranslate"><span class="pre">scan</span></code> without <code class="docutils literal notranslate"><span class="pre">upsample</span></code>, eager and lazy. With <code class="docutils literal notranslate"><span class="pre">ensemble_mean=True</span></code>, the eager
+<code class="docutils literal notranslate"><span class="pre">upsample=True</span></code> reduction and the eager <code class="docutils literal notranslate"><span class="pre">transition_potential_scan</span></code> raised an <code class="docutils literal notranslate"><span class="pre">IndexError</span></code>. Results with at
+most one potential ensemble axis are unchanged (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/650">PR #650</a>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">RealSpaceMultislice</span></code> applies the tilt of the wave function, as <code class="docutils literal notranslate"><span class="pre">FourierMultislice</span></code> does at orders 1 and 2: the
 beams are translated by <code class="docutils literal notranslate"><span class="pre">tan(tilt)</span></code> per unit depth. It ignored the tilt (of <code class="docutils literal notranslate"><span class="pre">Waves</span></code>, <code class="docutils literal notranslate"><span class="pre">Probe</span></code>, <code class="docutils literal notranslate"><span class="pre">PlaneWave</span></code> and tilt
 ensembles) without any message, in both expansion scopes and in the core-loss multislice
@@ -1059,6 +1532,38 @@ from the elastic probes. Eager scans over <code class="docutils literal notransl
 computed one, and a <code class="docutils literal notranslate"><span class="pre">WavesDetector</span></code> no longer raises <code class="docutils literal notranslate"><span class="pre">AttributeError:</span> <span class="pre">'Waves'</span> <span class="pre">object</span> <span class="pre">has</span> <span class="pre">no</span> <span class="pre">attribute</span> <span class="pre">'reduce_ensemble'</span></code></p></li>
 </ul>
 </li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DiffractionPatterns.interpolate</span></code> raised for <code class="docutils literal notranslate"><span class="pre">gpts=</span></code> (<code class="docutils literal notranslate"><span class="pre">TypeError</span></code>) and for two samplings
+(<code class="docutils literal notranslate"><span class="pre">ValueError:</span> <span class="pre">Invalid</span> <span class="pre">sampling.</span></code>). Both forms now work, and <code class="docutils literal notranslate"><span class="pre">gpts=</span></code> keeps the angular extent of the
+patterns. <code class="docutils literal notranslate"><span class="pre">PixelatedDetector(resample=(a,</span> <span class="pre">b))</span></code>, which raised the same <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>, now resamples to two
+samplings (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/659">PR #659</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PixelatedDetector(resample=...)</span></code> with a sampling finer than that of the waves along either axis failed every
+scan (<code class="docutils literal notranslate"><span class="pre">Probe.scan</span></code>, <code class="docutils literal notranslate"><span class="pre">SMatrix.scan</span></code>, eager and lazy) with <code class="docutils literal notranslate"><span class="pre">ValueError:</span> <span class="pre">could</span> <span class="pre">not</span> <span class="pre">broadcast</span> <span class="pre">input</span> <span class="pre">array</span></code> when
+computed, except a lazy frozen-phonon scan and a lazy <code class="docutils literal notranslate"><span class="pre">detect</span></code>, which declared a smaller shape than they
+computed and raised nothing; with <code class="docutils literal notranslate"><span class="pre">max_angle=None</span></code> nothing failed. The same happened in a
+PRISM scan at <code class="docutils literal notranslate"><span class="pre">interpolation</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> for a sampling coarser than that of the potential but finer than that of
+the reduced waves. Such samplings now give the patterns <code class="docutils literal notranslate"><span class="pre">DiffractionPatterns.interpolate</span></code> gives; samplings
+that worked before are unchanged (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/661">PR #661</a>)</p></li>
+<li><p><strong>Behaviour change:</strong> <code class="docutils literal notranslate"><span class="pre">DiffractionPatterns.interpolate</span></code>, and so <code class="docutils literal notranslate"><span class="pre">PixelatedDetector(resample=...)</span></code>,
+built the bilinear weights of float32 (and complex64) patterns from float32 frequencies, whose rounding
+grows with the pattern size: the results deviated from linear interpolation by about <span class="math notranslate nohighlight">\(1.4 \times 10^{-4}\)</span> of their
+maximum at 2048 x 2048 pixels (random data; about <span class="math notranslate nohighlight">\(10^{-5}\)</span> for a smooth probe pattern). The weights are now built in
+float64 and cast to the precision of the patterns, so float32 results are linear interpolation to float32
+rounding (about <span class="math notranslate nohighlight">\(2 \times 10^{-7}\)</span>) and change by up to that former deviation. Float64 results are
+unchanged (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/659">PR #659</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">show()</span></code> of complex measurements (domain colouring) with a NaN pixel, or an infinite one on a linear scale, raised <code class="docutils literal notranslate"><span class="pre">ValueError:</span> <span class="pre">alpha</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">between</span> <span class="pre">0</span> <span class="pre">and</span> <span class="pre">1</span></code>, also with <code class="docutils literal notranslate"><span class="pre">vmin</span></code> and <code class="docutils literal notranslate"><span class="pre">vmax</span></code> given, and so did moving a shown ensemble to a member with
+a NaN. Pixels the amplitude norm masks (NaN, <span class="math notranslate nohighlight">\(\pm\infty\)</span>, and zero amplitude under a log scale, which was drawn
+opaque) are now transparent; the scaling and the alpha of every other pixel are unchanged (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/659">PR #659</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_slices</span></code>, <code class="docutils literal notranslate"><span class="pre">generate_chunked_slices</span></code> and <code class="docutils literal notranslate"><span class="pre">build</span></code> of every potential raise a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> for a slice
+range outside <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">first_slice</span> <span class="pre">&lt;=</span> <span class="pre">last_slice</span> <span class="pre">&lt;=</span> <span class="pre">len(potential)</span></code>; <code class="docutils literal notranslate"><span class="pre">CrystalPotential.generate_slices(first_slice=-1)</span></code>
+returned every slice, <code class="docutils literal notranslate"><span class="pre">CrystalPotential.generate_chunked_slices</span></code> repeated the crystal past its last slice, and the
+other potentials raised unrelated errors or returned no slices. A <code class="docutils literal notranslate"><span class="pre">last_slice</span></code> one past the end, which
+<code class="docutils literal notranslate"><span class="pre">CrystalPotential.generate_slices</span></code> and <code class="docutils literal notranslate"><span class="pre">ChargeDensityPotential.generate_slices</span></code> clamped and
+<code class="docutils literal notranslate"><span class="pre">PotentialArray.generate_chunked_slices</span></code> accepted, raises too (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/659">PR #659</a>)</p></li>
+<li><p>A lazy frozen-phonon scan, PRISM scan (<code class="docutils literal notranslate"><span class="pre">SMatrix.scan</span></code>, <code class="docutils literal notranslate"><span class="pre">SMatrix.transition_potential_scan</span></code>) or <code class="docutils literal notranslate"><span class="pre">to_cpu()</span></code> of lazy waves from GPU or Metal work, and every result derived from one (<code class="docutils literal notranslate"><span class="pre">rechunk</span></code>, indexing, reductions, arithmetic, filters, …), is computed with the synchronous scheduler, or on the dask-cuda client, also when it is held on the CPU (the detectors’ default <code class="docutils literal notranslate"><span class="pre">to_cpu=True</span></code>, or <code class="docutils literal notranslate"><span class="pre">to_cpu()</span></code>) and the device is given per object while the global <code class="docutils literal notranslate"><span class="pre">device</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;cpu&quot;</span></code>. Before, these ran on dask’s threaded scheduler, which the GPU and Metal backends cannot use. The lazy builds of <code class="docutils literal notranslate"><span class="pre">EBSD</span></code> (<code class="docutils literal notranslate"><span class="pre">build(lazy=True)</span></code>), <code class="docutils literal notranslate"><span class="pre">EBSDDetectorPattern</span></code> (<code class="docutils literal notranslate"><span class="pre">build(lazy=True)</span></code>, <code class="docutils literal notranslate"><span class="pre">scan(lazy=True)</span></code>) and <code class="docutils literal notranslate"><span class="pre">EBSDReferencePattern</span></code> (<code class="docutils literal notranslate"><span class="pre">build(lazy=True)</span></code>) follow the same rule. Their <code class="docutils literal notranslate"><span class="pre">SphericalPattern</span></code> results (<code class="docutils literal notranslate"><span class="pre">EBSDReferencePattern</span></code>, and <code class="docutils literal notranslate"><span class="pre">EBSD</span></code> with <code class="docutils literal notranslate"><span class="pre">BackscatterDetector(directions=...)</span></code>) always computed on dask’s threaded scheduler, whatever the device; <code class="docutils literal notranslate"><span class="pre">SphericalPattern.compute</span></code> now follows the device of its graph: the synchronous scheduler, or the dask-cuda client, for GPU or Metal work, and with <code class="docutils literal notranslate"><span class="pre">dask.multi-gpu</span></code> set, more than one GPU and no client, it starts the dask-cuda cluster. A <code class="docutils literal notranslate"><span class="pre">scheduler=</span></code> passed to <code class="docutils literal notranslate"><span class="pre">compute()</span></code> is still used as given. Like <code class="docutils literal notranslate"><span class="pre">ArrayObject.compute</span></code>, <code class="docutils literal notranslate"><span class="pre">SphericalPattern.compute</span></code> now shows the progress bar set by <code class="docutils literal notranslate"><span class="pre">diagnostics.progress_bar</span></code> (<code class="docutils literal notranslate"><span class="pre">&quot;tqdm&quot;</span></code> by default) and returns the profilers when <code class="docutils literal notranslate"><span class="pre">profiler=True</span></code> is passed (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/659">PR #659</a>, <a class="reference external" href="https://github.com/abTEM/abTEM/pull/661">PR #661</a>)</p>
+<ul>
+<li><p><strong>Behaviour change:</strong> the default <code class="docutils literal notranslate"><span class="pre">SMatrix.scan</span></code> on CUDA, and <code class="docutils literal notranslate"><span class="pre">SMatrix.transition_potential_scan</span></code> and <code class="docutils literal notranslate"><span class="pre">upsample=True</span></code> scans on any accelerator, run one task per S-matrix ensemble member, and those tasks return host measurements, so no layer of the graph holds a device array. They computed on the threaded scheduler, which keeps every member’s S-matrix on the GPU at once, and now use the synchronous scheduler (or the dask-cuda client). On one A100 80 GB, with 4, 6 and 12 members of 0.09, 1.44 and 3.46 GB of S-matrix, the device memory peaked at 4.5, 23.6 and 71.8 GB with the threaded scheduler and at 1.6, 5.0 and 7.6 GB with the synchronous one, and the threaded run took 7-17 % longer; the results are bit-identical. A scheduler passed to <code class="docutils literal notranslate"><span class="pre">compute</span></code> is still used as given. Under a distributed client that is not a single-threaded dask-cuda client, these scans now run on the synchronous scheduler in the client process when the device is GPU or Metal, where the client ran them before, as for other GPU results. On CUDA with <code class="docutils literal notranslate"><span class="pre">dask.multi-gpu</span></code> set, more than one GPU and no client, they start the dask-cuda cluster</p></li>
+</ul>
+</li>
 <li><p>Monte Carlo plasmons: <code class="docutils literal notranslate"><span class="pre">MonteCarloPlasmons.draw_events</span></code> runs again, where it raised <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> because
 <code class="docutils literal notranslate"><span class="pre">PlasmonScatteringEvents</span></code> was abstract (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/617">PR #617</a>)</p>
 <ul>
@@ -1068,6 +1573,248 @@ azimuth</p></li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">CoreLoss.local_potential</span></code> docstring gives <code class="docutils literal notranslate"><span class="pre">max_angle</span></code> in mrad, not degrees</p></li>
 </ul>
 </li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BlochWaves</span></code> with a <code class="docutils literal notranslate"><span class="pre">g_max</span></code> above half the structure factor’s runs, with the couplings between beams
+more than that g_max apart set to zero as its warning says, where building the structure matrix raised
+<code class="docutils literal notranslate"><span class="pre">ValueError:</span> <span class="pre">invalid</span> <span class="pre">entry</span> <span class="pre">in</span> <span class="pre">coordinates</span> <span class="pre">array</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/635">PR #635</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DiffractionPatterns.index_diffraction_spots</span></code> with one orientation matrix per member (for example
+<code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">3,</span> <span class="pre">3)</span></code> matrices for <code class="docutils literal notranslate"><span class="pre">n</span></code> patterns, or <code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">1,</span> <span class="pre">3,</span> <span class="pre">3)</span></code> for a rotation series with a second ensemble
+axis) raised a bare <code class="docutils literal notranslate"><span class="pre">AssertionError</span></code> for eager patterns, and for lazy patterns with more than one member
+per chunk along an axis on which the matrices vary. Each member is now indexed with its own matrix,
+also together with the energies of an energy ensemble. Matrices with more members than the patterns
+along an axis, which also failed before, raise a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/660">PR #660</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Visualization.set_value_limits</span></code> with a new <code class="docutils literal notranslate"><span class="pre">vmin</span></code> and an unchanged <code class="docutils literal notranslate"><span class="pre">vmax</span></code> left the colorbar, and for
+indexed diffraction patterns the spot radii, on the old limits</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">==</span></code> and <code class="docutils literal notranslate"><span class="pre">!=</span></code> no longer guess that lazy objects are equal (<a class="reference external" href="https://github.com/abTEM/abTEM/issues/413">issue #413</a>).
+A dask array never counted as a difference, so lazy <code class="docutils literal notranslate"><span class="pre">ArrayObject</span></code>s compared equal to each other regardless of
+their array content, lazy zeros equal to lazy ones</p>
+<ul>
+<li><p><strong>Behaviour change:</strong> comparing objects whose content is lazy on either side raises
+<code class="docutils literal notranslate"><span class="pre">abtem.core.utils.LazyComparisonError</span></code>, a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> subclass that asks for computed objects, so user
+code that did <code class="docutils literal notranslate"><span class="pre">lazy_a</span> <span class="pre">==</span> <span class="pre">lazy_b</span></code> now raises. It is raised only when no attribute differs: objects that
+differ in an eager attribute, or whose lazy arrays differ in shape, compare unequal whatever their order of
+attributes. Eager objects compare as before, and objects that hold the very same dask array (the same
+object, or an array with the same name, as in a <code class="docutils literal notranslate"><span class="pre">copy()</span></code>) still compare equal. A <code class="docutils literal notranslate"><span class="pre">GPAWPotential</span></code> holds a
+<code class="docutils literal notranslate"><span class="pre">.gpw</span></code> path as a lazy read keyed by the resolved path, so two potentials read from the same file compare
+equal without reading it, and two read from different files raise. A relative <code class="docutils literal notranslate"><span class="pre">.gpw</span></code> path is now resolved
+when the potential is created, so a lazy read uses the working directory of that moment, not of the later
+computation</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compute()</span></code> on a <code class="docutils literal notranslate"><span class="pre">TransitionPotentialArray</span></code> read from zarr or built lazily no longer leaves the local
+potential that site filtering reads (<code class="docutils literal notranslate"><span class="pre">absolute_threshold</span></code>, <code class="docutils literal notranslate"><span class="pre">filter_sites</span></code>, and through them
+<code class="docutils literal notranslate"><span class="pre">scatter(threshold=)</span></code>, <code class="docutils literal notranslate"><span class="pre">generate_scattered_waves</span></code> and multislice site filtering) lazy. The computed object kept
+reading its source: <code class="docutils literal notranslate"><span class="pre">absolute_threshold</span></code> ran the graph again on every call, followed a store that was
+overwritten, and returned <code class="docutils literal notranslate"><span class="pre">0.0</span></code> (site filtering off) once the store was deleted, and <code class="docutils literal notranslate"><span class="pre">to_cpu()</span></code> could return a
+lazy object</p>
+<ul>
+<li><p><strong>Behaviour change:</strong> after <code class="docutils literal notranslate"><span class="pre">tp.array</span> <span class="pre">=</span> <span class="pre">new</span></code>, <code class="docutils literal notranslate"><span class="pre">absolute_threshold</span></code> and the site filtering built on it use the
+local potential of <code class="docutils literal notranslate"><span class="pre">new</span></code>, where they kept using that of the old array. <code class="docutils literal notranslate"><span class="pre">local_potential()</span></code> itself
+recomputes from the array and is unchanged</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">IndexedDiffractionPatterns</span></code> no longer keeps a second reference to its array, which <code class="docutils literal notranslate"><span class="pre">compute()</span></code> left lazy</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">==</span></code> and <code class="docutils literal notranslate"><span class="pre">!=</span></code> on an object that holds another abTEM object use that object’s own comparison, where the holder
+judged it by the generic rule and skipped any check the object’s class adds (the slice index of
+<code class="docutils literal notranslate"><span class="pre">SliceIndexedAtoms</span></code>). The verdict no longer depends on the order of the held objects: a holder of a
+<code class="docutils literal notranslate"><span class="pre">PotentialArray</span></code> compared with a holder of an equal-array <code class="docutils literal notranslate"><span class="pre">TransmissionFunction</span></code> was equal one way round and
+unequal the other, and is unequal both ways, as the two objects are on their own. An error that the held
+object’s comparison raises (<code class="docutils literal notranslate"><span class="pre">TypeError</span></code>, <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>, <code class="docutils literal notranslate"><span class="pre">KeyError</span></code>) escapes <code class="docutils literal notranslate"><span class="pre">==</span></code> and <code class="docutils literal notranslate"><span class="pre">!=</span></code> when the object is an
+attribute itself; held in a list, tuple or dict it still makes the holder unequal, and a lazy comparison is
+still deferred</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">==</span></code> and <code class="docutils literal notranslate"><span class="pre">!=</span></code> of abTEM objects holding Metal arrays, or a Metal and a host array, whose shapes differ are <code class="docutils literal notranslate"><span class="pre">False</span></code>
+in both orders, as on the host. Objects holding arrays of shapes <code class="docutils literal notranslate"><span class="pre">(3,</span> <span class="pre">4)</span></code> and <code class="docutils literal notranslate"><span class="pre">(5,</span> <span class="pre">4)</span></code>, which do not broadcast, raised
+<code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> when both arrays were on Metal, or when the Metal one was on the right</p>
+<ul>
+<li><p><strong>Behaviour change:</strong> objects holding a host array and a Metal array of equal content compare equal in both orders. With the
+host array on the left they compared unequal, because the Metal array layer had no <code class="docutils literal notranslate"><span class="pre">np.equal</span></code>, which it now
+maps to <code class="docutils literal notranslate"><span class="pre">torch.eq</span></code>; with the Metal array on the left they compared equal</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">==</span></code> and <code class="docutils literal notranslate"><span class="pre">!=</span></code> compare integers exactly, where <code class="docutils literal notranslate"><span class="pre">np.allclose</span></code>’s relative tolerance took seeds a few parts per
+million apart as equal, so <code class="docutils literal notranslate"><span class="pre">FrozenPhonons</span></code>, <code class="docutils literal notranslate"><span class="pre">Potential</span></code>, <code class="docutils literal notranslate"><span class="pre">CrystalPotential</span></code> and noise transforms that draw
+different random numbers, and the <code class="docutils literal notranslate"><span class="pre">SMatrix</span></code> or <code class="docutils literal notranslate"><span class="pre">MultisliceTransform</span></code> that holds them, no longer compare equal</p>
+<ul>
+<li><p><strong>Behaviour change:</strong> integer attributes (seeds, but also counts, sizes and an <code class="docutils literal notranslate"><span class="pre">energy</span></code> given as an integer)
+that differ by a small relative amount compare unequal. An integer against a float, and floats, keep the
+tolerance, so <code class="docutils literal notranslate"><span class="pre">energy=100_000</span></code> still equals <code class="docutils literal notranslate"><span class="pre">energy=100e3</span></code></p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">==</span></code> and <code class="docutils literal notranslate"><span class="pre">!=</span></code> compare the shapes of numbers, tuples, lists and arrays as well as their values, where broadcasting
+made <code class="docutils literal notranslate"><span class="pre">(5,)</span></code> equal to <code class="docutils literal notranslate"><span class="pre">(5,</span> <span class="pre">5)</span></code> and an empty sequence equal to anything, so a <code class="docutils literal notranslate"><span class="pre">FrozenPhonons</span></code> of one configuration
+and one of two with the same seed, and <code class="docutils literal notranslate"><span class="pre">NoiseTransform</span></code>s with seeds <code class="docutils literal notranslate"><span class="pre">(5,)</span></code> and <code class="docutils literal notranslate"><span class="pre">(5,</span> <span class="pre">5)</span></code>, no longer compare equal</p>
+<ul>
+<li><p><strong>Behaviour change:</strong> a number and a one-element sequence of it compare unequal, so
+<code class="docutils literal notranslate"><span class="pre">Probe(semiangle_cutoff=20)</span> <span class="pre">!=</span> <span class="pre">Probe(semiangle_cutoff=[20])</span></code>, whose <code class="docutils literal notranslate"><span class="pre">[20]</span></code> adds a length-1 ensemble axis. It
+was equal one way round. The energy of a <code class="docutils literal notranslate"><span class="pre">PlaneWave</span></code> or <code class="docutils literal notranslate"><span class="pre">Probe</span></code> is the exception: a one-value list is stored
+as its value, so <code class="docutils literal notranslate"><span class="pre">energy=100e3</span></code> and <code class="docutils literal notranslate"><span class="pre">energy=[100e3]</span></code> compare equal both ways</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">==</span></code> and <code class="docutils literal notranslate"><span class="pre">!=</span></code> on an object that holds a list or tuple of abTEM array objects (<code class="docutils literal notranslate"><span class="pre">Images</span></code>, <code class="docutils literal notranslate"><span class="pre">Waves</span></code>, …) no longer
+raise <code class="docutils literal notranslate"><span class="pre">RuntimeError:</span> <span class="pre">too</span> <span class="pre">many</span> <span class="pre">indices</span> <span class="pre">for</span> <span class="pre">array</span></code>: not for equal lists, lists of different lengths or shapes, nested
+lists, or such a list against a NumPy array. <code class="docutils literal notranslate"><span class="pre">==</span></code> on the list decides, so a list does not equal a tuple of the
+same objects and the numbers in it compare exactly. No abTEM class compares such a list with <code class="docutils literal notranslate"><span class="pre">==</span></code>; a subclass
+that does can now be compared</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">StructureFactorArray</span></code> accepts its Miller indices and cell as any array-like, lists included, so one built from
+lists or read from zarr works with <code class="docutils literal notranslate"><span class="pre">BlochWaves</span></code>, <code class="docutils literal notranslate"><span class="pre">g_vec</span></code> and <code class="docutils literal notranslate"><span class="pre">get_projected_potential</span></code>. The Miller indices are stored
+as an integer array and the cell as a <code class="docutils literal notranslate"><span class="pre">Cell</span></code>, and a <code class="docutils literal notranslate"><span class="pre">StructureFactor</span></code> stores its Miller indices the same way</p></li>
+<li><p>An <code class="docutils literal notranslate"><span class="pre">SMatrixArray</span></code> read from zarr keeps the dtype of the wave vectors it was written with and reduces to the same
+waves as the S-matrix that was written, where they were read as float32. The dtype is stored in the
+zarr attributes as <code class="docutils literal notranslate"><span class="pre">wave_vectors_dtype</span></code>; a file without it holds float64 values and reads as float64, unchanged</p>
+<ul>
+<li><p><strong>Behaviour change:</strong> an <code class="docutils literal notranslate"><span class="pre">SMatrixArray</span></code> file written by this version cannot be read by an earlier version, which
+raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> for the unexpected <code class="docutils literal notranslate"><span class="pre">wave_vectors_dtype</span></code> argument. Files written by earlier versions read
+with float64 wave vectors, the values they hold</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RealSpaceMultislice(order=n)</span></code> for <code class="docutils literal notranslate"><span class="pre">n</span></code> of 4 or more uses the binomial coefficients of the Taylor series of the
+forward wavenumber, <span class="math notranslate nohighlight">\(K(\sqrt{1 + 2C/K} - 1)\)</span> with <span class="math notranslate nohighlight">\(K = 2\pi/\lambda\)</span> and <span class="math notranslate nohighlight">\(C\)</span> the slice operator, in both
+expansion scopes. The coefficients of the operator powers were geometric, <span class="math notranslate nohighlight">\(-1/(2K), 1/(2K^2), -1/(2K^3), \dots\)</span>,
+which agree with the binomial ones, <span class="math notranslate nohighlight">\(-1/(2K), 1/(2K^2), -5/(8K^3), 7/(8K^4), \dots\)</span>, through order 3 only, so
+raising the order past 3 stopped improving the result and the series converged to <span class="math notranslate nohighlight">\(C(2K + C)/(2(K + C))\)</span> instead
+of the square root. For a 300 mrad plane wave at 30 keV in vacuum, the error of the phase advance per ångström
+stalled at <span class="math notranslate nohighlight">\(4.7 \times 10^{-5}\)</span> rad from order 5 on; it now falls to <span class="math notranslate nohighlight">\(6 \times 10^{-8}\)</span> rad at order 6.
+<strong>Behaviour change:</strong> results at <code class="docutils literal notranslate"><span class="pre">order</span></code> 4 and higher change; orders 1 to 3, and the default <code class="docutils literal notranslate"><span class="pre">order=1</span></code>, are unchanged</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PixelatedDetector(max_angle=...)</span></code> raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> for a number of 0 or below. A <code class="docutils literal notranslate"><span class="pre">max_angle</span></code> of 0 was declared
+as the uncropped pattern and detected as the few central pixels, so every scan raised
+<code class="docutils literal notranslate"><span class="pre">ValueError:</span> <span class="pre">could</span> <span class="pre">not</span> <span class="pre">broadcast</span> <span class="pre">input</span> <span class="pre">array</span></code>; a negative number gave only the few central pixels, without an error.
+<strong>Behaviour change:</strong> both now raise at construction with a clear message, so a negative <code class="docutils literal notranslate"><span class="pre">max_angle</span></code>, which used to
+run, no longer does; <code class="docutils literal notranslate"><span class="pre">None</span></code>, <code class="docutils literal notranslate"><span class="pre">'cutoff'</span></code>, <code class="docutils literal notranslate"><span class="pre">'valid'</span></code> and <code class="docutils literal notranslate"><span class="pre">'full'</span></code> are unchanged</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SMatrix.reduce(lazy=False)</span></code> and <code class="docutils literal notranslate"><span class="pre">SMatrix.scan(lazy=False)</span></code> honour <code class="docutils literal notranslate"><span class="pre">max_batch_multislice</span></code>: the plane waves of the
+S-matrix are propagated in batches of that size, as <code class="docutils literal notranslate"><span class="pre">SMatrix.build(lazy=False,</span> <span class="pre">max_batch=...)</span></code> does, where the
+eager reduction always used the <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> batch. The same holds for a lazy reduction with
+<code class="docutils literal notranslate"><span class="pre">disable_s_matrix_chunks=True</span></code> (the default on a GPU and with <code class="docutils literal notranslate"><span class="pre">upsample=True</span></code>). The default <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> batch is
+unchanged. A smaller batch bounds the memory of the propagation but generates the slices of a streamed potential once
+per batch. The <code class="docutils literal notranslate"><span class="pre">max_batch_multislice</span></code> docstrings describe the batch of plane waves rather than the Dask chunks.
+<strong>Behaviour change:</strong> (i) a lazy reduction with <code class="docutils literal notranslate"><span class="pre">disable_s_matrix_chunks=True</span></code> (the default on a GPU) and any call
+with <code class="docutils literal notranslate"><span class="pre">upsample=True</span></code> now batch the plane waves when a caller passes <code class="docutils literal notranslate"><span class="pre">max_batch_multislice</span></code>, which they ignored
+before; (ii) <code class="docutils literal notranslate"><span class="pre">max_batch_multislice=None</span></code> or a NumPy integer, which these paths and the eager reduction ignored,
+now raise <code class="docutils literal notranslate"><span class="pre">ValueError:</span> <span class="pre">limit</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">an</span> <span class="pre">integer</span> <span class="pre">or</span> <span class="pre">a</span> <span class="pre">string</span></code>, as the lazy reduction in chunks already did</p></li>
+<li><p>Spline interpolation on CuPy 14.1 and later of float32 or complex64 data returned the wrong value for a
+coordinate within half a float32 spacing below a grid node, as the positions of <code class="docutils literal notranslate"><span class="pre">interpolate_line</span></code> often are:
+cupyx took the starting index from the float32-rounded coordinate and the weights from the float64 one. For
+<code class="docutils literal notranslate"><span class="pre">order</span> <span class="pre">&gt;=</span> <span class="pre">2</span></code> the result was the value at the next grid node; for <code class="docutils literal notranslate"><span class="pre">order=1</span></code> it was extrapolated linearly from
+the next segment, off by at most the distance to the node times a second difference. This affected
+<code class="docutils literal notranslate"><span class="pre">Images.interpolate(method=&quot;spline&quot;)</span></code>, <code class="docutils literal notranslate"><span class="pre">interpolate_line</span></code> and <code class="docutils literal notranslate"><span class="pre">interpolate_line_at_position</span></code> of <code class="docutils literal notranslate"><span class="pre">Images</span></code> and
+<code class="docutils literal notranslate"><span class="pre">DiffractionPatterns</span></code> (so also <code class="docutils literal notranslate"><span class="pre">Probe.profiles</span></code> and <code class="docutils literal notranslate"><span class="pre">momentum_resolved_spectrum</span></code> with a
+<code class="docutils literal notranslate"><span class="pre">SpectralSlitDetector</span></code>), and <code class="docutils literal notranslate"><span class="pre">RealSpaceLineProfiles.interpolate</span></code> and <code class="docutils literal notranslate"><span class="pre">ReciprocalSpaceLineProfiles.interpolate</span></code>.
+On CuPy, the prefilter, the index and the weights are now computed in double precision and the sum in the
+precision of the data, so the results agree with the NumPy results to float32 rounding. On earlier CuPy
+versions the results change by float32 rounding only. <strong>Behaviour change:</strong> at the default float32 precision,
+the pixel positions of the line in <code class="docutils literal notranslate"><span class="pre">interpolate_line</span></code> and <code class="docutils literal notranslate"><span class="pre">interpolate_line_at_position</span></code> were Å values
+rounded to float32 (by up to 3.8e-5 pixels at 0.1 Å sampling near 100 Å). On NumPy and CuPy they are now built
+in float64 (<code class="docutils literal notranslate"><span class="pre">LineScan.get_positions</span></code> takes an optional <code class="docutils literal notranslate"><span class="pre">dtype</span></code>, by default the configured precision as before),
+which changes the values of these functions and of what builds on them (<code class="docutils literal notranslate"><span class="pre">Probe.profiles</span></code>,
+<code class="docutils literal notranslate"><span class="pre">momentum_resolved_spectrum</span></code>) slightly, by 5e-6 to 4e-5 of the maximum for random data in the cases checked;
+at float64 precision they are unchanged. Metal keeps float32 pixel positions, so its line values shift by
+float32 noise (up to 7e-5 of the maximum in the cases checked) without becoming more accurate. The results of
+<code class="docutils literal notranslate"><span class="pre">Images.interpolate</span></code>, <code class="docutils literal notranslate"><span class="pre">RealSpaceLineProfiles.interpolate</span></code> and <code class="docutils literal notranslate"><span class="pre">ReciprocalSpaceLineProfiles.interpolate</span></code> on
+NumPy, Metal and float64 CuPy are unchanged
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/680">PR #680</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">set_ensemble_axes_metadata</span></code> raises when the new axis does not fit the array (a <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> for an ordinal axis
+of the wrong length) or contradicts its energy (a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>), and leaves the object’s axes unchanged. It no
+longer writes into an axes list the object shares with its caller or with other objects, so a list read from
+<code class="docutils literal notranslate"><span class="pre">ensemble_axes_metadata</span></code> before the call keeps the old axes</p>
+<ul>
+<li><p><strong>Behaviour change:</strong> the call returned without an error and without changing anything for an axis of the
+wrong length, and installed a contradicting <code class="docutils literal notranslate"><span class="pre">EnergyAxis</span></code></p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">from_zarr</span></code> builds an object from the axes and metadata the file stores, and falls back to the stored constructor
+arguments only for the classes that cannot be built that way. A file whose axes do not fit its array raises
+instead of loading with other axes, and an error inside <code class="docutils literal notranslate"><span class="pre">from_array_and_metadata</span></code> is no longer hidden. Files
+written by abTEM 1.0.10 and 1.0.11 load to the same objects as before</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ensure_cuda_cluster</span></code> raises a CUDA error from its device probe, where it started the cluster without the
+per-worker memory limit. Only “no CUDA device” (<code class="docutils literal notranslate"><span class="pre">cudaErrorNoDevice</span></code>, <code class="docutils literal notranslate"><span class="pre">hipErrorNoDevice</span></code>) still means no
+limit; every other error, an insufficient driver included, raises on every call</p></li>
+<li><p><strong>Behaviour change:</strong> <code class="docutils literal notranslate"><span class="pre">ensure_cuda_cluster</span></code> divides the per-worker memory limit by the number of GPUs the
+cluster spans, the ones listed in <code class="docutils literal notranslate"><span class="pre">dask.multi-gpu-devices</span></code> when it is set, where it divided by every visible
+GPU. With 4 visible GPUs and two devices listed, the workers shared 42.5 % of the memory limit in total, and
+now share 85 %. More devices listed than visible, four listed with two visible, gave 170 %</p></li>
+<li><p>A GPU or Metal computation raises the error of an active dask client that cannot answer the scheduler query,
+where it ran on the synchronous scheduler instead. An asynchronous client inside its event loop, whose query
+returns a coroutine, is not used: the computation runs on the synchronous scheduler, where the check raised
+<code class="docutils literal notranslate"><span class="pre">TypeError</span></code></p></li>
+<li><p>The GPU chunk and batch size estimates raise a CUDA error from their memory probe, where they fell back to
+<code class="docutils literal notranslate"><span class="pre">dask.chunk-size-gpu</span></code>. They still use that setting when CuPy is not installed or sees no device</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">natural_neighbor_weights</span></code> falls back to nearest-parent weights only for degenerate (collinear or coincident)
+parent beams; any other error from the triangulation is raised</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">shrink_cell</span></code> works under <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-O</span></code></p>
+<ul>
+<li><p><strong>Behaviour change:</strong> an <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> object without atoms raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>, where it returned an empty
+<code class="docutils literal notranslate"><span class="pre">Atoms</span></code> with a zero cell (and did not return under <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-O</span></code>)</p></li>
+</ul>
+</li>
+<li><p>The Miller-index labels of an indexed diffraction-pattern plot delegate only the methods of matplotlib’s
+<code class="docutils literal notranslate"><span class="pre">Annotation</span></code>: <code class="docutils literal notranslate"><span class="pre">hasattr</span></code>, <code class="docutils literal notranslate"><span class="pre">getattr</span></code> with a default and <code class="docutils literal notranslate"><span class="pre">copy.deepcopy</span></code> work on them, and any other name raises
+<code class="docutils literal notranslate"><span class="pre">AttributeError</span></code></p></li>
+<li><p>The warning of the GPAW all-electron fallback names the assertion that failed (its source line, message and
+location), where it reported a convergence failure for any assertion</p></li>
+<li><p>Indexing an ensemble axis with a step, a negative start or stop, a reversed slice or an index array keeps the
+coordinates of the selected members. The axis kept the unsliced offset and sampling, so <code class="docutils literal notranslate"><span class="pre">dp[::2,</span> <span class="pre">::2]</span></code> of a
+4D-STEM scan reported the full scan’s sampling, and the images derived from it half their true size. A
+partial slice of a <code class="docutils literal notranslate"><span class="pre">ReciprocalSpaceAxis</span></code> with <code class="docutils literal notranslate"><span class="pre">fftshift=False</span></code> kept the class, whose coordinates for the
+shorter length are not those of the selected members of an axis stored in <code class="docutils literal notranslate"><span class="pre">ifftshift</span></code> order
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/696">PR #696</a>)</p>
+<ul>
+<li><p><strong>Behaviour change:</strong> a reversed slice of a scan axis (<code class="docutils literal notranslate"><span class="pre">dp[::-1]</span></code>), or an index array whose members decrease
+evenly, lists the same positions from the last. The axis stays a scan axis, with the first selected position as
+its offset and a negative sampling. Before, <code class="docutils literal notranslate"><span class="pre">dp[::-1]</span></code> reversed the data and kept the axes, so its reductions
+were mirrored. Reductions of a scan to images or line profiles return the positions in increasing order, with
+a positive sampling, so <code class="docutils literal notranslate"><span class="pre">dp[::-1]</span></code> and <code class="docutils literal notranslate"><span class="pre">dp</span></code> give the same images: <code class="docutils literal notranslate"><span class="pre">integrate_radial</span></code>, <code class="docutils literal notranslate"><span class="pre">center_of_mass</span></code>,
+<code class="docutils literal notranslate"><span class="pre">integrated_center_of_mass</span></code>, <code class="docutils literal notranslate"><span class="pre">PolarMeasurements.integrate</span></code>, <code class="docutils literal notranslate"><span class="pre">differentials</span></code> and <code class="docutils literal notranslate"><span class="pre">to_image_ensemble</span></code>, and the
+detectors that reduce the scan of waves (<code class="docutils literal notranslate"><span class="pre">AnnularDetector</span></code> and the spectral detectors), <code class="docutils literal notranslate"><span class="pre">multislice</span></code> included.
+Every other output keeps the scan in the order it was indexed, whatever else the transform returns: the
+detectors that keep the scan as ensemble axes (<code class="docutils literal notranslate"><span class="pre">PixelatedDetector</span></code>, <code class="docutils literal notranslate"><span class="pre">FlexibleAnnularDetector</span></code>,
+<code class="docutils literal notranslate"><span class="pre">SegmentedDetector</span></code>, <code class="docutils literal notranslate"><span class="pre">WavesDetector</span></code>), alone or next to a reducing detector in one <code class="docutils literal notranslate"><span class="pre">multislice</span></code>, the transforms
+of waves (<code class="docutils literal notranslate"><span class="pre">apply_ctf</span></code>, <code class="docutils literal notranslate"><span class="pre">multislice</span></code> exit waves), and the operations on measurements (the source-size filters,
+<code class="docutils literal notranslate"><span class="pre">poisson_noise</span></code>). The filters and <code class="docutils literal notranslate"><span class="pre">poisson_noise</span></code> with <code class="docutils literal notranslate"><span class="pre">dose_per_area</span></code> use the distance between neighbouring
+positions. A scan of waves that are already scanned (<code class="docutils literal notranslate"><span class="pre">Waves.scan</span></code>) puts its own positions in increasing order
+and keeps the scan of the waves as it was indexed. A single position selected through a reversal
+(<code class="docutils literal notranslate"><span class="pre">dp[::-1][:1]</span></code>, <code class="docutils literal notranslate"><span class="pre">dp[3:2:-1]</span></code>) has a positive sampling and is not a reversed scan.
+A reversed slice of another linear axis, and an index array on one, give a <code class="docutils literal notranslate"><span class="pre">NonLinearAxis</span></code> with the selected
+coordinates, and so do a slice with a step other than one of a <code class="docutils literal notranslate"><span class="pre">ReciprocalSpaceAxis</span></code> and any slice of one with
+<code class="docutils literal notranslate"><span class="pre">fftshift=False</span></code> that does not select every member. On a scan axis, an index array whose members are evenly
+spaced is the equivalent slice (<code class="docutils literal notranslate"><span class="pre">dp[[0,</span> <span class="pre">2,</span> <span class="pre">4]]</span></code> is <code class="docutils literal notranslate"><span class="pre">dp[0:5:2]</span></code>) and keeps the scan axis. Any other index array
+gives a <code class="docutils literal notranslate"><span class="pre">NonLinearAxis</span></code> there too, so the axis is no longer a scan axis: reductions over it return line
+profiles instead of <code class="docutils literal notranslate"><span class="pre">Images</span></code> for a 2D scan, and a <code class="docutils literal notranslate"><span class="pre">MeasurementsEnsemble</span></code> instead of line profiles for a 1D
+scan; <code class="docutils literal notranslate"><span class="pre">integrated_center_of_mass</span></code>, the source-size filters (<code class="docutils literal notranslate"><span class="pre">gaussian_source_size</span></code>, <code class="docutils literal notranslate"><span class="pre">lorentzian_source_size</span></code>,
+<code class="docutils literal notranslate"><span class="pre">voigtian_source_size</span></code> and <code class="docutils literal notranslate"><span class="pre">pseudo_voigtian_source_size</span></code>, of diffraction patterns and of polar measurements)
+and <code class="docutils literal notranslate"><span class="pre">poisson_noise</span></code> with <code class="docutils literal notranslate"><span class="pre">dose_per_area</span></code> raise when one of the two scan axes was indexed so; and a reduction of
+<code class="docutils literal notranslate"><span class="pre">dp[:,</span> <span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">4]]</span></code> puts the indexed axis first. Outer indexing of linear ensemble axes
+(<code class="docutils literal notranslate"><span class="pre">np.ix_</span></code>), or any index array of more than one dimension on one, raises <code class="docutils literal notranslate"><span class="pre">IndexError</span></code>.</p></li>
+</ul>
+</li>
+<li><p><strong>Behaviour change:</strong> <code class="docutils literal notranslate"><span class="pre">abtem.stack</span></code> and <code class="docutils literal notranslate"><span class="pre">abtem.concatenate</span></code> raise a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> when the members have a different
+number of axes (naming both numbers) or different axes (another part of a scan, a different offset or sampling, a
+reversed scan), except the axis <code class="docutils literal notranslate"><span class="pre">concatenate</span></code> joins. The message names the first differing axis, the fields that
+differ and both values (for example <code class="docutils literal notranslate"><span class="pre">offset</span> <span class="pre">0.25</span> <span class="pre">vs</span> <span class="pre">2.25</span></code>). They gave every member the axes of the first one, so
+the others silently got its coordinates. The <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> of <code class="docutils literal notranslate"><span class="pre">concatenate</span></code> for an axis that cannot be joined now
+carries a message</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_items(index,</span> <span class="pre">keepdims=True)</span></code> with a negative integer index returns the member counted from the end of the axis,
+and an index out of range raises <code class="docutils literal notranslate"><span class="pre">IndexError</span></code>. It returned an empty array and an empty axis. A numpy integer index
+(<code class="docutils literal notranslate"><span class="pre">np.int64(2)</span></code>) keeps a length-1 axis like an <code class="docutils literal notranslate"><span class="pre">int</span></code>; it returned an array without the ensemble axis</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LinearAxis[i]</span></code> raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> for a negative integer instead of returning an axis with the wrong offset</p></li>
+<li><p>Lazy arrays on the Metal (torch) backend can be indexed with a list or a boolean mask along a chunked axis
+(<code class="docutils literal notranslate"><span class="pre">numpy.take</span></code> is implemented), and <code class="docutils literal notranslate"><span class="pre">PolarMeasurements.to_image_ensemble</span></code> works on an eager measurement
+(<code class="docutils literal notranslate"><span class="pre">numpy.moveaxis</span></code> is implemented)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DiffractionPatterns.index_diffraction_spots</span></code> drops extra leading axes of length 1 of the orientation matrices
+beyond the ensemble axes of the patterns, for eager and lazy patterns alike. Lazy patterns failed with an error of
+dask for these, and eager patterns were indexed with some of these matrices and raised an <code class="docutils literal notranslate"><span class="pre">AssertionError</span></code> for
+others. Patterns of ensemble shape <code class="docutils literal notranslate"><span class="pre">(4,</span> <span class="pre">3)</span></code> with matrices of ensemble shape <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">4,</span> <span class="pre">1)</span></code> were indexed with the wrong
+matrices (9 of 12 members); they now equal the <code class="docutils literal notranslate"><span class="pre">(4,</span> <span class="pre">1)</span></code> call</p></li>
+<li><p><strong>Behaviour change:</strong> <code class="docutils literal notranslate"><span class="pre">DiffractionPatterns.index_diffraction_spots</span></code> raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> for orientation matrices
+with extra axes longer than 1 (an <code class="docutils literal notranslate"><span class="pre">AssertionError</span></code> for eager patterns and an error of dask for lazy ones before),
+and for extra axes of length 1 that are not leading. Eager patterns of ensemble shape <code class="docutils literal notranslate"><span class="pre">(3,)</span></code> with matrices of
+ensemble shape <code class="docutils literal notranslate"><span class="pre">(3,</span> <span class="pre">1)</span></code> or <code class="docutils literal notranslate"><span class="pre">(3,</span> <span class="pre">1,</span> <span class="pre">1)</span></code>, and <code class="docutils literal notranslate"><span class="pre">(4,</span> <span class="pre">3)</span></code> with <code class="docutils literal notranslate"><span class="pre">(4,</span> <span class="pre">1,</span> <span class="pre">1)</span></code> or <code class="docutils literal notranslate"><span class="pre">(4,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">1)</span></code>, for example, were indexed
+with the right matrices</p></li>
+<li><p>The multi-GPU run of <code class="docutils literal notranslate"><span class="pre">tools/gpu/run_gpu_tests.sh</span></code> (<code class="docutils literal notranslate"><span class="pre">ABTEM_CI_MULTIGPU</span></code>) runs <code class="docutils literal notranslate"><span class="pre">test/test_multigpu.py</span></code> as its own
+pytest call, which fails when no test passes or any is skipped, where a single pass anywhere was enough: the multigpu
+test in <code class="docutils literal notranslate"><span class="pre">test/test_measure.py</span></code> needs only 2 GPUs, so a broken <code class="docutils literal notranslate"><span class="pre">dask-cuda</span></code> import ended green with one pass and six
+skips. The other multigpu tests run in a second call that must return 0. A preflight checks that <code class="docutils literal notranslate"><span class="pre">dask_cuda</span></code> imports
+and that 2 GPUs are visible, and the managed venv installs <code class="docutils literal notranslate"><span class="pre">cuda-bindings&gt;=12,&lt;13</span></code> from PyPI, the line that matches
+<code class="docutils literal notranslate"><span class="pre">cupy-cuda12x</span></code>, instead of an unpinned <code class="docutils literal notranslate"><span class="pre">cuda-bindings</span></code> from NVIDIA’s package index. <strong>Behaviour change:</strong>
+<code class="docutils literal notranslate"><span class="pre">ABTEM_CI_MULTIGPU</span></code> is enabled only by <code class="docutils literal notranslate"><span class="pre">1</span></code>; <code class="docutils literal notranslate"><span class="pre">0</span></code> and empty disable it, and any other value, such as <code class="docutils literal notranslate"><span class="pre">yes</span></code> or <code class="docutils literal notranslate"><span class="pre">true</span></code>,
+fails the run at the start. Before, any non-empty value, <code class="docutils literal notranslate"><span class="pre">0</span></code> included, enabled it (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/708">PR #708</a>)</p></li>
 </ul>
 <p>Documentation:</p>
 <ul class="simple">
@@ -1084,10 +1831,16 @@ multislice walkthrough</p></li>
 tutorial, which now selects the paraxial propagator explicitly where it compares algorithms at equal order</p></li>
 <li><p>The installation page documents the optional pip extras (<code class="docutils literal notranslate"><span class="pre">gpaw</span></code>, <code class="docutils literal notranslate"><span class="pre">extra</span></code>, <code class="docutils literal notranslate"><span class="pre">all</span></code>) and why the GPU packages
 are not among them</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">angular_spread</span></code> docstrings of <code class="docutils literal notranslate"><span class="pre">SpatialEnvelope</span></code> and <code class="docutils literal notranslate"><span class="pre">CTF</span></code> now state the 1/e width convention
+(<code class="docutils literal notranslate"><span class="pre">angular_spread</span> <span class="pre">=</span> <span class="pre">√2·σ</span></code>), matching <code class="docutils literal notranslate"><span class="pre">focal_spread</span></code>, and the <code class="docutils literal notranslate"><span class="pre">CTF</span></code> unit is corrected from Å to mrad
+(<a class="reference external" href="https://github.com/abTEM/abTEM/pull/645">PR #645</a>)</p></li>
 <li><p>The configuration reference is synchronized with the new and changed config keys</p></li>
 <li><p>The multiple-GPUs section of the parallelization walkthrough is expanded to cover the multi-GPU
 hardening fixes above, and the FFT plan-cache documentation is corrected to match the shipped <code class="docutils literal notranslate"><span class="pre">auto</span></code>
 default (it previously described a stale <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">MB</span></code> default that was never shipped)</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">ArrayObject.apply_func</span></code> docstring states what the function receives: the array object (for a lazy
+one, each block as an eager array object with that block’s ensemble axes metadata), and returns the new
+array; it said the function takes the array (<a class="reference external" href="https://github.com/abTEM/abTEM/pull/659">PR #659</a>)</p></li>
 </ul>
 <p>Planned for this release (not yet merged):</p>
 <ul class="simple">

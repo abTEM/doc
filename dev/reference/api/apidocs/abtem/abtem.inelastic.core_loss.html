@@ -39,7 +39,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=fd3f3429" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=6a604523" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../../../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
@@ -58,7 +58,7 @@
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../../../../_static/togglebutton.js?v=b8b12719"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../../_static/design-tabs.js?v=fcb327ea"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script async="async" src="../../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
@@ -317,6 +317,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../api.html">API</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="abtem.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem</span></code></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3 has-children"><a class="reference internal" href="abtem.bloch.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="abtem.bloch.band_chebyshev.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.band_chebyshev</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="abtem.bloch.cbed.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.cbed</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="abtem.bloch.dynamical.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.dynamical</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="abtem.bloch.indexing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.bloch.indexing</span></code></a></li>
@@ -403,6 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <li class="toctree-l3"><a class="reference internal" href="abtem.measurements.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.measurements</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.multislice.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.multislice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.noise.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.noise</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="abtem.rotation_series.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.rotation_series</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.scan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.scan</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.slicing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.slicing</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="abtem.tilt.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">abtem.tilt</span></code></a></li>
@@ -1129,7 +1131,8 @@ as <code class="docutils literal notranslate"><span class="pre">_task_local</spa
 to share is the immutable-in-practice <em>array data</em>: the device-
 resident array and the local potential derived from it are cached,
 and a fresh, independently-mutable wrapper is copied out each call.</p>
-<p>The cache lives in <code class="docutils literal notranslate"><span class="pre">_device_array_cache</span></code>, set in <code class="docutils literal notranslate"><span class="pre">__init__</span></code> on
+<p>The cache lives in <code class="docutils literal notranslate"><span class="pre">_device_array_cache</span></code>, set by
+<code class="docutils literal notranslate"><span class="pre">_derive_from_array</span></code> (<code class="docutils literal notranslate"><span class="pre">__init__</span></code> and <code class="docutils literal notranslate"><span class="pre">_replace_array</span></code>) on
 the object every <code class="docutils literal notranslate"><span class="pre">_task_local</span></code> view is shallow-copied from –
 <code class="docutils literal notranslate"><span class="pre">copy.copy</span></code> shares dict <em>references</em>, not contents, so every
 per-task view sees the same dict and therefore whatever a sibling
@@ -1168,7 +1171,7 @@ it is; with a threshold a single <cite>Atom</cite> gives an array of positions.<
 
 <dl class="py method">
 <dt class="sig sig-object py" id="abtem.inelastic.core_loss.TransitionPotentialArray.from_array_and_metadata">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_array_and_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/abtem/inelastic/core_loss.html#TransitionPotentialArray.from_array_and_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.inelastic.core_loss.TransitionPotentialArray.from_array_and_metadata" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_array_and_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/abtem/inelastic/core_loss.html#TransitionPotentialArray.from_array_and_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abtem.inelastic.core_loss.TransitionPotentialArray.from_array_and_metadata" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1396,7 +1399,8 @@ it is not a useful regime — see the docstring intro.</p></li>
 (<code class="docutils literal notranslate"><span class="pre">prod(gpts)</span></code> beams). Memory and compute scale as <code class="docutils literal notranslate"><span class="pre">O(prod(gpts)^2)</span></code>
 per scattering site per slice — only practical for small grids.</p></li>
 <li><p>Single exit plane only (<code class="docutils literal notranslate"><span class="pre">len(potential.exit_planes)</span> <span class="pre">==</span> <span class="pre">1</span></code>).</p></li>
-<li><p>No frozen-phonon ensemble (<code class="docutils literal notranslate"><span class="pre">potential.ensemble_shape</span> <span class="pre">==</span> <span class="pre">()</span></code>).</p></li>
+<li><p>One potential configuration per call. <code class="docutils literal notranslate"><span class="pre">SMatrix.transition_potential_scan</span></code>
+iterates the frozen-phonon configurations and averages them.</p></li>
 <li><p>No <code class="docutils literal notranslate"><span class="pre">downsample</span></code> support (<code class="docutils literal notranslate"><span class="pre">s_matrix.downsampled_gpts</span> <span class="pre">==</span> <span class="pre">s_matrix.gpts</span></code>).</p></li>
 <li><p>Eager only; no Dask laziness.</p></li>
 </ul>
@@ -1418,6 +1422,49 @@ scattered wave are evaluated. Clamped to the PRISM cell
 (<code class="docutils literal notranslate"><span class="pre">extent</span> <span class="pre">/</span> <span class="pre">interpolation</span></code>) with a warning if larger — see
 Limitations above. If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default), the PRISM cell is used,
 matching the real-space driver’s default window.</p></li>
+<li><p><strong>partitions_s1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Enable <strong>BiP-PRISM</strong> beam partitioning (paper Alg. 5). When set, <code class="docutils literal notranslate"><span class="pre">S1</span></code>
+(aperture beams) and/or <code class="docutils literal notranslate"><span class="pre">S2</span></code> (detector/reciprocal-grid beams) are built
+on a sparse hex-ring <strong>parent</strong> set with <code class="docutils literal notranslate"><span class="pre">partitions_*</span></code> radial rings
+(<code class="docutils literal notranslate"><span class="pre">n_radial</span></code> in the paper) and reconstructed locally at each ionized atom
+by windowed natural-neighbor interpolation. <code class="docutils literal notranslate"><span class="pre">None</span></code> (default) builds the
+full (unpartitioned) matrices — the exact beam-basis path. The
+full-parent limit is exact (paper eq-part-exact); at finite parent counts
+the on-atom reconstruction error governs the total error (locality result).
+<code class="docutils literal notranslate"><span class="pre">partitions_s2</span></code> requires <code class="docutils literal notranslate"><span class="pre">double_channel=True</span></code>.</p></li>
+<li><p><strong>partitions_s2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Enable <strong>BiP-PRISM</strong> beam partitioning (paper Alg. 5). When set, <code class="docutils literal notranslate"><span class="pre">S1</span></code>
+(aperture beams) and/or <code class="docutils literal notranslate"><span class="pre">S2</span></code> (detector/reciprocal-grid beams) are built
+on a sparse hex-ring <strong>parent</strong> set with <code class="docutils literal notranslate"><span class="pre">partitions_*</span></code> radial rings
+(<code class="docutils literal notranslate"><span class="pre">n_radial</span></code> in the paper) and reconstructed locally at each ionized atom
+by windowed natural-neighbor interpolation. <code class="docutils literal notranslate"><span class="pre">None</span></code> (default) builds the
+full (unpartitioned) matrices — the exact beam-basis path. The
+full-parent limit is exact (paper eq-part-exact); at finite parent counts
+the on-atom reconstruction error governs the total error (locality result).
+<code class="docutils literal notranslate"><span class="pre">partitions_s2</span></code> requires <code class="docutils literal notranslate"><span class="pre">double_channel=True</span></code>.</p></li>
+<li><p><strong>n_angular</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Base azimuthal parent sampling; hex ring <code class="docutils literal notranslate"><span class="pre">i</span></code> carries <code class="docutils literal notranslate"><span class="pre">n_angular*(1+i)</span></code>
+samples (default 6). Shared by the <code class="docutils literal notranslate"><span class="pre">S1</span></code> and <code class="docutils literal notranslate"><span class="pre">S2</span></code> partitions.</p></li>
+<li><p><strong>mag_preserve</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Apply the magnitude-preserving reconstruction (paper eq-magpreserve,
+default <code class="docutils literal notranslate"><span class="pre">True</span></code>) that counters the amplitude loss of the convex complex
+average — required for quantitatively correct absolute map intensity.</p></li>
+<li><p><strong>collection_angle</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – S2 detector-collection semiangle [mrad]. When set, <code class="docutils literal notranslate"><span class="pre">S2</span></code> is built only on
+the reciprocal-grid beams inside <code class="docutils literal notranslate"><span class="pre">|k|</span> <span class="pre">&lt;=</span> <span class="pre">collection_angle/1e3/lambda</span></code> (the
+detector disk) instead of the full native grid — the BiP-PRISM map regime
+(paper Alg. 5). This leaves the detector-integrated map unchanged as long as
+the disk covers the detector’s outer angle (the beam-basis reduction already
+computes <code class="docutils literal notranslate"><span class="pre">I</span> <span class="pre">=</span> <span class="pre">sum_q</span> <span class="pre">|a_q|^2</span></code>), while making <code class="docutils literal notranslate"><span class="pre">partitions_s2</span></code> far more
+accurate at low parent counts (the S2 columns are smooth over the small
+disk) and cheaper to build. <code class="docutils literal notranslate"><span class="pre">None</span></code> (default) uses the full grid.
+Requires <code class="docutils literal notranslate"><span class="pre">double_channel=True</span></code>. A <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> is raised if the disk
+is smaller than the angles a detector collects.</p></li>
+<li><p><strong>focal_backprop</strong> (<em>{&quot;centroid&quot;}</em><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – S1-only accuracy lever (paper Sec. 3.3.6, “Fix 2”). When set, the S1 parent
+columns are Fresnel back-propagated to the scattering-centroid plane before
+the windowed NNW interpolation and forward-propagated back afterwards — the
+resulting interpolation may improve accuracy for some specimens. A cropped
+Fresnel round trip is approximate and is bypassed when all parents are
+retained, preserving the exact full-parent limit.
+<code class="docutils literal notranslate"><span class="pre">&quot;centroid&quot;</span></code> back-propagates half the traversed depth; a float <code class="docutils literal notranslate"><span class="pre">f</span></code> uses
+<code class="docutils literal notranslate"><span class="pre">f</span> <span class="pre">*</span> <span class="pre">depth</span></code>. Applies only to <code class="docutils literal notranslate"><span class="pre">partitions_s1</span></code> (the detector-side <code class="docutils literal notranslate"><span class="pre">S2</span></code>
+parents have no crossover plane), and raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> without it.
+<code class="docutils literal notranslate"><span class="pre">None</span></code> (default) disables it.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
