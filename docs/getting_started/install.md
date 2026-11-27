@@ -47,7 +47,7 @@ conda install -c conda-forge hankel sympy bokeh ipycytoscape
 Before version `1.1.0`, the `gpaw` extra was called `core-loss` and installed only `sympy`.
 ```
 
-The GPU packages ([CuPy](https://cupy.dev/) and, for several GPUs, `dask-cuda`) are deliberately left out of the extras: their wheels are specific to a CUDA version and have to match the toolkit installed on your machine, so they are installed separately as described below.
+The GPU packages ([CuPy](https://cupy.dev/) and, for several GPUs, `dask-cuda`) are deliberately left out of the extras: their wheels are specific to a CUDA or ROCm version and have to match the toolkit (and, on AMD, the GPU) on your machine, so they are installed separately as described below.
 
 ### GPAW (not available on Windows)
 
@@ -77,7 +77,9 @@ gpaw install-data <dir>
 
 The `hankel` and `sympy` packages that the DFT-based features need on top of GPAW itself come from the `abtem[gpaw]` extra above.
 
-### GPU (only NVIDIA) 
+### GPU
+
+#### NVIDIA (CUDA)
 
 GPU calculations with *ab*TEM require a working installation of [CuPy](https://cupy.dev/) and compatible hardware.
 See [here](https://docs.cupy.dev/en/stable/install.html) for detailed installation instructions.
@@ -118,6 +120,42 @@ have:
 Both packages track `dask` closely, so it is worth checking that a simple
 multi-GPU computation runs after installing this way.
 ```
+
+#### AMD (ROCm)
+
+*ab*TEM runs on AMD GPUs through CuPy built for [ROCm](https://rocm.docs.amd.com/), on Linux. There is no CuPy wheel for current ROCm releases on PyPI, so CuPy is built from source for your GPU. This needs a ROCm installation with its development headers (HIP and `hipcc`, hipBLAS, hipFFT, hipRAND, hipSPARSE, rocSOLVER, rocThrust, hipCUB) and the Python headers. The build takes 5 to 20 minutes, depending on the number of CPU cores.
+
+Find your GPU's target name (for example `gfx90a` for an MI250X, `gfx1151` for a Radeon 8050S):
+
+```{code-block}
+rocminfo | grep -o -m1 'gfx[0-9a-f]*'
+```
+
+Then build and install CuPy with that target:
+
+```{code-block}
+CUPY_INSTALL_USE_HIP=1 ROCM_HOME=/opt/rocm HCC_AMDGPU_TARGET=gfx1151 \
+    pip install --no-cache-dir --no-binary cupy cupy==14.2.0
+```
+
+This command is for ROCm 7, where CuPy 14.1.0 or newer is needed: 14.0.0 builds but fails at run time, and 13.5.1 does not build. On ROCm 6, CuPy 13.5.1 is the tested version.
+
+`--no-cache-dir` matters: pip caches the built wheel by CuPy version, not by GPU target, and would otherwise reuse a wheel built for another GPU. To build for several GPUs, give a comma-separated list (`HCC_AMDGPU_TARGET=gfx90a,gfx1151`). CuPy's own [ROCm notes](https://docs.cupy.dev/en/stable/install.html#building-cupy-for-rocm-from-source) list further build options.
+
+Check that the build has code for your GPU, including the sort kernels that come precompiled:
+
+```{code-block}
+python -c "import cupy as cp; print(cp.sort(cp.random.random(1000))[:3])"
+```
+
+Tested CuPy versions:
+
+| ROCm | GPU | CuPy | Result |
+|---|---|---|---|
+| 7.2.4 | Radeon 8050S (gfx1151) | 14.1.0, 14.1.1, 14.2.0 | builds; *ab*TEM's GPU tests pass (charge-density tests not run) |
+| 7.2.4 | Radeon 8050S (gfx1151) | 14.0.0 | builds; many kernels fail to compile at run time |
+| 7.2.4 | any | 13.5.1 | does not build (`hipblasDatatype_t` was removed in ROCm 7) |
+| 6.3.3 | MI250X (gfx90a) | 13.5.1 | builds; *ab*TEM's GPU tests pass |
 
 ### Metal on Apple silicon (experimental)
 
